@@ -1,425 +1,620 @@
 <!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0a0a2e">
-<title>北大刺激战场</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>北大刺激战场 · 和平精英</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a2e;--card:#12123a;--border:#1e1e5a;--gold:#ffd700;--green:#2ea043;--red:#f85149;--purple:#a855f7;--blue:#3b82f6;--pink:#ec4899}
-body{background:var(--bg);font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#e0e0ff;display:flex;min-height:100vh}
-/* Sidebar */
-.side{width:220px;min-height:100vh;background:linear-gradient(180deg,#0d0d35,#0a0a2e);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex-shrink:0}
-.user{display:flex;align-items:center;justify-content:space-between;font-size:.85em}
-.user .name{color:var(--gold)}
-.user .logout{background:#2a2a5a;border:none;color:#aaa;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75em}
-.countdown{text-align:center;background:rgba(20,20,60,.8);border:1px solid var(--border);border-radius:12px;padding:14px}
-.countdown .days{font-size:2.8em;font-weight:900;color:var(--green);line-height:1}
-.countdown .label{font-size:.7em;color:#888;margin-top:4px}
-.countdown .target{font-size:.7em;color:#666;margin-top:2px}
-.cult-badge{background:linear-gradient(135deg,#1a0a3a,#2a1a5a);border:1px solid var(--purple);border-radius:10px;padding:8px 10px;font-size:.8em}
-.cult-badge .lv{color:var(--green);font-weight:700}
-.xp-bar{height:6px;background:#1a1a3a;border-radius:3px;margin:6px 0 2px;overflow:hidden}
-.xp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#58d666,var(--gold))}
-.xp-text{font-size:.6em;color:#888}
-.streak{font-size:.85em}.streak .fire{font-size:1.2em}
-.subj-list{flex:1}
-.subj-list h3{font-size:.75em;color:#888;margin-bottom:6px}
-.subj-item{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.subj-item .dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.subj-item .info{flex:1;font-size:.7em;color:#aaa}
-.subj-item button{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:rgba(20,20,60,.6);color:#ccc;font-size:.78em;cursor:pointer;transition:.2s;text-align:left}
-.subj-item button:hover{border-color:var(--green);color:#fff}
-.subj-item button.active{border-color:var(--green);background:rgba(46,160,67,.1);color:var(--green)}
-/* Main */
-.main{flex:1;padding:20px 24px;overflow-y:auto;max-height:100vh}
-.subj-header{border-radius:14px;padding:20px;margin-bottom:16px;position:relative}
-.subj-header h1{font-size:1.8em;font-weight:900;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
-.subj-header .tabs{display:flex;gap:0;margin-top:12px;border-bottom:2px solid rgba(255,255,255,.2)}
-.subj-header .tab{padding:6px 16px;font-size:.8em;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
-.subj-header .tab.on{color:#fff;border-bottom-color:#fff}
-.subj-header .tab:hover{color:#fff}
-.meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;font-size:.75em}
-.meta span{background:rgba(20,20,60,.8);border:1px solid var(--border);border-radius:16px;padding:3px 10px}
-.meta .hl{background:var(--red);border-color:var(--red);color:#fff}
-.nav-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
-.nav-tab{padding:8px 14px;font-size:.8em;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
-.nav-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
-.nav-tab:hover{color:#ddd}
-/* Intel section */
-.intel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.intel h2{font-size:1.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.intel h2 .tag{font-size:.6em;color:var(--red);background:rgba(248,81,73,.1);padding:2px 8px;border-radius:8px}
-.intel-box{border:1px dashed var(--red);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:120px}
-.intel-box .icon{font-size:2em;margin-bottom:8px;opacity:.5}
-.intel-box .msg{color:#888;font-size:.8em}
-.intel-btn{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:.9em;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.intel-btn:hover{transform:scale(1.01);box-shadow:0 4px 20px rgba(168,85,247,.3)}
-.intel-btn:disabled{opacity:.6;cursor:wait}
-.intel-result{background:rgba(20,20,60,.6);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;font-size:.85em;line-height:1.8;white-space:pre-wrap}
-.intel-result h3{color:var(--gold);margin-bottom:8px}
-/* Question display */
-.question{background:rgba(20,20,60,.6);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
-.question .q-id{color:var(--purple);font-weight:700;font-size:.85em;margin-bottom:6px}
-.question .q-text{font-size:.9em;line-height:1.7;margin-bottom:10px}
-.question .q-opts{display:flex;flex-direction:column;gap:6px}
-.question .q-opt{padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:.82em;cursor:pointer;transition:.2s}
-.question .q-opt:hover{border-color:var(--green);background:rgba(46,160,67,.05)}
-.question .q-opt.correct{border-color:var(--green);background:rgba(46,160,67,.15);color:#58d666}
-.question .q-opt.wrong{border-color:var(--red);background:rgba(248,81,73,.1);color:var(--red)}
-.question .q-answer{margin-top:10px;padding:10px;background:rgba(46,160,67,.08);border-radius:8px;font-size:.8em;line-height:1.6;display:none}
-.question .q-answer.show{display:block}
-.expand{cursor:pointer;color:var(--gold);font-size:.8em;display:flex;align-items:center;gap:4px;margin-top:6px}
-/* Login */
-.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,46,.95);display:flex;align-items:center;justify-content:center;z-index:999}
-.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;width:340px;text-align:center}
-.login-box h2{color:var(--gold);margin-bottom:16px;font-size:1.3em}
-.login-box input{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:#1a1a4a;color:#fff;font-size:.9em;margin-bottom:10px;outline:none}
-.login-box input:focus{border-color:var(--purple)}
-.login-box button{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:1em;font-weight:700;cursor:pointer}
-.hidden{display:none!important}
-/* Responsive */
-@media(max-width:768px){.side{width:180px;padding:10px 8px}.main{padding:12px}}
-@media(max-width:600px){body{flex-direction:column}.side{width:100%;min-height:auto;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--border)}.countdown{flex:1}.subj-list{display:flex;gap:4px;flex-wrap:wrap}}
+body{background:#000;overflow:hidden;font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;user-select:none}
+canvas{display:block}
+/* HUD */
+.hud{position:fixed;pointer-events:none;z-index:10}
+.hud-top{top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 16px}
+.hud-top .alive{background:rgba(0,0,0,.6);border:1px solid rgba(46,160,67,.4);border-radius:8px;padding:6px 14px;font-size:.85em;backdrop-filter:blur(6px)}
+.hud-top .alive b{color:#2ea043}
+.hud-top .zone-warn{background:rgba(248,81,73,.2);border:1px solid rgba(248,81,73,.5);border-radius:8px;padding:6px 14px;font-size:.8em;color:#f85149;display:none}
+.hud-top .zone-warn.on{display:block;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.minimap{position:fixed;top:10px;right:10px;width:160px;height:160px;border:2px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);overflow:hidden}
+.minimap canvas{width:100%;height:100%}
+.hp-bar-wrap{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:300px}
+.hp-label{display:flex;justify-content:space-between;font-size:.7em;color:#aaa;margin-bottom:2px}
+.hp-bar{height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden}
+.hp-fill{height:100%;border-radius:5px;transition:width .3s}
+.xp-wrap{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:300px}
+.xp-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#a855f7,#ec4899);border-radius:2px;transition:width .3s}
+.xp-text{font-size:.55em;color:#888;text-align:center;margin-top:1px}
+.controls{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;font-size:.65em;color:#666;pointer-events:none}
+.controls span{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:3px 8px}
+.controls b{color:#2ea043}
+.kill-feed{position:fixed;top:60px;right:180px;text-align:right;font-size:.75em;pointer-events:none;z-index:20}
+.kill-feed div{margin-bottom:3px;animation:fadeKill 3s forwards;color:#f85149}
+@keyframes fadeKill{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(20px)}}
+.combo-popup{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:900;pointer-events:none;z-index:30;animation:comboAnim .8s ease-out forwards}
+@keyframes comboAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+.bag{position:fixed;bottom:10px;right:10px;display:flex;gap:4px;pointer-events:none}
+.bag-slot{width:44px;height:44px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3em;backdrop-filter:blur(4px)}
+/* Quiz overlay */
+.quiz-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(6px)}
+.quiz-overlay.on{display:flex}
+.quiz-box{background:linear-gradient(135deg,#1a0a3a,#2a1a5a);border:2px solid #a855f7;border-radius:20px;padding:24px;width:480px;max-width:95%;box-shadow:0 0 40px rgba(168,85,247,.3)}
+.quiz-box .enemy{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.8em;color:#aaa}
+.quiz-box .enemy .ava{width:32px;height:32px;border-radius:50%;background:#2a2a5a;display:flex;align-items:center;justify-content:center;font-size:1em}
+.quiz-box .enemy b{color:#f85149}
+.quiz-box .timer{float:right;color:#f85149;font-weight:700;font-size:1.1em}
+.quiz-box .q-text{font-size:1em;line-height:1.6;margin-bottom:14px;padding:10px;background:rgba(0,0,0,.3);border-radius:10px}
+.quiz-box .opts{display:flex;flex-direction:column;gap:8px}
+.quiz-box .opt{padding:12px 14px;border:1.5px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(20,20,60,.6);cursor:pointer;pointer-events:auto;font-size:.9em;transition:.15s}
+.quiz-box .opt:hover{border-color:#a855f7;background:rgba(168,85,247,.1)}
+.quiz-box .opt.correct{border-color:#2ea043!important;background:rgba(46,160,67,.2)!important;color:#58d666!important}
+.quiz-box .opt.wrong{border-color:#f85149!important;background:rgba(248,81,73,.15)!important;color:#f85149!important}
+.quiz-box .skip{text-align:center;margin-top:10px;font-size:.75em;color:#888;cursor:pointer;pointer-events:auto}
+.quiz-box .skip:hover{color:#f85149}
+/* Screens */
+.screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;display:none;align-items:center;justify-content:center}
+.screen.on{display:flex}
+.lobby{background:linear-gradient(135deg,#0a1a0a,#121230,#0a0a2e);flex-direction:column;gap:16px;text-align:center;padding:20px}
+.lobby .logo{font-size:4em;animation:glow 3s infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(46,160,67,.6))}50%{filter:drop-shadow(0 0 30px rgba(46,160,67,.9))}}
+.lobby h1{font-size:2em;background:linear-gradient(135deg,#2ea043,#58d666,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lobby .sub{color:#888;font-size:.8em}
+.lobby .tips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:.7em;margin:8px 0}
+.lobby .tips span{background:rgba(20,20,60,.8);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:4px 10px;color:#aaa}
+.lobby .tips b{color:#2ea043}
+.lobby .start-btn{padding:16px 60px;border:none;border-radius:14px;background:linear-gradient(135deg,#1a6a1a,#2ea043);color:#fff;font-size:1.2em;font-weight:900;cursor:pointer;letter-spacing:2px;box-shadow:0 4px 30px rgba(46,160,67,.4);transition:.2s}
+.lobby .start-btn:hover{transform:scale(1.03)}
+.lobby .start-btn:active{transform:scale(.97)}
+.result-scr{background:rgba(0,0,0,.9);flex-direction:column;gap:16px;text-align:center}
+.result-scr .rank{font-size:5em;font-weight:900;background:linear-gradient(135deg,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.result-scr .chicken{font-size:4em}
+.result-scr .stats{display:flex;gap:16px}
+.result-scr .stat{background:rgba(20,20,60,.8);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 20px}
+.result-scr .stat b{display:block;font-size:1.8em;color:#58d666}
+.result-scr .stat small{color:#888;font-size:.75em}
+.result-scr .restart{padding:14px 40px;border:1.5px solid #2ea043;border-radius:12px;background:transparent;color:#2ea043;font-size:1em;cursor:pointer;pointer-events:auto;transition:.2s}
+.result-scr .restart:hover{background:rgba(46,160,67,.1)}
 </style></head><body>
 
-<!-- Login -->
-<div class="login-overlay" id="loginScr">
-<div class="login-box">
-<h2>🎮 北大刺激战场</h2>
-<p style="color:#888;font-size:.8em;margin-bottom:16px">考研备考 x 战术生存 · AI智能训练平台</p>
-<input id="loginUser" placeholder="输入昵称" value="">
-<input id="loginPwd" type="password" placeholder="密码 (任意)" value="">
-<button onclick="doLogin()">🪂 跳伞进入战场</button>
+<canvas id="gameCanvas"></canvas>
+
+<!-- Minimap -->
+<div class="minimap"><canvas id="minimap" width="160" height="160"></canvas></div>
+
+<!-- HUD -->
+<div class="hud hud-top">
+  <div class="alive">存活 <b id="aliveCount">20</b>/20</div>
+  <div class="zone-warn" id="zoneWarn">⚠ 毒圈来袭！快跑！</div>
+</div>
+<div class="hp-bar-wrap hud">
+  <div class="hp-label"><span id="hpLabel">HP 100</span><span id="lvLabel">炼气期 Lv.1</span></div>
+  <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%;background:linear-gradient(90deg,#2ea043,#58d666)"></div></div>
+</div>
+<div class="xp-wrap hud">
+  <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  <div class="xp-text" id="xpText">EXP 0/100</div>
+</div>
+<div class="controls hud">
+  <span>🎮 <b>WASD</b>移动</span>
+  <span>🔫 <b>SPACE</b>对手发起答题对决</span>
+  <span>🎯 答对=<b>击杀</b></span>
+  <span>💔 答错=<b>自损HP</b></span>
+  <span>📦 <b>F</b>拾取装备 · <b>E</b>开空投箱</span>
+  <span>🟣 毒圈持续缩小</span>
+</div>
+<div class="kill-feed" id="killFeed"></div>
+<div class="bag hud" id="bagSlots">
+  <div class="bag-slot">🔫</div>
+  <div class="bag-slot" style="opacity:.3">-</div>
+  <div class="bag-slot" style="opacity:.3">-</div>
+</div>
+
+<!-- Quiz -->
+<div class="quiz-overlay" id="quizOverlay">
+<div class="quiz-box">
+  <div class="enemy"><div class="ava" id="qEnemy">🤖</div><span>遭遇 <b id="qEnemyName">AI玩家</b></span><span class="timer" id="qTimer">⏱ 15</span></div>
+  <div class="q-text" id="qText"></div>
+  <div class="opts" id="qOpts"></div>
+  <div class="skip" onclick="skipQuestion()">跳过 (-5HP)</div>
 </div></div>
 
-<!-- Sidebar -->
-<div class="side" id="sidebar">
-<div class="user"><span>🎖 <span class="name" id="userName">-</span></span><button class="logout" onclick="doLogout()">退出</button></div>
-<div class="countdown">
-<div style="font-size:.7em;color:#888">距离考研还有</div>
-<div class="days" id="daysLeft">-</div>
-<div class="label">天</div>
-<div class="target">目标: 2026-12-21</div>
-</div>
-<div class="cult-badge">
-<span class="lv" id="cultLv">●炼气期 (Lv.1)</span>
-<div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:27%"></div></div>
-<div class="xp-text" id="xpText">经验: 27 | 升级还需73 EXP</div>
-</div>
-<div class="streak"><span class="fire">🔥</span> 连续打卡<span id="streakDays">1</span>天</div>
-<div class="subj-list">
-<h3>📊 双眼关卡</h3>
-<div class="subj-item"><span class="dot" style="background:var(--red)"></span><span class="info">101 刷次<span id="p101">0</span>%</span></div>
-<div><button onclick="switchSubj(0)" id="btn101" class="active">进入思想政治理论</button></div>
-<div class="subj-item"><span class="dot" style="background:var(--green)"></span><span class="info">201 刷次<span id="p201">0</span>%</span></div>
-<div><button onclick="switchSubj(1)" id="btn201">进入英语一</button></div>
-<div class="subj-item"><span class="dot" style="background:var(--blue)"></span><span class="info">301 刷次<span id="p301">0</span>%</span></div>
-<div><button onclick="switchSubj(2)" id="btn301">进入数学一</button></div>
-<div class="subj-item"><span class="dot" style="background:var(--red)"></span><span class="info">408 刷次<span id="p408">0</span>%</span></div>
-<div><button onclick="switchSubj(3)" id="btn408">进入学科计算机专业基础</button></div>
-</div>
+<!-- Lobby -->
+<div class="screen lobby on" id="lobbyScr">
+  <div class="logo">🍗</div>
+  <h1>考研大逃杀 · 和平精英</h1>
+  <div class="sub">和平精英 × 考研 — PKU Battle Royale</div>
+  <div class="tips">
+    <span>🎮 <b>WASD</b>/方向键移动</span>
+    <span>🔫 <b>SPACE</b>发起答题对决</span>
+    <span>🎯 答对=<b>击杀+EXP</b></span>
+    <span>💔 答错=<b>自损HP</b></span>
+    <span>📦 <b>F</b>拾取 · <b>E</b>空投</span>
+    <span>🟣 毒圈持续缩小</span>
+  </div>
+  <div style="color:#888;font-size:.7em;margin:4px 0">20人大逃杀 · 活到最后 🍗大吉大利今晚吃鸡!</div>
+  <button class="start-btn" onclick="startGame()">🪂 跳伞进入战场</button>
 </div>
 
-<!-- Main -->
-<div class="main" id="mainArea">
-<div class="subj-header" id="subjHeader" style="background:linear-gradient(135deg,#8b0000,#cc0066)">
-<div style="position:absolute;top:12px;right:16px;font-size:1.5em">🚩</div>
-<h1 id="subjTitle">思想政治理论</h1>
-<div class="tabs" id="subTabs"></div>
-</div>
-
-<div class="meta">
-<span>● 北大·软微·电子信息</span>
-<span id="metaCode">科目 101</span>
-<span class="hl" id="metaLine">复试线378</span>
-<span id="metaDays">©262天</span>
-</div>
-
-<div class="nav-tabs">
-<div class="nav-tab on" onclick="switchTab(0)">🔍战场情报</div>
-<div class="nav-tab" onclick="switchTab(1)">🎯空投补给</div>
-<div class="nav-tab" onclick="switchTab(2)">📋专项指南</div>
-<div class="nav-tab" onclick="switchTab(3)">⚔实战突围</div>
-<div class="nav-tab" onclick="switchTab(4)">✏仿真模考</div>
-</div>
-
-<!-- Tab 0: 战场情报 -->
-<div class="tab-content" id="tab0">
-<div class="intel">
-<h2>🕵️ 核心机密情报中心 <span class="tag">机密情报</span></h2>
-<div class="intel-box" id="intelBox">
-<div class="icon">🔒</div>
-<div style="color:var(--gold);font-size:.85em">无信号</div>
-<div class="msg">情报网络未激活<br>点击下方按钮渗透情报网格，窃取命题组核心机密</div>
-</div>
-<button class="intel-btn" id="intelBtn" onclick="fetchIntel()">🔓 渗透情报网络 → 窃取今日核心机密</button>
-<div class="intel-result hidden" id="intelResult"></div>
-</div>
-</div>
-
-<!-- Tab 1: 空投补给 -->
-<div class="tab-content hidden" id="tab1">
-<div class="intel">
-<h2>🎯 空投补给 · 每日50题</h2>
-<div id="dailyQuestions"></div>
-<button class="intel-btn" onclick="genDaily()" style="background:linear-gradient(135deg,var(--green),#58d666)">📦 呼叫空投 → 获取今日50题</button>
-</div>
-</div>
-
-<!-- Tab 2: 专项指南 -->
-<div class="tab-content hidden" id="tab2">
-<div class="intel">
-<h2>📋 专项指南</h2>
-<div id="guideContent" style="font-size:.85em;line-height:1.8;color:#aaa">
-选择科目后，AI将为你生成该科目的专项复习指南、重点知识点梳理和高频考点分析。
-</div>
-<button class="intel-btn" onclick="genGuide()" style="background:linear-gradient(135deg,var(--blue),#60a5fa);margin-top:12px">📋 生成专项复习指南</button>
-</div>
-</div>
-
-<!-- Tab 3: 实战突围 -->
-<div class="tab-content hidden" id="tab3">
-<div class="intel">
-<h2>⚔️ 实战突围 · 限时答题</h2>
-<div id="battleQuiz"></div>
-<button class="intel-btn" onclick="startBattle()" style="background:linear-gradient(135deg,#dc2626,#ef4444)">⚔️ 进入实战突围</button>
-</div>
-</div>
-
-<!-- Tab 4: 仿真模考 -->
-<div class="tab-content hidden" id="tab4">
-<div class="intel">
-<h2>✏️ 仿真模考</h2>
-<div id="examContent" style="font-size:.85em;line-height:1.8;color:#aaa">
-完整模拟真实考试环境，限时作答，系统自动评分。
-</div>
-<button class="intel-btn" onclick="startExam()" style="background:linear-gradient(135deg,#ea580c,#f97316)">✏️ 开始仿真模考</button>
-</div>
-</div>
+<!-- Result -->
+<div class="screen result-scr" id="resultScr">
+  <div class="chicken" id="rChicken">🍗</div>
+  <div class="rank" id="rRank">#1</div>
+  <div id="rTitle" style="font-size:1.3em"></div>
+  <div class="stats" id="rStats"></div>
+  <button class="restart" onclick="location.reload()">🔄 再战一局</button>
 </div>
 
 <script>
-// ===== DATA =====
-var SUBJS=[
-{name:"思想政治理论",code:"101",color:"linear-gradient(135deg,#8b0000,#cc0066)",icon:"🚩",
- tabs:["马原","毛中特","史纲","思修法基"],
- questions:[
-  {q:"马克思主义哲学认为，世界的真正统一性在于它的",o:["物质性","运动性","规律性","可知性"],a:0,exp:"物质性是世界统一性的基础。"},
-  {q:"唯物辩证法的实质和核心是",o:["质量互变规律","对立统一规律","否定之否定规律","因果联系"],a:1,exp:"对立统一规律揭示事物发展的源泉和动力。"},
-  {q:"实践是认识的基础，因为实践是认识的",o:["来源","动力","目的","以上都是"],a:3,exp:"实践是认识的来源、动力、目的和检验标准。"},
-  {q:"社会存在中最能体现人类社会物质性的是",o:["地理环境","人口因素","生产方式","自然资源"],a:2,exp:"生产方式是社会存在的决定性因素。"},
-  {q:"中国特色社会主义理论体系的开创者是",o:["毛泽东","邓小平","江泽民","胡锦涛"],a:1,exp:"邓小平理论是中国特色社会主义理论体系的开篇之作。"},
-  {q:"新发展理念中排在首位的是",o:["创新","协调","绿色","共享"],a:0,exp:"创新是引领发展的第一动力。"},
-  {q:"人民民主专政的本质是",o:["无产阶级专政","人民当家作主","民主集中制","多党合作"],a:1},
-  {q:"中国共产党的根本组织原则是",o:["少数服从多数","集体领导","民主集中制","党管干部"],a:2}
-]},
-{name:"英语一",code:"201",color:"linear-gradient(135deg,#006400,#00aa44)",icon:"🇬🇧",
- tabs:["完形","阅读","翻译","写作"],
- questions:[
-  {q:"'Ubiquitous' most nearly means:",o:["rare","omnipresent","obsolete","unique"],a:1,exp:"Ubiquitous means existing everywhere."},
-  {q:"'Neither the teacher nor the students ___ ready.'",o:["is","are","was","be"],a:1,exp:"When 'nor' connects subjects, verb agrees with the nearest subject (students=plural)."},
-  {q:"'To turn over a new leaf' means:",o:["read a book","start fresh","fall asleep","give up"],a:1},
-  {q:"The passive of 'They are building a bridge':",o:["A bridge is built","A bridge is being built","A bridge was built","A bridge has been built"],a:1},
-  {q:"'Serendipity' refers to:",o:["bad luck","a planned outcome","a fortunate accident","careful research"],a:2},
-  {q:"The subjunctive mood: 'If I ___ rich...'",o:["was","were","am","will be"],a:1},
-  {q:"'Pragmatic' most closely means:",o:["idealistic","practical","theoretical","emotional"],a:1},
-  {q:"The correct plural of 'phenomenon':",o:["phenomenons","phenomenas","phenomena","phenomeni"],a:2}
-]},
-{name:"数学一",code:"301",color:"linear-gradient(135deg,#00008b,#0066cc)",icon:"📐",
- tabs:["高数","线代","概率论"],
- questions:[
-  {q:"f(x)=x³-3x 在x=1处的导数值为",o:["0","3","-3","6"],a:0,exp:"f'(x)=3x²-3, f'(1)=3-3=0"},
-  {q:"不定积分 ∫2x dx =",o:["x²+C","2x²+C","x²/2+C","2x+C"],a:0},
-  {q:"级数 Σ(1/n²) (n=1到∞) 是",o:["发散的","收敛的","振荡的","不确定"],a:1,exp:"p级数，p=2>1，收敛。"},
-  {q:"e^x 在x=0的泰勒展开前三项:",o:["1+x+x²","1+x+x²/2","x+x²+x³","1+2x+3x²"],a:1},
-  {q:"特征值2和3的矩阵行列式等于",o:["5","6","1","-1"],a:1,exp:"det=λ₁×λ₂=2×3=6"},
-  {q:"向量(1,2,3)和(2,4,6)是",o:["正交的","线性无关的","线性相关的","互逆的"],a:2},
-  {q:"拉格朗日中值定理要求闭区间上",o:["可微","连续","有界","单调"],a:1},
-  {q:"二重积分∬D 1dA，D是单位圆=",o:["1","π","2π","4π"],a:1}
-]},
-{name:"计算机学科专业基础",code:"408",color:"linear-gradient(135deg,#4a0080,#cc0066)",icon:"💻",
- tabs:["数据结构","操作系统","组成原理","计算机网络"],
- questions:[
-  {q:"时间复杂度O(nlogn)的排序算法是",o:["冒泡排序","归并排序","选择排序","插入排序"],a:1},
-  {q:"TCP属于OSI模型的",o:["网络层","传输层","应用层","数据链路层"],a:1},
-  {q:"页面置换算法LRU含义是",o:["最近最少使用","先进先出","最不经常使用","随机替换"],a:0},
-  {q:"IPv4地址长度为",o:["16位","32位","64位","128位"],a:1},
-  {q:"进程与线程的主要区别是",o:["进程有独立地址空间","线程不能并发","进程更轻量","线程不共享资源"],a:0},
-  {q:"哈夫曼编码是一种",o:["等长编码","前缀编码","后缀编码","ASCII编码"],a:1},
-  {q:"磁盘调度SCAN又称",o:["先来先服务","电梯算法","最短寻道","循环扫描"],a:1},
-  {q:"死锁四个必要条件不包括",o:["互斥","请求与保持","循环等待","可抢占"],a:3},
-  {q:"B+树与B树主要区别是",o:["所有数据在叶节点","不能有重复键","高度更大","没有指针"],a:0},
-  {q:"虚拟内存的基础是",o:["局部性原理","缓存技术","流水线","中断机制"],a:0}
-]}
+// ===== QUESTION BANK =====
+var QS=[
+{q:"时间复杂度O(nlogn)的排序算法是",o:["冒泡排序","归并排序","选择排序","插入排序"],a:1,s:"408"},
+{q:"TCP属于OSI的哪一层",o:["网络层","传输层","应用层","链路层"],a:1,s:"408"},
+{q:"LRU的含义是",o:["最近最少使用","先进先出","最不经常使用","随机"],a:0,s:"408"},
+{q:"IPv4地址长度是",o:["16位","32位","64位","128位"],a:1,s:"408"},
+{q:"进程与线程的主要区别",o:["进程有独立地址空间","线程不能并发","进程更轻量","线程不共享资源"],a:0,s:"408"},
+{q:"哈夫曼编码是一种",o:["等长编码","前缀编码","后缀编码","ASCII"],a:1,s:"408"},
+{q:"死锁必要条件不包括",o:["互斥","请求保持","循环等待","可抢占"],a:3,s:"408"},
+{q:"B+树数据存储在",o:["叶节点","根节点","所有节点","分支节点"],a:0,s:"408"},
+{q:"TCP三次握手第二次标志位",o:["SYN","ACK","SYN+ACK","FIN"],a:2,s:"408"},
+{q:"虚拟内存基于",o:["局部性原理","缓存","流水线","中断"],a:0,s:"408"},
+{q:"f(x)=x³-3x 在x=1处导数",o:["0","3","-3","6"],a:0,s:"301"},
+{q:"∫2x dx =",o:["x²+C","2x²+C","x²/2+C","2x+C"],a:0,s:"301"},
+{q:"Σ(1/n²)收敛还是发散",o:["发散","收敛","振荡","不定"],a:1,s:"301"},
+{q:"e^x泰勒前三项",o:["1+x+x²","1+x+x²/2","x+x²+x³","1+2x+3x²"],a:1,s:"301"},
+{q:"(1,2,3)和(2,4,6)线性关系",o:["正交","无关","相关","互逆"],a:2,s:"301"},
+{q:"唯物辩证法核心是",o:["质量互变","对立统一","否定之否定","因果联系"],a:1,s:"101"},
+{q:"新发展理念首位",o:["创新","协调","绿色","共享"],a:0,s:"101"},
+{q:"民主集中制是",o:["少数服从多数","集体领导","根本组织原则","党管干部"],a:2,s:"101"},
+{q:"Ubiquitous means",o:["rare","omnipresent","obsolete","unique"],a:1,s:"201"},
+{q:"If I ___ rich (subjunctive)",o:["was","were","am","will be"],a:1,s:"201"},
+{q:"Serendipity refers to",o:["bad luck","planned outcome","fortunate accident","research"],a:2,s:"201"},
+{q:"Pragmatic means",o:["idealistic","practical","theoretical","emotional"],a:1,s:"201"},
+{q:"磁盘调度SCAN又称",o:["FCFS","电梯算法","最短寻道","CSCAN"],a:1,s:"408"},
+{q:"社会存在最能体现物质性",o:["地理环境","人口因素","生产方式","自然资源"],a:2,s:"101"},
+{q:"拉格朗日中值定理要求",o:["可微","连续","有界","单调"],a:1,s:"301"}
 ];
 
-var LEVELS=["炼气期","筑基期","金丹期","元婴期","化神期","合体期","大乘期","渡劫期"];
-var curSubj=0, curTab=0, curNavTab=0;
-var state={user:'',xp:27,lv:0,streak:1,progress:[0,0,0,0],lastLogin:''};
+// ===== CONFIG =====
+var W,H,ctx,mctx;
+var MAP=2000, TILE=40;
+var NAMES=["张三丰","王重阳","丘处机","萧峰","段誉","虚竹","令狐冲","张无忌","杨过","郭靖","黄蓉","韦小宝","东方不败","任盈盈","灭绝师太","周芷若","赵敏","小龙女","黄药师"];
+var LVLS=["炼气期","筑基期","金丹期","元婴期","化神期","合体期","大乘期","渡劫期"];
 
-// ===== PERSISTENCE =====
-function save(){localStorage.setItem('bg_state',JSON.stringify(state))}
-function load(){var s=localStorage.getItem('bg_state');if(s){state=JSON.parse(s);return true}return false}
+// ===== STATE =====
+var player,bots,loots,airdrops,zone,gameTime,gameOver,kills,combo,xp;
+var keys={},quizActive=false,curBot=null,quizTimer=0,quizTimerI;
+var camera={x:0,y:0};
 
-// ===== LOGIN =====
-function doLogin(){
-  var u=document.getElementById('loginUser').value.trim();
-  if(!u){u='考研战士'}
-  state.user=u;
-  // Check streak
-  var today=new Date().toISOString().slice(0,10);
-  if(state.lastLogin){
-    var d=new Date(state.lastLogin);d.setDate(d.getDate()+1);
-    if(d.toISOString().slice(0,10)===today)state.streak++;
-    else if(state.lastLogin!==today)state.streak=1;
+function init(){
+  var c=document.getElementById('gameCanvas');
+  W=c.width=window.innerWidth; H=c.height=window.innerHeight;
+  ctx=c.getContext('2d');
+  mctx=document.getElementById('minimap').getContext('2d');
+  window.addEventListener('resize',function(){W=c.width=innerWidth;H=c.height=innerHeight});
+}
+
+function startGame(){
+  document.getElementById('lobbyScr').classList.remove('on');
+  init();
+  player={x:MAP/2+Math.random()*200-100,y:MAP/2+Math.random()*200-100,hp:100,spd:3,size:14,angle:0,
+    shield:0,dmgBoost:0,healKit:0,scope:0};
+  bots=[];kills=0;combo=0;xp=0;gameTime=0;gameOver=false;
+  for(var i=0;i<19;i++){
+    var ang=Math.random()*Math.PI*2,dist=300+Math.random()*600;
+    bots.push({x:MAP/2+Math.cos(ang)*dist,y:MAP/2+Math.sin(ang)*dist,
+      hp:60+Math.random()*40,spd:1+Math.random()*1.5,size:14,alive:true,
+      name:NAMES[i],angle:Math.random()*Math.PI*2,
+      moveTimer:0,moveDir:Math.random()*Math.PI*2,
+      skill:.3+Math.random()*.5,color:hsl(Math.random()*360,70,60)});
   }
-  state.lastLogin=today;
-  save();
-  document.getElementById('loginScr').classList.add('hidden');
-  updateUI();
-}
-function doLogout(){state.user='';save();document.getElementById('loginScr').classList.remove('hidden')}
-
-// ===== COUNTDOWN =====
-function calcDays(){
-  var target=new Date('2026-12-21');var now=new Date();
-  return Math.max(0,Math.ceil((target-now)/(1000*60*60*24)));
-}
-
-// ===== UI =====
-function updateUI(){
-  document.getElementById('userName').textContent=state.user;
-  document.getElementById('daysLeft').textContent=calcDays();
-  document.getElementById('metaDays').textContent='©'+calcDays()+'天';
-  document.getElementById('streakDays').textContent=state.streak;
-  var lvIdx=Math.min(Math.floor(state.xp/100),LEVELS.length-1);
-  state.lv=lvIdx;
-  var rem=100-(state.xp%100);
-  document.getElementById('cultLv').textContent='●'+LEVELS[lvIdx]+' (Lv.'+(lvIdx+1)+')';
-  document.getElementById('xpFill').style.width=(state.xp%100)+'%';
-  document.getElementById('xpText').textContent='经验: '+state.xp+' | 升级还需'+rem+' EXP';
-  ['p101','p201','p301','p408'].forEach(function(id,i){document.getElementById(id).textContent=state.progress[i]});
-  switchSubj(curSubj);
+  // Loot
+  loots=[];for(var i=0;i<30;i++){
+    loots.push({x:200+Math.random()*(MAP-400),y:200+Math.random()*(MAP-400),
+      type:['🩹','🛡','💊','🔭','⚡'][0|Math.random()*5],taken:false});
+  }
+  // Airdrop
+  airdrops=[];for(var i=0;i<5;i++){
+    airdrops.push({x:400+Math.random()*(MAP-800),y:400+Math.random()*(MAP-800),opened:false});
+  }
+  // Zone
+  zone={cx:MAP/2,cy:MAP/2,r:MAP/2,tr:MAP/2,nextR:MAP*0.35,
+    shrinkStart:600,shrinkEnd:900,phase:0,dmg:2};
+  requestAnimationFrame(gameLoop);
 }
 
-function switchSubj(i){
-  curSubj=i;
-  var s=SUBJS[i];
-  document.getElementById('subjHeader').style.background=s.color;
-  document.getElementById('subjTitle').textContent=s.name;
-  document.getElementById('subjHeader').querySelector('div').textContent=s.icon;
-  document.getElementById('metaCode').textContent='科目 '+s.code;
-  // Sub tabs
-  var th='';s.tabs.forEach(function(t,j){th+='<div class="tab'+(j===0?' on':'')+'" onclick="this.parentElement.querySelectorAll(\'.tab\').forEach(function(x){x.classList.remove(\'on\')});this.classList.add(\'on\')">'+t+'</div>'});
-  document.getElementById('subTabs').innerHTML=th;
-  // Buttons
-  ['btn101','btn201','btn301','btn408'].forEach(function(id,j){
-    document.getElementById(id).classList.toggle('active',j===i)});
+function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+
+// ===== INPUT =====
+document.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;keys[e.code]=true;
+  if(e.code==='Space'&&!quizActive&&!gameOver)tryFight();
+  if(e.key.toLowerCase()==='f')tryLoot();
+  if(e.key.toLowerCase()==='e')tryAirdrop();
+});
+document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;keys[e.code]=false});
+
+// ===== GAME LOOP =====
+function gameLoop(){
+  if(gameOver)return;
+  gameTime++;
+  updatePlayer();
+  updateBots();
+  updateZone();
+  checkZoneDmg();
+  botFights();
+  render();
+  renderMinimap();
+  updateHUD();
+  requestAnimationFrame(gameLoop);
 }
 
-function switchTab(t){
-  curNavTab=t;
-  document.querySelectorAll('.nav-tab').forEach(function(x,j){x.classList.toggle('on',j===t)});
-  for(var j=0;j<5;j++){var el=document.getElementById('tab'+j);if(el)el.classList.toggle('hidden',j!==t)}
+function updatePlayer(){
+  if(quizActive)return;
+  var dx=0,dy=0;
+  if(keys['w']||keys['arrowup'])dy=-1;
+  if(keys['s']||keys['arrowdown'])dy=1;
+  if(keys['a']||keys['arrowleft'])dx=-1;
+  if(keys['d']||keys['arrowright'])dx=1;
+  if(dx||dy){
+    var len=Math.sqrt(dx*dx+dy*dy);
+    player.x+=dx/len*player.spd;
+    player.y+=dy/len*player.spd;
+    player.angle=Math.atan2(dy,dx);
+  }
+  player.x=Math.max(10,Math.min(MAP-10,player.x));
+  player.y=Math.max(10,Math.min(MAP-10,player.y));
 }
 
-// ===== API KEY =====
-function getKey(){var k=localStorage.getItem('openrouter_key');if(!k){k=prompt('请输入OpenRouter API Key (sk-or-v1-...)：');if(k)localStorage.setItem('openrouter_key',k)}return k}
-
-function callAI(prompt,cb){
-  var k=getKey();if(!k){cb('请先设置API Key');return}
-  fetch('https://openrouter.ai/api/v1/chat/completions',{
-    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
-    body:JSON.stringify({model:'deepseek/deepseek-chat',messages:[{role:'user',content:prompt}],max_tokens:4096})
-  }).then(function(r){return r.json()}).then(function(d){
-    cb(d.choices&&d.choices[0]?d.choices[0].message.content:'API错误')
-  }).catch(function(e){cb('网络错误: '+e.message)})
-}
-
-// ===== INTEL =====
-function fetchIntel(){
-  var btn=document.getElementById('intelBtn');
-  btn.disabled=true;btn.textContent='⏳ 正在渗透情报网络...';
-  var s=SUBJS[curSubj];
-  var prompt='你是北大考研情报分析师。请为【'+s.name+'('+s.code+')】科目生成今日核心机密情报，包括：\n1. 今日必背知识点（3个）\n2. 命题趋势分析\n3. 高频考点预警\n4. 一道预测押题（含答案和解析）\n请用简洁有力的军事情报风格输出。';
-  callAI(prompt,function(text){
-    btn.disabled=false;btn.textContent='🔓 渗透情报网络 → 窃取今日核心机密';
-    document.getElementById('intelBox').innerHTML='<div class="icon">📡</div><div style="color:var(--green)">信号已锁定</div><div class="msg">情报渗透成功！核心机密已解密</div>';
-    var res=document.getElementById('intelResult');
-    res.classList.remove('hidden');
-    res.innerHTML='<h3>🔓 今日核心机密 · '+s.name+'</h3>'+text.replace(/\n/g,'<br>');
-    state.xp+=15;save();updateUI();
+function updateBots(){
+  bots.forEach(function(b){
+    if(!b.alive)return;
+    b.moveTimer--;
+    if(b.moveTimer<=0){b.moveDir=Math.random()*Math.PI*2;b.moveTimer=60+Math.random()*120}
+    // Move toward zone center if outside
+    var dx=zone.cx-b.x,dy=zone.cy-b.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist>zone.r*0.7){
+      b.x+=dx/dist*b.spd*0.8;
+      b.y+=dy/dist*b.spd*0.8;
+    } else {
+      b.x+=Math.cos(b.moveDir)*b.spd*0.5;
+      b.y+=Math.sin(b.moveDir)*b.spd*0.5;
+    }
+    b.x=Math.max(10,Math.min(MAP-10,b.x));
+    b.y=Math.max(10,Math.min(MAP-10,b.y));
   });
 }
 
-function genDaily(){
-  var s=SUBJS[curSubj];
-  var container=document.getElementById('dailyQuestions');
-  container.innerHTML='<div style="text-align:center;padding:20px;color:#888">⏳ 正在呼叫空投...</div>';
-  // Use built-in questions + AI generated
-  var qs=s.questions.slice();shuffle(qs);
-  var h='';qs.forEach(function(q,i){
-    h+='<div class="question"><div class="q-id">#'+(i+1)+'</div>';
-    h+='<div class="q-text">'+q.q+'</div><div class="q-opts">';
-    q.o.forEach(function(o,j){h+='<div class="q-opt" onclick="pickOpt(this,'+j+','+q.a+')">'+String.fromCharCode(65+j)+'. '+o+'</div>'});
-    h+='</div>';
-    if(q.exp)h+='<div class="q-answer" id="ans_'+i+'">💡 '+q.exp+'</div><div class="expand" onclick="document.getElementById(\'ans_'+i+'\').classList.toggle(\'show\')">▶ 查看答案与解析</div>';
-    h+='</div>';
-  });
-  container.innerHTML=h;
-  state.xp+=10;save();updateUI();
+function updateZone(){
+  // Phase system: shrink every 600 frames
+  var phases=[
+    {start:300,end:600,r:MAP*0.35,dmg:2},
+    {start:900,end:1200,r:MAP*0.22,dmg:4},
+    {start:1500,end:1800,r:MAP*0.12,dmg:7},
+    {start:2100,end:2400,r:MAP*0.05,dmg:12}
+  ];
+  for(var i=0;i<phases.length;i++){
+    var p=phases[i];
+    if(gameTime>=p.start&&gameTime<=p.end){
+      var t=(gameTime-p.start)/(p.end-p.start);
+      zone.r=zone.tr+(p.r-zone.tr)*t;
+      zone.dmg=p.dmg;
+    }
+    if(gameTime===p.end){zone.tr=p.r}
+  }
 }
 
-function pickOpt(el,picked,correct){
-  var par=el.parentElement;
-  par.querySelectorAll('.q-opt').forEach(function(x,i){
+function checkZoneDmg(){
+  // Player
+  var dx=player.x-zone.cx,dy=player.y-zone.cy;
+  if(Math.sqrt(dx*dx+dy*dy)>zone.r){
+    player.hp-=zone.dmg*0.02;
+    document.getElementById('zoneWarn').classList.add('on');
+  } else {
+    document.getElementById('zoneWarn').classList.remove('on');
+  }
+  // Bots
+  bots.forEach(function(b){
+    if(!b.alive)return;
+    var dx=b.x-zone.cx,dy=b.y-zone.cy;
+    if(Math.sqrt(dx*dx+dy*dy)>zone.r){b.hp-=zone.dmg*0.03}
+    if(b.hp<=0){b.alive=false;addKillFeed(b.name+' 被毒圈淘汰')}
+  });
+  if(player.hp<=0&&!gameOver)endGame(false);
+  if(bots.filter(function(b){return b.alive}).length===0&&!gameOver)endGame(true);
+}
+
+// ===== COMBAT =====
+function tryFight(){
+  var closest=null,minD=80;
+  bots.forEach(function(b){
+    if(!b.alive)return;
+    var d=Math.sqrt((b.x-player.x)**2+(b.y-player.y)**2);
+    if(d<minD){minD=d;closest=b}
+  });
+  if(closest){curBot=closest;showQuiz()}
+}
+
+function showQuiz(){
+  quizActive=true;
+  var q=QS[0|Math.random()*QS.length];
+  document.getElementById('qEnemyName').textContent=curBot.name;
+  document.getElementById('qText').textContent='['+q.s+'] '+q.q;
+  var h='';q.o.forEach(function(o,i){
+    h+='<div class="opt" onclick="answer('+i+','+q.a+')">'+String.fromCharCode(65+i)+'. '+o+'</div>'});
+  document.getElementById('qOpts').innerHTML=h;
+  document.getElementById('quizOverlay').classList.add('on');
+  // Timer
+  quizTimer=15;document.getElementById('qTimer').textContent='⏱ '+quizTimer;
+  clearInterval(quizTimerI);
+  quizTimerI=setInterval(function(){quizTimer--;document.getElementById('qTimer').textContent='⏱ '+quizTimer;
+    if(quizTimer<=0){clearInterval(quizTimerI);answer(-1,-1)}},1000);
+}
+
+function answer(picked,correct){
+  clearInterval(quizTimerI);
+  var opts=document.querySelectorAll('.quiz-box .opt');
+  opts.forEach(function(x,i){
     x.style.pointerEvents='none';
     if(i===correct)x.classList.add('correct');
     if(i===picked&&i!==correct)x.classList.add('wrong');
   });
-  if(picked===correct){state.xp+=5;save();updateUI()}
+  if(picked===correct){
+    // Kill
+    curBot.alive=false; kills++; combo++;
+    xp+=20+combo*5;
+    addKillFeed('你 击杀了 '+curBot.name);
+    if(combo>=3)showCombo(combo);
+    if(player.dmgBoost>0)player.dmgBoost--;
+  } else {
+    // Damage self
+    var dmg=15+(player.shield>0?-5:0);
+    player.hp-=dmg; combo=0;
+    if(player.shield>0)player.shield--;
+  }
+  setTimeout(function(){
+    document.getElementById('quizOverlay').classList.remove('on');
+    quizActive=false;curBot=null;
+    if(player.hp<=0)endGame(false);
+  },1000);
 }
 
-function genGuide(){
-  var s=SUBJS[curSubj];
-  var el=document.getElementById('guideContent');
-  el.innerHTML='⏳ AI正在生成专项指南...';
-  callAI('请为考研【'+s.name+'】生成一份专项复习指南，包括：\n1. 各章节重要程度（星级评分）\n2. 高频考点TOP10\n3. 复习时间分配建议\n4. 易错点提醒\n请用结构化格式输出。',function(t){
-    el.innerHTML=t.replace(/\n/g,'<br>');state.xp+=10;save();updateUI();
+function skipQuestion(){
+  clearInterval(quizTimerI);
+  player.hp-=5;combo=0;
+  document.getElementById('quizOverlay').classList.remove('on');
+  quizActive=false;curBot=null;
+}
+
+function tryLoot(){
+  loots.forEach(function(l){
+    if(l.taken)return;
+    var d=Math.sqrt((l.x-player.x)**2+(l.y-player.y)**2);
+    if(d<30){
+      l.taken=true;
+      if(l.type==='🩹'){player.hp=Math.min(100,player.hp+15);addKillFeed('拾取 🩹 +15HP')}
+      if(l.type==='🛡'){player.shield+=2;addKillFeed('拾取 🛡 护盾×2')}
+      if(l.type==='💊'){player.healKit++;addKillFeed('拾取 💊 急救包')}
+      if(l.type==='🔭'){player.scope=1;addKillFeed('拾取 🔭 4倍镜')}
+      if(l.type==='⚡'){player.dmgBoost+=3;addKillFeed('拾取 ⚡ 增伤×3')}
+      updateBag();
+    }
   });
 }
 
-function startBattle(){
-  var s=SUBJS[curSubj];
-  var qs=shuffle(s.questions.slice()).slice(0,5);
-  var container=document.getElementById('battleQuiz');
-  var h='<div style="color:var(--red);font-size:.8em;margin-bottom:10px">⏱ 限时答题 · 每题答对+10 EXP</div>';
-  qs.forEach(function(q,i){
-    h+='<div class="question"><div class="q-id">⚔️ 第'+(i+1)+'题</div>';
-    h+='<div class="q-text">'+q.q+'</div><div class="q-opts">';
-    q.o.forEach(function(o,j){h+='<div class="q-opt" onclick="pickOpt(this,'+j+','+q.a+')">'+String.fromCharCode(65+j)+'. '+o+'</div>'});
-    h+='</div></div>';
-  });
-  container.innerHTML=h;
-}
-
-function startExam(){
-  var el=document.getElementById('examContent');
-  el.innerHTML='⏳ 正在生成仿真模考试卷...';
-  var s=SUBJS[curSubj];
-  callAI('请为考研【'+s.name+'】生成一套仿真模考试卷，包含：\n1. 选择题5道（含ABCD选项和答案）\n2. 简答题2道\n3. 分析题1道\n请给出标准答案和评分要点。',function(t){
-    el.innerHTML=t.replace(/\n/g,'<br>');state.xp+=20;save();updateUI();
+function tryAirdrop(){
+  airdrops.forEach(function(a){
+    if(a.opened)return;
+    var d=Math.sqrt((a.x-player.x)**2+(a.y-player.y)**2);
+    if(d<35){
+      a.opened=true;
+      player.hp=Math.min(100,player.hp+30);player.shield+=3;player.dmgBoost+=2;
+      xp+=50;addKillFeed('📦 空投开启！+30HP +3🛡 +2⚡ +50EXP');
+      updateBag();
+    }
   });
 }
 
-function shuffle(a){for(var i=a.length-1;i>0;i--){var j=0|Math.random()*(i+1);var t=a[i];a[i]=a[j];a[j]=t}return a}
+function updateBag(){
+  var h='<div class="bag-slot">🔫</div>';
+  if(player.shield>0)h+='<div class="bag-slot">🛡×'+player.shield+'</div>';
+  if(player.healKit>0)h+='<div class="bag-slot">💊×'+player.healKit+'</div>';
+  if(player.dmgBoost>0)h+='<div class="bag-slot">⚡×'+player.dmgBoost+'</div>';
+  if(player.scope)h+='<div class="bag-slot">🔭</div>';
+  document.getElementById('bagSlots').innerHTML=h;
+}
 
-// ===== INIT =====
-if(load()&&state.user){
-  document.getElementById('loginScr').classList.add('hidden');
-  updateUI();
-} else {
-  document.getElementById('loginUser').value='zmq521521';
+function botFights(){
+  // Bots fight each other occasionally
+  if(gameTime%180!==0)return;
+  var alive=bots.filter(function(b){return b.alive});
+  if(alive.length<2)return;
+  for(var i=0;i<alive.length;i++){
+    for(var j=i+1;j<alive.length;j++){
+      var d=Math.sqrt((alive[i].x-alive[j].x)**2+(alive[i].y-alive[j].y)**2);
+      if(d<60){
+        if(Math.random()>alive[j].skill){alive[j].alive=false;addKillFeed(alive[i].name+' 击杀 '+alive[j].name)}
+        else if(Math.random()>alive[i].skill){alive[i].alive=false;addKillFeed(alive[j].name+' 击杀 '+alive[i].name)}
+        break;
+      }
+    }
+  }
+}
+
+// ===== RENDER =====
+function render(){
+  ctx.clearRect(0,0,W,H);
+  camera.x=player.x-W/2;camera.y=player.y-H/2;
+  // Ground
+  ctx.fillStyle='#0a1a0a';ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(46,160,67,0.06)';ctx.lineWidth=1;
+  var sx=(-camera.x%TILE+TILE)%TILE,sy=(-camera.y%TILE+TILE)%TILE;
+  for(var x=sx;x<W;x+=TILE){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+  for(var y=sy;y<H;y+=TILE){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  // Trees (decorative)
+  for(var tx=0;tx<MAP;tx+=120){for(var ty=0;ty<MAP;ty+=120){
+    if((tx*7+ty*13)%17<5){
+      var sx2=tx-camera.x,sy2=ty-camera.y;
+      if(sx2>-30&&sx2<W+30&&sy2>-30&&sy2<H+30){
+        ctx.fillStyle='rgba(20,60,20,0.5)';ctx.beginPath();ctx.arc(sx2,sy2,12,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='rgba(30,80,30,0.6)';ctx.beginPath();ctx.arc(sx2-3,sy2-3,8,0,Math.PI*2);ctx.fill();
+      }
+    }
+  }}
+  // Zone circle
+  drawZone();
+  // Loot
+  loots.forEach(function(l){
+    if(l.taken)return;
+    var sx2=l.x-camera.x,sy2=l.y-camera.y;
+    if(sx2<-20||sx2>W+20||sy2<-20||sy2>H+20)return;
+    ctx.font='16px serif';ctx.fillText(l.type,sx2-8,sy2+5);
+    // Glow
+    ctx.beginPath();ctx.arc(sx2,sy2,12,0,Math.PI*2);ctx.fillStyle='rgba(255,215,0,0.08)';ctx.fill();
+  });
+  // Airdrops
+  airdrops.forEach(function(a){
+    if(a.opened)return;
+    var sx2=a.x-camera.x,sy2=a.y-camera.y;
+    if(sx2<-30||sx2>W+30||sy2<-30||sy2>H+30)return;
+    ctx.font='22px serif';ctx.fillText('📦',sx2-11,sy2+7);
+    ctx.beginPath();ctx.arc(sx2,sy2,18,0,Math.PI*2);ctx.strokeStyle='rgba(168,85,247,0.4)';ctx.lineWidth=2;ctx.stroke();
+    // Parachute lines
+    ctx.strokeStyle='rgba(168,85,247,0.2)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(sx2,sy2-18);ctx.lineTo(sx2-12,sy2-35);ctx.moveTo(sx2,sy2-18);ctx.lineTo(sx2+12,sy2-35);ctx.stroke();
+    ctx.beginPath();ctx.arc(sx2,sy2-40,15,0,Math.PI,true);ctx.strokeStyle='rgba(168,85,247,0.3)';ctx.stroke();
+  });
+  // Bots - 3D-ish with shadow
+  bots.forEach(function(b){
+    if(!b.alive)return;
+    var sx2=b.x-camera.x,sy2=b.y-camera.y;
+    if(sx2<-30||sx2>W+30||sy2<-30||sy2>H+30)return;
+    // Shadow
+    ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.ellipse(sx2,sy2+12,10,5,0,0,Math.PI*2);ctx.fill();
+    // Body (3D capsule)
+    var grd=ctx.createLinearGradient(sx2-8,sy2-16,sx2+8,sy2+6);
+    grd.addColorStop(0,b.color);grd.addColorStop(1,'rgba(0,0,0,0.5)');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(sx2,sy2-6,10,0,Math.PI*2);ctx.fill(); // head
+    ctx.fillRect(sx2-6,sy2-2,12,14); // body
+    ctx.beginPath();ctx.arc(sx2,sy2+12,6,0,Math.PI);ctx.fill();
+    // Name
+    ctx.font='10px sans-serif';ctx.fillStyle='#aaa';ctx.textAlign='center';ctx.fillText(b.name,sx2,sy2-20);
+    // HP bar above
+    var hpW=20,hpH=3;
+    ctx.fillStyle='rgba(255,0,0,0.3)';ctx.fillRect(sx2-hpW/2,sy2-26,hpW,hpH);
+    ctx.fillStyle='#f85149';ctx.fillRect(sx2-hpW/2,sy2-26,hpW*(b.hp/100),hpH);
+    ctx.textAlign='left';
+  });
+  // Player - 3D hero
+  var px=player.x-camera.x,py=player.y-camera.y;
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.4)';ctx.beginPath();ctx.ellipse(px,py+14,12,6,0,0,Math.PI*2);ctx.fill();
+  // Body glow
+  ctx.shadowColor='rgba(46,160,67,0.4)';ctx.shadowBlur=20;
+  var pgrd=ctx.createLinearGradient(px-10,py-20,px+10,py+8);
+  pgrd.addColorStop(0,'#58d666');pgrd.addColorStop(1,'#1a6a1a');
+  ctx.fillStyle=pgrd;
+  ctx.beginPath();ctx.arc(px,py-8,12,0,Math.PI*2);ctx.fill();
+  ctx.fillRect(px-7,py-2,14,16);
+  ctx.beginPath();ctx.arc(px,py+14,7,0,Math.PI);ctx.fill();
+  ctx.shadowBlur=0;
+  // Direction indicator
+  ctx.strokeStyle='rgba(46,160,67,0.6)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(px,py);
+  ctx.lineTo(px+Math.cos(player.angle)*25,py+Math.sin(player.angle)*25);ctx.stroke();
+  // Range circle
+  ctx.beginPath();ctx.arc(px,py,80,0,Math.PI*2);
+  ctx.strokeStyle='rgba(46,160,67,0.1)';ctx.lineWidth=1;ctx.stroke();
+}
+
+function drawZone(){
+  // Safe zone circle
+  var sx=zone.cx-camera.x,sy=zone.cy-camera.y;
+  // Poison area (outside circle) - draw as overlay
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,0,W,H);ctx.arc(sx,sy,zone.r,0,Math.PI*2,true);ctx.closePath();
+  ctx.fillStyle='rgba(100,0,180,'+(0.15+Math.sin(gameTime*0.02)*0.05)+')';ctx.fill();
+  ctx.restore();
+  // Zone border
+  ctx.beginPath();ctx.arc(sx,sy,zone.r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(100,0,255,0.5)';ctx.lineWidth=3;ctx.setLineDash([8,4]);ctx.stroke();
+  ctx.setLineDash([]);
+  // Electric effect on border
+  if(gameTime%3===0){
+    for(var i=0;i<8;i++){
+      var a=Math.random()*Math.PI*2;
+      var bx=sx+Math.cos(a)*zone.r,by=sy+Math.sin(a)*zone.r;
+      ctx.beginPath();ctx.arc(bx,by,2+Math.random()*3,0,Math.PI*2);
+      ctx.fillStyle='rgba(180,100,255,0.6)';ctx.fill();
+    }
+  }
+}
+
+function renderMinimap(){
+  mctx.clearRect(0,0,160,160);
+  var s=160/MAP;
+  // Background
+  mctx.fillStyle='#0a0a1a';mctx.fillRect(0,0,160,160);
+  // Zone
+  mctx.beginPath();mctx.arc(zone.cx*s,zone.cy*s,zone.r*s,0,Math.PI*2);
+  mctx.fillStyle='rgba(46,160,67,0.1)';mctx.fill();
+  mctx.strokeStyle='rgba(100,0,255,0.5)';mctx.lineWidth=1;mctx.stroke();
+  // Bots
+  bots.forEach(function(b){
+    if(!b.alive)return;
+    mctx.fillStyle='#f85149';mctx.fillRect(b.x*s-1,b.y*s-1,3,3);
+  });
+  // Airdrops
+  airdrops.forEach(function(a){
+    if(a.opened)return;
+    mctx.fillStyle='#a855f7';mctx.fillRect(a.x*s-2,a.y*s-2,4,4);
+  });
+  // Player
+  mctx.fillStyle='#58d666';mctx.beginPath();mctx.arc(player.x*s,player.y*s,3,0,Math.PI*2);mctx.fill();
+  // Camera FOV
+  mctx.strokeStyle='rgba(255,255,255,0.15)';mctx.strokeRect(camera.x*s,camera.y*s,W*s,H*s);
+}
+
+function updateHUD(){
+  var alive=bots.filter(function(b){return b.alive}).length+1;
+  document.getElementById('aliveCount').textContent=alive;
+  document.getElementById('hpLabel').textContent='HP '+Math.max(0,Math.round(player.hp));
+  var hpPct=Math.max(0,player.hp);
+  var hpC=hpPct>60?'linear-gradient(90deg,#2ea043,#58d666)':hpPct>30?'linear-gradient(90deg,#f0ad4e,#ffc107)':'linear-gradient(90deg,#dc3545,#f85149)';
+  document.getElementById('hpFill').style.width=hpPct+'%';
+  document.getElementById('hpFill').style.background=hpC;
+  var lv=Math.min(Math.floor(xp/100),LVLS.length-1);
+  document.getElementById('lvLabel').textContent=LVLS[lv]+' Lv.'+(lv+1);
+  document.getElementById('xpFill').style.width=(xp%100)+'%';
+  document.getElementById('xpText').textContent='EXP '+xp+'/'+(Math.floor(xp/100+1)*100);
+}
+
+function addKillFeed(msg){
+  var d=document.createElement('div');d.textContent='☠ '+msg;
+  document.getElementById('killFeed').appendChild(d);
+  setTimeout(function(){d.remove()},3000);
+}
+
+function showCombo(n){
+  var d=document.createElement('div');d.className='combo-popup';
+  d.style.color=n>=5?'#ffd700':'#58d666';
+  d.textContent=n+'连杀！';document.body.appendChild(d);
+  setTimeout(function(){d.remove()},900);
+}
+
+function endGame(won){
+  gameOver=true;
+  var alive=bots.filter(function(b){return b.alive}).length;
+  var rank=won?1:alive+2;
+  document.getElementById('rChicken').textContent=won?'🍗':'💀';
+  document.getElementById('rRank').textContent='#'+rank;
+  document.getElementById('rTitle').textContent=won?'大吉大利，今晚吃鸡！':'你被淘汰了';
+  document.getElementById('rTitle').style.color=won?'#58d666':'#f85149';
+  document.getElementById('rStats').innerHTML=
+    '<div class="stat"><b>'+kills+'</b><small>击杀</small></div>'+
+    '<div class="stat"><b>#'+rank+'</b><small>排名</small></div>'+
+    '<div class="stat"><b>'+xp+'</b><small>EXP</small></div>'+
+    '<div class="stat"><b>'+combo+'</b><small>最高连杀</small></div>';
+  document.getElementById('resultScr').classList.add('on');
 }
 </script>
 </body></html>
