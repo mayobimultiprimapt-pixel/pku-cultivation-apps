@@ -1,89 +1,138 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0e1117">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a6a1a'/><text x='50' y='40' text-anchor='middle' font-size='30' fill='white'>&#x5317;&#x5927;</text><text x='50' y='72' text-anchor='middle' font-size='22' fill='%2358d666'>&#x6218;&#x573a;</text></svg>">
 <title>北大刺激战场</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(160deg,#0a0a1a,#121230,#0a1a0a);font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;min-height:100vh;overflow-x:hidden}
-.top{text-align:center;padding:20px 16px 10px}.logo{font-size:3em;animation:glow 3s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(46,160,67,.6))}50%{filter:drop-shadow(0 0 25px rgba(46,160,67,.9))}}
-h1{font-size:1.4em;background:linear-gradient(135deg,#2ea043,#58d666,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.badge{display:inline-block;background:linear-gradient(135deg,#6c5ce7,#a855f7);padding:3px 12px;border-radius:20px;font-size:.6em;color:#fff;margin-top:4px}
-.sub{color:#8b949e;font-size:.7em;margin-top:6px}
-.main{max-width:440px;margin:0 auto;padding:0 12px 20px}
-.card{background:rgba(15,15,35,.95);border:1.5px solid rgba(46,160,67,.2);border-radius:16px;padding:16px;margin-bottom:10px}
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.mode{background:rgba(25,25,50,.8);border:1.5px solid rgba(46,160,67,.15);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:.2s}
-.mode:hover,.mode.on{border-color:#2ea043;background:rgba(46,160,67,.1)}.mode .mi{font-size:1.6em;margin-bottom:4px}
-.mode b{color:#58d666;font-size:.85em;display:block}.mode span{color:#888;font-size:.65em}
-.go{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#1a6a1a,#2ea043);color:#fff;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:1.5px;box-shadow:0 4px 20px rgba(46,160,67,.3);transition:.15s}
-.go:active{transform:scale(.97)}.go:disabled{opacity:.5}
-.quiz{display:none}.quiz.on{display:block}
-.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:.8em;color:#8b949e}
+body{background:linear-gradient(160deg,#0a0a1a,#121230,#0a1a0a);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:16px;text-align:center;overflow-x:hidden}
+.header{margin:16px 0 12px}.logo{font-size:3.5em;margin-bottom:6px;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(46,160,67,0.6))}50%{filter:drop-shadow(0 0 25px rgba(46,160,67,0.9))}}
+h1{font-size:1.6em;background:linear-gradient(135deg,#2ea043,#58d666,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.badge{display:inline-block;background:linear-gradient(135deg,#6c5ce7,#a855f7);padding:3px 12px;border-radius:20px;font-size:0.65em;color:#fff;margin-top:6px;letter-spacing:1px}
+.sub{color:#8b949e;font-size:0.78em;margin-top:8px}
+.card{background:rgba(15,15,35,0.95);border:1.5px solid rgba(46,160,67,0.3);border-radius:20px;padding:24px 20px;width:420px;max-width:100%;margin-bottom:12px}
+.btn-group{display:flex;flex-direction:column;gap:10px}
+.go-btn{width:100%;padding:16px;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:bold;cursor:pointer;letter-spacing:1.5px;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.go-btn:active{transform:scale(0.97)}
+.go-btn .emoji{font-size:1.3em}
+.go-btn .desc{font-size:0.65em;font-weight:normal;opacity:0.7}
+.go-btn.battle{background:linear-gradient(135deg,#1a6a1a,#2ea043);box-shadow:0 4px 20px rgba(46,160,67,0.3)}
+.go-btn.portal{background:linear-gradient(135deg,#6c5ce7,#a855f7);box-shadow:0 4px 20px rgba(108,92,231,0.3)}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.feat{background:rgba(25,25,50,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 8px;font-size:0.72em;color:#888;line-height:1.5;cursor:pointer;transition:.2s}
+.feat:hover,.feat.on{border-color:#2ea043;background:rgba(46,160,67,.08)}
+.feat .fi{font-size:1.4em;margin-bottom:4px}
+.feat b{color:#58d666;display:block;margin-bottom:2px}
+.install-hint{background:rgba(46,160,67,0.1);border:1px dashed rgba(46,160,67,0.3);border-radius:12px;padding:12px;margin-top:12px;font-size:0.7em;color:#8b949e;line-height:1.6}
+.install-hint b{color:#58d666}
+.footer{color:#444;font-size:0.65em;margin-top:12px;line-height:1.6}
+
+/* Quiz screens */
+.scr{display:none}.scr.on{display:block}
+.q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.8em;color:#8b949e}
 .q-num{color:#58d666;font-weight:700;font-size:1em}
-.timer{color:#f85149;font-weight:700}
-.q-text{background:rgba(25,25,50,.8);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;font-size:.95em;line-height:1.7;margin-bottom:12px;min-height:80px}
+.timer{color:#f85149;font-weight:700;font-size:1em}
+.q-subj{background:rgba(108,92,231,.2);padding:2px 10px;border-radius:10px;color:#a855f7;font-size:.75em}
+.q-text{background:rgba(25,25,50,.8);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;font-size:.95em;line-height:1.7;margin-bottom:12px;min-height:60px;text-align:left}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opt{padding:13px 14px;border:1.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(20,20,40,.8);color:#ccc;font-size:.85em;cursor:pointer;transition:.2s;text-align:left}
 .opt:hover{border-color:#2ea043;color:#fff}
-.opt.correct{border-color:#2ea043;background:rgba(46,160,67,.15);color:#58d666}
-.opt.wrong{border-color:#f85149;background:rgba(248,81,73,.1);color:#f85149}
+.opt.correct{border-color:#2ea043!important;background:rgba(46,160,67,.15)!important;color:#58d666!important}
+.opt.wrong{border-color:#f85149!important;background:rgba(248,81,73,.1)!important;color:#f85149!important}
 .opt.disabled{pointer-events:none;opacity:.7}
-.result{text-align:center;padding:20px}.result h2{font-size:1.3em;margin-bottom:8px}
-.score{font-size:3em;font-weight:900;background:linear-gradient(135deg,#2ea043,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hp-bar{height:8px;background:#1a1a2e;border-radius:4px;margin:8px 0;overflow:hidden}
+.hp-fill{height:100%;border-radius:4px;transition:width .3s}
+.alive-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.alive-dots span{width:10px;height:10px;border-radius:50%;transition:.3s}
+.alive-dots .a{background:#2ea043}.alive-dots .d{background:#333;transform:scale(.5)}.alive-dots .u{background:#58d666;box-shadow:0 0 8px #58d666}
+.result{text-align:center;padding:16px}
+.result h2{font-size:1.3em;margin-bottom:8px}
+.score-big{font-size:3.5em;font-weight:900;background:linear-gradient(135deg,#2ea043,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
 .stat{background:rgba(25,25,50,.8);border-radius:10px;padding:10px;font-size:.7em;color:#888}
-.stat b{display:block;font-size:1.4em;color:#58d666;margin-bottom:2px}
-.again{margin-top:12px;padding:12px 24px;border:1.5px solid #2ea043;border-radius:12px;background:transparent;color:#2ea043;font-size:.9em;cursor:pointer}
-.hp-bar{height:6px;background:#1a1a2e;border-radius:3px;margin:8px 0;overflow:hidden}
-.hp-fill{height:100%;background:linear-gradient(90deg,#f85149,#2ea043);border-radius:3px;transition:width .3s}
-.alive{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
-.alive span{width:12px;height:12px;border-radius:50%;background:#2ea043;font-size:0;transition:.3s}
-.alive span.dead{background:#333;transform:scale(.6)}
-.alive span.you{background:#58d666;box-shadow:0 0 6px #58d666}
-</style></head><body>
-<div class="top">
-<div class="logo">🍗</div><h1>北大刺激战场</h1>
-<div class="badge">PKU BATTLEGROUND</div>
-<p class="sub">考研备考 x 战术生存 · 纯静态离线版</p>
+.stat b{display:block;font-size:1.5em;color:#58d666;margin-bottom:2px}
+.btn-back{margin-top:12px;padding:12px 28px;border:1.5px solid #2ea043;border-radius:12px;background:transparent;color:#2ea043;font-size:.9em;cursor:pointer;transition:.2s}
+.btn-back:hover{background:rgba(46,160,67,.1)}
+.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:900;color:#58d666;text-shadow:0 0 30px rgba(46,160,67,.6);pointer-events:none;animation:comboAnim .8s ease-out forwards;z-index:99}
+@keyframes comboAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+.kill-feed{position:fixed;top:10px;right:10px;font-size:.7em;color:#f85149;text-align:right;pointer-events:none;z-index:90}
+.kill-feed div{animation:fadeKill 2s ease-out forwards;margin-bottom:2px}
+@keyframes fadeKill{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(20px)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🍗</div>
+  <h1>北大刺激战场</h1>
+  <div class="badge">PKU BATTLEGROUND</div>
+  <p class="sub">考研备考 x 战术生存 · AI智能训练平台</p>
 </div>
-<div class="main">
-<div id="menu">
+
+<!-- MENU -->
+<div class="scr on" id="menuScr">
 <div class="card">
-<div class="modes" id="modes">
-<div class="mode on" onclick="selMode(0)"><div class="mi">📚</div><b>四科闯关</b><span>政治/英语/数学/408</span></div>
-<div class="mode" onclick="selMode(1)"><div class="mi">🎯</div><b>限时挑战</b><span>50题极速冲刺</span></div>
-<div class="mode" onclick="selMode(2)"><div class="mi">📝</div><b>历年真题</b><span>2020-2024全真卷</span></div>
-<div class="mode" onclick="selMode(3)"><div class="mi">🍗</div><b>吃鸡战场</b><span>AI大逃杀·答错淘汰</span></div>
+  <div class="btn-group">
+    <button class="go-btn battle" onclick="startMode(3)">
+      <span class="emoji">🍗</span>
+      <span>跳伞进入战场<span class="desc"> · 20人答题大逃杀</span></span>
+    </button>
+    <button class="go-btn portal" onclick="startMode(0)">
+      <span class="emoji">⚔️</span>
+      <span>作战大厅<span class="desc"> · 闯关/真题/AI训练</span></span>
+    </button>
+  </div>
+  <div class="features">
+    <div class="feat" onclick="startMode(0)"><div class="fi">📚</div><b>四科闯关</b>政治/英语/数学/408</div>
+    <div class="feat" onclick="startMode(1)"><div class="fi">🎯</div><b>每日50题</b>AI核心预测题</div>
+    <div class="feat" onclick="startMode(2)"><div class="fi">📝</div><b>历年真题</b>2020-2024全真卷</div>
+    <div class="feat" onclick="startMode(3)"><div class="fi">🍗</div><b>吃鸡战场</b>答题大逃杀</div>
+  </div>
 </div>
-<button class="go" onclick="startGame()">🍗 跳伞进入战场</button>
+<div class="install-hint">
+  📲 <b>安装到桌面</b>: 点浏览器菜单 → <b>添加到主屏幕</b><br>
+  变成独立App，下次直接从桌面打开！
 </div>
+<div class="footer">纯静态离线版 · 无需服务器 · GitHub Pages 部署</div>
 </div>
-<div class="quiz" id="quiz">
+
+<!-- QUIZ -->
+<div class="scr" id="quizScr">
 <div class="card">
-<div class="q-header">
-<span class="q-num" id="qn">1/20</span>
-<span id="subj" style="color:#a855f7"></span>
-<span class="timer" id="timer">⏱ 30s</span>
+  <div class="q-head">
+    <span class="q-num" id="qNum">1/20</span>
+    <span class="q-subj" id="qSubj">408</span>
+    <span class="timer" id="qTimer">⏱ 30</span>
+  </div>
+  <div id="battleInfo"></div>
+  <div class="q-text" id="qText"></div>
+  <div class="opts" id="qOpts"></div>
 </div>
-<div id="battle-info"></div>
-<div class="q-text" id="qt"></div>
-<div class="opts" id="opts"></div>
 </div>
-</div>
-<div class="quiz" id="resultP">
+
+<!-- RESULT -->
+<div class="scr" id="resultScr">
 <div class="card result">
-<h2 id="resultTitle">🏆 战斗结束</h2>
-<div class="score" id="scoreNum">0</div>
-<div id="resultMsg" style="color:#8b949e;font-size:.8em;margin:6px 0"></div>
-<div class="stats" id="statsGrid"></div>
-<button class="again" onclick="backMenu()">🔄 再战一局</button>
+  <h2 id="rTitle">🏆 战斗结束</h2>
+  <div class="score-big" id="rScore">0%</div>
+  <div id="rMsg" style="color:#8b949e;font-size:.8em;margin:6px 0"></div>
+  <div class="stats" id="rStats"></div>
+  <button class="btn-back" onclick="toMenu()">🔄 再战一局</button>
 </div>
 </div>
-</div>
+
+<div id="comboBox"></div>
+<div class="kill-feed" id="killFeed"></div>
+
 <script>
+// ==================== QUESTION BANK ====================
 var QB={
 "政治":[
 {q:"马克思主义哲学认为，世界的真正统一性在于它的",o:["物质性","运动性","规律性","可知性"],a:0},
@@ -93,7 +142,9 @@ var QB={
 {q:"毛泽东思想活的灵魂是",o:["实事求是","群众路线","独立自主","以上都是"],a:3},
 {q:"中国特色社会主义理论体系的开创者是",o:["毛泽东","邓小平","江泽民","胡锦涛"],a:1},
 {q:"新发展理念中排在首位的是",o:["创新","协调","绿色","开放"],a:0},
-{q:"社会主义核心价值观个人层面的内容是",o:["富强民主文明和谐","自由平等公正法治","爱国敬业诚信友善","勤俭节约艰苦奋斗"],a:2}
+{q:"社会主义核心价值观个人层面的内容是",o:["富强民主文明和谐","自由平等公正法治","爱国敬业诚信友善","勤俭节约艰苦奋斗"],a:2},
+{q:"人民民主专政的本质是",o:["无产阶级专政","人民当家作主","民主集中制","多党合作"],a:1},
+{q:"中国共产党的根本组织原则是",o:["少数服从多数","集体领导","民主集中制","党管干部"],a:2}
 ],
 "英语":[
 {q:"The word 'ubiquitous' most nearly means:",o:["rare","omnipresent","obsolete","unique"],a:1},
@@ -103,17 +154,21 @@ var QB={
 {q:"Which is a compound-complex sentence?",o:["I went home.","I went home, and I ate.","Although I was tired, I went home and I ate.","I ate and slept."],a:2},
 {q:"'Serendipity' refers to:",o:["bad luck","a planned outcome","a fortunate accident","careful research"],a:2},
 {q:"The subjunctive mood is used in:",o:["If I was rich","If I were rich","If I am rich","If I will be rich"],a:1},
-{q:"An 'abstract' in a research paper is:",o:["The conclusion","A brief summary","The methodology","The references"],a:1}
+{q:"An 'abstract' in a research paper is:",o:["The conclusion","A brief summary","The methodology","The references"],a:1},
+{q:"'Pragmatic' most closely means:",o:["idealistic","practical","theoretical","emotional"],a:1},
+{q:"The correct plural of 'phenomenon' is:",o:["phenomenons","phenomenas","phenomena","phenomeni"],a:2}
 ],
 "数学":[
 {q:"函数 f(x)=x³-3x 在x=1处的导数值为",o:["0","3","-3","6"],a:0},
 {q:"不定积分 ∫2x dx =",o:["x²+C","2x²+C","x²/2+C","2x+C"],a:0},
-{q:"矩阵A的秩为r(A)=2，则A的零空间维数等于",o:["n-2","2","n","n+2"],a:0},
+{q:"矩阵A的秩为r(A)=2，A为3×5矩阵，则零空间维数为",o:["3","2","5","1"],a:0},
 {q:"级数 Σ(1/n²) (n=1到∞) 是",o:["发散的","收敛的","振荡的","不确定的"],a:1},
 {q:"设 f(x)=e^x，则 f''(0)=",o:["0","1","e","2"],a:1},
 {q:"二重积分 ∬D 1 dA，其中D是单位圆，等于",o:["1","π","2π","4π"],a:1},
 {q:"特征值为2和3的2×2矩阵的行列式等于",o:["5","6","1","-1"],a:1},
-{q:"拉格朗日中值定理要求函数在闭区间上",o:["可微","连续","有界","单调"],a:1}
+{q:"拉格朗日中值定理要求函数在闭区间上",o:["可微","连续","有界","单调"],a:1},
+{q:"向量(1,2,3)和(2,4,6)是",o:["正交的","线性无关的","线性相关的","互逆的"],a:2},
+{q:"泰勒展开 e^x 的前三项是",o:["1+x+x²","1+x+x²/2","x+x²+x³","1+2x+3x²"],a:1}
 ],
 "408":[
 {q:"时间复杂度O(nlogn)的排序算法是",o:["冒泡排序","归并排序","选择排序","插入排序"],a:1},
@@ -123,96 +178,124 @@ var QB={
 {q:"IPv4地址长度为",o:["16位","32位","64位","128位"],a:1},
 {q:"进程与线程的主要区别是",o:["进程有独立地址空间","线程不能并发","进程更轻量","线程不共享资源"],a:0},
 {q:"哈夫曼编码是一种",o:["等长编码","前缀编码","后缀编码","ASCII编码"],a:1},
-{q:"磁盘调度算法SCAN又称为",o:["先来先服务","电梯算法","最短寻道","循环扫描"],a:1}
+{q:"磁盘调度算法SCAN又称为",o:["先来先服务","电梯算法","最短寻道","循环扫描"],a:1},
+{q:"死锁的四个必要条件不包括",o:["互斥","请求与保持","循环等待","可抢占"],a:3},
+{q:"B+树与B树的主要区别是",o:["所有数据在叶节点","不能有重复键","高度更大","没有指针"],a:0}
 ]
 };
-var subjects=Object.keys(QB),curMode=0,curQ=[],ci=0,score=0,total=0,hp=100,timerI,timeLeft=30;
-var players=[],playerCount=20,youAlive=true;
 
-function selMode(m){curMode=m;document.querySelectorAll('.mode').forEach(function(x,i){x.classList.toggle('on',i===m)})}
+// ==================== GAME STATE ====================
+var subjects=Object.keys(QB), curMode=0, qs=[], qi=0, score=0, total=0;
+var hp=100, players=[], youAlive=true, combo=0, timerI, timeLeft=30;
+var names=["张三丰","王重阳","丘处机","马钰","孙不二","谭处端","刘处玄","郝大通","萧峰","段誉",
+"虚竹","令狐冲","张无忌","杨过","郭靖","黄蓉","韦小宝","东方不败","任盈盈","岳不群"];
 
-function startGame(){
-var qs=[];
-if(curMode===0){subjects.forEach(function(s){QB[s].forEach(function(q){qs.push({s:s,q:q.q,o:q.o.slice(),a:q.a})})})}
-else if(curMode===1){subjects.forEach(function(s){QB[s].forEach(function(q){qs.push({s:s,q:q.q,o:q.o.slice(),a:q.a})})});qs=shuffle(qs).slice(0,50)}
-else if(curMode===2){subjects.forEach(function(s){QB[s].slice(0,4).forEach(function(q){qs.push({s:'真题·'+s,q:q.q,o:q.o.slice(),a:q.a})})})}
-else{subjects.forEach(function(s){QB[s].forEach(function(q){qs.push({s:s,q:q.q,o:q.o.slice(),a:q.a})})});qs=shuffle(qs).slice(0,20);
-players=[];for(var i=0;i<playerCount;i++)players.push({alive:true,skill:Math.random()*.7+.3});
-youAlive=true;hp=100}
-curQ=shuffle(qs);ci=0;score=0;total=curQ.length;
-document.getElementById('menu').style.display='none';
-document.getElementById('resultP').classList.remove('on');
-document.getElementById('quiz').classList.add('on');
-showQ()
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=0|Math.random()*(i+1);var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+function startMode(m){
+  curMode=m; qs=[]; qi=0; score=0; combo=0; hp=100; youAlive=true;
+  subjects.forEach(function(s){QB[s].forEach(function(q){qs.push({s:s,q:q.q,o:q.o.slice(),a:q.a})})});
+  qs=shuffle(qs);
+  if(m===1)qs=qs.slice(0,50);
+  else if(m===2)qs=qs.slice(0,16);
+  else if(m===3){qs=qs.slice(0,20);players=[];for(var i=0;i<19;i++)players.push({name:names[i],alive:true,skill:.3+Math.random()*.5})}
+  else qs=qs.slice(0,32);
+  total=qs.length;
+  show('quizScr'); showQ();
 }
+
+function show(id){document.querySelectorAll('.scr').forEach(function(x){x.classList.remove('on')});document.getElementById(id).classList.add('on')}
+function toMenu(){show('menuScr')}
 
 function showQ(){
-if(ci>=curQ.length||(!youAlive&&curMode===3)){endGame();return}
-var q=curQ[ci];
-document.getElementById('qn').textContent=(ci+1)+'/'+total;
-document.getElementById('subj').textContent=q.s;
-document.getElementById('qt').textContent=q.q;
-var h='';q.o.forEach(function(o,i){h+='<div class="opt" onclick="answer('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</div>'});
-document.getElementById('opts').innerHTML=h;
-if(curMode===3){
-var bi='<div class="hp-bar"><div class="hp-fill" style="width:'+hp+'%"></div></div>';
-bi+='<div class="alive">';
-players.forEach(function(p,i){bi+='<span class="'+(p.alive?'':'dead')+'"></span>'});
-bi+='<span class="you">你</span></div>';
-bi+='<div style="font-size:.65em;color:#888">存活: '+(players.filter(function(p){return p.alive}).length+1)+'/'+
-(playerCount+1)+'</div>';
-document.getElementById('battle-info').innerHTML=bi
-}else{document.getElementById('battle-info').innerHTML=''}
-timeLeft=curMode===1?15:30;
-document.getElementById('timer').textContent='⏱ '+timeLeft+'s';
-clearInterval(timerI);
-timerI=setInterval(function(){timeLeft--;document.getElementById('timer').textContent='⏱ '+timeLeft+'s';
-if(timeLeft<=5)document.getElementById('timer').style.color='#f85149';
-else document.getElementById('timer').style.color='#f85149';
-if(timeLeft<=0){clearInterval(timerI);autoFail()}},1000)
+  if(qi>=qs.length||(curMode===3&&!youAlive)){endGame();return}
+  var q=qs[qi];
+  document.getElementById('qNum').textContent=(qi+1)+'/'+total;
+  document.getElementById('qSubj').textContent=q.s;
+  document.getElementById('qText').textContent=q.q;
+  var h='';q.o.forEach(function(o,i){h+='<div class="opt" onclick="pick('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</div>'});
+  document.getElementById('qOpts').innerHTML=h;
+  // Battle info
+  if(curMode===3){
+    var pct=Math.max(0,hp);
+    var clr=pct>60?'#2ea043':pct>30?'#f0ad4e':'#f85149';
+    var bi='<div class="hp-bar"><div class="hp-fill" style="width:'+pct+'%;background:'+clr+'"></div></div>';
+    bi+='<div class="alive-dots">';
+    players.forEach(function(p){bi+='<span class="'+(p.alive?'a':'d')+'"></span>'});
+    bi+='<span class="u"></span></div>';
+    var alive=players.filter(function(p){return p.alive}).length+1;
+    bi+='<div style="font-size:.65em;color:#666;margin-top:2px">存活 '+alive+'/20</div>';
+    document.getElementById('battleInfo').innerHTML=bi;
+  } else {
+    document.getElementById('battleInfo').innerHTML='';
+  }
+  // Timer
+  timeLeft=curMode===1?15:curMode===3?20:30;
+  document.getElementById('qTimer').textContent='⏱ '+timeLeft;
+  clearInterval(timerI);
+  timerI=setInterval(function(){timeLeft--;document.getElementById('qTimer').textContent='⏱ '+timeLeft;if(timeLeft<=0){clearInterval(timerI);timeout()}},1000);
 }
 
-function answer(i){
-clearInterval(timerI);
-var q=curQ[ci],opts=document.querySelectorAll('.opt');
-opts.forEach(function(x){x.classList.add('disabled')});
-if(i===q.a){opts[i].classList.add('correct');score++;
-if(curMode===3){players.forEach(function(p){if(p.alive&&Math.random()>p.skill){p.alive=false}})}}
-else{opts[i].classList.add('wrong');opts[q.a].classList.add('correct');
-if(curMode===3){hp-=25;if(hp<=0){youAlive=false}}}
-setTimeout(function(){ci++;showQ()},1200)
+function pick(i){
+  clearInterval(timerI);
+  var q=qs[qi],opts=document.querySelectorAll('.opt');
+  opts.forEach(function(x){x.classList.add('disabled')});
+  if(i===q.a){
+    opts[i].classList.add('correct'); score++; combo++;
+    if(combo>=3)showCombo(combo);
+    if(curMode===3){
+      // Kill some AI players
+      players.forEach(function(p){if(p.alive&&Math.random()>p.skill){p.alive=false;showKill(p.name)}});
+    }
+  } else {
+    opts[i].classList.add('wrong'); opts[q.a].classList.add('correct'); combo=0;
+    if(curMode===3){hp-=25;if(hp<=0){hp=0;youAlive=false}}
+  }
+  setTimeout(function(){qi++;showQ()},1100);
 }
 
-function autoFail(){
-var q=curQ[ci],opts=document.querySelectorAll('.opt');
-opts.forEach(function(x){x.classList.add('disabled')});
-opts[q.a].classList.add('correct');
-if(curMode===3){hp-=25;if(hp<=0)youAlive=false}
-setTimeout(function(){ci++;showQ()},1000)
+function timeout(){
+  var q=qs[qi],opts=document.querySelectorAll('.opt');
+  opts.forEach(function(x){x.classList.add('disabled')});
+  opts[q.a].classList.add('correct'); combo=0;
+  if(curMode===3){hp-=15;if(hp<=0){hp=0;youAlive=false}}
+  setTimeout(function(){qi++;showQ()},800);
 }
 
 function endGame(){
-clearInterval(timerI);
-document.getElementById('quiz').classList.remove('on');
-document.getElementById('resultP').classList.add('on');
-var pct=total>0?Math.round(score/total*100):0;
-document.getElementById('scoreNum').textContent=pct+'%';
-var rank=curMode===3?(youAlive?'🏆 大吉大利，今晚吃鸡！':'💀 被淘汰 #'+(players.filter(function(p){return p.alive}).length+2)):'';
-document.getElementById('resultTitle').textContent=rank||'🏆 战斗结束';
-document.getElementById('resultMsg').textContent='答对 '+score+'/'+total+' 题';
-var alive=curMode===3?players.filter(function(p){return p.alive}).length+1:'-';
-document.getElementById('statsGrid').innerHTML=
-'<div class="stat"><b>'+score+'</b>正确</div>'+
-'<div class="stat"><b>'+(total-score)+'</b>错误</div>'+
-'<div class="stat"><b>'+(curMode===3?alive+'人':'pct+"%')+'</b>'+(curMode===3?'存活':'正确率')+'</div>'
+  clearInterval(timerI); show('resultScr');
+  var pct=total>0?Math.round(score/total*100):0;
+  document.getElementById('rScore').textContent=pct+'%';
+  if(curMode===3){
+    var alive=players.filter(function(p){return p.alive}).length;
+    var rank=youAlive?1:alive+2;
+    document.getElementById('rTitle').textContent=youAlive?'🍗 大吉大利，今晚吃鸡！':'💀 排名 #'+rank;
+    document.getElementById('rMsg').textContent='答对 '+score+'/'+total+' · '+(youAlive?'你是最后的赢家！':'被毒圈淘汰');
+    document.getElementById('rStats').innerHTML=
+      '<div class="stat"><b>'+score+'</b>击杀</div>'+
+      '<div class="stat"><b>#'+rank+'</b>排名</div>'+
+      '<div class="stat"><b>'+(19-alive)+'</b>淘汰</div>';
+  } else {
+    document.getElementById('rTitle').textContent=pct>=80?'🏆 学霸降临！':pct>=60?'⚔️ 战士归来':'📖 继续修炼';
+    document.getElementById('rMsg').textContent='答对 '+score+'/'+total+' 题';
+    document.getElementById('rStats').innerHTML=
+      '<div class="stat"><b>'+score+'</b>正确</div>'+
+      '<div class="stat"><b>'+(total-score)+'</b>错误</div>'+
+      '<div class="stat"><b>'+pct+'%</b>正确率</div>';
+  }
 }
 
-function backMenu(){
-document.getElementById('resultP').classList.remove('on');
-document.getElementById('quiz').classList.remove('on');
-document.getElementById('menu').style.display='block'
+function showCombo(n){
+  var d=document.createElement('div');d.className='combo';
+  d.textContent=n+'连击！';document.getElementById('comboBox').appendChild(d);
+  setTimeout(function(){d.remove()},900);
 }
 
-function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function showKill(name){
+  var d=document.createElement('div');d.textContent='☠ '+name+' 被淘汰';
+  document.getElementById('killFeed').appendChild(d);
+  setTimeout(function(){d.remove()},2500);
+}
 </script>
-</body></html>
+</body>
+</html>
