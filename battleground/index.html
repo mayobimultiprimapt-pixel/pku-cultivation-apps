@@ -1,301 +1,425 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0e1117">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a6a1a'/><text x='50' y='40' text-anchor='middle' font-size='30' fill='white'>&#x5317;&#x5927;</text><text x='50' y='72' text-anchor='middle' font-size='22' fill='%2358d666'>&#x6218;&#x573a;</text></svg>">
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a0a2e">
 <title>北大刺激战场</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(160deg,#0a0a1a,#121230,#0a1a0a);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:16px;text-align:center;overflow-x:hidden}
-.header{margin:16px 0 12px}.logo{font-size:3.5em;margin-bottom:6px;animation:glow 3s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(46,160,67,0.6))}50%{filter:drop-shadow(0 0 25px rgba(46,160,67,0.9))}}
-h1{font-size:1.6em;background:linear-gradient(135deg,#2ea043,#58d666,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.badge{display:inline-block;background:linear-gradient(135deg,#6c5ce7,#a855f7);padding:3px 12px;border-radius:20px;font-size:0.65em;color:#fff;margin-top:6px;letter-spacing:1px}
-.sub{color:#8b949e;font-size:0.78em;margin-top:8px}
-.card{background:rgba(15,15,35,0.95);border:1.5px solid rgba(46,160,67,0.3);border-radius:20px;padding:24px 20px;width:420px;max-width:100%;margin-bottom:12px}
-.btn-group{display:flex;flex-direction:column;gap:10px}
-.go-btn{width:100%;padding:16px;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:bold;cursor:pointer;letter-spacing:1.5px;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.go-btn:active{transform:scale(0.97)}
-.go-btn .emoji{font-size:1.3em}
-.go-btn .desc{font-size:0.65em;font-weight:normal;opacity:0.7}
-.go-btn.battle{background:linear-gradient(135deg,#1a6a1a,#2ea043);box-shadow:0 4px 20px rgba(46,160,67,0.3)}
-.go-btn.portal{background:linear-gradient(135deg,#6c5ce7,#a855f7);box-shadow:0 4px 20px rgba(108,92,231,0.3)}
-.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
-.feat{background:rgba(25,25,50,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 8px;font-size:0.72em;color:#888;line-height:1.5;cursor:pointer;transition:.2s}
-.feat:hover,.feat.on{border-color:#2ea043;background:rgba(46,160,67,.08)}
-.feat .fi{font-size:1.4em;margin-bottom:4px}
-.feat b{color:#58d666;display:block;margin-bottom:2px}
-.install-hint{background:rgba(46,160,67,0.1);border:1px dashed rgba(46,160,67,0.3);border-radius:12px;padding:12px;margin-top:12px;font-size:0.7em;color:#8b949e;line-height:1.6}
-.install-hint b{color:#58d666}
-.footer{color:#444;font-size:0.65em;margin-top:12px;line-height:1.6}
+:root{--bg:#0a0a2e;--card:#12123a;--border:#1e1e5a;--gold:#ffd700;--green:#2ea043;--red:#f85149;--purple:#a855f7;--blue:#3b82f6;--pink:#ec4899}
+body{background:var(--bg);font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#e0e0ff;display:flex;min-height:100vh}
+/* Sidebar */
+.side{width:220px;min-height:100vh;background:linear-gradient(180deg,#0d0d35,#0a0a2e);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex-shrink:0}
+.user{display:flex;align-items:center;justify-content:space-between;font-size:.85em}
+.user .name{color:var(--gold)}
+.user .logout{background:#2a2a5a;border:none;color:#aaa;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75em}
+.countdown{text-align:center;background:rgba(20,20,60,.8);border:1px solid var(--border);border-radius:12px;padding:14px}
+.countdown .days{font-size:2.8em;font-weight:900;color:var(--green);line-height:1}
+.countdown .label{font-size:.7em;color:#888;margin-top:4px}
+.countdown .target{font-size:.7em;color:#666;margin-top:2px}
+.cult-badge{background:linear-gradient(135deg,#1a0a3a,#2a1a5a);border:1px solid var(--purple);border-radius:10px;padding:8px 10px;font-size:.8em}
+.cult-badge .lv{color:var(--green);font-weight:700}
+.xp-bar{height:6px;background:#1a1a3a;border-radius:3px;margin:6px 0 2px;overflow:hidden}
+.xp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#58d666,var(--gold))}
+.xp-text{font-size:.6em;color:#888}
+.streak{font-size:.85em}.streak .fire{font-size:1.2em}
+.subj-list{flex:1}
+.subj-list h3{font-size:.75em;color:#888;margin-bottom:6px}
+.subj-item{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.subj-item .dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.subj-item .info{flex:1;font-size:.7em;color:#aaa}
+.subj-item button{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:rgba(20,20,60,.6);color:#ccc;font-size:.78em;cursor:pointer;transition:.2s;text-align:left}
+.subj-item button:hover{border-color:var(--green);color:#fff}
+.subj-item button.active{border-color:var(--green);background:rgba(46,160,67,.1);color:var(--green)}
+/* Main */
+.main{flex:1;padding:20px 24px;overflow-y:auto;max-height:100vh}
+.subj-header{border-radius:14px;padding:20px;margin-bottom:16px;position:relative}
+.subj-header h1{font-size:1.8em;font-weight:900;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.subj-header .tabs{display:flex;gap:0;margin-top:12px;border-bottom:2px solid rgba(255,255,255,.2)}
+.subj-header .tab{padding:6px 16px;font-size:.8em;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.subj-header .tab.on{color:#fff;border-bottom-color:#fff}
+.subj-header .tab:hover{color:#fff}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;font-size:.75em}
+.meta span{background:rgba(20,20,60,.8);border:1px solid var(--border);border-radius:16px;padding:3px 10px}
+.meta .hl{background:var(--red);border-color:var(--red);color:#fff}
+.nav-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.nav-tab{padding:8px 14px;font-size:.8em;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.nav-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-tab:hover{color:#ddd}
+/* Intel section */
+.intel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.intel h2{font-size:1.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.intel h2 .tag{font-size:.6em;color:var(--red);background:rgba(248,81,73,.1);padding:2px 8px;border-radius:8px}
+.intel-box{border:1px dashed var(--red);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:120px}
+.intel-box .icon{font-size:2em;margin-bottom:8px;opacity:.5}
+.intel-box .msg{color:#888;font-size:.8em}
+.intel-btn{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:.9em;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.intel-btn:hover{transform:scale(1.01);box-shadow:0 4px 20px rgba(168,85,247,.3)}
+.intel-btn:disabled{opacity:.6;cursor:wait}
+.intel-result{background:rgba(20,20,60,.6);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;font-size:.85em;line-height:1.8;white-space:pre-wrap}
+.intel-result h3{color:var(--gold);margin-bottom:8px}
+/* Question display */
+.question{background:rgba(20,20,60,.6);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.question .q-id{color:var(--purple);font-weight:700;font-size:.85em;margin-bottom:6px}
+.question .q-text{font-size:.9em;line-height:1.7;margin-bottom:10px}
+.question .q-opts{display:flex;flex-direction:column;gap:6px}
+.question .q-opt{padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:.82em;cursor:pointer;transition:.2s}
+.question .q-opt:hover{border-color:var(--green);background:rgba(46,160,67,.05)}
+.question .q-opt.correct{border-color:var(--green);background:rgba(46,160,67,.15);color:#58d666}
+.question .q-opt.wrong{border-color:var(--red);background:rgba(248,81,73,.1);color:var(--red)}
+.question .q-answer{margin-top:10px;padding:10px;background:rgba(46,160,67,.08);border-radius:8px;font-size:.8em;line-height:1.6;display:none}
+.question .q-answer.show{display:block}
+.expand{cursor:pointer;color:var(--gold);font-size:.8em;display:flex;align-items:center;gap:4px;margin-top:6px}
+/* Login */
+.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,46,.95);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;width:340px;text-align:center}
+.login-box h2{color:var(--gold);margin-bottom:16px;font-size:1.3em}
+.login-box input{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:#1a1a4a;color:#fff;font-size:.9em;margin-bottom:10px;outline:none}
+.login-box input:focus{border-color:var(--purple)}
+.login-box button{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:1em;font-weight:700;cursor:pointer}
+.hidden{display:none!important}
+/* Responsive */
+@media(max-width:768px){.side{width:180px;padding:10px 8px}.main{padding:12px}}
+@media(max-width:600px){body{flex-direction:column}.side{width:100%;min-height:auto;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--border)}.countdown{flex:1}.subj-list{display:flex;gap:4px;flex-wrap:wrap}}
+</style></head><body>
 
-/* Quiz screens */
-.scr{display:none}.scr.on{display:block}
-.q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.8em;color:#8b949e}
-.q-num{color:#58d666;font-weight:700;font-size:1em}
-.timer{color:#f85149;font-weight:700;font-size:1em}
-.q-subj{background:rgba(108,92,231,.2);padding:2px 10px;border-radius:10px;color:#a855f7;font-size:.75em}
-.q-text{background:rgba(25,25,50,.8);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;font-size:.95em;line-height:1.7;margin-bottom:12px;min-height:60px;text-align:left}
-.opts{display:flex;flex-direction:column;gap:8px}
-.opt{padding:13px 14px;border:1.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(20,20,40,.8);color:#ccc;font-size:.85em;cursor:pointer;transition:.2s;text-align:left}
-.opt:hover{border-color:#2ea043;color:#fff}
-.opt.correct{border-color:#2ea043!important;background:rgba(46,160,67,.15)!important;color:#58d666!important}
-.opt.wrong{border-color:#f85149!important;background:rgba(248,81,73,.1)!important;color:#f85149!important}
-.opt.disabled{pointer-events:none;opacity:.7}
-.hp-bar{height:8px;background:#1a1a2e;border-radius:4px;margin:8px 0;overflow:hidden}
-.hp-fill{height:100%;border-radius:4px;transition:width .3s}
-.alive-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin:6px 0}
-.alive-dots span{width:10px;height:10px;border-radius:50%;transition:.3s}
-.alive-dots .a{background:#2ea043}.alive-dots .d{background:#333;transform:scale(.5)}.alive-dots .u{background:#58d666;box-shadow:0 0 8px #58d666}
-.result{text-align:center;padding:16px}
-.result h2{font-size:1.3em;margin-bottom:8px}
-.score-big{font-size:3.5em;font-weight:900;background:linear-gradient(135deg,#2ea043,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-.stat{background:rgba(25,25,50,.8);border-radius:10px;padding:10px;font-size:.7em;color:#888}
-.stat b{display:block;font-size:1.5em;color:#58d666;margin-bottom:2px}
-.btn-back{margin-top:12px;padding:12px 28px;border:1.5px solid #2ea043;border-radius:12px;background:transparent;color:#2ea043;font-size:.9em;cursor:pointer;transition:.2s}
-.btn-back:hover{background:rgba(46,160,67,.1)}
-.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:900;color:#58d666;text-shadow:0 0 30px rgba(46,160,67,.6);pointer-events:none;animation:comboAnim .8s ease-out forwards;z-index:99}
-@keyframes comboAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
-.kill-feed{position:fixed;top:10px;right:10px;font-size:.7em;color:#f85149;text-align:right;pointer-events:none;z-index:90}
-.kill-feed div{animation:fadeKill 2s ease-out forwards;margin-bottom:2px}
-@keyframes fadeKill{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(20px)}}
-</style>
-</head>
-<body>
+<!-- Login -->
+<div class="login-overlay" id="loginScr">
+<div class="login-box">
+<h2>🎮 北大刺激战场</h2>
+<p style="color:#888;font-size:.8em;margin-bottom:16px">考研备考 x 战术生存 · AI智能训练平台</p>
+<input id="loginUser" placeholder="输入昵称" value="">
+<input id="loginPwd" type="password" placeholder="密码 (任意)" value="">
+<button onclick="doLogin()">🪂 跳伞进入战场</button>
+</div></div>
 
-<div class="header">
-  <div class="logo">🍗</div>
-  <h1>北大刺激战场</h1>
-  <div class="badge">PKU BATTLEGROUND</div>
-  <p class="sub">考研备考 x 战术生存 · AI智能训练平台</p>
+<!-- Sidebar -->
+<div class="side" id="sidebar">
+<div class="user"><span>🎖 <span class="name" id="userName">-</span></span><button class="logout" onclick="doLogout()">退出</button></div>
+<div class="countdown">
+<div style="font-size:.7em;color:#888">距离考研还有</div>
+<div class="days" id="daysLeft">-</div>
+<div class="label">天</div>
+<div class="target">目标: 2026-12-21</div>
 </div>
-
-<!-- MENU -->
-<div class="scr on" id="menuScr">
-<div class="card">
-  <div class="btn-group">
-    <button class="go-btn battle" onclick="startMode(3)">
-      <span class="emoji">🍗</span>
-      <span>跳伞进入战场<span class="desc"> · 20人答题大逃杀</span></span>
-    </button>
-    <button class="go-btn portal" onclick="startMode(0)">
-      <span class="emoji">⚔️</span>
-      <span>作战大厅<span class="desc"> · 闯关/真题/AI训练</span></span>
-    </button>
-  </div>
-  <div class="features">
-    <div class="feat" onclick="startMode(0)"><div class="fi">📚</div><b>四科闯关</b>政治/英语/数学/408</div>
-    <div class="feat" onclick="startMode(1)"><div class="fi">🎯</div><b>每日50题</b>AI核心预测题</div>
-    <div class="feat" onclick="startMode(2)"><div class="fi">📝</div><b>历年真题</b>2020-2024全真卷</div>
-    <div class="feat" onclick="startMode(3)"><div class="fi">🍗</div><b>吃鸡战场</b>答题大逃杀</div>
-  </div>
+<div class="cult-badge">
+<span class="lv" id="cultLv">●炼气期 (Lv.1)</span>
+<div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:27%"></div></div>
+<div class="xp-text" id="xpText">经验: 27 | 升级还需73 EXP</div>
 </div>
-<div class="install-hint">
-  📲 <b>安装到桌面</b>: 点浏览器菜单 → <b>添加到主屏幕</b><br>
-  变成独立App，下次直接从桌面打开！
-</div>
-<div class="footer">纯静态离线版 · 无需服务器 · GitHub Pages 部署</div>
-</div>
-
-<!-- QUIZ -->
-<div class="scr" id="quizScr">
-<div class="card">
-  <div class="q-head">
-    <span class="q-num" id="qNum">1/20</span>
-    <span class="q-subj" id="qSubj">408</span>
-    <span class="timer" id="qTimer">⏱ 30</span>
-  </div>
-  <div id="battleInfo"></div>
-  <div class="q-text" id="qText"></div>
-  <div class="opts" id="qOpts"></div>
-</div>
-</div>
-
-<!-- RESULT -->
-<div class="scr" id="resultScr">
-<div class="card result">
-  <h2 id="rTitle">🏆 战斗结束</h2>
-  <div class="score-big" id="rScore">0%</div>
-  <div id="rMsg" style="color:#8b949e;font-size:.8em;margin:6px 0"></div>
-  <div class="stats" id="rStats"></div>
-  <button class="btn-back" onclick="toMenu()">🔄 再战一局</button>
+<div class="streak"><span class="fire">🔥</span> 连续打卡<span id="streakDays">1</span>天</div>
+<div class="subj-list">
+<h3>📊 双眼关卡</h3>
+<div class="subj-item"><span class="dot" style="background:var(--red)"></span><span class="info">101 刷次<span id="p101">0</span>%</span></div>
+<div><button onclick="switchSubj(0)" id="btn101" class="active">进入思想政治理论</button></div>
+<div class="subj-item"><span class="dot" style="background:var(--green)"></span><span class="info">201 刷次<span id="p201">0</span>%</span></div>
+<div><button onclick="switchSubj(1)" id="btn201">进入英语一</button></div>
+<div class="subj-item"><span class="dot" style="background:var(--blue)"></span><span class="info">301 刷次<span id="p301">0</span>%</span></div>
+<div><button onclick="switchSubj(2)" id="btn301">进入数学一</button></div>
+<div class="subj-item"><span class="dot" style="background:var(--red)"></span><span class="info">408 刷次<span id="p408">0</span>%</span></div>
+<div><button onclick="switchSubj(3)" id="btn408">进入学科计算机专业基础</button></div>
 </div>
 </div>
 
-<div id="comboBox"></div>
-<div class="kill-feed" id="killFeed"></div>
+<!-- Main -->
+<div class="main" id="mainArea">
+<div class="subj-header" id="subjHeader" style="background:linear-gradient(135deg,#8b0000,#cc0066)">
+<div style="position:absolute;top:12px;right:16px;font-size:1.5em">🚩</div>
+<h1 id="subjTitle">思想政治理论</h1>
+<div class="tabs" id="subTabs"></div>
+</div>
+
+<div class="meta">
+<span>● 北大·软微·电子信息</span>
+<span id="metaCode">科目 101</span>
+<span class="hl" id="metaLine">复试线378</span>
+<span id="metaDays">©262天</span>
+</div>
+
+<div class="nav-tabs">
+<div class="nav-tab on" onclick="switchTab(0)">🔍战场情报</div>
+<div class="nav-tab" onclick="switchTab(1)">🎯空投补给</div>
+<div class="nav-tab" onclick="switchTab(2)">📋专项指南</div>
+<div class="nav-tab" onclick="switchTab(3)">⚔实战突围</div>
+<div class="nav-tab" onclick="switchTab(4)">✏仿真模考</div>
+</div>
+
+<!-- Tab 0: 战场情报 -->
+<div class="tab-content" id="tab0">
+<div class="intel">
+<h2>🕵️ 核心机密情报中心 <span class="tag">机密情报</span></h2>
+<div class="intel-box" id="intelBox">
+<div class="icon">🔒</div>
+<div style="color:var(--gold);font-size:.85em">无信号</div>
+<div class="msg">情报网络未激活<br>点击下方按钮渗透情报网格，窃取命题组核心机密</div>
+</div>
+<button class="intel-btn" id="intelBtn" onclick="fetchIntel()">🔓 渗透情报网络 → 窃取今日核心机密</button>
+<div class="intel-result hidden" id="intelResult"></div>
+</div>
+</div>
+
+<!-- Tab 1: 空投补给 -->
+<div class="tab-content hidden" id="tab1">
+<div class="intel">
+<h2>🎯 空投补给 · 每日50题</h2>
+<div id="dailyQuestions"></div>
+<button class="intel-btn" onclick="genDaily()" style="background:linear-gradient(135deg,var(--green),#58d666)">📦 呼叫空投 → 获取今日50题</button>
+</div>
+</div>
+
+<!-- Tab 2: 专项指南 -->
+<div class="tab-content hidden" id="tab2">
+<div class="intel">
+<h2>📋 专项指南</h2>
+<div id="guideContent" style="font-size:.85em;line-height:1.8;color:#aaa">
+选择科目后，AI将为你生成该科目的专项复习指南、重点知识点梳理和高频考点分析。
+</div>
+<button class="intel-btn" onclick="genGuide()" style="background:linear-gradient(135deg,var(--blue),#60a5fa);margin-top:12px">📋 生成专项复习指南</button>
+</div>
+</div>
+
+<!-- Tab 3: 实战突围 -->
+<div class="tab-content hidden" id="tab3">
+<div class="intel">
+<h2>⚔️ 实战突围 · 限时答题</h2>
+<div id="battleQuiz"></div>
+<button class="intel-btn" onclick="startBattle()" style="background:linear-gradient(135deg,#dc2626,#ef4444)">⚔️ 进入实战突围</button>
+</div>
+</div>
+
+<!-- Tab 4: 仿真模考 -->
+<div class="tab-content hidden" id="tab4">
+<div class="intel">
+<h2>✏️ 仿真模考</h2>
+<div id="examContent" style="font-size:.85em;line-height:1.8;color:#aaa">
+完整模拟真实考试环境，限时作答，系统自动评分。
+</div>
+<button class="intel-btn" onclick="startExam()" style="background:linear-gradient(135deg,#ea580c,#f97316)">✏️ 开始仿真模考</button>
+</div>
+</div>
+</div>
 
 <script>
-// ==================== QUESTION BANK ====================
-var QB={
-"政治":[
-{q:"马克思主义哲学认为，世界的真正统一性在于它的",o:["物质性","运动性","规律性","可知性"],a:0},
-{q:"唯物辩证法的实质和核心是",o:["质量互变规律","对立统一规律","否定之否定规律","因果联系规律"],a:1},
-{q:"实践是认识的基础，因为实践是认识的",o:["来源","动力","目的","唯一途径"],a:0},
-{q:"社会存在是指社会的物质生活条件，其中最能集中体现人类社会物质性的是",o:["地理环境","人口因素","生产方式","自然资源"],a:2},
-{q:"毛泽东思想活的灵魂是",o:["实事求是","群众路线","独立自主","以上都是"],a:3},
-{q:"中国特色社会主义理论体系的开创者是",o:["毛泽东","邓小平","江泽民","胡锦涛"],a:1},
-{q:"新发展理念中排在首位的是",o:["创新","协调","绿色","开放"],a:0},
-{q:"社会主义核心价值观个人层面的内容是",o:["富强民主文明和谐","自由平等公正法治","爱国敬业诚信友善","勤俭节约艰苦奋斗"],a:2},
-{q:"人民民主专政的本质是",o:["无产阶级专政","人民当家作主","民主集中制","多党合作"],a:1},
-{q:"中国共产党的根本组织原则是",o:["少数服从多数","集体领导","民主集中制","党管干部"],a:2}
-],
-"英语":[
-{q:"The word 'ubiquitous' most nearly means:",o:["rare","omnipresent","obsolete","unique"],a:1},
-{q:"Choose the correct form: 'Neither the teacher nor the students ___ ready.'",o:["is","are","was","be"],a:1},
-{q:"'To turn over a new leaf' means to:",o:["read a book","start fresh","fall asleep","give up"],a:1},
-{q:"The passive voice of 'They are building a bridge' is:",o:["A bridge is built","A bridge is being built","A bridge was built","A bridge has been built"],a:1},
-{q:"Which is a compound-complex sentence?",o:["I went home.","I went home, and I ate.","Although I was tired, I went home and I ate.","I ate and slept."],a:2},
-{q:"'Serendipity' refers to:",o:["bad luck","a planned outcome","a fortunate accident","careful research"],a:2},
-{q:"The subjunctive mood is used in:",o:["If I was rich","If I were rich","If I am rich","If I will be rich"],a:1},
-{q:"An 'abstract' in a research paper is:",o:["The conclusion","A brief summary","The methodology","The references"],a:1},
-{q:"'Pragmatic' most closely means:",o:["idealistic","practical","theoretical","emotional"],a:1},
-{q:"The correct plural of 'phenomenon' is:",o:["phenomenons","phenomenas","phenomena","phenomeni"],a:2}
-],
-"数学":[
-{q:"函数 f(x)=x³-3x 在x=1处的导数值为",o:["0","3","-3","6"],a:0},
-{q:"不定积分 ∫2x dx =",o:["x²+C","2x²+C","x²/2+C","2x+C"],a:0},
-{q:"矩阵A的秩为r(A)=2，A为3×5矩阵，则零空间维数为",o:["3","2","5","1"],a:0},
-{q:"级数 Σ(1/n²) (n=1到∞) 是",o:["发散的","收敛的","振荡的","不确定的"],a:1},
-{q:"设 f(x)=e^x，则 f''(0)=",o:["0","1","e","2"],a:1},
-{q:"二重积分 ∬D 1 dA，其中D是单位圆，等于",o:["1","π","2π","4π"],a:1},
-{q:"特征值为2和3的2×2矩阵的行列式等于",o:["5","6","1","-1"],a:1},
-{q:"拉格朗日中值定理要求函数在闭区间上",o:["可微","连续","有界","单调"],a:1},
-{q:"向量(1,2,3)和(2,4,6)是",o:["正交的","线性无关的","线性相关的","互逆的"],a:2},
-{q:"泰勒展开 e^x 的前三项是",o:["1+x+x²","1+x+x²/2","x+x²+x³","1+2x+3x²"],a:1}
-],
-"408":[
-{q:"时间复杂度O(nlogn)的排序算法是",o:["冒泡排序","归并排序","选择排序","插入排序"],a:1},
-{q:"TCP协议属于OSI模型的",o:["网络层","传输层","应用层","数据链路层"],a:1},
-{q:"页面置换算法LRU的含义是",o:["最近最少使用","先进先出","最不经常使用","随机替换"],a:0},
-{q:"二叉树的中序遍历序列为DBEAFC，后序遍历为DEBFCA，则前序遍历为",o:["ABDECF","ABDEFC","ABCDEF","ADBECF"],a:0},
-{q:"IPv4地址长度为",o:["16位","32位","64位","128位"],a:1},
-{q:"进程与线程的主要区别是",o:["进程有独立地址空间","线程不能并发","进程更轻量","线程不共享资源"],a:0},
-{q:"哈夫曼编码是一种",o:["等长编码","前缀编码","后缀编码","ASCII编码"],a:1},
-{q:"磁盘调度算法SCAN又称为",o:["先来先服务","电梯算法","最短寻道","循环扫描"],a:1},
-{q:"死锁的四个必要条件不包括",o:["互斥","请求与保持","循环等待","可抢占"],a:3},
-{q:"B+树与B树的主要区别是",o:["所有数据在叶节点","不能有重复键","高度更大","没有指针"],a:0}
-]
-};
+// ===== DATA =====
+var SUBJS=[
+{name:"思想政治理论",code:"101",color:"linear-gradient(135deg,#8b0000,#cc0066)",icon:"🚩",
+ tabs:["马原","毛中特","史纲","思修法基"],
+ questions:[
+  {q:"马克思主义哲学认为，世界的真正统一性在于它的",o:["物质性","运动性","规律性","可知性"],a:0,exp:"物质性是世界统一性的基础。"},
+  {q:"唯物辩证法的实质和核心是",o:["质量互变规律","对立统一规律","否定之否定规律","因果联系"],a:1,exp:"对立统一规律揭示事物发展的源泉和动力。"},
+  {q:"实践是认识的基础，因为实践是认识的",o:["来源","动力","目的","以上都是"],a:3,exp:"实践是认识的来源、动力、目的和检验标准。"},
+  {q:"社会存在中最能体现人类社会物质性的是",o:["地理环境","人口因素","生产方式","自然资源"],a:2,exp:"生产方式是社会存在的决定性因素。"},
+  {q:"中国特色社会主义理论体系的开创者是",o:["毛泽东","邓小平","江泽民","胡锦涛"],a:1,exp:"邓小平理论是中国特色社会主义理论体系的开篇之作。"},
+  {q:"新发展理念中排在首位的是",o:["创新","协调","绿色","共享"],a:0,exp:"创新是引领发展的第一动力。"},
+  {q:"人民民主专政的本质是",o:["无产阶级专政","人民当家作主","民主集中制","多党合作"],a:1},
+  {q:"中国共产党的根本组织原则是",o:["少数服从多数","集体领导","民主集中制","党管干部"],a:2}
+]},
+{name:"英语一",code:"201",color:"linear-gradient(135deg,#006400,#00aa44)",icon:"🇬🇧",
+ tabs:["完形","阅读","翻译","写作"],
+ questions:[
+  {q:"'Ubiquitous' most nearly means:",o:["rare","omnipresent","obsolete","unique"],a:1,exp:"Ubiquitous means existing everywhere."},
+  {q:"'Neither the teacher nor the students ___ ready.'",o:["is","are","was","be"],a:1,exp:"When 'nor' connects subjects, verb agrees with the nearest subject (students=plural)."},
+  {q:"'To turn over a new leaf' means:",o:["read a book","start fresh","fall asleep","give up"],a:1},
+  {q:"The passive of 'They are building a bridge':",o:["A bridge is built","A bridge is being built","A bridge was built","A bridge has been built"],a:1},
+  {q:"'Serendipity' refers to:",o:["bad luck","a planned outcome","a fortunate accident","careful research"],a:2},
+  {q:"The subjunctive mood: 'If I ___ rich...'",o:["was","were","am","will be"],a:1},
+  {q:"'Pragmatic' most closely means:",o:["idealistic","practical","theoretical","emotional"],a:1},
+  {q:"The correct plural of 'phenomenon':",o:["phenomenons","phenomenas","phenomena","phenomeni"],a:2}
+]},
+{name:"数学一",code:"301",color:"linear-gradient(135deg,#00008b,#0066cc)",icon:"📐",
+ tabs:["高数","线代","概率论"],
+ questions:[
+  {q:"f(x)=x³-3x 在x=1处的导数值为",o:["0","3","-3","6"],a:0,exp:"f'(x)=3x²-3, f'(1)=3-3=0"},
+  {q:"不定积分 ∫2x dx =",o:["x²+C","2x²+C","x²/2+C","2x+C"],a:0},
+  {q:"级数 Σ(1/n²) (n=1到∞) 是",o:["发散的","收敛的","振荡的","不确定"],a:1,exp:"p级数，p=2>1，收敛。"},
+  {q:"e^x 在x=0的泰勒展开前三项:",o:["1+x+x²","1+x+x²/2","x+x²+x³","1+2x+3x²"],a:1},
+  {q:"特征值2和3的矩阵行列式等于",o:["5","6","1","-1"],a:1,exp:"det=λ₁×λ₂=2×3=6"},
+  {q:"向量(1,2,3)和(2,4,6)是",o:["正交的","线性无关的","线性相关的","互逆的"],a:2},
+  {q:"拉格朗日中值定理要求闭区间上",o:["可微","连续","有界","单调"],a:1},
+  {q:"二重积分∬D 1dA，D是单位圆=",o:["1","π","2π","4π"],a:1}
+]},
+{name:"计算机学科专业基础",code:"408",color:"linear-gradient(135deg,#4a0080,#cc0066)",icon:"💻",
+ tabs:["数据结构","操作系统","组成原理","计算机网络"],
+ questions:[
+  {q:"时间复杂度O(nlogn)的排序算法是",o:["冒泡排序","归并排序","选择排序","插入排序"],a:1},
+  {q:"TCP属于OSI模型的",o:["网络层","传输层","应用层","数据链路层"],a:1},
+  {q:"页面置换算法LRU含义是",o:["最近最少使用","先进先出","最不经常使用","随机替换"],a:0},
+  {q:"IPv4地址长度为",o:["16位","32位","64位","128位"],a:1},
+  {q:"进程与线程的主要区别是",o:["进程有独立地址空间","线程不能并发","进程更轻量","线程不共享资源"],a:0},
+  {q:"哈夫曼编码是一种",o:["等长编码","前缀编码","后缀编码","ASCII编码"],a:1},
+  {q:"磁盘调度SCAN又称",o:["先来先服务","电梯算法","最短寻道","循环扫描"],a:1},
+  {q:"死锁四个必要条件不包括",o:["互斥","请求与保持","循环等待","可抢占"],a:3},
+  {q:"B+树与B树主要区别是",o:["所有数据在叶节点","不能有重复键","高度更大","没有指针"],a:0},
+  {q:"虚拟内存的基础是",o:["局部性原理","缓存技术","流水线","中断机制"],a:0}
+]}
+];
 
-// ==================== GAME STATE ====================
-var subjects=Object.keys(QB), curMode=0, qs=[], qi=0, score=0, total=0;
-var hp=100, players=[], youAlive=true, combo=0, timerI, timeLeft=30;
-var names=["张三丰","王重阳","丘处机","马钰","孙不二","谭处端","刘处玄","郝大通","萧峰","段誉",
-"虚竹","令狐冲","张无忌","杨过","郭靖","黄蓉","韦小宝","东方不败","任盈盈","岳不群"];
+var LEVELS=["炼气期","筑基期","金丹期","元婴期","化神期","合体期","大乘期","渡劫期"];
+var curSubj=0, curTab=0, curNavTab=0;
+var state={user:'',xp:27,lv:0,streak:1,progress:[0,0,0,0],lastLogin:''};
+
+// ===== PERSISTENCE =====
+function save(){localStorage.setItem('bg_state',JSON.stringify(state))}
+function load(){var s=localStorage.getItem('bg_state');if(s){state=JSON.parse(s);return true}return false}
+
+// ===== LOGIN =====
+function doLogin(){
+  var u=document.getElementById('loginUser').value.trim();
+  if(!u){u='考研战士'}
+  state.user=u;
+  // Check streak
+  var today=new Date().toISOString().slice(0,10);
+  if(state.lastLogin){
+    var d=new Date(state.lastLogin);d.setDate(d.getDate()+1);
+    if(d.toISOString().slice(0,10)===today)state.streak++;
+    else if(state.lastLogin!==today)state.streak=1;
+  }
+  state.lastLogin=today;
+  save();
+  document.getElementById('loginScr').classList.add('hidden');
+  updateUI();
+}
+function doLogout(){state.user='';save();document.getElementById('loginScr').classList.remove('hidden')}
+
+// ===== COUNTDOWN =====
+function calcDays(){
+  var target=new Date('2026-12-21');var now=new Date();
+  return Math.max(0,Math.ceil((target-now)/(1000*60*60*24)));
+}
+
+// ===== UI =====
+function updateUI(){
+  document.getElementById('userName').textContent=state.user;
+  document.getElementById('daysLeft').textContent=calcDays();
+  document.getElementById('metaDays').textContent='©'+calcDays()+'天';
+  document.getElementById('streakDays').textContent=state.streak;
+  var lvIdx=Math.min(Math.floor(state.xp/100),LEVELS.length-1);
+  state.lv=lvIdx;
+  var rem=100-(state.xp%100);
+  document.getElementById('cultLv').textContent='●'+LEVELS[lvIdx]+' (Lv.'+(lvIdx+1)+')';
+  document.getElementById('xpFill').style.width=(state.xp%100)+'%';
+  document.getElementById('xpText').textContent='经验: '+state.xp+' | 升级还需'+rem+' EXP';
+  ['p101','p201','p301','p408'].forEach(function(id,i){document.getElementById(id).textContent=state.progress[i]});
+  switchSubj(curSubj);
+}
+
+function switchSubj(i){
+  curSubj=i;
+  var s=SUBJS[i];
+  document.getElementById('subjHeader').style.background=s.color;
+  document.getElementById('subjTitle').textContent=s.name;
+  document.getElementById('subjHeader').querySelector('div').textContent=s.icon;
+  document.getElementById('metaCode').textContent='科目 '+s.code;
+  // Sub tabs
+  var th='';s.tabs.forEach(function(t,j){th+='<div class="tab'+(j===0?' on':'')+'" onclick="this.parentElement.querySelectorAll(\'.tab\').forEach(function(x){x.classList.remove(\'on\')});this.classList.add(\'on\')">'+t+'</div>'});
+  document.getElementById('subTabs').innerHTML=th;
+  // Buttons
+  ['btn101','btn201','btn301','btn408'].forEach(function(id,j){
+    document.getElementById(id).classList.toggle('active',j===i)});
+}
+
+function switchTab(t){
+  curNavTab=t;
+  document.querySelectorAll('.nav-tab').forEach(function(x,j){x.classList.toggle('on',j===t)});
+  for(var j=0;j<5;j++){var el=document.getElementById('tab'+j);if(el)el.classList.toggle('hidden',j!==t)}
+}
+
+// ===== API KEY =====
+function getKey(){var k=localStorage.getItem('openrouter_key');if(!k){k=prompt('请输入OpenRouter API Key (sk-or-v1-...)：');if(k)localStorage.setItem('openrouter_key',k)}return k}
+
+function callAI(prompt,cb){
+  var k=getKey();if(!k){cb('请先设置API Key');return}
+  fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
+    body:JSON.stringify({model:'deepseek/deepseek-chat',messages:[{role:'user',content:prompt}],max_tokens:4096})
+  }).then(function(r){return r.json()}).then(function(d){
+    cb(d.choices&&d.choices[0]?d.choices[0].message.content:'API错误')
+  }).catch(function(e){cb('网络错误: '+e.message)})
+}
+
+// ===== INTEL =====
+function fetchIntel(){
+  var btn=document.getElementById('intelBtn');
+  btn.disabled=true;btn.textContent='⏳ 正在渗透情报网络...';
+  var s=SUBJS[curSubj];
+  var prompt='你是北大考研情报分析师。请为【'+s.name+'('+s.code+')】科目生成今日核心机密情报，包括：\n1. 今日必背知识点（3个）\n2. 命题趋势分析\n3. 高频考点预警\n4. 一道预测押题（含答案和解析）\n请用简洁有力的军事情报风格输出。';
+  callAI(prompt,function(text){
+    btn.disabled=false;btn.textContent='🔓 渗透情报网络 → 窃取今日核心机密';
+    document.getElementById('intelBox').innerHTML='<div class="icon">📡</div><div style="color:var(--green)">信号已锁定</div><div class="msg">情报渗透成功！核心机密已解密</div>';
+    var res=document.getElementById('intelResult');
+    res.classList.remove('hidden');
+    res.innerHTML='<h3>🔓 今日核心机密 · '+s.name+'</h3>'+text.replace(/\n/g,'<br>');
+    state.xp+=15;save();updateUI();
+  });
+}
+
+function genDaily(){
+  var s=SUBJS[curSubj];
+  var container=document.getElementById('dailyQuestions');
+  container.innerHTML='<div style="text-align:center;padding:20px;color:#888">⏳ 正在呼叫空投...</div>';
+  // Use built-in questions + AI generated
+  var qs=s.questions.slice();shuffle(qs);
+  var h='';qs.forEach(function(q,i){
+    h+='<div class="question"><div class="q-id">#'+(i+1)+'</div>';
+    h+='<div class="q-text">'+q.q+'</div><div class="q-opts">';
+    q.o.forEach(function(o,j){h+='<div class="q-opt" onclick="pickOpt(this,'+j+','+q.a+')">'+String.fromCharCode(65+j)+'. '+o+'</div>'});
+    h+='</div>';
+    if(q.exp)h+='<div class="q-answer" id="ans_'+i+'">💡 '+q.exp+'</div><div class="expand" onclick="document.getElementById(\'ans_'+i+'\').classList.toggle(\'show\')">▶ 查看答案与解析</div>';
+    h+='</div>';
+  });
+  container.innerHTML=h;
+  state.xp+=10;save();updateUI();
+}
+
+function pickOpt(el,picked,correct){
+  var par=el.parentElement;
+  par.querySelectorAll('.q-opt').forEach(function(x,i){
+    x.style.pointerEvents='none';
+    if(i===correct)x.classList.add('correct');
+    if(i===picked&&i!==correct)x.classList.add('wrong');
+  });
+  if(picked===correct){state.xp+=5;save();updateUI()}
+}
+
+function genGuide(){
+  var s=SUBJS[curSubj];
+  var el=document.getElementById('guideContent');
+  el.innerHTML='⏳ AI正在生成专项指南...';
+  callAI('请为考研【'+s.name+'】生成一份专项复习指南，包括：\n1. 各章节重要程度（星级评分）\n2. 高频考点TOP10\n3. 复习时间分配建议\n4. 易错点提醒\n请用结构化格式输出。',function(t){
+    el.innerHTML=t.replace(/\n/g,'<br>');state.xp+=10;save();updateUI();
+  });
+}
+
+function startBattle(){
+  var s=SUBJS[curSubj];
+  var qs=shuffle(s.questions.slice()).slice(0,5);
+  var container=document.getElementById('battleQuiz');
+  var h='<div style="color:var(--red);font-size:.8em;margin-bottom:10px">⏱ 限时答题 · 每题答对+10 EXP</div>';
+  qs.forEach(function(q,i){
+    h+='<div class="question"><div class="q-id">⚔️ 第'+(i+1)+'题</div>';
+    h+='<div class="q-text">'+q.q+'</div><div class="q-opts">';
+    q.o.forEach(function(o,j){h+='<div class="q-opt" onclick="pickOpt(this,'+j+','+q.a+')">'+String.fromCharCode(65+j)+'. '+o+'</div>'});
+    h+='</div></div>';
+  });
+  container.innerHTML=h;
+}
+
+function startExam(){
+  var el=document.getElementById('examContent');
+  el.innerHTML='⏳ 正在生成仿真模考试卷...';
+  var s=SUBJS[curSubj];
+  callAI('请为考研【'+s.name+'】生成一套仿真模考试卷，包含：\n1. 选择题5道（含ABCD选项和答案）\n2. 简答题2道\n3. 分析题1道\n请给出标准答案和评分要点。',function(t){
+    el.innerHTML=t.replace(/\n/g,'<br>');state.xp+=20;save();updateUI();
+  });
+}
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=0|Math.random()*(i+1);var t=a[i];a[i]=a[j];a[j]=t}return a}
 
-function startMode(m){
-  curMode=m; qs=[]; qi=0; score=0; combo=0; hp=100; youAlive=true;
-  subjects.forEach(function(s){QB[s].forEach(function(q){qs.push({s:s,q:q.q,o:q.o.slice(),a:q.a})})});
-  qs=shuffle(qs);
-  if(m===1)qs=qs.slice(0,50);
-  else if(m===2)qs=qs.slice(0,16);
-  else if(m===3){qs=qs.slice(0,20);players=[];for(var i=0;i<19;i++)players.push({name:names[i],alive:true,skill:.3+Math.random()*.5})}
-  else qs=qs.slice(0,32);
-  total=qs.length;
-  show('quizScr'); showQ();
-}
-
-function show(id){document.querySelectorAll('.scr').forEach(function(x){x.classList.remove('on')});document.getElementById(id).classList.add('on')}
-function toMenu(){show('menuScr')}
-
-function showQ(){
-  if(qi>=qs.length||(curMode===3&&!youAlive)){endGame();return}
-  var q=qs[qi];
-  document.getElementById('qNum').textContent=(qi+1)+'/'+total;
-  document.getElementById('qSubj').textContent=q.s;
-  document.getElementById('qText').textContent=q.q;
-  var h='';q.o.forEach(function(o,i){h+='<div class="opt" onclick="pick('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</div>'});
-  document.getElementById('qOpts').innerHTML=h;
-  // Battle info
-  if(curMode===3){
-    var pct=Math.max(0,hp);
-    var clr=pct>60?'#2ea043':pct>30?'#f0ad4e':'#f85149';
-    var bi='<div class="hp-bar"><div class="hp-fill" style="width:'+pct+'%;background:'+clr+'"></div></div>';
-    bi+='<div class="alive-dots">';
-    players.forEach(function(p){bi+='<span class="'+(p.alive?'a':'d')+'"></span>'});
-    bi+='<span class="u"></span></div>';
-    var alive=players.filter(function(p){return p.alive}).length+1;
-    bi+='<div style="font-size:.65em;color:#666;margin-top:2px">存活 '+alive+'/20</div>';
-    document.getElementById('battleInfo').innerHTML=bi;
-  } else {
-    document.getElementById('battleInfo').innerHTML='';
-  }
-  // Timer
-  timeLeft=curMode===1?15:curMode===3?20:30;
-  document.getElementById('qTimer').textContent='⏱ '+timeLeft;
-  clearInterval(timerI);
-  timerI=setInterval(function(){timeLeft--;document.getElementById('qTimer').textContent='⏱ '+timeLeft;if(timeLeft<=0){clearInterval(timerI);timeout()}},1000);
-}
-
-function pick(i){
-  clearInterval(timerI);
-  var q=qs[qi],opts=document.querySelectorAll('.opt');
-  opts.forEach(function(x){x.classList.add('disabled')});
-  if(i===q.a){
-    opts[i].classList.add('correct'); score++; combo++;
-    if(combo>=3)showCombo(combo);
-    if(curMode===3){
-      // Kill some AI players
-      players.forEach(function(p){if(p.alive&&Math.random()>p.skill){p.alive=false;showKill(p.name)}});
-    }
-  } else {
-    opts[i].classList.add('wrong'); opts[q.a].classList.add('correct'); combo=0;
-    if(curMode===3){hp-=25;if(hp<=0){hp=0;youAlive=false}}
-  }
-  setTimeout(function(){qi++;showQ()},1100);
-}
-
-function timeout(){
-  var q=qs[qi],opts=document.querySelectorAll('.opt');
-  opts.forEach(function(x){x.classList.add('disabled')});
-  opts[q.a].classList.add('correct'); combo=0;
-  if(curMode===3){hp-=15;if(hp<=0){hp=0;youAlive=false}}
-  setTimeout(function(){qi++;showQ()},800);
-}
-
-function endGame(){
-  clearInterval(timerI); show('resultScr');
-  var pct=total>0?Math.round(score/total*100):0;
-  document.getElementById('rScore').textContent=pct+'%';
-  if(curMode===3){
-    var alive=players.filter(function(p){return p.alive}).length;
-    var rank=youAlive?1:alive+2;
-    document.getElementById('rTitle').textContent=youAlive?'🍗 大吉大利，今晚吃鸡！':'💀 排名 #'+rank;
-    document.getElementById('rMsg').textContent='答对 '+score+'/'+total+' · '+(youAlive?'你是最后的赢家！':'被毒圈淘汰');
-    document.getElementById('rStats').innerHTML=
-      '<div class="stat"><b>'+score+'</b>击杀</div>'+
-      '<div class="stat"><b>#'+rank+'</b>排名</div>'+
-      '<div class="stat"><b>'+(19-alive)+'</b>淘汰</div>';
-  } else {
-    document.getElementById('rTitle').textContent=pct>=80?'🏆 学霸降临！':pct>=60?'⚔️ 战士归来':'📖 继续修炼';
-    document.getElementById('rMsg').textContent='答对 '+score+'/'+total+' 题';
-    document.getElementById('rStats').innerHTML=
-      '<div class="stat"><b>'+score+'</b>正确</div>'+
-      '<div class="stat"><b>'+(total-score)+'</b>错误</div>'+
-      '<div class="stat"><b>'+pct+'%</b>正确率</div>';
-  }
-}
-
-function showCombo(n){
-  var d=document.createElement('div');d.className='combo';
-  d.textContent=n+'连击！';document.getElementById('comboBox').appendChild(d);
-  setTimeout(function(){d.remove()},900);
-}
-
-function showKill(name){
-  var d=document.createElement('div');d.textContent='☠ '+name+' 被淘汰';
-  document.getElementById('killFeed').appendChild(d);
-  setTimeout(function(){d.remove()},2500);
+// ===== INIT =====
+if(load()&&state.user){
+  document.getElementById('loginScr').classList.add('hidden');
+  updateUI();
+} else {
+  document.getElementById('loginUser').value='zmq521521';
 }
 </script>
-</body>
-</html>
+</body></html>
