@@ -1,0 +1,11 @@
+﻿node_modules/
+*.dex
+*.class
+*.jar
+android/
+platforms/
+plugins/
+www/
+*.apk
+.gradle/
+build/

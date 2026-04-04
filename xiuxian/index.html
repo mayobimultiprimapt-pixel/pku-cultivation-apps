@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>神霄宫 · 道法实修</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700;900&display=swap');
+:root{--bg:#080810;--bg2:#0e0e1a;--c:rgba(16,14,24,.95);--g:#d4a843;--r:#c23b22;--cy:#5bc0be;--j:#38b27a;--t:#ddd5c4;--d:#5a5248;--s:#8a8070;--bd:rgba(212,168,67,.1);--f:'Noto Serif SC',serif;--b:'Ma Shan Zheng',cursive}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--f);background:var(--bg);color:var(--t);height:100vh;overflow:hidden;display:flex;flex-direction:column}button{font-family:var(--f);cursor:pointer}
+.bg-t{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(212,168,67,.03),transparent 70%),radial-gradient(ellipse at 70% 80%,rgba(123,45,142,.03),transparent 70%);pointer-events:none;z-index:0}
+#loginP{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}#loginP.hide{display:none}
+.lbox{width:85%;max-width:300px;text-align:center}.lbox h1{font-family:var(--b);font-size:32px;color:var(--g);text-shadow:0 0 20px rgba(212,168,67,.3)}.lbox .sub{font-size:10px;color:var(--s);margin-bottom:20px;letter-spacing:3px}
+.lbox input{width:100%;padding:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-size:14px;margin-bottom:8px;outline:none}.lbox input:focus{border-color:var(--g)}
+.lbtn{width:100%;padding:13px;border:none;border-radius:6px;background:linear-gradient(135deg,var(--g),#8b6914);color:#fff;font-size:15px;font-weight:700;font-family:var(--b);letter-spacing:2px}.lerr{color:var(--r);font-size:11px;margin-top:6px}
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1}.scr{display:none;padding:12px 10px 20px;min-height:100%}.scr.on{display:block}
+.hbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(8,8,16,.95);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:10;font-family:var(--b);font-size:16px;color:var(--g)}.hbar .back{font-size:12px;color:var(--s);cursor:pointer;font-family:var(--f)}
+.ci2{background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .3s}.ci2:hover{border-color:var(--g);transform:translateY(-3px);box-shadow:0 6px 20px rgba(212,168,67,.1)}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}@media(max-width:500px){.cg{grid-template-columns:repeat(3,1fr)}}
+.ti2{padding:10px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:8px;transition:.2s}.ti2:hover{background:rgba(212,168,67,.03)}
+.tab-bar{display:flex;gap:0;margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--bd)}.tab-btn{flex:1;padding:10px;text-align:center;background:var(--c);color:var(--s);font-size:12px;cursor:pointer;border:none;transition:.2s;font-family:var(--f)}.tab-btn.on{background:linear-gradient(135deg,var(--g),#8b6914);color:#fff;font-weight:700}
+.tab-pane{display:none}.tab-pane.on{display:block}
+.ao3{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:13px;line-height:2;white-space:pre-wrap;max-height:55vh;overflow-y:auto;margin-top:8px}
+.sp{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--g);border-radius:50%;animation:sp .6s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.qa{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.qa button{flex:1;min-width:65px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--c);color:var(--t);font-size:11px}.qa button:hover{border-color:var(--g)}
+.qi{width:90%;padding:10px;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-size:13px;outline:none;display:block;margin:6px auto}.qi:focus{border-color:var(--g)}
+.gc{background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:14px;text-align:center}
+.gt{font-family:var(--b);font-size:20px;color:var(--g);margin-bottom:8px}
+.stl{font-family:var(--b);font-size:14px;color:var(--g);margin:12px 0 6px;display:flex;align-items:center;gap:6px}.stl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--g),transparent);opacity:.2}
+.btn2{padding:10px 18px;border-radius:8px;border:1px solid var(--bd);background:var(--c);color:var(--t);font-size:13px;cursor:pointer}.btn2:hover{border-color:var(--g)}.btn2g{background:linear-gradient(135deg,var(--j),#1a6b4a);border:none;color:#fff;font-weight:700}
+</style></head><body>
+<div class="bg-t"></div>
+<div id="loginP"><div class="lbox"><h1>神霄宫</h1><div class="sub">西河派 · 道法实修</div><input type="password" id="lp" placeholder="口令"><button class="lbtn" onclick="doLogin()">入道</button><div class="lerr" id="lerr"></div></div></div>
+<div id="appMain" style="display:none">
+<div class="hbar"><span id="ht">神霄宫 · 道法实修</span><span class="back" id="hb" style="display:none" onclick="goBack()">← 返回</span></div>
+<div class="main">
+<div class="scr on" id="s1">
+<div style="text-align:center;background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-size:48px;margin:8px 0">☯️</div><div style="font-family:var(--b);font-size:22px;color:var(--g)">西河派 · 神霄宫</div><div style="font-size:11px;color:var(--s)">正一道法 · 数术符箓 · 科仪实修</div><div style="font-size:10px;color:var(--d);margin-top:6px">DeepSeek R1 驱动 · 实干教学 · 各术交叉印证</div></div>
+<div class="stl">道法分支</div>
+<div class="cg" id="cg"></div>
+</div>
+<div class="scr" id="s2">
+<div style="text-align:center;padding:6px"><span id="subIcon" style="font-size:28px"></span><span id="subName" style="font-family:var(--b);font-size:18px;color:var(--g);margin-left:6px"></span><div id="subDesc" style="font-size:10px;color:var(--s)"></div></div>
+<div class="tab-bar">
+<button class="tab-btn on" data-tab="ask" onclick="switchTab('ask')">💬 问道</button>
+<button class="tab-btn" data-tab="gua" onclick="switchTab('gua')">🔮 起卦/实操</button>
+<button class="tab-btn" data-tab="know" onclick="switchTab('know')">📖 典籍</button>
+</div>
+<div class="tab-pane on" id="tp_ask">
+<div style="display:flex;gap:6px;margin:8px 0"><input type="text" id="askQ" placeholder="请教师父..." class="qi" style="flex:1;width:auto;margin:0"><button class="btn2 btn2g" onclick="doAsk()">问</button></div>
+<div class="ao3" id="askOut">输入问题请教西河派师父，各术皆可互相印证...</div>
+</div>
+<div class="tab-pane" id="tp_gua"><div id="guaArea"></div></div>
+<div class="tab-pane" id="tp_know"><div id="knowList"></div></div>
+</div>
+<div class="scr" id="s3">
+<div class="ao3" id="learnOut">加载中...</div>
+<div style="margin-top:8px;display:flex;gap:6px"><button class="btn2 btn2g" onclick="ld()" style="flex:1">🔍 深入</button><button class="btn2" onclick="le()" style="flex:1">📝 实例</button></div>
+</div>
+</div></div>
+<script src="app.js"></script>
+</body></html>
