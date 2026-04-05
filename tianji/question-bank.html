@@ -242,7 +242,7 @@ function updateStats() {
 // ---- 中转隧道地址 ----
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
 
-// ---- AI Call (通过隧道中转) ----
+// ---- AI Call (通过隧道中转, 25s超时) ----
 async function callAI(channel, messages, maxTokens = 4000) {
   const m = MODELS[channel];
 
@@ -259,19 +259,30 @@ async function callAI(channel, messages, maxTokens = 4000) {
     body = { model: m.model, messages, temperature: 0.7, max_tokens: maxTokens };
   }
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
 
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(`${m.name} ${res.status}: ${errData.error?.message || res.statusText}`);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`${m.name} ${res.status}: ${errData.error?.message || res.statusText}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') throw new Error(`${m.name}: 25s超时`);
+    throw e;
   }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || '';
 }
 
 // ---- Question Generation Prompt ----
@@ -346,6 +357,48 @@ async function startCollection() {
   pt.textContent = `🔥 ${tasks.length} 个任务并行出击中...`;
   pf.style.width = '10%';
 
+  // 超级JSON修复器(处理各种LLM输出问题)
+  function repairJSON(raw) {
+    // 1. 去掉思考标签
+    let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    // 2. 去掉markdown代码块
+    s = s.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // 3. 去掉开头多余文字(找到第一个[)
+    const start = s.indexOf('[');
+    if (start === -1) throw new Error('未找到JSON数组');
+    s = s.substring(start);
+    // 4. 去掉结尾多余文字(找到最后一个])
+    const end = s.lastIndexOf(']');
+    if (end === -1) {
+      // 尝试补全截断的数组
+      s = s.replace(/,\s*$/, '') + ']';
+    } else {
+      s = s.substring(0, end + 1);
+    }
+    // 5. 修复常见问题
+    s = s.replace(/,\s*([}\]])/g, '$1');           // 尾逗号
+    s = s.replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":'); // 单引号key
+    s = s.replace(/:\s*'([^']*)'/g, ': "$1"');     // 单引号value
+    s = s.replace(/\n/g, '\\n');                    // 未转义换行
+    s = s.replace(/\\n"/g, '"');                    // 修复值末尾的\n"
+    s = s.replace(/\\n\s*}/g, '}');                 // 修复对象末尾
+    s = s.replace(/\\n\s*,/g, ',');                 // 修复逗号前
+    // 6. 尝试解析
+    try { return JSON.parse(s); } catch(e1) {
+      // 7. 逐个对象提取
+      const objs = [];
+      const re = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
+      let m;
+      while ((m = re.exec(s)) !== null) {
+        try { objs.push(JSON.parse(m[0])); } catch(e2) {
+          try { objs.push(JSON.parse(m[0].replace(/,\s*}/g, '}'))); } catch(e3) {}
+        }
+      }
+      if (objs.length > 0) return objs;
+      throw new Error('JSON修复失败: ' + e1.message);
+    }
+  }
+
   // 单个采集任务
   async function runTask(task) {
     const { ch, batch, type } = task;
@@ -354,14 +407,7 @@ async function startCollection() {
       { role: 'system', content: '你是考研命题专家。严格要求：直接输出JSON数组，禁止输出任何多余文字、解释、markdown代码块标记。第一个字符必须是[，最后一个字符必须是]。' },
       { role: 'user', content: makePrompt(subject, batch, type) }
     ]);
-    let cleaned = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('JSON解析失败');
-    let parsed;
-    try { parsed = JSON.parse(jsonMatch[0]); } catch(pe) {
-      parsed = JSON.parse(jsonMatch[0].replace(/,\s*([}\]])/g, '$1'));
-    }
+    const parsed = repairJSON(content);
     return parsed.map((q,j) => ({
       ...q, id: `ai-${subject}-${Date.now()}-${j}-${Math.random().toString(36).slice(2,6)}`,
       source: MODELS[ch].name, generated: Date.now()
