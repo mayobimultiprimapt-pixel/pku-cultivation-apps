@@ -372,7 +372,7 @@ async function startCollection() {
     try {
       addLog(`${MODELS[ch].icon} ${MODELS[ch].name} → 生成 ${batch} 道${type}题...`);
       const content = await callAI(ch, [
-        { role: 'system', content: '你是考研命题专家。只输出JSON数组。' },
+        { role: 'system', content: '你是考研命题专家。严格要求：直接输出JSON数组，禁止输出任何多余文字、解释、markdown代码块标记。第一个字符必须是[，最后一个字符必须是]。' },
         { role: 'user', content: makePrompt(subject, batch, type) }
       ]);
       // Strip markdown code fences and extract JSON
@@ -396,6 +396,15 @@ async function startCollection() {
       const total = PKU_QBANK.saveQuestions(subject, questions);
       collected += questions.length;
       addLog(`✅ 成功 +${questions.length} 题 | 库存: ${total}`, 'success');
+
+      // 同步投喂到中转站数据中枢
+      try {
+        fetch(`${RELAY_URL}/feed/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions, subject, source: MODELS[ch].name })
+        });
+      } catch(uploadErr) { /* 投喂失败不阻断采集 */ }
     } catch(e) {
       addLog(`❌ ${MODELS[ch].name} 失败: ${e.message}`, 'error');
     }
