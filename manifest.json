@@ -1,0 +1,19 @@
+{
+  "name": "北大考研 · 修仙应用集",
+  "short_name": "修仙应用集",
+  "description": "考研游戏 · AI军师 · 道法实修 · 美容养生 — 全部离线可用",
+  "start_url": "/pku-cultivation-apps/",
+  "scope": "/pku-cultivation-apps/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0a0a14",
+  "background_color": "#0a0a14",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["education", "games", "lifestyle"]
+}

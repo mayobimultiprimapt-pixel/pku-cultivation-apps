@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>北大考研 · 修仙应用集</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a14">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -133,6 +135,8 @@
     .tag-ai { background: rgba(57,255,20,.08); color: var(--green); border: 1px solid rgba(57,255,20,.15); }
     .tag-wip { background: rgba(255,255,255,.05); color: #888; border: 1px solid rgba(255,255,255,.1); }
     .tag-cloud { background: rgba(255,215,0,.08); color: var(--gold); border: 1px solid rgba(255,215,0,.15); }
+    .tag-beauty { background: rgba(244,114,182,.1); color: #f472b6; border: 1px solid rgba(244,114,182,.2); }
+    .tag-download { background: rgba(96,165,250,.08); color: #60a5fa; border: 1px solid rgba(96,165,250,.15); }
 
     .footer {
       text-align: center; margin-top: 60px; padding: 20px;
@@ -238,9 +242,38 @@
       </a>
     </div>
 
+    <div class="section-title" style="border-left-color:#f472b6;color:#f472b6">🌸 美容养生</div>
+    <div class="grid">
+      <a class="card" href="./beauty-diet/">
+        <div class="card-icon">✨</div>
+        <div class="card-title" style="color:#f472b6">美颜轻体 · 懒人定制</div>
+        <div class="card-desc">AI定制每日美容减脂食谱 · 体积饮食法×211餐盘 · DeepSeek V3美容顾问 · Gemini拍照识卡 · 美颜时间轴</div>
+        <span class="card-tag tag-beauty">BEAUTY · AI</span>
+      </a>
+    </div>
+
+    <div class="section-title" style="border-left-color:#60a5fa;color:#60a5fa">💎 独立应用</div>
+    <div class="grid">
+      <a class="card" href="./gushu/">
+        <div class="card-icon">👻</div>
+        <div class="card-title" style="color:#ff2e63">顾枢 · 灵魂容器</div>
+        <div class="card-desc">Gemini 2.5 Pro 驱动 · 记忆系统 · 灵魂持续生长 · 多模型切换（Pro/Thinking/Flash）</div>
+        <span class="card-tag tag-ai">GEMINI · SOUL</span>
+      </a>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card" id="pwaInstallCard" style="display:none" onclick="installPWA()">
+        <div class="card-icon">📱</div>
+        <div class="card-title" style="color:var(--gold)">安装应用集到手机</div>
+        <div class="card-desc">一键安装整个修仙应用集为手机APP，离线可用，全屏体验</div>
+        <span class="card-tag tag-cloud">PWA · INSTALL</span>
+      </div>
+    </div>
+
     <div class="footer">
       道可道 · 非常道 ┃ 北大电子信息 · 升仙之路<br>
-      <span style="font-size:10px;margin-top:4px;display:inline-block;">🔒 已加密登录 · API密钥安全保护</span>
+      <span style="font-size:10px;margin-top:4px;display:inline-block;">🔒 已加密登录 · API密钥安全保护 · 统一Token全应用共享</span>
     </div>
   </div>
   <script>
@@ -270,6 +303,12 @@
   // Enter key support
   document.getElementById('loginPass').onkeydown=function(e){if(e.key==='Enter')doPortalLogin()};
   document.getElementById('loginUser').onkeydown=function(e){if(e.key==='Enter')document.getElementById('loginPass').focus()};
+  // PWA Install
+  var deferredPrompt;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;var c=document.getElementById('pwaInstallCard');if(c)c.style.display=''});
+  function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(r){deferredPrompt=null;if(r.outcome==='accepted'){var c=document.getElementById('pwaInstallCard');if(c)c.style.display='none'}})}}
+  // Register Service Worker
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
   </script>
 </body>
 </html>
