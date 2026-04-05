@@ -10,6 +10,8 @@
 :root{--bg:#08080f;--bg2:#10101c;--bg3:#181830;--card:rgba(20,20,42,.92);--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--accent:#ff2e63;--accent2:#ffd700}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,46,99,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,46,99,.02) 50px);pointer-events:none;z-index:0;animation:scanBg 10s linear infinite}
+@keyframes scanBg{0%{background-position:0 0}100%{background-position:50px 50px}}
 .subject-101{--sc:#ff2e63;--sc2:#ff6b8a;--sc3:rgba(255,46,99,.12)}
 .subject-201{--sc:#3b82f6;--sc2:#60a5fa;--sc3:rgba(59,130,246,.12)}
 .subject-301{--sc:#ffd700;--sc2:#ffe44d;--sc3:rgba(255,215,0,.12)}
@@ -24,10 +26,10 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .hero h1{font-family:var(--font-d);font-size:22px;font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero p{font-size:12px;color:var(--dim);margin-top:6px;font-family:var(--font-d);letter-spacing:3px}
 .sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-.sub-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 16px;text-align:center;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.sub-card{background:rgba(20,20,42,0.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px 16px;text-align:center;cursor:pointer;transition:.4s;position:relative;overflow:hidden}
 .sub-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.3s}
-.sub-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.5)}
-.sub-card:hover::before{opacity:1}
+.sub-card:hover{transform:translateY(-8px);box-shadow:0 12px 40px rgba(0,0,0,.6);background:rgba(30,30,60,0.8);border-color:rgba(255,255,255,0.2)}
+.sub-card:hover::before{opacity:1;box-shadow:0 0 10px currentColor}
 .sub-card .sc-code{font-family:var(--font-d);font-size:36px;font-weight:900}
 .sub-card .sc-name{font-size:14px;margin-top:6px;font-weight:600}
 .sub-card .sc-desc{font-size:11px;color:var(--sub);margin-top:4px}
@@ -115,6 +117,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 </style>
 </head>
 <body>
+<div class="bg-grid"></div>
 
 <!-- Screen 1: Subject Select -->
 <div class="screen active" id="scrSubject">
@@ -237,6 +240,24 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 <script src="../shared/relay-loader.js"></script>
 <script src="questions.js"></script>
 <script src="ai-engine.js"></script>
+<!-- 天机阁全局军火库挂载点 -->
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  ['101','201','301','408'].forEach(sub => {
+     let vault = localStorage.getItem('Global_Vault_' + sub);
+     if(vault) {
+        try {
+           let parsed = JSON.parse(vault);
+           if(parsed && parsed.length > 0) {
+              if(!window.QUESTION_BANK) window.QUESTION_BANK = {};
+              window.QUESTION_BANK[sub] = parsed;
+              console.log('✅ [天机总控] 成功装载前线情报弹药: ' + sub + ' 共 ' + parsed.length + ' 发');
+           }
+        }catch(e){}
+     }
+  });
+});
+</script>
 <script>
 // ============================================================
 //  北大消消乐 · 考研三消大作战 — 游戏引擎

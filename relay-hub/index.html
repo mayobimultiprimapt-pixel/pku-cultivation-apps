@@ -2,324 +2,322 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中转阁 · 数据中枢控制台</title>
-<meta name="description" content="PKU考研数据中枢 - 自动抓取情报、试卷、生成新题、投喂游戏">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>中枢金库控制台 | PKU Central Vault Console</title>
+<!-- 引入最新的统一核心 SDK -->
+<script src="../shared/pku-core-sdk.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#070b14;--bg2:#0d1524;--bg3:#141e30;--card:#111b2e;--border:rgba(100,180,255,.12);--text:#e0e8f0;--sub:#7a8da8;--dim:#4a5a70;--accent:#00d4ff;--accent2:#7b61ff;--gold:#ffd700;--green:#39ff14;--red:#ff2e63;--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif}
-body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #020617; /* Very Dark Slate */
+  --card: #0f172a;
+  --panel: rgba(15, 23, 42, 0.8);
+  --border: rgba(56, 189, 248, 0.15);
+  --text: #f8fafc;
+  --sub: #94a3b8;
+  --primary: #38bdf8;
+  --accent: #f43f5e;
+  --gold: #fbbf24;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --font-d: 'Orbitron', monospace;
+  --font-b: 'Noto Sans SC', sans-serif;
+}
+body {
+  background: var(--bg); color: var(--text); font-family: var(--font-b);
+  min-height: 100vh; overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(244, 63, 94, 0.05), transparent 25%);
+}
 
-/* Header */
-.header{text-align:center;padding:30px 16px 20px;background:linear-gradient(180deg,rgba(0,212,255,.06) 0%,transparent 100%)}
-.header h1{font-family:var(--font-d);font-size:clamp(20px,5vw,32px);letter-spacing:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.header .sub{font-size:11px;color:var(--sub);letter-spacing:3px;margin-top:4px;font-family:var(--font-d)}
-.version{display:inline-block;padding:2px 8px;background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:10px;font-size:9px;color:var(--accent);font-family:var(--font-d);margin-top:8px}
+/* Auth Overlay - 强制授权锁 */
+#authMask {
+  position: fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.lock-icon { font-size: 60px; margin-bottom: 20px; animation: glitch 2s infinite; }
+@keyframes glitch { 0% { opacity: 1; transform: skewX(0); } 10% { opacity: 0.8; transform: skewX(-5deg); } 20% { opacity: 1; transform: skewX(0); } }
+.auth-title { font-family:var(--font-d); font-size:24px; color:var(--primary); letter-spacing:4px; margin-bottom:10px; }
+.auth-desc { color:var(--sub); font-size:12px; margin-bottom:30px; }
+.auth-btn { padding:12px 30px; background:transparent; border:1px solid var(--primary); color:var(--primary); font-family:var(--font-d); font-size:16px; font-weight:700; border-radius:8px; cursor:pointer; transition:.3s; box-shadow:0 0 15px rgba(56,189,248,0.2); }
+.auth-btn:hover { background:var(--primary); color:#000; box-shadow:0 0 30px rgba(56,189,248,0.6); }
 
-/* Status Grid */
-.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:0 16px;max-width:900px;margin:0 auto 20px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;transition:.3s;position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6}
-.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
-.stat-icon{font-size:24px;margin-bottom:6px}
-.stat-val{font-family:var(--font-d);font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.stat-label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-top:4px;font-family:var(--font-d)}
+/* Main UI */
+#consoleApp { display: none; max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-/* Panel */
-.container{max-width:900px;margin:0 auto;padding:0 16px 40px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
-.panel-title{font-family:var(--font-d);font-size:12px;letter-spacing:3px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.panel-title .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+header { display:flex; justify-content:space-between; align-items:center; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.logo-area h1 { font-family:var(--font-d); font-size:22px; color:var(--text); letter-spacing:2px; }
+.logo-area .sub { font-size:11px; color:var(--primary); letter-spacing:4px; margin-top:4px; font-family:var(--font-d); }
+.status-badge { display:flex; align-items:center; gap:8px; padding:6px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:20px; font-size:11px; color:var(--success); font-family:var(--font-d); font-weight:700;}
+.status-badge.offline { background:rgba(239,68,68,0.1); border-color:var(--danger); color:var(--danger); }
+.dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* Subject Cards */
-.subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.subj-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.3s}
-.subj-card:hover{border-color:var(--accent)}
-.subj-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.subj-code{font-family:var(--font-d);font-size:18px;font-weight:900}
-.subj-name{font-size:11px;color:var(--sub)}
-.subj-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.subj-stat{background:rgba(0,212,255,.04);border-radius:8px;padding:8px;text-align:center}
-.subj-stat .sv{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--text)}
-.subj-stat .sl{font-size:9px;color:var(--dim)}
-.s101 .subj-code{color:#ff6b6b}.s201 .subj-code{color:#4ecdc4}.s301 .subj-code{color:#ffe66d}.s408 .subj-code{color:#39ff14}
+/* Global Stats */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:20px; }
+.stat-box { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; position:relative; overflow:hidden; backdrop-filter:blur(10px); }
+.stat-box::before { content:''; position:absolute; top:0; left:0; width:100%; height:2px; background:linear-gradient(90deg, var(--primary), var(--accent)); }
+.s-icon { font-size:24px; margin-bottom:8px;}
+.s-val { font-family:var(--font-d); font-size:28px; font-weight:900; color:var(--text); }
+.s-lbl { font-size:10px; color:var(--sub); font-family:var(--font-d); letter-spacing:1px; margin-top:4px;}
 
-/* Buttons */
-.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.btn{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:.3s;display:flex;align-items:center;justify-content:center;gap:6px}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
-.btn-gold{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000}
-.btn-green{background:linear-gradient(135deg,var(--green),#00cc88);color:#000}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
-.btn-outline:hover{border-color:var(--accent)}
-.btn-full{grid-column:1/-1}
-.btn:disabled{opacity:.5;cursor:not-allowed}
+/* Panels Layout */
+.layout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+@media(max-width: 800px) { .layout-grid { grid-template-columns: 1fr; } }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px; backdrop-filter:blur(10px); display:flex; flex-direction:column;}
+.p-title { font-size:14px; color:var(--primary); font-family:var(--font-d); letter-spacing:2px; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
 
-/* Log */
-.log-area{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:300px;overflow-y:auto;font-family:var(--font-d);font-size:11px;line-height:1.8}
-.log-area::-webkit-scrollbar{width:3px}
-.log-area::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
-.log-entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
-.log-entry.success{color:var(--green)}.log-entry.error{color:var(--red)}.log-entry.info{color:var(--accent)}
+/* Subj Cards */
+.subjs { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; }
+.scard { background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:12px; transition:.2s; }
+.scard:hover { border-color:var(--gold); }
+.scard header { border-bottom:none; margin-bottom:0; padding-bottom:8px; display:flex;justify-content:space-between; align-items:center;}
+.scode { font-family:var(--font-d); font-size:18px; font-weight:900; color:var(--text); }
+.sname { font-size:11px; color:var(--sub); }
+.sdtl { display:flex; justify-content:space-between; font-size:11px; margin-top:6px; color:var(--sub); }
+.sdtl span { color:var(--primary); font-weight:700; font-family:var(--font-d); }
+.s101 .scode{color:#f43f5e} .s201 .scode{color:#38bdf8} .s301 .scode{color:#fbbf24} .s408 .scode{color:#22c55e}
 
-/* Feed Status */
-.feed-grid{display:grid;gap:8px}
-.feed-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
-.feed-name{font-size:13px;font-weight:700}
-.feed-status{font-family:var(--font-d);font-size:10px;padding:3px 10px;border-radius:8px}
-.feed-online{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.3)}
-.feed-offline{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.3)}
-.feed-count{font-family:var(--font-d);font-size:12px;color:var(--sub)}
+/* Console Actions */
+.controls { display:flex; flex-direction:column; gap:10px; }
+.btn { padding:14px; border:none; border-radius:10px; font-size:14px; font-weight:700; font-family:var(--font-b); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:.2s; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1); }
+.btn:active { transform:scale(0.97); }
+.btn-intel { background:rgba(56,189,248,0.1); color:var(--primary); border:1px solid var(--primary); }
+.btn-intel:hover { background:var(--primary); color:#000; box-shadow:0 0 20px rgba(56,189,248,0.4); }
+.btn-paper { background:rgba(251,191,36,0.1); color:var(--gold); border:1px solid var(--gold); }
+.btn-paper:hover { background:var(--gold); color:#000; box-shadow:0 0 20px rgba(251,191,36,0.4); }
+.btn-fire { background:linear-gradient(135deg, #ef4444, #f43f5e); color:#fff; border:none; grid-column:1/-1; margin-top:10px; }
+.btn-fire:hover { box-shadow:0 0 25px rgba(244,63,94,0.5); }
+.ctrl-sel { padding:12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none; font-family:var(--font-b); }
+.ctrl-sel:focus { border-color:var(--primary); }
 
-/* Paper Display */
-.paper-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}
-.paper-header{display:flex;justify-content:space-between;align-items:center}
-.paper-title{font-size:14px;font-weight:700}
-.paper-meta{font-family:var(--font-d);font-size:9px;color:var(--dim)}
-.paper-stats{display:flex;gap:12px;margin-top:8px}
-.paper-tag{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(0,212,255,.1);color:var(--accent)}
+/* Logs */
+.logs { flex:1; background:rgba(0,0,0,0.6); border:1px solid var(--border); border-radius:10px; padding:12px; max-height:280px; overflow-y:auto; font-family:var(--font-d); font-size:11px; line-height:1.7; display:flex; flex-direction:column; gap:4px; }
+.log-row { word-break:break-all; }
+.log-time { color:var(--sub); margin-right:6px; }
+.log-info { color:var(--primary); }
+.log-ok { color:var(--success); }
+.log-err { color:var(--danger); }
+.log-sys { color:var(--gold); }
 
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.panel{animation:fadeIn .5s ease}
+/* Feed UI */
+.feed-list { display:flex; flex-direction:column; gap:8px; }
+.feed-row { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; }
+.fr-l { display:flex; align-items:center; gap:10px; }
+.fr-ico { font-size:18px; }
+.fr-nam { font-size:12px; font-weight:700; }
+.fr-r { font-family:var(--font-d); font-size:10px; padding:3px 8px; border-radius:6px; background:rgba(34,197,94,0.1); color:var(--success); border:1px solid rgba(34,197,94,0.2); }
 
-/* Back button */
-.back-link{display:inline-flex;align-items:center;gap:4px;color:var(--sub);text-decoration:none;font-size:12px;padding:8px 16px;transition:.3s}
-.back-link:hover{color:var(--accent)}
+.logs::-webkit-scrollbar{width:3px} .logs::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px;}
 </style>
 </head>
 <body>
 
-<a href="../" class="back-link">← 返回应用集</a>
-
-<div class="header">
-  <h1>中 转 阁</h1>
-  <div class="sub">DATA NEXUS · INTELLIGENCE HUB</div>
-  <div class="version" id="versionBadge">v3.0 · CONNECTING...</div>
+<!-- 安全屏障 -->
+<div id="authMask">
+  <div class="lock-icon">🔒</div>
+  <div class="auth-title">ACCESS DENIED</div>
+  <div class="auth-desc">尚未侦测到核心密钥矩阵授权</div>
+  <button class="auth-btn" onclick="initConsole()">INITIATE LINK</button>
 </div>
 
-<!-- Status Overview -->
-<div class="status-grid" id="statusGrid">
-  <div class="stat-card">
-    <div class="stat-icon">📡</div>
-    <div class="stat-val" id="stIntel">-</div>
-    <div class="stat-label">TODAY INTEL</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">📝</div>
-    <div class="stat-val" id="stRaw">-</div>
-    <div class="stat-label">RAW QUESTIONS</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">📋</div>
-    <div class="stat-val" id="stPapers">-</div>
-    <div class="stat-label">PAPERS GEN</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">⏱️</div>
-    <div class="stat-val" id="stUptime">-</div>
-    <div class="stat-label">UPTIME</div>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- Subject Breakdown -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot"></span>各科数据仓库</div>
-    <div class="subject-grid" id="subjectGrid">
-      <div class="subj-card s101"><div class="subj-header"><span class="subj-code">101</span><span class="subj-name">政治</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s101raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s101intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s101paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s101time">—</div><div class="sl">生成时间</div></div></div></div>
-      <div class="subj-card s201"><div class="subj-header"><span class="subj-code">201</span><span class="subj-name">英语</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s201raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s201intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s201paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s201time">—</div><div class="sl">生成时间</div></div></div></div>
-      <div class="subj-card s301"><div class="subj-header"><span class="subj-code">301</span><span class="subj-name">数学</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s301raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s301intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s301paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s301time">—</div><div class="sl">生成时间</div></div></div></div>
-      <div class="subj-card s408"><div class="subj-header"><span class="subj-code">408</span><span class="subj-name">计算机</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s408raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s408intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s408paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s408time">—</div><div class="sl">生成时间</div></div></div></div>
+<!-- 主控制台 -->
+<div id="consoleApp">
+  <header>
+    <div class="logo-area">
+      <h1>THE VAULT CONSOLE</h1>
+      <div class="sub">V6.0 MONGODB PERSISTENT CORE</div>
     </div>
+    <div class="status-badge" id="netStatus"><span class="dot"></span>CONNECTING...</div>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-box"><div class="s-icon">🧠</div><div class="s-val" id="stInt">-</div><div class="s-lbl">INTEL SHARDS</div></div>
+    <div class="stat-box"><div class="s-icon">📝</div><div class="s-val" id="stRaw">-</div><div class="s-lbl">RAW MODULES</div></div>
+    <div class="stat-box"><div class="s-icon">🗄️</div><div class="s-val" id="stPap">-</div><div class="s-lbl">ACTIVE PAPERS</div></div>
+    <div class="stat-box"><div class="s-icon">⏳</div><div class="s-val" id="stUpt">-</div><div class="s-lbl">UPTIME</div></div>
   </div>
 
-  <!-- Control Panel -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>中枢控制</div>
-    <div class="btn-grid">
-      <button class="btn btn-primary" onclick="collectIntel()">📡 抓取今日情报</button>
-      <button class="btn btn-gold" onclick="generatePapers()">📋 生成今日试卷</button>
-      <button class="btn btn-green btn-full" onclick="autoAll()">🔥 一键全流程（情报→出卷→投喂）</button>
-    </div>
-    <div style="margin-top:12px">
-      <select id="subjectSelect" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px">
-        <option value="all">全部科目</option>
-        <option value="101">101 政治</option>
-        <option value="201">201 英语</option>
-        <option value="301">301 数学</option>
-        <option value="408">408 计算机</option>
-      </select>
-    </div>
-  </div>
+  <div class="layout-grid">
+    <!-- 左侧: 矩阵看板 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="panel">
+        <div class="p-title"><span>📊 SUBJECT DATABANKS</span><span style="font-size:10px;color:var(--sub)">MongoDB Synced</span></div>
+        <div class="subjs" id="subjList">
+          <div class="scard s101"><header><span class="scode">101</span><span class="sname">政治</span></header><div class="sdtl">Raw <span id="r101">0</span></div><div class="sdtl">Intel <span id="i101">0</span></div><div class="sdtl">Paper <span id="p101">—</span></div></div>
+          <div class="scard s201"><header><span class="scode">201</span><span class="sname">英语</span></header><div class="sdtl">Raw <span id="r201">0</span></div><div class="sdtl">Intel <span id="i201">0</span></div><div class="sdtl">Paper <span id="p201">—</span></div></div>
+          <div class="scard s301"><header><span class="scode">301</span><span class="sname">数学</span></header><div class="sdtl">Raw <span id="r301">0</span></div><div class="sdtl">Intel <span id="i301">0</span></div><div class="sdtl">Paper <span id="p301">—</span></div></div>
+          <div class="scard s408"><header><span class="scode">408</span><span class="sname">计算机</span></header><div class="sdtl">Raw <span id="r408">0</span></div><div class="sdtl">Intel <span id="i408">0</span></div><div class="sdtl">Paper <span id="p408">—</span></div></div>
+        </div>
+      </div>
 
-  <!-- Game Feed Status -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span>游戏投喂状态</div>
-    <div class="feed-grid">
-      <div class="feed-item">
-        <div><div class="feed-name">👻 猛鬼考研宿舍</div></div>
-        <div class="feed-count" id="feedGhost">待接入</div>
-        <div class="feed-status feed-offline" id="feedGhostStatus">STANDBY</div>
+      <div class="panel" style="flex:1">
+        <div class="p-title">📡 REAL-TIME FEED</div>
+        <div class="feed-list">
+          <div class="feed-row"><div class="fr-l"><span class="fr-ico">👻</span><span class="fr-nam">猛鬼考研宿舍</span></div><div class="fr-r">CONNECTED</div></div>
+          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🎮</span><span class="fr-nam">北大消消乐</span></div><div class="fr-r">CONNECTED</div></div>
+          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🔫</span><span class="fr-nam">刺激战场</span></div><div class="fr-r">CONNECTED</div></div>
+          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🏛️</span><span class="fr-nam">论道殿 (面试)</span></div><div class="fr-r" style="color:var(--gold);border-color:var(--gold)">BETA</div></div>
+        </div>
       </div>
-      <div class="feed-item">
-        <div><div class="feed-name">🎮 北大消消乐</div></div>
-        <div class="feed-count" id="feedSiege">已接入</div>
-        <div class="feed-status feed-online" id="feedSiegeStatus">ONLINE</div>
+    </div>
+
+    <!-- 右侧: 控制与日志 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="panel">
+        <div class="p-title">⚡ COMMAND OVERRIDE</div>
+        <div class="controls">
+          <select class="ctrl-sel" id="optSubj">
+            <option value="all">🌐 全维度运作 (All Subjects)</option>
+            <option value="101">101 思想政治理论</option>
+            <option value="201">201 英语一</option>
+            <option value="301">301 数学一</option>
+            <option value="408">408 计算机综合</option>
+          </select>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px;">
+            <button class="btn btn-intel" onclick="doIntel()" title="触发底层爬虫抓取全网真题情报">📡 窃取情报</button>
+            <button class="btn btn-paper" onclick="doPaper()" title="利用现有素材进行大模型成卷合成">📝 合成密卷</button>
+          </div>
+          <button class="btn btn-fire" onclick="doAuto()">🔥 歼星模式: 一键自动化全流程</button>
+        </div>
       </div>
-      <div class="feed-item">
-        <div><div class="feed-name">🔫 刺激战场</div></div>
-        <div class="feed-count" id="feedBattle">已接入</div>
-        <div class="feed-status feed-online" id="feedBattleStatus">ONLINE</div>
-      </div>
-      <div class="feed-item">
-        <div><div class="feed-name">🔮 天机阁情报</div></div>
-        <div class="feed-count" id="feedTianji">数据源</div>
-        <div class="feed-status feed-online" id="feedTianjiStatus">SOURCE</div>
+
+      <div class="panel" style="flex:1;">
+        <div class="p-title" style="margin-bottom:8px">📜 SYSTEM LOGS <button onclick="document.getElementById('cLog').innerHTML=''" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:10px">CLEAR</button></div>
+        <div class="logs" id="cLog">
+          <div class="log-row"><span class="log-time">[sys]</span><span class="log-sys">等待链接初始化...</span></div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Operation Log -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:var(--red)"></span>操作日志</div>
-    <div class="log-area" id="logArea">
-      <div class="log-entry info">[系统] 中转阁控制台启动中...</div>
-    </div>
-  </div>
-
 </div>
 
 <script>
-const RELAY = 'https://pku-api-relay.onrender.com';
-
-function log(msg, cls = '') {
-  const area = document.getElementById('logArea');
-  const time = new Date().toLocaleTimeString('zh-CN');
-  area.innerHTML += `<div class="log-entry ${cls}">[${time}] ${msg}</div>`;
-  area.scrollTop = area.scrollHeight;
+// --- LOGGING ---
+function addLog(msg, type='info') {
+  const box = document.getElementById('cLog');
+  const d = new Date();
+  const t = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+  box.innerHTML += `<div class="log-row"><span class="log-time">[${t}]</span><span class="log-${type}">${msg}</span></div>`;
+  box.scrollTop = box.scrollHeight;
 }
 
-// 刷新状态
-async function refreshStatus() {
-  try {
-    const r = await fetch(`${RELAY}/hub/status`);
-    const data = await r.json();
-    document.getElementById('versionBadge').textContent = 'v3.0 · ONLINE';
-    document.getElementById('versionBadge').style.borderColor = 'var(--green)';
-    document.getElementById('versionBadge').style.color = 'var(--green)';
-    document.getElementById('stUptime').textContent = data.uptime || '-';
-
-    let totalRaw = 0, totalIntel = 0, totalPapers = 0;
-    for (const [subj, info] of Object.entries(data.subjects || {})) {
-      totalRaw += info.rawQuestions || 0;
-      totalIntel += info.intelligence || 0;
-      if (info.paper) totalPapers++;
-
-      const el = (id) => document.getElementById(id);
-      el(`s${subj}raw`).textContent = info.rawQuestions || 0;
-      el(`s${subj}intel`).textContent = info.intelligence || 0;
-      if (info.paper) {
-        el(`s${subj}paper`).textContent = info.paper.questions + '题';
-        el(`s${subj}time`).textContent = new Date(info.paper.generatedAt).toLocaleTimeString('zh-CN');
-      }
-    }
-    document.getElementById('stIntel').textContent = totalIntel;
-    document.getElementById('stRaw').textContent = totalRaw;
-    document.getElementById('stPapers').textContent = `${totalPapers}/4`;
-  } catch(e) {
-    document.getElementById('versionBadge').textContent = 'v3.0 · OFFLINE';
-    document.getElementById('versionBadge').style.borderColor = 'var(--red)';
-    log('❌ 无法连接中转站: ' + e.message, 'error');
+// --- INIT AUTH & FETCH ---
+async function initConsole() {
+  if (!PKUSDK.Auth.isLoggedIn()) {
+    // 触发鉴权大门
+    document.getElementById('authMask').style.background = 'var(--panel)';
+    document.getElementById('authMask').innerHTML = `<div style="text-align:center"><div class="lock-icon" style="animation:none;color:var(--danger)">⚠️</div><div class="auth-title" style="color:var(--danger)">KEY REQUIRED</div></div>`;
+    
+    // 我们强制退回到主大厅让其登录，或者在这里走一个简单的 API KEY 探取
+    alert('必须在全局大本营输入密钥矩阵！请返回主页。');
+    window.location.href = '../index.html';
+    return;
   }
+  
+  document.getElementById('authMask').style.display = 'none';
+  document.getElementById('consoleApp').style.display = 'block';
+  addLog('识别到合法密钥矩阵，解除锁定。', 'sys');
+  addLog('正在接入 Mongo 永生金库隧道...', 'info');
+  await tick();
+  setInterval(tick, 20000); // 20s 同步一次
 }
 
-// 抓取情报
-async function collectIntel() {
-  const subj = document.getElementById('subjectSelect').value;
-  log('📡 开始抓取情报...', 'info');
+// --- Status Synchronization ---
+async function tick() {
   try {
-    const body = subj === 'all' ? {} : { subject: subj };
-    const r = await fetch(`${RELAY}/hub/collect-intel`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body)
+    const res = await fetch(`${PKUSDK.RELAY_URL}/hub/status`, {
+      headers: { 'Authorization': `Bearer ${window.PKU_KEYS.OPENROUTER_API_KEY || 'debug'}` }
     });
-    const data = await r.json();
-    if (data.success) {
-      (data.results || []).forEach(r => {
-        if (r.success) log(`✅ ${r.subject} 情报 ${r.length}字`, 'success');
-        else log(`❌ ${r.subject} 失败: ${r.error}`, 'error');
-      });
-    } else {
-      log('❌ 情报抓取失败', 'error');
+    const info = await res.json();
+    
+    document.getElementById('netStatus').className = 'status-badge';
+    document.getElementById('netStatus').innerHTML = '<span class="dot"></span>DB CONNECTED';
+    
+    document.getElementById('stUpt').textContent = info.uptime || '0m';
+    
+    let raw=0, intel=0, paps=0;
+    for(const [subj, d] of Object.entries(info.subjects || {})) {
+      raw += d.rawQuestions||0; intel += d.intelligence||0;
+      if(d.paper) paps++;
+      
+      const el = (n) => document.getElementById(n);
+      if(el(`r${subj}`)) el(`r${subj}`).textContent = d.rawQuestions||0;
+      if(el(`i${subj}`)) el(`i${subj}`).textContent = d.intelligence||0;
+      if(el(`p${subj}`)) el(`p${subj}`).textContent = d.paper ? 'Ready' : 'X';
     }
-    refreshStatus();
+    document.getElementById('stRaw').textContent = raw;
+    document.getElementById('stInt').textContent = intel;
+    document.getElementById('stPap').textContent = paps+'/4';
+    
   } catch(e) {
-    log('❌ ' + e.message, 'error');
+    document.getElementById('netStatus').className = 'status-badge offline';
+    document.getElementById('netStatus').innerHTML = '<span class="dot" style="animation:none"></span>OFFLINE';
+    addLog('金库失联: ' + e.message, 'err');
   }
 }
 
-// 生成试卷
-async function generatePapers() {
-  const subj = document.getElementById('subjectSelect').value;
-  log('📋 开始生成今日试卷...', 'info');
+// --- AI Core Operations ---
+// 我们通过附带 headers 中的鉴权，修复 Relay 服务器端本地无 key 环境报错的问题
+// 这样即使用户在 Render 没配环境变量，本地在前端存的 keys 也能发过去！
+function getAuthHeaders() {
+  return { 
+    'Content-Type': 'application/json',
+    // 将客户端的秘钥一并送交后端（需要后端 server.js 也做对应适配！）
+    'X-OpenRouter-Key': window.PKU_KEYS.OPENROUTER_API_KEY || '',
+    'X-Perplexity-Key': window.PKU_KEYS.PERPLEXITY_API_KEY || '',
+    'X-Gemini-Key': window.PKU_KEYS.GEMINI_API_KEY || ''
+  };
+}
+
+async function doIntel() {
+  const subj = document.getElementById('optSubj').value;
+  addLog(`下达窃取令: ${subj}`, 'sys');
   try {
-    const body = subj === 'all' ? {} : { subject: subj };
-    const r = await fetch(`${RELAY}/paper/generate`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body)
+    const r = await fetch(`${PKUSDK.RELAY_URL}/hub/collect-intel`, {
+      method: 'POST', headers: getAuthHeaders(),
+      body: JSON.stringify(subj === 'all' ? {} : {subject: subj})
     });
-    const data = await r.json();
-    if (data.success) {
-      if (data.paper) {
-        log(`✅ ${subj} 试卷 ${data.paper.questions.length}题 by ${data.paper.generator}`, 'success');
-      } else if (data.papers) {
-        for (const [s, p] of Object.entries(data.papers)) {
-          if (p.questions) log(`✅ ${s} 试卷 ${p.questions.length}题`, 'success');
-          else log(`❌ ${s} 失败: ${p.error}`, 'error');
-        }
-      }
-    }
-    refreshStatus();
-  } catch(e) {
-    log('❌ ' + e.message, 'error');
-  }
+    const res = await r.json();
+    if(res.success) {
+      addLog(`情报载入成功！(受影响科目:${res.results?.length || 0})`, 'ok');
+    } else throw new Error(res.error || 'Server error');
+    tick();
+  } catch(e) { addLog('情报窃取失败: ' + e.message, 'err'); }
 }
 
-// 一键全流程
-async function autoAll() {
-  log('🔥 一键全流程启动！', 'info');
+async function doPaper() {
+  const subj = document.getElementById('optSubj').value;
+  addLog(`调度双脑出卷工厂: ${subj}`, 'sys');
   try {
-    const r = await fetch(`${RELAY}/paper/auto`, {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+    const r = await fetch(`${PKUSDK.RELAY_URL}/paper/generate`, {
+      method: 'POST', headers: getAuthHeaders(),
+      body: JSON.stringify(subj === 'all' ? {} : {subject: subj})
     });
-    const data = await r.json();
-    if (data.success) {
-      log(`⏱ 总耗时: ${data.elapsed}`, 'info');
-      (data.report?.intel || []).forEach(i => {
-        if (i.chars) log(`📡 ${i.subject} 情报 ${i.chars}字`, 'success');
-        else log(`❌ ${i.subject} 情报失败`, 'error');
-      });
-      (data.report?.papers || []).forEach(p => {
-        if (p.questions) log(`📋 ${p.subject} 试卷 ${p.questions}题`, 'success');
-        else log(`❌ ${p.subject} 出卷失败: ${p.error}`, 'error');
-      });
-    }
-    refreshStatus();
-  } catch(e) {
-    log('❌ ' + e.message, 'error');
-  }
+    const res = await r.json();
+    if(res.success) addLog(`出卷指令执行完毕。`, 'ok');
+    else throw new Error(res.error || JSON.stringify(res));
+    tick();
+  } catch(e) { addLog('出卷熔断: ' + e.message, 'err'); }
 }
 
-// Init
-log('🚀 连接中转站...', 'info');
-refreshStatus().then(() => log('✅ 中转阁控制台就绪', 'success'));
-// Auto refresh every 30s
-setInterval(refreshStatus, 30000);
+async function doAuto() {
+  addLog(`开启全流程歼星打击...`, 'sys');
+  try {
+    const r = await fetch(`${PKUSDK.RELAY_URL}/paper/auto`, {
+      method: 'POST', headers: getAuthHeaders(), body: '{}'
+    });
+    const res = await r.json();
+    if(res.success) addLog(`打击完成，耗时: ${res.elapsed}`, 'ok');
+    else throw new Error(res.error);
+    tick();
+  } catch(e){ addLog('歼星失败: ' + e.message, 'err'); }
+}
+
+// Check on load
+if (PKUSDK.Auth.isLoggedIn()) initConsole();
 </script>
 </body>
 </html>

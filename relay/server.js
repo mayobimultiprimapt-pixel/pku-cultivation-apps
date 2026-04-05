@@ -21,9 +21,33 @@ const KEYS = {
 };
 
 // =============================================
-// 数据仓库 (内存持久化) v5.0
+// 数据仓库 (内存持久化 v5.0 -> MongoDB v6.0)
 // 每科支持多套完整密卷叠加
 // =============================================
+let useMongoDB = false;
+const mongoose = require('mongoose');
+
+const mongouri = process.env.MONGODB_URI;
+if (mongouri) {
+  mongoose.connect(mongouri).then(() => {
+    useMongoDB = true;
+    console.log('[MongoDB] ✅ 金库连接成功，开启永生模式');
+  }).catch(e => {
+    console.warn('[MongoDB] ⚠️ 连接失败，降级为内存模式:', e.message);
+  });
+}
+
+// 设定 MongoDB Schema
+const PaperSchema = new mongoose.Schema({
+  id: String, subject: String, paperNum: Number, source: String,
+  questions: Array, metadata: Object, uploadedAt: Date
+});
+const IntelSchema = new mongoose.Schema({
+  subject: String, content: String, source: String, date: String
+});
+const VaultPaper = mongoose.model('VaultPaper', PaperSchema);
+const VaultIntel = mongoose.model('VaultIntel', IntelSchema);
+
 const VAULT = {
   // 原始题目池（从题库上传的散题）
   rawQuestions: { '101': [], '201': [], '301': [], '408': [] },
@@ -132,7 +156,7 @@ app.post('/perplexity/search', async (req, res) => {
 // =============================================
 
 // 题库搜集站 → 上传完整密卷（一套卷子一次性存入）
-app.post('/vault/papers', (req, res) => {
+app.post('/vault/papers', async (req, res) => {
   const { paper, subject, source, paperNum, metadata } = req.body;
   if (!paper || !paper.questions?.length) return res.status(400).json({ error: 'paper.questions required' });
   const subj = subject || '101';
@@ -145,19 +169,38 @@ app.post('/vault/papers', (req, res) => {
     source: source || 'question-bank',
     questions: paper.questions,
     metadata: metadata || {},
-    uploadedAt: new Date().toISOString()
+    uploadedAt: new Date()
   };
-  VAULT.papers[subj].unshift(entry); // 最新卷子在最前
-  if (VAULT.papers[subj].length > 50) VAULT.papers[subj].length = 50; // 每科保留最近50套
+
+  if (useMongoDB) {
+    try {
+      if(!paperNum) { const count = await VaultPaper.countDocuments({subject: subj}); entry.paperNum = count + 1; }
+      await new VaultPaper(entry).save();
+      const count = await VaultPaper.countDocuments({subject: subj});
+      VAULT.stats.totalPapers++; VAULT.stats.lastGenerated = entry.uploadedAt;
+      console.log(`[VAULT-DB] 📦 ${subj} 第${entry.paperNum}套密卷入库 | ${entry.questions.length}题 | 共${count}套`);
+      return res.json({ success: true, paperId: entry.id, paperNum: entry.paperNum, questions: entry.questions.length, totalPapers: count });
+    } catch(e) { console.error('[VAULT-DB] 保存失败:', e.message); }
+  }
+
+  // 内存降级
+  VAULT.papers[subj].unshift({ ...entry, uploadedAt: entry.uploadedAt.toISOString() });
+  if (VAULT.papers[subj].length > 50) VAULT.papers[subj].length = 50; 
   VAULT.stats.totalPapers++;
-  VAULT.stats.lastGenerated = entry.uploadedAt;
+  VAULT.stats.lastGenerated = entry.uploadedAt.toISOString();
   console.log(`[VAULT] 📦 ${subj} 第${entry.paperNum}套密卷入库 | ${entry.questions.length}题 | 共${VAULT.papers[subj].length}套`);
   res.json({ success: true, paperId: entry.id, paperNum: entry.paperNum, questions: entry.questions.length, totalPapers: VAULT.papers[subj].length });
 });
 
 // 查询某科所有密卷列表
-app.get('/vault/papers/:subject', (req, res) => {
+app.get('/vault/papers/:subject', async (req, res) => {
   const subj = req.params.subject;
+  if (useMongoDB) {
+    try {
+      const dbPapers = await VaultPaper.find({subject: subj}).sort({uploadedAt: -1}).select('-questions');
+      return res.json({ success: true, subject: subj, total: dbPapers.length, papers: dbPapers });
+    } catch(e) { }
+  }
   const papers = (VAULT.papers[subj] || []).map(p => ({
     id: p.id, paperNum: p.paperNum, source: p.source,
     questions: p.questions.length, uploadedAt: p.uploadedAt,
@@ -167,8 +210,14 @@ app.get('/vault/papers/:subject', (req, res) => {
 });
 
 // 获取某科某套完整密卷
-app.get('/vault/papers/:subject/:paperId', (req, res) => {
+app.get('/vault/papers/:subject/:paperId', async (req, res) => {
   const { subject: subj, paperId } = req.params;
+  if(useMongoDB) {
+    try {
+      const p = await VaultPaper.findOne({ $or: [{id: paperId}, {paperNum: Number(paperId)}, {_id: paperId}] });
+      if(p) return res.json({ success: true, paper: p });
+    } catch(e) {}
+  }
   const paper = (VAULT.papers[subj] || []).find(p => p.id === paperId || String(p.paperNum) === paperId);
   if (!paper) return res.status(404).json({ error: '密卷不存在' });
   res.json({ success: true, paper });
@@ -196,14 +245,33 @@ app.post('/feed/upload', (req, res) => {
 });
 
 // 天机阁/断卦 → 统一上传情报（支持 /hub/intel 和 /feed/intelligence 两个路由）
-function saveIntel(subj, content, source, date) {
-  if (!VAULT.intelligence[subj]) VAULT.intelligence[subj] = [];
+async function saveIntel(subj, content, source, date) {
   const entry = {
     id: `intel-${subj}-${Date.now()}`,
     subject: subj, content,
     source: source || 'unknown',
     timestamp: date || new Date().toISOString()
   };
+
+  if(useMongoDB) {
+    try {
+      // 避免重复内容
+      const exist = await VaultIntel.findOne({ subject: subj, content: entry.content });
+      if (exist) { console.log(`[INTEL-DB] 📡 ${subj} 忽略重复情报`); return exist; }
+      
+      await new VaultIntel({subject: entry.subject, content: entry.content, source: entry.source, date: entry.timestamp}).save();
+      VAULT.stats.lastIntel = entry.timestamp;
+      console.log(`[INTEL-DB] 📡 ${subj} [${source}] +1 | ${(content || '').length}字`);
+      return entry;
+    } catch(e) {}
+  }
+
+  if (!VAULT.intelligence[subj]) VAULT.intelligence[subj] = [];
+  const dup = VAULT.intelligence[subj].find(i => i.content === entry.content);
+  if (dup) {
+    console.log(`[INTEL] 📡 ${subj} 忽略重复情报`);
+    return dup;
+  }
   VAULT.intelligence[subj].unshift(entry);
   if (VAULT.intelligence[subj].length > 100) VAULT.intelligence[subj].length = 100;
   VAULT.stats.lastIntel = entry.timestamp;
@@ -211,16 +279,16 @@ function saveIntel(subj, content, source, date) {
   return entry;
 }
 
-app.post('/hub/intel', (req, res) => {
+app.post('/hub/intel', async (req, res) => {
   const { subject, content, source, date } = req.body;
-  const entry = saveIntel(subject || '101', content, source, date);
+  const entry = await saveIntel(subject || '101', content, source, date);
   res.json({ success: true, intel: entry });
 });
 
 // 天机阁卦象断卦天机入口
-app.post('/feed/intelligence', (req, res) => {
+app.post('/feed/intelligence', async (req, res) => {
   const { subject, content, source, date } = req.body;
-  const entry = saveIntel(subject || '101', content, source || '卦象天机', date);
+  const entry = await saveIntel(subject || '101', content, source || '卦象天机', date);
   res.json({ success: true, intel: entry });
 });
 
@@ -230,14 +298,23 @@ app.post('/hub/collect-intel', async (req, res) => {
   const subjects = subject ? [subject] : Object.keys(SUBJECTS);
   const results = [];
 
+  const authHeader = req.headers['x-perplexity-key'];
+  const pplxKey = authHeader || KEYS.PERPLEXITY;
+
   for (const subj of subjects) {
     try {
       const r = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.PERPLEXITY}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pplxKey}` },
         body: JSON.stringify({
           model: 'sonar-pro',
-          messages: [{ role: 'user', content: `搜索2025-2026年中国考研${SUBJECTS[subj]}最新命题趋势,包括:1)最新政策变化 2)高频考点 3)名校真题风向 4)学术前沿热点。用中文详细总结,突出今年新增热点。` }],
+          messages: [{ 
+            role: 'system', 
+            content: `[IRON PROTOCOL] 你是最高级情报官。请针对研究生考试${SUBJECTS[subj]?.label || subj}科目，基于以下大纲结构：[${SUBJECTS[subj]?.structure || ''}] 和高频核心板块 [${SUBJECTS[subj]?.topics || ''}]，深度搜索最新学术会议、命题人论文、政策变化等。严格按考点大纲架构，强制写入死忠搜查命令。对每个命中考点输出具体知识点及预测命中率(%)，不啰嗦。` 
+          },{ 
+            role: 'user', 
+            content: `窃取搜索2025-2026年中国考研${SUBJECTS[subj]?.label || subj}最新命题趋势,包括:1)最新政策变化 2)高频考点 3)名校真题风向 4)学术前沿热点。用中文详细总结,突出今年新增热点。` 
+          }],
           max_tokens: 4096
         })
       });
@@ -503,15 +580,28 @@ app.post('/paper/auto', async (req, res) => {
 // =============================================
 
 // 游戏统一拉题接口 — 从密卷库取题（支持多套合并池）
-app.get('/feed/paper/:subject', (req, res) => {
+app.get('/feed/paper/:subject', async (req, res) => {
   const { subject } = req.params;
   const { count, type, random, paperNum } = req.query;
-  const papers = VAULT.papers[subject] || [];
+  let papers = [];
+  
+  if (useMongoDB) {
+    try {
+      papers = await VaultPaper.find({subject}).sort({uploadedAt: -1}).limit(3);
+      if (paperNum) {
+        const p = await VaultPaper.findOne({ $or: [{paperNum: Number(paperNum)}, {id: paperNum}] });
+        if(p) papers = [p]; else papers = [];
+      }
+    } catch(e) {}
+  } else {
+    papers = VAULT.papers[subject] || [];
+  }
 
   // 决定题目来源
   let allQ = [];
-  if (paperNum) {
-    // 指定某套密卷
+  if (paperNum && papers.length > 0 && String(papers[0]?.paperNum) === paperNum) { // in memory approach check
+    allQ = [...papers[0].questions];
+  } else if (paperNum && !useMongoDB) {
     const p = papers.find(p => String(p.paperNum) === paperNum);
     allQ = p ? [...p.questions] : [];
   } else if (papers.length > 0) {

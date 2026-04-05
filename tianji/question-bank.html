@@ -282,8 +282,8 @@ async function callAI(channel, messages) {
     headers = { 'Content-Type': 'application/json' };
     body = { model: m.model, messages, max_tokens: 8000 };
   } else {
-    // OpenRouter直连(秒级响应, 不经过Render)
-    url = 'https://openrouter.ai/api/v1/chat/completions';
+    // OpenRouter直连(默认通过Relay中转)
+    url = window.PKU_KEYS?.OPENROUTER_URL || `${RELAY_URL}/v1/chat/completions`;
     headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${getORKey()}`,

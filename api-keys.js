@@ -21,10 +21,11 @@
       if(or.startsWith('sk-or-')){
         window.PKU_KEYS={
           OPENROUTER_API_KEY:or,
-          OPENROUTER_URL:'https://openrouter.ai/api/v1/chat/completions',
+          OPENROUTER_URL:'https://pku-api-relay.onrender.com/v1/chat/completions',
           OPENROUTER_MODEL:'anthropic/claude-3.7-sonnet',
           GEMINI_API_KEY:dec(EK.GE,pwd),
-          PERPLEXITY_API_KEY:dec(EK.PP,pwd)
+          PERPLEXITY_API_KEY:dec(EK.PP,pwd),
+          PERPLEXITY_URL:'https://pku-api-relay.onrender.com/perplexity/search'
         };
         console.log('[PKU-KEYS] ✅ 密钥已解密加载');
       }
@@ -41,10 +42,11 @@
         localStorage.setItem('pku_pwd',pass);
         window.PKU_KEYS={
           OPENROUTER_API_KEY:or,
-          OPENROUTER_URL:'https://openrouter.ai/api/v1/chat/completions',
+          OPENROUTER_URL:'https://pku-api-relay.onrender.com/v1/chat/completions',
           OPENROUTER_MODEL:'anthropic/claude-3.7-sonnet',
           GEMINI_API_KEY:dec(EK.GE,pass),
-          PERPLEXITY_API_KEY:dec(EK.PP,pass)
+          PERPLEXITY_API_KEY:dec(EK.PP,pass),
+          PERPLEXITY_URL:'https://pku-api-relay.onrender.com/perplexity/search'
         };
         return true;
       }catch(e){return false}

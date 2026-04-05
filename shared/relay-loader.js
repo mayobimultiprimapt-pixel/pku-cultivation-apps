@@ -22,6 +22,22 @@
      */
     async loadPaper(subject, count) {
       count = count || 30;
+      
+      // 1. 优先读取天机阁造血中心刚产出的最热鲜库
+      try {
+        const vault = localStorage.getItem('Global_Vault_' + subject);
+        if (vault) {
+          const parsed = JSON.parse(vault);
+          if (parsed && parsed.length > 0) {
+            const questions = parsed.map(q => this._normalize(q, subject));
+            this.papers[subject] = questions;
+            console.log(`[RELAY] ✅ ${subject} 直接读取[天机阁金库] ${questions.length} 题 (Offline Vault)`);
+            return questions;
+          }
+        }
+      } catch(e) { console.warn("[Vault 解析失败]", e); }
+
+      // 2. 否则从中央中转站拉取
       try {
         const r = await fetch(`${RELAY_URL}/feed/paper/${subject}?count=${count}&random=true`);
         if (!r.ok) throw new Error(`${r.status}`);
@@ -34,9 +50,10 @@
           return questions;
         }
       } catch(e) {
-        console.log(`[RELAY] ⚠️ ${subject} 中转站拉取失败: ${e.message}, 使用本地题库`);
+        console.log(`[RELAY] ⚠️ ${subject} 中转站拉取失败: ${e.message}, 回落安全库`);
       }
-      // Fallback到本地
+      
+      // 3. Fallback到本地旧题库
       return this._getLocal(subject);
     },
 

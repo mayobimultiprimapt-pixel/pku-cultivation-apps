@@ -155,7 +155,7 @@
   </style>
 </head>
 <body>
-  <script src="api-keys.js"></script>
+  <script src="shared/pku-core-sdk.js"></script>
   <!-- Login Overlay -->
   <div class="login-overlay" id="loginOvl">
     <div class="login-box">
@@ -236,6 +236,13 @@
         <span class="card-tag tag-ai">AI · PERPLEXITY</span>
       </a>
 
+      <a class="card" href="./gushu/">
+        <div class="card-icon">🧠</div>
+        <div class="card-title" style="background:linear-gradient(135deg,#f43f5e,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent">顾枢 · 灵魂记忆法宝</div>
+        <div class="card-desc">考研主观大题（政治/计算机论述）背诵闭环 · AI自动批阅得分 · SM-2智能遗忘提醒引擎</div>
+        <span class="card-tag tag-intel">AI · SM-2 ENGINE</span>
+      </a>
+
       <a class="card" href="./daming/">
         <div class="card-icon">👑</div>
         <div class="card-title">大明王朝 · 諸神軍機處</div>
@@ -310,21 +317,21 @@
     var u=document.getElementById('loginUser').value.trim();
     var p=document.getElementById('loginPass').value.trim();
     if(!u||!p){document.getElementById('loginErr').textContent='请输入账号密码';return}
-    if(window.PKU_AUTH&&window.PKU_AUTH.login(u,p)){
+    if(typeof PKUSDK !== 'undefined' && PKUSDK.Auth.login(u,p)){
       document.getElementById('loginOvl').classList.add('hide');
       document.getElementById('mainApp').style.display='';
       document.getElementById('logoutBtn').style.display='';
     }else{document.getElementById('loginErr').textContent='账号或密码错误'}
   }
   function doLogout(){
-    if(window.PKU_AUTH)window.PKU_AUTH.logout();
+    if(typeof PKUSDK !== 'undefined') PKUSDK.Auth.logout();
     document.getElementById('loginOvl').classList.remove('hide');
     document.getElementById('mainApp').style.display='none';
     document.getElementById('logoutBtn').style.display='none';
     document.getElementById('loginPass').value='';
   }
   // Auto-login if already authenticated
-  if(window.PKU_KEYS){
+  if(typeof PKUSDK !== 'undefined' && PKUSDK.Auth.isLoggedIn()){
     document.getElementById('loginOvl').classList.add('hide');
     document.getElementById('mainApp').style.display='';
     document.getElementById('logoutBtn').style.display='';

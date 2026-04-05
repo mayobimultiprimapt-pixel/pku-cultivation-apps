@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>北大考研 · 修仙应用集 (移动核心)</title>
+  <meta name="theme-color" content="#050a0f">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050a0f;
+      --nav-bg: rgba(10, 15, 25, 0.85);
+      --gold: #ffd700;
+      --amber: #ff8c00;
+      --cyan: #08f7fe;
+      --purple: #9d4edd;
+      --green: #39ff14;
+      --text: #e8e8f0;
+      --dim: #666680;
+      /* Safe area for iPhone notch/home bar */
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
+    body, html {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Inter', 'Noto Serif SC', sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    
+    /* Login Overlay - Reuse existing styles but mobile optimized */
+    .login-overlay { position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column }
+    .login-overlay.hide { display:none }
+    .login-box { width:90%;max-width:380px;background:rgba(18,18,36,.9);border:1px solid rgba(255,215,0,.15);border-radius:20px;padding:40px 30px;text-align:center;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.5) }
+    .login-box .seal { width:80px;height:80px;margin:0 auto 16px;border:2px solid rgba(255,215,0,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;animation:float 4s ease-in-out infinite }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .login-box h2 { font-size:24px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px }
+    .login-input { width:100%;padding:14px 16px;background:rgba(10,10,20,.8);border:1px solid rgba(255,215,0,.1);border-radius:10px;color:var(--text);font-size:16px;margin-bottom:10px;outline:none }
+    .login-btn { width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px }
+    .login-err { color:#ff2e63;font-size:12px;margin-top:8px;min-height:16px }
+
+    /* Main App Layout */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%; height: 100%;
+    }
+    
+    /* Top Tab Bar */
+    .top-bar {
+      height: 50px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    .top-tab {
+      color: var(--dim);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: 0.3s;
+    }
+    .top-tab.active {
+      color: var(--text);
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .top-tab.active-game { color: var(--green); background: rgba(57,255,20,.1); border: 1px solid rgba(57,255,20,.3); }
+    .top-tab.active-ai { color: var(--gold); background: rgba(255,215,0,.1); border: 1px solid rgba(255,215,0,.3); }
+
+    /* Iframe Container */
+    .frame-container {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+    .frame-container iframe {
+      width: 100%; height: 100%;
+      border: none;
+      background: transparent;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      height: calc(65px + var(--sab));
+      padding-bottom: var(--sab);
+      background: var(--nav-bg);
+      backdrop-filter: blur(15px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      width: 33%;
+      height: 100%;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .nav-item .icon { font-size: 22px; margin-bottom: 4px; transition: transform 0.2s; }
+    .nav-item .label { font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+    .nav-item.active { filter: drop-shadow(0 0 8px rgba(255,255,255,0.2)); }
+    .nav-item.active .icon { transform: translateY(-2px) scale(1.1); }
+    
+    .nav-item[data-tab="game"].active { color: var(--green); }
+    .nav-item[data-tab="ai"].active { color: var(--gold); }
+    .nav-item[data-tab="profile"].active { color: var(--cyan); }
+
+    /* Profile View (Hidden unless activated) */
+    .profile-view {
+      position: absolute; inset: 0;
+      background: var(--bg);
+      z-index: 90;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .profile-view.active { display: flex; }
+    .p-card { background: rgba(20,20,40,.8); border: 1px solid rgba(255,255,255,.05); border-radius: 16px; padding: 20px; width: 100%; margin-bottom: 16px; }
+    .p-card.glow { border-color: rgba(8,247,254,.3); box-shadow: 0 0 20px rgba(8,247,254,.05); }
+    .p-stat { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,.05); padding-bottom: 10px; }
+    .logout-btn-big { width: 100%; padding: 14px; background: rgba(255,46,99,.15); color: #ff2e63; border: 1px solid rgba(255,46,99,.3); border-radius: 10px; font-weight: 700; margin-top: 20px; }
+    .gushu-btn { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text); padding:16px; background:linear-gradient(135deg, rgba(157,78,221,.1), rgba(8,247,254,.1)); border-radius:12px; border:1px solid rgba(157,78,221,.3); }
+    .gushu-btn .icn { font-size: 28px; }
+
+  </style>
+</head>
+<body>
+
+  <!-- PKU SDK Inclusion -->
+  <script src="shared/pku-core-sdk.js"></script>
+
+  <!-- Login Shield -->
+  <div class="login-overlay" id="loginOvl">
+    <div class="login-box">
+      <div class="seal">⚔️</div>
+      <h2>北大考研 · 移动终端</h2>
+      <div style="font-size:12px;color:var(--dim);letter-spacing:2px;margin-bottom:24px">UNIFIED CULTIVATION MOBILE APP</div>
+      <input class="login-input" id="loginUser" type="text" placeholder="大本营账号" autocomplete="off">
+      <input class="login-input" id="loginPass" type="password" placeholder="核心密码">
+      <button class="login-btn" onclick="doLogin()">解除隔离</button>
+      <div class="login-err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- Main Mobile Shell -->
+  <div class="app-container" id="mainApp" style="display:none">
+    
+    <!-- Top Dynamic Tab Bar -->
+    <div class="top-bar" id="topBar">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Viewport Container -->
+    <div class="frame-container">
+      <iframe id="appFrame" src="about:blank"></iframe>
+      
+      <!-- Profile View overlaying iframe -->
+      <div class="profile-view" id="profileView">
+        <h2 style="margin-bottom: 24px; color:var(--cyan); letter-spacing: 2px;">🛡️ 个人控制面板</h2>
+        
+        <div class="p-card glow">
+          <div class="p-stat"><span>身份鉴定状态</span><span style="color:var(--green)">已授权连通 ✅</span></div>
+          <div class="p-stat"><span>底层矩阵引擎</span><span style="color:var(--gold)">PKU-Core-SDK v6.0</span></div>
+          <div class="p-stat" style="border:none;margin:0;padding:0"><span>缓存金库</span><span>100% 同步</span></div>
+        </div>
+
+        <div class="p-card">
+          <div style="font-size:12px;color:var(--dim);margin-bottom:12px">独立私密通道</div>
+          <a class="gushu-btn" href="./gushu/" target="_blank">
+            <div class="icn">🌌</div>
+            <div>
+              <div style="font-weight:700">顾枢 · 灵魂容器</div>
+              <div style="font-size:11px;color:var(--dim)">口语复试绝对隔离区 (新窗口打开)</div>
+            </div>
+          </a>
+        </div>
+
+        <button class="logout-btn-big" onclick="doLogout()">🚪 斩断连接 (退出登录)</button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active" data-tab="game" onclick="switchMainTab('game')">
+        <div class="icon">🎮</div>
+        <div class="label">试炼战场</div>
+      </div>
+      <div class="nav-item" data-tab="ai" onclick="switchMainTab('ai')">
+        <div class="icon">🧠</div>
+        <div class="label">推演军师</div>
+      </div>
+      <div class="nav-item" data-tab="profile" onclick="switchMainTab('profile')">
+        <div class="icon">🛡️</div>
+        <div class="label">控制面板</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Authentication ---
+    function doLogin(){
+      var u=document.getElementById('loginUser').value.trim();
+      var p=document.getElementById('loginPass').value.trim();
+      if(!u||!p){document.getElementById('loginErr').textContent='未输入密匙';return;}
+      if(typeof PKUSDK !== 'undefined' && PKUSDK.Auth.login(u,p)){
+        document.getElementById('loginOvl').classList.add('hide');
+        document.getElementById('mainApp').style.display = 'flex';
+        initShell(); // Boot the shell
+      } else {
+        document.getElementById('loginErr').textContent='密匙排斥，拒绝访入';
+      }
+    }
+    function doLogout(){
+      if(typeof PKUSDK !== 'undefined') PKUSDK.Auth.logout();
+      window.location.reload();
+    }
+    
+    // Auto-login
+    if(typeof PKUSDK !== 'undefined' && PKUSDK.Auth.isLoggedIn()){
+      document.getElementById('loginOvl').classList.add('hide');
+      document.getElementById('mainApp').style.display = 'flex';
+      initShell();
+    }
+    document.getElementById('loginPass').onkeydown=e=>{if(e.key==='Enter')doLogin()};
+
+    // --- Shell Navigation Logic ---
+    const TABS = {
+      game: [
+        { id: 'siege', name: '北大消消乐', url: './siege/index.html' },
+        { id: 'bg', name: '刺激战场', url: './battleground/index.html' },
+        { id: 'dorm', name: '猛鬼宿舍', url: './ghost-dorm/index.html' }
+      ],
+      ai: [
+        { id: 'vault', name: '绝密金库', url: './tianji/question-bank.html' },
+        { id: 'tianji', name: '天机推演', url: './tianji/index.html' },
+        { id: 'daming', name: '诸神军机', url: './daming/index.html' }
+      ]
+    };
+
+    let currentMainTab = 'game';
+    let subTabState = { game: 'siege', ai: 'tianji' };
+
+    const topBar = document.getElementById('topBar');
+    const appFrame = document.getElementById('appFrame');
+    const profileView = document.getElementById('profileView');
+
+    function initShell() {
+      switchMainTab('game');
+    }
+
+    function switchMainTab(tab) {
+      // Update Bottom Nav UI
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+      currentMainTab = tab;
+
+      if(tab === 'profile') {
+        topBar.style.display = 'none';
+        appFrame.style.display = 'none';
+        profileView.classList.add('active');
+      } else {
+        topBar.style.display = 'flex';
+        appFrame.style.display = 'block';
+        profileView.classList.remove('active');
+        renderTopTabs(tab);
+      }
+    }
+
+    function renderTopTabs(mainTab) {
+      topBar.innerHTML = '';
+      const items = TABS[mainTab];
+      const activeClass = mainTab === 'game' ? 'active-game' : 'active-ai';
+      
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `top-tab ${subTabState[mainTab] === item.id ? 'active ' + activeClass : ''}`;
+        div.textContent = item.name;
+        div.onclick = () => loadSubApp(mainTab, item.id);
+        topBar.appendChild(div);
+      });
+
+      // Load the currently active sub-app for this tab
+      const currentSub = items.find(i => i.id === subTabState[mainTab]);
+      if(currentSub && appFrame.src.indexOf(currentSub.url.replace('./','')) === -1) {
+        appFrame.src = currentSub.url;
+      }
+    }
+
+    function loadSubApp(mainTab, subId) {
+      subTabState[mainTab] = subId;
+      renderTopTabs(mainTab);
+    }
+  </script>
+</body>
+</html>
