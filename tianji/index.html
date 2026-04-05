@@ -223,29 +223,33 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 <script>
 // ============================================================
-//  API - 从登录系统获取密钥，或提示用户输入
+//  API - 从加密密钥库自动获取，无需手动输入
 // ============================================================
+// Auto-login: if portal login exists but PKU_KEYS not loaded, decrypt now
+(function(){
+  if(!window.PKU_KEYS&&window.PKU_AUTH){
+    var pwd=localStorage.getItem('pku_pwd');
+    if(pwd)window.PKU_AUTH.login(pwd,pwd);
+  }
+})();
 function getKey(){
-  // 1. Try from portal login system
   if(window.PKU_KEYS&&window.PKU_KEYS.OPENROUTER_API_KEY)return window.PKU_KEYS.OPENROUTER_API_KEY;
-  // 2. Try localStorage
-  var k=localStorage.getItem('openrouter_key');
-  if(k)return k;
-  // 3. Ask user
-  k=prompt('请输入OpenRouter API Key (sk-or-v1-...)：');
-  if(k){localStorage.setItem('openrouter_key',k);return k}
-  return null;
+  var k=localStorage.getItem('openrouter_key');if(k)return k;
+  // Try auto-login
+  var pwd=localStorage.getItem('pku_pwd');
+  if(pwd&&window.PKU_AUTH){window.PKU_AUTH.login(pwd,pwd);if(window.PKU_KEYS)return window.PKU_KEYS.OPENROUTER_API_KEY}
+  alert('请先从门户登录以获取API密钥');return null;
 }
 function getPplxKey(){
   if(window.PKU_KEYS&&window.PKU_KEYS.PERPLEXITY_API_KEY)return window.PKU_KEYS.PERPLEXITY_API_KEY;
-  var k=localStorage.getItem('perplexity_key');
-  if(k)return k;
-  k=prompt('请输入Perplexity API Key (pplx-...)：\n（留空则使用OpenRouter替代搜索）');
-  if(k){localStorage.setItem('perplexity_key',k);return k}
+  var k=localStorage.getItem('perplexity_key');if(k)return k;
+  // Try auto-login
+  var pwd=localStorage.getItem('pku_pwd');
+  if(pwd&&window.PKU_AUTH){window.PKU_AUTH.login(pwd,pwd);if(window.PKU_KEYS)return window.PKU_KEYS.PERPLEXITY_API_KEY}
   return null;
 }
 async function callAI(sys,usr,maxTokens){
-  var k=getKey();if(!k)throw new Error('未设置API Key');
+  var k=getKey();if(!k)throw new Error('未登录，请先从门户登录');
   var model=(window.PKU_KEYS&&window.PKU_KEYS.OPENROUTER_MODEL)||'anthropic/claude-3.7-sonnet';
   var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:sys},{role:'user',content:usr}],temperature:0.4,max_tokens:maxTokens||4096})});
   var d=await r.json();if(d.error)throw new Error(d.error.message);
