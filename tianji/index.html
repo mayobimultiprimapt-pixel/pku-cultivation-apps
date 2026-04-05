@@ -4,45 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>天机阁 · 情报与推演</title>
+<meta name="description" content="考研情报搜索、梅花易数推演与命题风向雷达系统">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#06060c;--bg2:#0c0c18;--bg3:#14142a;--card:rgba(18,18,36,.9);--red:#ff2e63;--cyan:#08f7fe;--gold:#ffd700;--purple:#9d4edd;--green:#39ff14;--amber:#ff8c00;--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--font-c:'Ma Shan Zheng',cursive}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px);pointer-events:none;z-index:0}
-
-/* Header */
-.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(6,6,12,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.08)}
-.logo{font-family:var(--font-c);font-size:28px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
-.nav-tabs{display:flex;gap:4px}
-.nav-tab{padding:10px 22px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--sub);font-family:var(--font-b);font-size:14px;cursor:pointer;transition:.3s;font-weight:500}
+.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(6,6,12,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.08);flex-wrap:wrap;gap:8px}
+.logo{font-family:var(--font-c);font-size:28px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nav-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.nav-tab{padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--sub);font-family:var(--font-b);font-size:13px;cursor:pointer;transition:.3s;font-weight:500}
 .nav-tab:hover{border-color:var(--gold);color:var(--text)}
 .nav-tab.active{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,140,0,.08));border-color:var(--gold);color:var(--gold);font-weight:700}
 .status{font-family:var(--font-d);font-size:9px;color:var(--green);letter-spacing:2px;display:flex;align-items:center;gap:5px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
 .page{display:none;padding:20px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto}
 .page.active{display:block}
-
-/* 情报站 */
 .subject-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
 .sub-tab{padding:12px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;transition:.3s;flex:1;min-width:110px;text-align:center}
 .sub-tab:hover{border-color:var(--amber);transform:translateY(-2px)}
 .sub-tab.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1)}
 .sub-tab .code{font-family:var(--font-d);font-size:24px;font-weight:900;color:var(--red);line-height:1}
 .sub-tab .name{font-size:11px;color:var(--sub);margin-top:4px}
-
 .section-title{font-family:var(--font-d);font-size:11px;letter-spacing:3px;color:var(--cyan);display:flex;align-items:center;gap:8px;margin:20px 0 12px}
 .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
-
-.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:.3s;position:relative}
+.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:.3s;position:relative;white-space:pre-wrap;line-height:1.8;font-size:14px}
 .intel-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.intel-card .date{font-family:var(--font-d);font-size:10px;color:var(--cyan);letter-spacing:1px}
-.intel-card .summary{margin-top:8px;font-size:14px;line-height:1.8;color:var(--text)}
 .copy-btn{position:absolute;top:12px;right:12px;background:rgba(8,247,254,.08);border:1px solid rgba(8,247,254,.2);color:var(--cyan);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:.2s;font-family:var(--font-b)}
 .copy-btn:hover{background:rgba(8,247,254,.2)}
-
 .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 .btn{padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:var(--font-b);font-size:14px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:6px;font-weight:500}
 .btn:hover{border-color:var(--gold);transform:translateY(-1px)}
@@ -52,16 +43,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .btn-gua{background:linear-gradient(135deg,var(--gold),var(--amber));border-color:transparent;color:#000;font-weight:700}
 .btn-gua:hover{box-shadow:0 4px 24px rgba(255,215,0,.4)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-
 .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* 推演阁 */
 .div-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:900px){.div-layout{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
 .panel-title{font-family:var(--font-c);font-size:22px;color:var(--gold);margin-bottom:16px}
-
 .field{margin-bottom:14px}
 .field label{font-size:12px;color:var(--sub);display:block;margin-bottom:4px}
 .field textarea,.field input,.field select{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:14px;outline:none;resize:vertical;transition:.2s}
@@ -70,67 +57,87 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .meth{padding:8px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
 .meth:hover{border-color:var(--gold)}
 .meth.active{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold)}
-
-/* 卦象 */
 .gua-row{display:flex;justify-content:center;gap:28px;margin:16px 0;flex-wrap:wrap}
 .gua-box{text-align:center;min-width:90px}
 .gua-lbl{font-size:10px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px;margin-bottom:4px}
 .gua-sym{font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 16px rgba(255,215,0,.3)}
 .gua-nm{font-family:var(--font-c);font-size:18px;margin:4px 0}
-.gua-64{font-size:11px;color:var(--cyan)}
 .yao{width:56px;height:7px;margin:3px auto;border-radius:2px;position:relative}
 .yao.yang{background:var(--gold);box-shadow:0 0 5px rgba(255,215,0,.3)}
 .yao.yin{background:transparent;display:flex;gap:6px;justify-content:center}
 .yao.yin::before,.yao.yin::after{content:'';width:23px;height:7px;background:var(--gold);border-radius:2px;box-shadow:0 0 5px rgba(255,215,0,.3)}
 .yao.dong::after{content:'← 动';position:absolute;left:62px;top:-2px;font-size:9px;color:var(--red);white-space:nowrap;font-family:var(--font-b);background:none;width:auto;height:auto;box-shadow:none;border-radius:0}
-
 .ty-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;text-align:center}
 .ty-rel{font-size:22px;font-family:var(--font-c);color:var(--gold);margin:6px 0}
 .ty-fort{font-size:16px;font-weight:700;padding:6px 16px;border-radius:6px;display:inline-block;margin-top:4px}
 .fort-good{background:rgba(57,255,20,.12);color:var(--green)}
 .fort-bad{background:rgba(255,46,99,.12);color:var(--red)}
 .fort-mid{background:rgba(255,215,0,.12);color:var(--gold)}
-
 .ds-result{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;white-space:pre-wrap;font-size:14px;max-height:500px;overflow-y:auto}
 .ds-result::-webkit-scrollbar{width:4px}
 .ds-result::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
+.radar-hero{text-align:center;margin-bottom:24px;padding:24px 0}
+.radar-hero .r-title{font-family:var(--font-c);font-size:36px;background:linear-gradient(135deg,var(--red),var(--purple),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.radar-hero .r-sub{font-family:var(--font-d);font-size:10px;letter-spacing:4px;color:var(--dim)}
+.radar-hero .r-date{font-family:var(--font-d);font-size:11px;color:var(--green);margin-top:8px}
+.radar-subject-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.radar-sub{flex:1;min-width:100px;padding:14px 10px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;text-align:center;transition:.3s}
+.radar-sub:hover{border-color:var(--purple);transform:translateY(-2px)}
+.radar-sub.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1)}
+.radar-sub .rs-code{font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--red)}
+.radar-sub .rs-name{font-size:10px;color:var(--sub);margin-top:3px}
+.radar-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.radar-grid{grid-template-columns:1fr}}
+.radar-module{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.4s;position:relative;overflow:hidden}
+.radar-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.3s}
+.radar-module:hover{border-color:rgba(255,215,0,.3);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.radar-module:hover::before{opacity:1}
+.radar-module.mod-heat::before{background:linear-gradient(90deg,#ff2e63,#ff8c00,#ffd700)}
+.radar-module.mod-prof::before{background:linear-gradient(90deg,#9d4edd,#08f7fe)}
+.radar-module.mod-poli::before{background:linear-gradient(90deg,#ff2e63,#39ff14)}
+.radar-module.mod-cs::before{background:linear-gradient(90deg,#08f7fe,#9d4edd)}
+.radar-module.mod-pred::before{background:linear-gradient(90deg,#ffd700,#ff2e63)}
+.rm-icon{font-size:32px;margin-bottom:8px}
+.rm-title{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.rm-desc{font-size:11px;color:var(--sub);line-height:1.6}
+.rm-tag{display:inline-block;margin-top:8px;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;letter-spacing:1px}
+.tag-live{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.2)}
+.tag-ai-deep{background:rgba(157,78,221,.1);color:var(--purple);border:1px solid rgba(157,78,221,.2)}
+.tag-data{background:rgba(8,247,254,.08);color:var(--cyan);border:1px solid rgba(8,247,254,.15)}
+.radar-output{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;display:none}
+.radar-output.visible{display:block;animation:slideUp .4s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.radar-output .ro-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.radar-output .ro-title{font-family:var(--font-c);font-size:20px;color:var(--gold)}
+.radar-output .ro-close{background:rgba(255,46,99,.1);border:1px solid rgba(255,46,99,.2);color:var(--red);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font-b);transition:.2s}
+.radar-output .ro-close:hover{background:rgba(255,46,99,.2)}
+.radar-content{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;white-space:pre-wrap;font-size:14px;max-height:600px;overflow-y:auto}
+.radar-content::-webkit-scrollbar{width:4px}
+.radar-content::-webkit-scrollbar-thumb{background:var(--purple);border-radius:4px}
+.radar-progress{width:100%;height:3px;background:var(--bg3);border-radius:2px;margin:12px 0;overflow:hidden;display:none}
+.radar-progress.active{display:block}
+.radar-progress .rp-bar{width:0%;height:100%;background:linear-gradient(90deg,var(--red),var(--purple),var(--cyan));border-radius:2px;animation:radarScan 3s ease-in-out infinite}
+@keyframes radarScan{0%{width:0%}50%{width:70%}100%{width:100%}}
+.countdown-bar{display:flex;gap:12px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.cd-item{text-align:center;padding:8px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;min-width:60px}
+.cd-item .cd-num{font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--red)}
+.cd-item .cd-label{font-size:9px;color:var(--sub);margin-top:2px;letter-spacing:1px}
 </style>
-<script>
-(function(){
-  var _fetch = window.fetch;
-  function getKey(){var k=localStorage.getItem("openrouter_key");if(!k){k=prompt("请输入OpenRouter API Key (sk-or-v1-...)：");if(k)localStorage.setItem("openrouter_key",k)}return k}
-  window.fetch = function(url, opts) {
-    if (typeof url==='string' && url.includes('/api/')) {
-      var k=getKey(); if(!k) return Promise.resolve(new Response(JSON.stringify({success:false,error:"需要API Key"})));
-      var body; try{body=JSON.parse(opts.body)}catch(e){body={}}
-      var msg = body.message || body.query || body.prompt || JSON.stringify(body);
-      return _fetch('https://openrouter.ai/api/v1/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
-        body:JSON.stringify({model:'deepseek/deepseek-chat',messages:[{role:'user',content:msg}],max_tokens:4096})
-      }).then(function(r){return r.json()}).then(function(d){
-        var t=d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
-        return new Response(JSON.stringify({success:true,response:t,data:t,results:[{title:'AI分析',snippet:t,url:'#'}]}));
-      });
-    }
-    return _fetch.apply(this, arguments);
-  };
-})();
-</script>
+<script src="../api-keys.js"></script>
 </head>
 <body>
 <div class="bg-grid"></div>
-
 <header class="header">
   <span class="status"><span class="dot"></span>ONLINE</span>
   <span class="logo">🏯 天机阁</span>
   <nav class="nav-tabs">
     <button class="nav-tab active" data-page="intel">📡 情报站</button>
     <button class="nav-tab" data-page="divine">🔮 推演阁</button>
+    <button class="nav-tab" data-page="radar">📡 命题雷达</button>
   </nav>
 </header>
 
-<!-- ============ 情报站 ============ -->
+<!-- 情报站 -->
 <div class="page active" id="page-intel">
   <div class="subject-tabs">
     <div class="sub-tab active" data-sub="101"><div class="code">101</div><div class="name">政治·朝堂暗谍</div></div>
@@ -138,25 +145,19 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     <div class="sub-tab" data-sub="301"><div class="code">301</div><div class="name">数学·大漠算经</div></div>
     <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩阵</div></div>
   </div>
-
   <div class="section-title">最新情报快照</div>
-  <div id="intelCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
-
-  <div class="section-title">秘密蓝图</div>
-  <div id="bpCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
-
+  <div id="intelCards"><div class="intel-card"><div style="color:var(--dim)">选择科目后点击"窃取最新情报"获取实时分析</div></div></div>
   <div class="btn-row">
     <button class="btn btn-search" id="btnSearch">📡 窃取最新情报</button>
     <button class="btn btn-gua" id="btnToGua">🔮 拿情报去推演</button>
   </div>
-
   <div id="searchSec" style="display:none">
-    <div class="section-title">实时窃取 (PERPLEXITY)</div>
+    <div class="section-title">实时情报分析</div>
     <div id="searchResult" class="intel-card"><div style="color:var(--dim)">等待搜索...</div></div>
   </div>
 </div>
 
-<!-- ============ 推演阁 ============ -->
+<!-- 推演阁 -->
 <div class="page" id="page-divine">
   <div class="div-layout">
     <div class="panel">
@@ -167,12 +168,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
         <div class="methods">
           <div class="meth active" data-m="datetime">🕐 年月日时</div>
           <div class="meth" data-m="numbers">🔢 报数</div>
-          <div class="meth" data-m="text">📝 文字/数字</div>
+          <div class="meth" data-m="text">📝 文字</div>
         </div>
       </div>
       <div class="field" id="fNums" style="display:none"><label>两个数字</label><div style="display:flex;gap:8px"><input type="number" id="n1" placeholder="上卦数" min="1"><input type="number" id="n2" placeholder="下卦数" min="1"></div></div>
-      <div class="field" id="fText" style="display:none"><label>输入文字/情报内容</label><textarea id="qT" rows="2" placeholder="输入任意文字或情报站复制的内容"></textarea></div>
-      <div class="field"><label>附加情报（可选，可从情报站复制粘贴）</label><textarea id="extra" rows="3" placeholder="粘贴情报站内容，DeepSeek会结合情报推演..."></textarea></div>
+      <div class="field" id="fText" style="display:none"><label>输入文字</label><textarea id="qT" rows="2" placeholder="输入任意文字"></textarea></div>
+      <div class="field"><label>附加情报（可选）</label><textarea id="extra" rows="3" placeholder="粘贴情报站内容，AI会结合情报推演..."></textarea></div>
       <button class="btn btn-gua" id="btnGo" style="width:100%;justify-content:center;font-size:16px;padding:14px">🔮 起卦推演</button>
     </div>
     <div class="panel">
@@ -181,15 +182,92 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     </div>
   </div>
   <div class="panel" style="margin-top:20px;display:none" id="dsPanel">
-    <div class="panel-title">🧠 DeepSeek · 北斗罡炁推演</div>
+    <div class="panel-title">🧠 AI · 北斗罡炁推演</div>
     <div id="dsOut" class="ds-result">等待推演...</div>
   </div>
 </div>
 
-<script>
-let curSub='101', curM='datetime', lastCopy='';
+<!-- 命题风向雷达 -->
+<div class="page" id="page-radar">
+  <div class="radar-hero">
+    <div class="r-title">命题风向雷达</div>
+    <div class="r-sub">EXAM PROPOSITION TREND RADAR · PUBLIC INTELLIGENCE ANALYSIS</div>
+    <div class="r-date" id="radarDate"></div>
+  </div>
+  <div class="countdown-bar" id="countdownBar"></div>
+  <div class="radar-subject-row">
+    <div class="radar-sub active" data-rsub="101"><div class="rs-code">101</div><div class="rs-name">政治 · 时政风向</div></div>
+    <div class="radar-sub" data-rsub="201"><div class="rs-code">201</div><div class="rs-name">英语 · 选材趋势</div></div>
+    <div class="radar-sub" data-rsub="301"><div class="rs-code">301</div><div class="rs-name">数学 · 难度权重</div></div>
+    <div class="radar-sub" data-rsub="408"><div class="rs-code">408</div><div class="rs-name">计算机 · 前沿交叉</div></div>
+  </div>
+  <div class="radar-grid">
+    <div class="radar-module mod-heat" data-mod="heatmap"><div class="rm-icon">🔥</div><div class="rm-title">考点热力图</div><div class="rm-desc">近10年真题考频分析，预测2026年命中概率</div><span class="rm-tag tag-data">DATA ANALYSIS</span></div>
+    <div class="radar-module mod-prof" data-mod="professor"><div class="rm-icon">🎓</div><div class="rm-title">命题教授风向</div><div class="rm-desc">追踪命题组候选教授的论文和研究方向</div><span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span></div>
+    <div class="radar-module mod-poli" data-mod="political"><div class="rm-icon">🏛️</div><div class="rm-title">时政热点雷达</div><div class="rm-desc">近12月核心时政事件与考纲的映射关系</div><span class="rm-tag tag-live">LIVE TRACKING</span></div>
+    <div class="radar-module mod-cs" data-mod="frontier"><div class="rm-icon">🧬</div><div class="rm-title">学科前沿交叉</div><div class="rm-desc">前沿学术论文与考纲的交叉点分析</div><span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span></div>
+    <div class="radar-module mod-pred" data-mod="prediction" style="grid-column:1/-1"><div class="rm-icon">🎯</div><div class="rm-title">综合命题预测 · 2026终极推演</div><div class="rm-desc">融合全部情报，生成10道核心考题方向预测</div><span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span><span class="rm-tag tag-live" style="margin-left:4px">COMPREHENSIVE</span></div>
+  </div>
+  <div class="radar-progress" id="radarProgress"><div class="rp-bar"></div></div>
+  <div class="radar-output" id="radarOutput">
+    <div class="ro-header">
+      <div class="ro-title" id="roTitle">分析结果</div>
+      <div style="display:flex;gap:6px">
+        <button class="copy-btn" onclick="copyRadarOutput()">📋 复制</button>
+        <button class="ro-close" onclick="closeRadarOutput()">✖ 关闭</button>
+      </div>
+    </div>
+    <div class="radar-content" id="radarContent">等待分析...</div>
+  </div>
+</div>
 
-// Tab
+<script>
+// ============================================================
+//  API - 从登录系统获取密钥，或提示用户输入
+// ============================================================
+function getKey(){
+  // 1. Try from portal login system
+  if(window.PKU_KEYS&&window.PKU_KEYS.OPENROUTER_API_KEY)return window.PKU_KEYS.OPENROUTER_API_KEY;
+  // 2. Try localStorage
+  var k=localStorage.getItem('openrouter_key');
+  if(k)return k;
+  // 3. Ask user
+  k=prompt('请输入OpenRouter API Key (sk-or-v1-...)：');
+  if(k){localStorage.setItem('openrouter_key',k);return k}
+  return null;
+}
+function getPplxKey(){
+  if(window.PKU_KEYS&&window.PKU_KEYS.PERPLEXITY_API_KEY)return window.PKU_KEYS.PERPLEXITY_API_KEY;
+  var k=localStorage.getItem('perplexity_key');
+  if(k)return k;
+  k=prompt('请输入Perplexity API Key (pplx-...)：\n（留空则使用OpenRouter替代搜索）');
+  if(k){localStorage.setItem('perplexity_key',k);return k}
+  return null;
+}
+async function callAI(sys,usr,maxTokens){
+  var k=getKey();if(!k)throw new Error('未设置API Key');
+  var model=(window.PKU_KEYS&&window.PKU_KEYS.OPENROUTER_MODEL)||'anthropic/claude-3.7-sonnet';
+  var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:sys},{role:'user',content:usr}],temperature:0.4,max_tokens:maxTokens||4096})});
+  var d=await r.json();if(d.error)throw new Error(d.error.message);
+  var c=(d.choices||[{}])[0]?.message?.content||'';
+  return c.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+}
+async function callPplx(sys,usr){
+  var k=getPplxKey();
+  if(!k)return await callAI(sys+'\n请基于你最新的知识搜索互联网回答。',usr);
+  var r=await fetch('https://api.perplexity.ai/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:JSON.stringify({model:'sonar-pro',messages:[{role:'system',content:sys},{role:'user',content:usr}],temperature:0.2,max_tokens:4096})});
+  var d=await r.json();if(d.error)throw new Error(d.error.message);
+  return (d.choices||[{}])[0]?.message?.content||'[搜索返回为空]';
+}
+
+// ============================================================
+//  STATE
+// ============================================================
+var curSub='101',curM='datetime',lastCopy='',radarSub='101';
+
+// ============================================================
+//  NAV
+// ============================================================
 document.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -197,55 +275,47 @@ document.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>
   document.getElementById('page-'+t.dataset.page).classList.add('active');
 }));
 
-// Subject
+// ============================================================
+//  情报站 - 直接调AI分智取
+// ============================================================
 document.querySelectorAll('.sub-tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.sub-tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); curSub=t.dataset.sub; loadIntel(curSub);
+  t.classList.add('active');curSub=t.dataset.sub;
 }));
-
-// Method
 document.querySelectorAll('.meth').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.meth').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); curM=t.dataset.m;
+  t.classList.add('active');curM=t.dataset.m;
   document.getElementById('fNums').style.display=curM==='numbers'?'':'none';
   document.getElementById('fText').style.display=curM==='text'?'':'none';
 }));
 
-// Intel
-async function loadIntel(sub){
-  try{
-    const r=await(await fetch('/api/tianji/intel/'+sub)).json();
-    document.getElementById('intelCards').innerHTML=r.intel.map(i=>`
-      <div class="intel-card"><button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">${i.date} · ${sub}</div><div class="summary">${i.summary||'暂无'}</div></div>
-    `).join('')||'<div class="intel-card" style="color:var(--dim)">暂无情报</div>';
-    document.getElementById('bpCards').innerHTML=r.blueprints.map(b=>`
-      <div class="intel-card"><button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">${b.date} · ${b.mode}</div><div class="summary">${b.title||''}</div></div>
-    `).join('')||'<div class="intel-card" style="color:var(--dim)">暂无蓝图</div>';
-  }catch(e){document.getElementById('intelCards').innerHTML=`<div class="intel-card" style="color:var(--red)">加载失败</div>`}
-}
+var SUBJ_INFO={'101':{name:'思想政治理论',desc:'马原·毛概·史纲·思修·形势与政策'},'201':{name:'英语一',desc:'阅读·完型·翻译·写作'},'301':{name:'数学一',desc:'高数(56%)·线代(22%)·概率(22%)'},'408':{name:'计算机学科专业基础',desc:'数据结构·组成原理·操作系统·网络'}};
+var SEARCH_QUERIES={
+  '101':'2026年考研政治 最新命题趋势 时政热点 二十届 习近平重要讲话 考研政治大纲变化 肖秀荣预测 马原毛概史纲思修重点',
+  '201':'2026年考研英语一 最新命题趋势 阅读理解选材方向 作文话题预测 翻译难度 完形填空技巧 何凯文刘晓燕',
+  '301':'2026年考研数学一 最新命题趋势 高数线代概率重点 张宇汤家凤李永乐 难度预测 考纲变化 数学真题规律',
+  '408':'2026年考研408计算机 最新命题趋势 数据结构操作系统计算机网络组成原理 王道考研 真题规律 新增考点'
+};
 
-function doCopy(btn){
-  const txt=btn.closest('.intel-card').querySelector('.summary').textContent;
-  navigator.clipboard.writeText(txt); lastCopy=txt;
-  btn.textContent='✅ 已复制'; setTimeout(()=>btn.textContent='📋 复制',1500);
-}
-
-// Search
 document.getElementById('btnSearch').addEventListener('click',async()=>{
-  const b=document.getElementById('btnSearch');b.disabled=true;b.innerHTML='<span class="loading"></span> 窃取中...';
+  var b=document.getElementById('btnSearch');b.disabled=true;b.innerHTML='<span class="loading"></span> 🔍 实时窃取中...';
   document.getElementById('searchSec').style.display='';
+  document.getElementById('searchResult').innerHTML='<span class="loading"></span> 正在接入Perplexity实时搜索引擎，窃取当日最新机密...';
   try{
-    const r=await(await fetch('/api/tianji/search/'+curSub,{method:'POST'})).json();
-    document.getElementById('searchResult').innerHTML=`<button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">实时 · ${r.name} · ${new Date().toLocaleString()}</div>
-      <div class="summary">${(r.content||'').replace(/\n/g,'<br>')}</div>`;
-  }catch(e){document.getElementById('searchResult').innerHTML='<div style="color:var(--red)">窃取失败</div>'}
+    var s=SUBJ_INFO[curSub];
+    var today=new Date().toLocaleDateString('zh-CN');
+    var result=await callPplx(
+      '你是考研情报窃取专家。今天是'+today+'。请搜索互联网，获取关于2026年考研'+curSub+' '+s.name+'的【最新、最核心】情报。要求：\n1.必须包含今年最新的政策/大纲/名师动态\n2.给出具体的命题趋势预测和高频考点\n3.引用具体的信息来源（网站/名师/官方文件）\n4.用军事情报风格，标注情报等级和可信度\n5.最后给出"紧急行动指令"——考生当前最该做什么',
+      SEARCH_QUERIES[curSub]+'\n\n请搜索以上关键词，汇总当前最新最核心的考研情报。今天是'+today+'，请确保信息是最新的。'
+    );
+    var html='<button class="copy-btn" onclick="doCopy(this)">📋 复制</button><div style="font-family:var(--font-d);font-size:10px;color:var(--cyan);margin-bottom:8px">🔴 LIVE · '+curSub+' '+s.name+' · '+new Date().toLocaleString()+' · PERPLEXITY</div><div class="summary">'+result.replace(/\n/g,'<br>')+'</div>';
+    document.getElementById('searchResult').innerHTML=html;
+    document.getElementById('intelCards').innerHTML='<div class="intel-card">'+html+'</div>';
+    lastCopy=result;
+  }catch(e){document.getElementById('searchResult').innerHTML='<div style="color:var(--red)">❌ 窃取失败: '+e.message+'</div>'}
   b.disabled=false;b.innerHTML='📡 窃取最新情报';
 });
 
-// To Gua
 document.getElementById('btnToGua').addEventListener('click',()=>{
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -253,57 +323,140 @@ document.getElementById('btnToGua').addEventListener('click',()=>{
   document.getElementById('page-divine').classList.add('active');
   if(lastCopy)document.getElementById('extra').value=lastCopy;
 });
+function doCopy(btn){var txt=btn.closest('.intel-card').querySelector('.summary').textContent;navigator.clipboard.writeText(txt);lastCopy=txt;btn.textContent='✅ 已复制';setTimeout(()=>btn.textContent='📋 复制',1500)}
 
-// Divine
+// ============================================================
+//  推演阁 - 纯前端梅花易数 + AI解卦
+// ============================================================
+var BN=['乾','兑','离','震','巽','坎','艮','坤'],BW=['金','金','火','木','木','水','土','土'],BG=['☰','☱','☲','☳','☴','☵','☶','☷'];
+var BY={0:[1,1,1],1:[1,1,0],2:[1,0,1],3:[1,0,0],4:[0,1,1],5:[0,1,0],6:[0,0,1],7:[0,0,0]};
+var GN64={'乾乾':'乾为天','乾兑':'天泽履','乾离':'天火同人','乾震':'天雷无妄','乾巽':'天风姤','乾坎':'天水讼','乾艮':'天山遁','乾坤':'天地否','兑乾':'泽天夬','兑兑':'兑为泽','兑离':'泽火革','兑震':'泽雷随','兑巽':'泽风大过','兑坎':'泽水困','兑艮':'泽山咸','兑坤':'泽地萃','离乾':'火天大有','离兑':'火泽睽','离离':'离为火','离震':'火雷噬嗑','离巽':'火风鼎','离坎':'火水未济','离艮':'火山旅','离坤':'火地晋','震乾':'雷天大壮','震兑':'雷泽归妹','震离':'雷火丰','震震':'震为雷','震巽':'雷风恒','震坎':'雷水解','震艮':'雷山小过','震坤':'雷地豫','巽乾':'风天小畜','巽兑':'风泽中孚','巽离':'风火家人','巽震':'风雷益','巽巽':'巽为风','巽坎':'风水涣','巽艮':'风山渐','巽坤':'风地观','坎乾':'水天需','坎兑':'水泽节','坎离':'水火既济','坎震':'水雷屯','坎巽':'水风井','坎坎':'坎为水','坎艮':'水山蹇','坎坤':'水地比','艮乾':'山天大畜','艮兑':'山泽损','艮离':'山火贲','艮震':'山雷颐','艮巽':'山风蛊','艮坎':'山水蒙','艮艮':'艮为山','艮坤':'山地剥','坤乾':'地天泰','坤兑':'地泽临','坤离':'地火明夷','坤震':'地雷复','坤巽':'地风升','坤坎':'地水师','坤艮':'地山谦','坤坤':'坤为地'};
+
+function calcGua(u,l,d){
+  u=((u%8)+8)%8;l=((l%8)+8)%8;d=d<1?1:(d>6?6:d);
+  var bu=BY[u],bl=BY[l];
+  var ben=[...bl,...bu];
+  var hu=[ben[1],ben[2],ben[3],ben[2],ben[3],ben[4]];
+  var bian=[...ben];bian[d-1]=bian[d-1]?0:1;
+  function y2n(y){for(var i=0;i<8;i++)if(BY[i][0]===y[0]&&BY[i][1]===y[1]&&BY[i][2]===y[2])return BN[i];return'?'}
+  var un=BN[u],ln=BN[l];
+  var hun=y2n(hu.slice(3)),hln=y2n(hu.slice(0,3));
+  var bn2=y2n(bian.slice(3)),bl2=y2n(bian.slice(0,3));
+  return{upper:u,lower:l,dong:d,benName:GN64[un+ln]||un+'上'+ln+'下',huName:GN64[hun+hln]||hun+'上'+hln+'下',bianName:GN64[bn2+bl2]||bn2+'上'+bl2+'下',
+    ben:ben,hu:hu,bian:bian,upperName:un,lowerName:ln,upperWX:BW[u],lowerWX:BW[l],
+    tiName:ln,tiWX:BW[l],yongName:un,yongWX:BW[u]};
+}
+function wxRelation(ti,yong){
+  var wx=['金','水','木','火','土'];var sheng={金:'水',水:'木',木:'火',火:'土',土:'金'};var ke={金:'木',水:'火',木:'土',火:'金',土:'水'};
+  if(ti===yong)return{rel:'比和',fort:'吉（平稳顺利）'};
+  if(sheng[ti]===yong)return{rel:'体生用',fort:'小凶（耗泄）'};
+  if(sheng[yong]===ti)return{rel:'用生体',fort:'大吉（得助）'};
+  if(ke[ti]===yong)return{rel:'体克用',fort:'小吉（有所得）'};
+  if(ke[yong]===ti)return{rel:'用克体',fort:'大凶（受制）'};
+  return{rel:'比和',fort:'中平'};
+}
+
 document.getElementById('btnGo').addEventListener('click',async()=>{
-  const b=document.getElementById('btnGo');b.disabled=true;b.innerHTML='<span class="loading"></span> 起卦推演中...';
+  var b=document.getElementById('btnGo');b.disabled=true;b.innerHTML='<span class="loading"></span> 起卦推演中...';
   try{
-    const body={method:curM, question:document.getElementById('qQ').value||'求问天机',
-      num1:parseInt(document.getElementById('n1').value)||0,
-      num2:parseInt(document.getElementById('n2').value)||0,
-      text:document.getElementById('qT').value||'',
-      extra_context:document.getElementById('extra').value||''};
-    const r=await(await fetch('/api/tianji/divine',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
-    renderGua(r.gua);
-    // DeepSeek
+    var u,l,d,info;var now=new Date();
+    if(curM==='datetime'){
+      var y=now.getFullYear(),m=now.getMonth()+1,dd=now.getDate(),h=now.getHours();
+      u=(y+m+dd)%8||8;l=(y+m+dd+h)%8||8;d=(y+m+dd+h)%6||6;
+      info='时间卦：'+y+'年'+m+'月'+dd+'日'+h+'时';
+    }else if(curM==='numbers'){
+      u=parseInt(document.getElementById('n1').value)||~~(Math.random()*8+1);
+      l=parseInt(document.getElementById('n2').value)||~~(Math.random()*8+1);
+      d=(u+l)%6||6;info='报数卦：'+u+','+l;
+    }else{
+      var txt=document.getElementById('qT').value||'天机';
+      var s=0;for(var i=0;i<txt.length;i++)s+=txt.charCodeAt(i);
+      u=s%8||8;l=(s+txt.length)%8||8;d=(s*txt.length)%6||6;
+      info='文字卦：'+txt;
+    }
+    var g=calcGua(u-1,l-1,d);
+    var wr=wxRelation(g.tiWX,g.yongWX);
+    // Render gua
+    function yaoHTML(yao,dong){
+      var h='';for(var i=5;i>=0;i--){
+        var cls=yao[i]===1?'yang':'yin';var dm=(i+1)===dong?'dong':'';
+        h+='<div class="yao '+cls+' '+dm+'"></div>';
+      }return h;
+    }
+    var fc=wr.fort.includes('吉')&&!wr.fort.includes('凶')?'fort-good':wr.fort.includes('凶')?'fort-bad':'fort-mid';
+    document.getElementById('guaOut').innerHTML=
+      '<div style="font-size:11px;color:var(--cyan);text-align:center;font-family:var(--font-d);letter-spacing:1px;margin-bottom:8px">'+info+'</div>'+
+      '<div class="gua-row">'+
+        '<div class="gua-box"><div class="gua-lbl">本卦</div><div class="gua-sym">'+BG[g.upper]+'</div>'+yaoHTML(g.ben,g.dong)+'<div class="gua-sym">'+BG[g.lower]+'</div><div class="gua-nm">'+g.benName+'</div></div>'+
+        '<div class="gua-box"><div class="gua-lbl">互卦</div>'+yaoHTML(g.hu,0)+'<div class="gua-nm">'+g.huName+'</div></div>'+
+        '<div class="gua-box"><div class="gua-lbl">变卦</div>'+yaoHTML(g.bian,0)+'<div class="gua-nm">'+g.bianName+'</div></div>'+
+      '</div>'+
+      '<div class="ty-box">'+
+        '<div style="font-size:13px;color:var(--sub)">体卦 <strong style="color:var(--gold)">'+g.tiName+'·'+g.tiWX+'</strong>(下) ｜ 用卦 <strong style="color:var(--cyan)">'+g.yongName+'·'+g.yongWX+'</strong>(上)</div>'+
+        '<div class="ty-rel">'+wr.rel+'</div>'+
+        '<div class="ty-fort '+fc+'">'+wr.fort+'</div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--dim);text-align:center">动爻：第'+g.dong+'爻</div>';
+    // AI推演
     document.getElementById('dsPanel').style.display='';
-    document.getElementById('dsOut').innerHTML='<span class="loading"></span> DeepSeek-R1 推演中...';
-    const ds=await(await fetch('/api/tianji/deepseek',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:body.question,gua:r.gua,extra_context:body.extra_context})})).json();
-    document.getElementById('dsOut').textContent=ds.result||'[推演失败]';
-  }catch(e){document.getElementById('guaOut').innerHTML=`<div style="color:var(--red);text-align:center;padding:20px">失败: ${e.message}</div>`}
+    document.getElementById('dsOut').innerHTML='<span class="loading"></span> AI推演中...';
+    var question=document.getElementById('qQ').value||'求问天机';
+    var extraCtx=document.getElementById('extra').value||'';
+    var aiPrompt='你是精通梅花易数的推演大师，代号"北斗"。\n\n'+
+      '卦象信息：\n方法：'+info+'\n本卦：'+g.benName+'\n互卦：'+g.huName+'\n变卦：'+g.bianName+'\n体卦：'+g.tiName+'('+g.tiWX+') 用卦：'+g.yongName+'('+g.yongWX+')\n体用关系：'+wr.rel+'\n断语：'+wr.fort+'\n动爻：第'+g.dong+'爻\n\n所问：'+question+'\n'+
+      (extraCtx?'\n附加情报/背景：\n'+extraCtx+'\n':'')+
+      '\n请按以下步骤推演：\n1.卦象解析（本卦→互卦→变卦的演化逻辑）\n2.体用分析（五行生克详解）\n3.外应参考（当前时空环境对卦象的影响）\n4.针对所问事项的具体推演结论\n5.行动建议与吉凶方位/时间';
+    var ds=await callAI('你是梅花易数推演大师，精通易经64卦。用情报分析风格回答。',aiPrompt);
+    document.getElementById('dsOut').textContent=ds;
+  }catch(e){document.getElementById('guaOut').innerHTML='<div style="color:var(--red);text-align:center;padding:20px">失败: '+e.message+'</div>'}
   b.disabled=false;b.innerHTML='🔮 起卦推演';
 });
 
-function renderGua(g){
-  const{ben_gua:bg,hu_gua:hg,bian_gua:vg,dong_yao:dy,tiyong:ty}=g;
-  function yaoHTML(uy,ly,d){
-    let h='';const all=[...ly,...uy];
-    for(let i=5;i>=0;i--){
-      const cls=all[i]===1?'yang':'yin';
-      const dm=(i+1)===d?'dong':'';
-      h+=`<div class="yao ${cls} ${dm}"></div>`;
-    }return h;
-  }
-  let fc='fort-mid';
-  if(ty.fortune.includes('吉')&&!ty.fortune.includes('凶'))fc='fort-good';
-  if(ty.fortune.includes('凶'))fc='fort-bad';
-  document.getElementById('guaOut').innerHTML=`
-    <div style="font-size:11px;color:var(--cyan);text-align:center;font-family:var(--font-d);letter-spacing:1px;margin-bottom:8px">${g.method} · ${g.time_info}</div>
-    <div class="gua-row">
-      <div class="gua-box"><div class="gua-lbl">本卦</div><div class="gua-sym">${bg.upper_symbol}</div>${yaoHTML(bg.upper_yao,bg.lower_yao,dy)}<div class="gua-sym">${bg.lower_symbol}</div><div class="gua-nm">${bg.name}</div></div>
-      <div class="gua-box"><div class="gua-lbl">互卦</div><div class="gua-sym">${hg.upper_symbol}</div>${yaoHTML(hg.upper_yao,hg.lower_yao,0)}<div class="gua-sym">${hg.lower_symbol}</div><div class="gua-nm">${hg.name}</div></div>
-      <div class="gua-box"><div class="gua-lbl">变卦</div><div class="gua-sym">${vg.upper_symbol}</div>${yaoHTML(vg.upper_yao,vg.lower_yao,0)}<div class="gua-sym">${vg.lower_symbol}</div><div class="gua-nm">${vg.name}</div></div>
-    </div>
-    <div class="ty-box">
-      <div style="font-size:13px;color:var(--sub)">体卦 <strong style="color:var(--gold)">${ty.ti.name}·${ty.ti.wuxing}</strong>(${ty.ti.pos}) ｜ 用卦 <strong style="color:var(--cyan)">${ty.yong.name}·${ty.yong.wuxing}</strong>(${ty.yong.pos})</div>
-      <div class="ty-rel">${ty.relation}</div>
-      <div class="ty-fort ${fc}">${ty.fortune}</div>
-    </div>
-    <div style="font-size:11px;color:var(--dim);text-align:center">动爻：第${dy}爻</div>`;
-}
+// ============================================================
+//  命题风向雷达
+// ============================================================
+var RADAR_SYS='你是"天机阁"核心情报分析引擎，代号"北斗"。基于公开学术数据、历年真题、教授论文、时政新闻，对考研命题趋势进行深度推演。输出Markdown格式，军事情报风格。当前：'+new Date().toLocaleDateString('zh-CN')+'，目标：2026年全国硕士研究生统招考试。';
+var SUBJ_FULL={'101':{name:'思想政治理论',full:'马原·毛概·史纲·思修·形势与政策'},'201':{name:'英语一',full:'阅读理解·完形填空·翻译·写作'},'301':{name:'数学一',full:'高数(56%)·线代(22%)·概率统计(22%)'},'408':{name:'计算机学科专业基础',full:'数据结构(45)·组成原理(45)·操作系统(35)·计算机网络(25)'}};
+var MOD_PROMPTS={
+  heatmap:function(s){return'对考研'+s+' '+SUBJ_FULL[s].name+'进行近10年真题考频分析。输出：\n## 🔥 考点热力图\n### TOP10高频考点(≥6次)\n### 中频考点(3-5次)\n### 低频危险考点(即将回归)\n### 📈 轮换周期分析\n### 🎯 2026年命中预测TOP10(含概率%)'},
+  professor:function(s){return'分析考研'+s+' '+SUBJ_FULL[s].name+'的命题组候选教授群体。输出：\n## 🎓 命题教授风向\n### 核心候选教授(≥10位，含院校、研究方向)\n### 学术热点→命题方向映射\n### ⚠️ 高危信号：哪些教授研究方向与未考知识点重合'},
+  political:function(s){return'对考研'+s+' '+SUBJ_FULL[s].name+'进行近12月时政/热点事件→考纲映射分析。输出：\n## 🏛️ 时政热点雷达\n### 近12月核心事件清单\n### 事件→考纲映射表(含命题概率)\n### 🎯 2026必考时政TOP5'},
+  frontier:function(s){return'对考研'+s+' '+SUBJ_FULL[s].name+'进行学科前沿与考纲交叉分析。输出：\n## 🧬 前沿交叉分析\n### 前沿概念→考纲渗透评估\n### 历年"新概念"出题案例\n### ⚠️ 考纲边界模糊区（看似超纲实际可考）'},
+  prediction:function(s){return'对考研'+s+' '+SUBJ_FULL[s].name+'进行2026年终极综合命题预测。融合考点轮换+教授方向+时政前沿+难度周期。输出：\n## 🎯 2026终极命题预测\n### 总体难度预测\n### 必考题TOP10(含置信度%)\n### 高概率题(50-80%)\n### 冷门翻盘题(20-50%)\n### ⚡ 反押题预警\n### 📋 30天冲刺优先级排序'}
+};
 
-loadIntel('101');
+document.getElementById('radarDate').textContent='SCAN DATE: '+new Date().toISOString().slice(0,10)+' · PHASE 1 ACTIVE';
+function updateCountdown(){
+  var exam=new Date(2026,11,26,8,30),now=new Date(),diff=exam-now;
+  var days=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+  document.getElementById('countdownBar').innerHTML='<div class="cd-item"><div class="cd-num">'+days+'</div><div class="cd-label">DAYS</div></div><div class="cd-item"><div class="cd-num">'+String(h).padStart(2,'0')+'</div><div class="cd-label">HOURS</div></div><div class="cd-item"><div class="cd-num">'+String(m).padStart(2,'0')+'</div><div class="cd-label">MINS</div></div><div class="cd-item"><div class="cd-num">'+String(s).padStart(2,'0')+'</div><div class="cd-label">SECS</div></div>';
+}
+updateCountdown();setInterval(updateCountdown,1000);
+
+document.querySelectorAll('.radar-sub').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.radar-sub').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');radarSub=t.dataset.rsub;
+}));
+
+document.querySelectorAll('.radar-module').forEach(m=>m.addEventListener('click',async()=>{
+  var mod=m.dataset.mod,fn=MOD_PROMPTS[mod];if(!fn)return;
+  var progress=document.getElementById('radarProgress'),output=document.getElementById('radarOutput'),content=document.getElementById('radarContent');
+  progress.classList.add('active');output.classList.add('visible');
+  var titles={heatmap:'🔥 考点热力图',professor:'🎓 命题教授风向',political:'🏛️ 时政热点雷达',frontier:'🧬 学科前沿交叉',prediction:'🎯 综合命题预测'};
+  document.getElementById('roTitle').textContent=titles[mod]+' · '+radarSub+' '+SUBJ_FULL[radarSub].name;
+  content.textContent='🔄 AI深度分析中，请稍候（约20-40秒）...';
+  document.querySelectorAll('.radar-module').forEach(x=>x.style.pointerEvents='none');
+  try{
+    var result=await callAI(RADAR_SYS,fn(radarSub));
+    content.textContent=result;
+  }catch(e){content.innerHTML='<div style="color:var(--red)">❌ '+e.message+'</div>'}
+  progress.classList.remove('active');
+  document.querySelectorAll('.radar-module').forEach(x=>x.style.pointerEvents='');
+  output.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+
+function copyRadarOutput(){var t=document.getElementById('radarContent').textContent;navigator.clipboard.writeText(t);var b=document.querySelector('#radarOutput .copy-btn');b.textContent='✅ 已复制';setTimeout(()=>b.textContent='📋 复制',1500)}
+function closeRadarOutput(){document.getElementById('radarOutput').classList.remove('visible')}
 </script>
 </body>
 </html>
