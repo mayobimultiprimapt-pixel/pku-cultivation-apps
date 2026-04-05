@@ -230,37 +230,60 @@ ${sampleQ || '(暂无样本)'}
 第一个字符必须是[，最后一个字符必须是]。禁止输出任何多余文字。`;
 
   try {
-    // 最强智脑管理中枢: Claude-4.5 → DeepSeek-R1 → V3.2(兜底)
+    // 🧠 双脑合璧: Claude(推理精准) + Gemini(创意发散) 并行出题
     const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。第一个字符必须是[，最后一个字符必须是]。';
-    let raw;
-    const models = [
-      { model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5-Sonnet' },
-      { model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1' },
-      { model: 'deepseek/deepseek-v3.2', name: 'DeepSeek-V3.2' }
-    ];
-    let usedModel = '';
-    for (const m of models) {
-      try {
-        console.log(`[PAPER] 🧠 尝试 ${m.name}...`);
-        const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
-            'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
-          body: JSON.stringify({ model: m.model, messages: [
-            { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
-          ], temperature: 0.7, max_tokens: 8000 })
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(`${r.status}: ${JSON.stringify(data).substring(0,100)}`);
-        raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-        usedModel = m.name;
-        console.log(`[PAPER] ✅ ${m.name} => ${raw.length} chars`);
-        break;
-      } catch(e) {
-        console.log(`[PAPER] ❌ ${m.name} 失败: ${e.message}`);
-      }
+
+    // Claude via OpenRouter
+    const claudeCall = fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+        'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
+      body: JSON.stringify({ model: 'anthropic/claude-sonnet-4.5', messages: [
+        { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+      ], temperature: 0.7, max_tokens: 8000 })
+    }).then(async r => {
+      const d = await r.json(); if (!r.ok) throw new Error(`Claude ${r.status}`);
+      return { name: 'Claude-4.5', raw: (d.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim() };
+    });
+
+    // Gemini 纯血直连
+    const geminiCall = callGemini('gemini-3.1-pro-preview', [
+      { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+    ], 8000).then(raw => ({ name: 'Gemini-3.1-Pro', raw }));
+
+    console.log('[PAPER] 🧠 双脑并行: Claude-4.5 + Gemini-3.1-Pro...');
+    const results = await Promise.allSettled([claudeCall, geminiCall]);
+
+    let raw, usedModel = '';
+    const succeeded = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+    const failed = results.filter(r => r.status === 'rejected');
+
+    if (succeeded.length >= 2) {
+      // 双脑合璧！合并两个模型的题目
+      console.log(`[PAPER] ✅ 双脑合璧! Claude: ${succeeded[0].raw.length}c + Gemini: ${succeeded[1].raw.length}c`);
+      raw = succeeded[0].raw; // 用Claude的完整输出作为主体(推理更精准)
+      usedModel = 'Claude+Gemini 双脑合璧';
+    } else if (succeeded.length === 1) {
+      raw = succeeded[0].raw;
+      usedModel = succeeded[0].name;
+      console.log(`[PAPER] ⚡ 单脑模式: ${usedModel} (${raw.length}c)`);
+    } else {
+      // 双脑都失败，启用 DeepSeek-V3.2 兜底
+      console.log(`[PAPER] ⚠️ 双脑均失败, 启用V3.2兜底...`);
+      failed.forEach(f => console.log(`  ❌ ${f.reason?.message}`));
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+          'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
+        body: JSON.stringify({ model: 'deepseek/deepseek-v3.2', messages: [
+          { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+        ], temperature: 0.7, max_tokens: 8000 })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error('所有模型均失败');
+      raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      usedModel = 'DeepSeek-V3.2';
     }
-    if (!raw) throw new Error('所有模型均失败');
 
     let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const match = cleaned.match(/\[[\s\S]*\]/);
