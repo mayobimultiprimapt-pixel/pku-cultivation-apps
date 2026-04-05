@@ -453,16 +453,33 @@ ${meta.topics}
   addPaper(subj, paper);
   addLog(`📋 ${paper.title} (${paper.questionCount}题) 已存入金库`, 'success');
 
-  // 推送中转阁
+  // 推送中转阁 — 完整密卷存入万法归宗金库
   try {
-    await fetch(`${RELAY_URL}/feed/upload`, {
+    const relayResp = await fetch(`${RELAY_URL}/vault/papers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questions: paper.questions, subject: subj, source: usedEngine, paperTitle: paper.title })
+      body: JSON.stringify({
+        paper: { questions: paper.questions },
+        subject: subj,
+        source: usedEngine,
+        paperNum: paperNum,
+        metadata: {
+          title: paper.title,
+          totalScore: paper.totalScore,
+          timeMinutes: paper.timeMinutes,
+          structure: paper.structure,
+          generatedAt: paper.generatedAt
+        }
+      })
     });
-    addLog('📡 已推送至中转阁', 'success');
+    const relayData = await relayResp.json();
+    if (relayData.success) {
+      addLog(`📡 密卷已同步中转阁 | 第${relayData.paperNum}套 | 全库${relayData.totalPapers}套`, 'success');
+    } else {
+      addLog('⚠️ 中转阁同步失败: ' + (relayData.error || ''), 'error');
+    }
   } catch(e) {
-    addLog('⚠️ 中转阁推送失败(不影响本地存储)', 'error');
+    addLog('⚠️ 中转阁推送失败(本地已保存): ' + e.message.slice(0,30), 'error');
   }
 
   pf.style.width = '100%';

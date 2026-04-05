@@ -1,17 +1,18 @@
 /**
- * PKU API 中转阁 · 数据中枢 v4.0
+ * PKU API 中转阁 · 数据中枢 v5.0
+ * 万法归宗·中枢数据库
  * 1. CORS 中转 — OpenRouter/Gemini/Perplexity
- * 2. 考卷库 — 接收题库站上传的完整密卷
- * 3. 情报库 — 接收天机阁的每日情报(所有分支)
- * 4. 试卷工厂 — 双脑合璧(Claude+Gemini) 融合情报+密卷 → 创新预测卷
- * 5. 游戏投喂 — 各游戏APP直接拉取今日特供
+ * 2. 考卷库 — 接收/存储/分发完整密卷（多套叠加）
+ * 3. 情报库 — 天机阁情报 + 卦象天机统一入库
+ * 4. 试卷工厂 — 双脑合璧 → 情报驱动预测卷
+ * 5. 游戏投喂 — 所有游戏APP统一拉题接口
  */
 const express = require('express');
 const cors = require('cors');
 const app = express();
 
 app.use(cors({ origin: '*' }));
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '5mb' }));
 
 const KEYS = {
   OPENROUTER: process.env.OPENROUTER_API_KEY || '',
@@ -20,13 +21,18 @@ const KEYS = {
 };
 
 // =============================================
-// 数据仓库 (内存持久化)
+// 数据仓库 (内存持久化) v5.0
+// 每科支持多套完整密卷叠加
 // =============================================
 const VAULT = {
+  // 原始题目池（从题库上传的散题）
   rawQuestions: { '101': [], '201': [], '301': [], '408': [] },
+  // 完整密卷库（每科多套，按时间排序）
+  papers: { '101': [], '201': [], '301': [], '408': [] },
+  // 情报库（Perplexity + 卦象天机）
   intelligence: { '101': [], '201': [], '301': [], '408': [] },
-  papers: { '101': null, '201': null, '301': null, '408': null },
-  stats: { totalRaw: 0, totalPapers: 0, lastGenerated: null }
+  // 统计
+  stats: { totalRaw: 0, totalPapers: 0, lastGenerated: null, lastIntel: null }
 };
 
 // 真实考研试卷结构
@@ -121,7 +127,54 @@ app.post('/perplexity/search', async (req, res) => {
 // PART 2: 考卷库 — 接收原始题目
 // =============================================
 
-// 题库搜集站 → 上传题目
+// =============================================
+// PART 2B: 完整密卷库 — 题库搜集站上传完整卷
+// =============================================
+
+// 题库搜集站 → 上传完整密卷（一套卷子一次性存入）
+app.post('/vault/papers', (req, res) => {
+  const { paper, subject, source, paperNum, metadata } = req.body;
+  if (!paper || !paper.questions?.length) return res.status(400).json({ error: 'paper.questions required' });
+  const subj = subject || '101';
+  if (!VAULT.papers[subj]) VAULT.papers[subj] = [];
+
+  const entry = {
+    id: `paper-${subj}-${Date.now()}`,
+    subject: subj,
+    paperNum: paperNum || VAULT.papers[subj].length + 1,
+    source: source || 'question-bank',
+    questions: paper.questions,
+    metadata: metadata || {},
+    uploadedAt: new Date().toISOString()
+  };
+  VAULT.papers[subj].unshift(entry); // 最新卷子在最前
+  if (VAULT.papers[subj].length > 50) VAULT.papers[subj].length = 50; // 每科保留最近50套
+  VAULT.stats.totalPapers++;
+  VAULT.stats.lastGenerated = entry.uploadedAt;
+  console.log(`[VAULT] 📦 ${subj} 第${entry.paperNum}套密卷入库 | ${entry.questions.length}题 | 共${VAULT.papers[subj].length}套`);
+  res.json({ success: true, paperId: entry.id, paperNum: entry.paperNum, questions: entry.questions.length, totalPapers: VAULT.papers[subj].length });
+});
+
+// 查询某科所有密卷列表
+app.get('/vault/papers/:subject', (req, res) => {
+  const subj = req.params.subject;
+  const papers = (VAULT.papers[subj] || []).map(p => ({
+    id: p.id, paperNum: p.paperNum, source: p.source,
+    questions: p.questions.length, uploadedAt: p.uploadedAt,
+    metadata: p.metadata
+  }));
+  res.json({ success: true, subject: subj, total: papers.length, papers });
+});
+
+// 获取某科某套完整密卷
+app.get('/vault/papers/:subject/:paperId', (req, res) => {
+  const { subject: subj, paperId } = req.params;
+  const paper = (VAULT.papers[subj] || []).find(p => p.id === paperId || String(p.paperNum) === paperId);
+  if (!paper) return res.status(404).json({ error: '密卷不存在' });
+  res.json({ success: true, paper });
+});
+
+// 兼容旧接口：题库搜集站 → 上传散题
 app.post('/feed/upload', (req, res) => {
   const { questions, subject, source } = req.body;
   if (!questions?.length) return res.status(400).json({ error: 'questions array required' });
@@ -142,20 +195,32 @@ app.post('/feed/upload', (req, res) => {
   res.json({ success: true, added: processed.length, subjectTotal: VAULT.rawQuestions[subj].length });
 });
 
-// 天机阁 → 上传情报
-app.post('/hub/intel', (req, res) => {
-  const { subject, content, source } = req.body;
-  const subj = subject || '101';
+// 天机阁/断卦 → 统一上传情报（支持 /hub/intel 和 /feed/intelligence 两个路由）
+function saveIntel(subj, content, source, date) {
   if (!VAULT.intelligence[subj]) VAULT.intelligence[subj] = [];
-
   const entry = {
     id: `intel-${subj}-${Date.now()}`,
     subject: subj, content,
-    source: source || 'Perplexity',
-    timestamp: new Date().toISOString()
+    source: source || 'unknown',
+    timestamp: date || new Date().toISOString()
   };
-  VAULT.intelligence[subj].push(entry);
-  console.log(`[INTEL] 📡 ${subj} 情报 +1 | ${(content || '').length}字`);
+  VAULT.intelligence[subj].unshift(entry);
+  if (VAULT.intelligence[subj].length > 100) VAULT.intelligence[subj].length = 100;
+  VAULT.stats.lastIntel = entry.timestamp;
+  console.log(`[INTEL] 📡 ${subj} [${source}] +1 | ${(content || '').length}字`);
+  return entry;
+}
+
+app.post('/hub/intel', (req, res) => {
+  const { subject, content, source, date } = req.body;
+  const entry = saveIntel(subject || '101', content, source, date);
+  res.json({ success: true, intel: entry });
+});
+
+// 天机阁卦象断卦天机入口
+app.post('/feed/intelligence', (req, res) => {
+  const { subject, content, source, date } = req.body;
+  const entry = saveIntel(subject || '101', content, source || '卦象天机', date);
   res.json({ success: true, intel: entry });
 });
 
@@ -437,46 +502,46 @@ app.post('/paper/auto', async (req, res) => {
 // PART 4: 游戏投喂 API
 // =============================================
 
-// 获取今日试卷 (游戏调用此接口)
+// 游戏统一拉题接口 — 从密卷库取题（支持多套合并池）
 app.get('/feed/paper/:subject', (req, res) => {
   const { subject } = req.params;
-  const { count, type, random } = req.query;
-  const paper = VAULT.papers[subject];
+  const { count, type, random, paperNum } = req.query;
+  const papers = VAULT.papers[subject] || [];
 
-  if (!paper) {
-    // 没有试卷时从原始题库随机抽题
-    const raw = VAULT.rawQuestions[subject] || [];
-    if (!raw.length) return res.json({ success: false, error: '暂无试卷和题目，请先采集', questions: [] });
-
-    const pool = [...raw];
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    const n = Math.min(parseInt(count) || 10, pool.length);
-    return res.json({ success: true, source: 'rawPool', subject, questions: pool.slice(0, n) });
+  // 决定题目来源
+  let allQ = [];
+  if (paperNum) {
+    // 指定某套密卷
+    const p = papers.find(p => String(p.paperNum) === paperNum);
+    allQ = p ? [...p.questions] : [];
+  } else if (papers.length > 0) {
+    // 默认：最新三套密卷合并成大题库
+    const pool = papers.slice(0, 3);
+    allQ = pool.flatMap(p => p.questions);
+  } else {
+    // fallback：散题池
+    allQ = [...(VAULT.rawQuestions[subject] || [])];
   }
 
-  // 有试卷时返回
-  let questions = [...paper.questions];
-  if (type) questions = questions.filter(q => q.type === type);
+  if (!allQ.length) return res.json({ success: false, error: '暂无题目，请先采集密卷', questions: [], tip: '在题库搜集站采集后会自动同步' });
+
+  // 按题型筛选
+  if (type) allQ = allQ.filter(q => q.type === type);
+
+  // 随机打乱
   if (random !== 'false') {
-    for (let i = questions.length - 1; i > 0; i--) {
+    for (let i = allQ.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [questions[i], questions[j]] = [questions[j], questions[i]];
+      [allQ[i], allQ[j]] = [allQ[j], allQ[i]];
     }
   }
-  const n = Math.min(parseInt(count) || questions.length, questions.length);
-
+  const n = Math.min(parseInt(count) || allQ.length, allQ.length);
   res.json({
     success: true,
-    source: 'todayPaper',
-    subject,
-    generatedAt: paper.generatedAt,
-    generator: paper.generator,
-    total: paper.questions.length,
-    returned: n,
-    questions: questions.slice(0, n)
+    source: papers.length > 0 ? `密卷池(${Math.min(papers.length,3)}套合并)` : 'rawPool',
+    subject, totalPapers: papers.length,
+    total: allQ.length, returned: n,
+    questions: allQ.slice(0, n)
   });
 });
 
@@ -506,18 +571,21 @@ app.get('/feed/intel/:subject', (req, res) => {
 app.get('/hub/status', (req, res) => {
   const status = {};
   for (const subj of Object.keys(SUBJECTS)) {
+    const papers = VAULT.papers[subj] || [];
     status[subj] = {
       name: SUBJECTS[subj].label,
       rawQuestions: (VAULT.rawQuestions[subj] || []).length,
       intelligence: (VAULT.intelligence[subj] || []).length,
-      paper: VAULT.papers[subj] ? {
-        questions: VAULT.papers[subj].questions.length,
-        generatedAt: VAULT.papers[subj].generatedAt,
-        generator: VAULT.papers[subj].generator
+      papers: papers.length,
+      latestPaper: papers[0] ? {
+        paperNum: papers[0].paperNum,
+        questions: papers[0].questions.length,
+        uploadedAt: papers[0].uploadedAt,
+        source: papers[0].source
       } : null
     };
   }
-  res.json({ subjects: status, stats: VAULT.stats, uptime: Math.round(process.uptime()) + 's' });
+  res.json({ subjects: status, stats: VAULT.stats, uptime: Math.round(process.uptime()) + 's', version: 'v5.0' });
 });
 
 // =============================================
@@ -525,16 +593,18 @@ app.get('/hub/status', (req, res) => {
 // =============================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 PKU 数据中枢 v3.0 启动 | 端口: ${PORT}`);
+  console.log(`\n🚀 PKU 数据中枢 v5.0 · 万法归宗 | 端口: ${PORT}`);
   console.log(`   OpenRouter: ${KEYS.OPENROUTER ? '✅' : '❌'}`);
   console.log(`   Gemini:     ${KEYS.GEMINI ? '✅' : '❌'}`);
   console.log(`   Perplexity: ${KEYS.PERPLEXITY ? '✅' : '❌'}`);
-  console.log(`   ─────────────────────────────`);
-  console.log(`   中转: POST /v1/chat/completions`);
-  console.log(`   上传: POST /feed/upload`);
-  console.log(`   情报: POST /hub/collect-intel`);
-  console.log(`   出卷: POST /paper/generate`);
-  console.log(`   一键: POST /paper/auto`);
-  console.log(`   投喂: GET  /feed/paper/:subject`);
-  console.log(`   状态: GET  /hub/status\n`);
+  console.log(`   ─────────────────────────────────────────`);
+  console.log(`   中转:    POST /v1/chat/completions`);
+  console.log(`   存密卷:  POST /vault/papers`);
+  console.log(`   查密卷:  GET  /vault/papers/:subject`);
+  console.log(`   存情报:  POST /feed/intelligence  (卦象天机)`);
+  console.log(`   存情报:  POST /hub/intel          (Perplexity)`);
+  console.log(`   出卷:    POST /paper/generate`);
+  console.log(`   一键:    POST /paper/auto`);
+  console.log(`   游戏拉题: GET /feed/paper/:subject`);
+  console.log(`   状态:    GET  /hub/status\n`);
 });
