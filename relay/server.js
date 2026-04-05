@@ -215,10 +215,10 @@ ${latestIntel || '(暂无情报，请根据历年高频考点出题)'}
 ${sampleQ || '(暂无样本)'}
 
 ## 任务
-基于以上情报和素材，生成一份**30道高质量模拟试卷**：
-- 15道单选题 (type:"single")
-- 10道多选题 (type:"multi")
-- 5道判断题 (type:"judge")
+基于以上情报和素材，生成一份**15道高质量模拟试卷**：
+- 8道单选题 (type:"single")
+- 4道多选题 (type:"multi")
+- 3道判断题 (type:"judge")
 
 要求：
 1. 紧跟最新考研命题趋势和热点
@@ -233,7 +233,7 @@ ${sampleQ || '(暂无样本)'}
     const raw = await callGemini('gemini-3.1-pro-preview', [
       { role: 'system', content: '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。' },
       { role: 'user', content: prompt }
-    ], 16000);
+    ], 8000);
 
     let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const match = cleaned.match(/\[[\s\S]*\]/);
