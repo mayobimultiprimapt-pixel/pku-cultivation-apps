@@ -556,23 +556,22 @@ console.log('  ', _keyStatus(KEYS.GEMINI_KEY, 'Gemini'));
 // ---- 全部可用模型库 ----
 const ALL_MODELS = {
   // DeepSeek 系列 (推演专用 — 最强推理)
-  'deepseek-r1':    { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1' },
-  'deepseek-v3':    { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'deepseek-chat', name: 'DeepSeek-V3' },
+  'deepseek-r1':    { url: KEYS.OR_URL,     key: KEYS.OR_KEY,     model: 'deepseek/deepseek-r1-0528',           name: 'DeepSeek-R1' },
+  'deepseek-v3':    { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'deepseek-chat',                        name: 'DeepSeek-V3' },
   // Claude 系列 (分析专用 — 最强结构化)
-  'claude-4':       { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'anthropic/claude-sonnet-4', name: 'Claude-4-Sonnet' },
-  'claude-3.5':     { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'claude-3-5-sonnet-20241022', name: 'Claude-3.5-Sonnet' },
+  'claude-4':       { url: KEYS.OR_URL,     key: KEYS.OR_KEY,     model: 'anthropic/claude-sonnet-4-5',          name: 'Claude-4.5-Sonnet' },
+  'claude-3.5':     { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'claude-3-5-sonnet-20241022',           name: 'Claude-3.5-Sonnet' },
   // GPT 系列 (通用)
-  'gpt-4o':         { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'gpt-4o', name: 'GPT-4o' },
+  'gpt-4o':         { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'gpt-4o',                               name: 'GPT-4o' },
+  // Gemini 系列 (兜底 — 直连无CORS)
+  'gemini-pro':     { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${KEYS.GEMINI_KEY}`, key: KEYS.GEMINI_KEY, model: 'gemini-2.5-pro', name: 'Gemini-2.5-Pro', isGemini: true },
 };
 
 // ---- 各模块最优模型分配 ----
-// 推演阁: DeepSeek-R1 (超深度推理，最适合易经推演) → R1独占
-// 命题雷达: Claude-4 (最强结构化分析) → Claude → GPT-4o
-// 情报站: Perplexity sonar-pro (搜索专用，不走这里)
 const MODEL_CHAINS = {
-  divine:  ['deepseek-r1', 'deepseek-v3', 'claude-4'],              // 推演：DeepSeek R1 独占
-  radar:   ['claude-4', 'gpt-4o', 'deepseek-r1', 'claude-3.5'],     // 雷达：Claude最优
-  general: ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3', 'claude-3.5'], // 通用降级
+  divine:  ['deepseek-r1', 'claude-4', 'deepseek-v3', 'claude-3.5', 'gemini-pro'],  // 推演：R1最优，Gemini兜底
+  radar:   ['claude-4', 'deepseek-r1', 'gpt-4o', 'claude-3.5', 'gemini-pro'],       // 雷达：Claude最优
+  general: ['claude-4', 'deepseek-r1', 'gpt-4o', 'deepseek-v3', 'gemini-pro'],      // 通用降级
 };
 
 console.log('[天机阁] 🎯 模型分配:');
@@ -586,25 +585,45 @@ async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'gene
   const errors = [];
   for (const modelId of chain) {
     const m = ALL_MODELS[modelId];
-    if (!m || !m.key) continue; // 跳过无密钥的
+    if (!m || !m.key) continue;
     try {
       console.log(`[天机阁] 🚀 [${module}] 尝试 ${m.name}...`);
-      const resp = await fetch(m.url, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + m.key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: m.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: module === 'divine' ? 0.7 : 0.3,
-          max_tokens: maxTokens
-        })
-      });
-      const data = await resp.json();
-      if (data.error) { errors.push(`${m.name}: ${data.error.message || JSON.stringify(data.error)}`); continue; }
-      const content = (data.choices || [{}])[0]?.message?.content || '';
+      let content = '';
+
+      if (m.isGemini) {
+        // Gemini generateContent API
+        const resp = await fetch(m.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: maxTokens }
+          })
+        });
+        const data = await resp.json();
+        if (!resp.ok) { errors.push(`${m.name}: ${JSON.stringify(data).substring(0, 100)}`); continue; }
+        content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } else {
+        // OpenAI 兼容接口
+        const resp = await fetch(m.url, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + m.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: m.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: module === 'divine' ? 0.7 : 0.3,
+            max_tokens: maxTokens
+          })
+        });
+        const data = await resp.json();
+        if (data.error) { errors.push(`${m.name}: ${data.error.message || JSON.stringify(data.error)}`); continue; }
+        content = (data.choices || [{}])[0]?.message?.content || '';
+      }
+
       if (!content) { errors.push(`${m.name}: 空响应`); continue; }
       const cleaned = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
       console.log(`[天机阁] ✅ [${module}] ${m.name} 命中！(${cleaned.length}字)`);
