@@ -239,9 +239,26 @@ ${sampleQ || '(暂无样本)'}
     const match = cleaned.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('No JSON array in response');
 
+    let jsonStr = match[0];
+    // Fix common JSON issues
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');           // trailing commas
+    jsonStr = jsonStr.replace(/}\s*{/g, '},{');                  // missing commas between objects
+    jsonStr = jsonStr.replace(/"\s*\n\s*"/g, '","');             // broken strings
+    jsonStr = jsonStr.replace(/\t/g, ' ');                       // tabs
+    // Fix truncated JSON (close unclosed brackets)
+    const opens = (jsonStr.match(/\[/g) || []).length;
+    const closes = (jsonStr.match(/\]/g) || []).length;
+    if (opens > closes) jsonStr += ']'.repeat(opens - closes);
+
     let parsed;
-    try { parsed = JSON.parse(match[0]); } catch {
-      parsed = JSON.parse(match[0].replace(/,\s*([}\]])/g, '$1'));
+    try { parsed = JSON.parse(jsonStr); } catch(e1) {
+      // Last resort: eval-like approach with Function
+      try {
+        const fn = new Function('return ' + jsonStr);
+        parsed = fn();
+      } catch(e2) {
+        throw new Error(`${e1.message}`);
+      }
     }
 
     const paper = {
