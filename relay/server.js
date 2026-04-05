@@ -230,28 +230,37 @@ ${sampleQ || '(暂无样本)'}
 第一个字符必须是[，最后一个字符必须是]。禁止输出任何多余文字。`;
 
   try {
-    // 用 DeepSeek V3.2 (极速) 生成试卷, Gemini 太慢会超时
+    // 最强智脑管理中枢: Claude-4.5 → DeepSeek-R1 → V3.2(兜底)
     const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。第一个字符必须是[，最后一个字符必须是]。';
     let raw;
-    try {
-      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
-          'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
-        body: JSON.stringify({ model: 'deepseek/deepseek-v3.2', messages: [
-          { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
-        ], temperature: 0.7, max_tokens: 8000 })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(`OR ${r.status}`);
-      raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      console.log(`[PAPER] DeepSeek-V3.2 => ${raw.length} chars`);
-    } catch(orErr) {
-      console.log(`[PAPER] DeepSeek失败, 回退Gemini: ${orErr.message}`);
-      raw = await callGemini('gemini-3.1-pro-preview', [
-        { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
-      ], 8000);
+    const models = [
+      { model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5-Sonnet' },
+      { model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1' },
+      { model: 'deepseek/deepseek-v3.2', name: 'DeepSeek-V3.2' }
+    ];
+    let usedModel = '';
+    for (const m of models) {
+      try {
+        console.log(`[PAPER] 🧠 尝试 ${m.name}...`);
+        const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+            'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
+          body: JSON.stringify({ model: m.model, messages: [
+            { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+          ], temperature: 0.7, max_tokens: 8000 })
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(`${r.status}: ${JSON.stringify(data).substring(0,100)}`);
+        raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+        usedModel = m.name;
+        console.log(`[PAPER] ✅ ${m.name} => ${raw.length} chars`);
+        break;
+      } catch(e) {
+        console.log(`[PAPER] ❌ ${m.name} 失败: ${e.message}`);
+      }
     }
+    if (!raw) throw new Error('所有模型均失败');
 
     let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const match = cleaned.match(/\[[\s\S]*\]/);
@@ -284,7 +293,7 @@ ${sampleQ || '(暂无样本)'}
       subject,
       subjectName: SUBJECTS[subject],
       generatedAt: new Date().toISOString(),
-      generator: 'DeepSeek-V3.2',
+      generator: usedModel || 'AI',
       intelSources: intel.slice(-3).length,
       rawPoolSize: rawQ.length,
       questions: parsed.map((q, i) => ({
