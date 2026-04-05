@@ -209,19 +209,19 @@ function getKey(channel) {
   const keys = {
     openrouter: null, mirror: null, gemini: null, perplexity: null
   };
-  if (typeof API_KEYS !== 'undefined') {
-    keys.openrouter = API_KEYS.OPENROUTER_API_KEY || API_KEYS.OR_API_KEY;
-    keys.mirror = API_KEYS.MIRROR_API_KEY || API_KEYS.OPENAI_API_KEY;
-    keys.gemini = API_KEYS.GEMINI_API_KEY;
-    keys.perplexity = API_KEYS.PERPLEXITY_API_KEY;
+  // Read from shared PKU_KEYS (set by ../api-keys.js)
+  if (window.PKU_KEYS) {
+    keys.openrouter = window.PKU_KEYS.OPENROUTER_API_KEY;
+    keys.gemini = window.PKU_KEYS.GEMINI_API_KEY;
+    keys.perplexity = window.PKU_KEYS.PERPLEXITY_API_KEY;
   }
-  // Fallback: embedded
+  // Fallback: embedded (Base64)
   if (!keys.openrouter) keys.openrouter = atob('c2stb3ItdjEtOGIzY2UyODIyOTQwNGI1OWJlNTNhMDkwYTg5OWQ5MjZkMGE1MmI2MTJhZDg4MTg1ZmRhYjk2MGQ4OGQ4Nzk3Yw==');
-  if (!keys.mirror) keys.mirror = atob('c2stVllqNDg4NDk2YjZkYzQxNzVmNTQzNThhYWRkZGIyYzYyMjBkYWI4OGM0M0Eyd2Zo');
+  if (!keys.mirror) keys.mirror = keys.openrouter; // Use same OR key as mirror fallback
   if (!keys.perplexity) keys.perplexity = atob('cHBseC10VWMyTGdTNlRDb2JxaWozRTYyOHBMaXJiaWl6Z2Q5SWhRb0tOSWxUVjFMMXZwekI=');
 
   if (['deepseek','claude'].includes(channel)) return keys.openrouter;
-  if (['gpt4o','deepseekV3'].includes(channel)) return keys.mirror;
+  if (['gpt4o','deepseekV3'].includes(channel)) return keys.mirror || keys.openrouter;
   if (channel === 'perplexity') return keys.perplexity;
   if (channel === 'gemini') return keys.gemini;
   return keys.openrouter;
@@ -231,8 +231,8 @@ function getKey(channel) {
 const MODELS = {
   deepseek: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-r1', name: 'DeepSeek-R1', icon: '🧠', desc: '最强推理链' },
   claude: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'anthropic/claude-sonnet-4-20250514', name: 'Claude-4', icon: '🎯', desc: '结构化分析' },
-  gpt4o: { url: 'https://api.gptsapi.net/v1/chat/completions', model: 'gpt-4o', name: 'GPT-4o', icon: '⚡', desc: '通用平衡' },
-  deepseekV3: { url: 'https://api.gptsapi.net/v1/chat/completions', model: 'deepseek-chat', name: 'DeepSeek-V3', icon: '🚀', desc: '极速生成' },
+  gpt4o: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openai/gpt-4o', name: 'GPT-4o', icon: '⚡', desc: '通用平衡' },
+  deepseekV3: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-chat', name: 'DeepSeek-V3', icon: '🚀', desc: '极速生成' },
   perplexity: { url: 'https://api.perplexity.ai/chat/completions', model: 'sonar-pro', name: 'Perplexity', icon: '🔍', desc: '实时情报' }
 };
 
