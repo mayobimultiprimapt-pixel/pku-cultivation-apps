@@ -269,34 +269,37 @@ function updateStats() {
   });
 }
 
-// ---- AI Call ----
+// ---- 中转隧道地址 ----
+const RELAY_URL = 'https://pku-api-relay.onrender.com';
+
+// ---- AI Call (通过隧道中转) ----
 async function callAI(channel, messages, maxTokens = 4000) {
   const m = MODELS[channel];
-  const key = getKey(channel);
-  if (!key) throw new Error(`${m.name} 密钥未配置`);
 
-  // Gemini uses a different API format
+  let url, body;
   if (channel === 'gemini') {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${m.model}:generateContent?key=${key}`;
-    const contents = messages.filter(m=>m.role!=='system').map(m => ({role: m.role==='assistant'?'model':'user', parts:[{text:m.content}]}));
-    const sysMsg = messages.find(m=>m.role==='system');
-    const body = { contents, generationConfig: { temperature: 0.7, maxOutputTokens: maxTokens } };
-    if (sysMsg) body.system_instruction = { parts: [{ text: sysMsg.content }] };
-    const res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error(`${m.name} ${res.status}`);
-    const data = await res.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return text.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+    url = `${RELAY_URL}/gemini/generate`;
+    body = { model: m.model, messages, max_tokens: maxTokens };
+  } else if (channel === 'perplexity') {
+    url = `${RELAY_URL}/perplexity/search`;
+    body = { model: m.model, messages, max_tokens: maxTokens };
+  } else {
+    // OpenRouter: deepseek, claude, gpt4, deepseekV3
+    url = `${RELAY_URL}/v1/chat/completions`;
+    body = { model: m.model, messages, temperature: 0.7, max_tokens: maxTokens };
   }
 
-  // OpenAI-compatible (OpenRouter / Perplexity)
-  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` };
-
-  const res = await fetch(m.url, {
-    method: 'POST', headers,
-    body: JSON.stringify({ model: m.model, messages, temperature: 0.7, max_tokens: maxTokens })
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error(`${m.name} ${res.status}: ${res.statusText}`);
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(`${m.name} ${res.status}: ${errData.error?.message || res.statusText}`);
+  }
+
   const data = await res.json();
   return data.choices?.[0]?.message?.content || '';
 }

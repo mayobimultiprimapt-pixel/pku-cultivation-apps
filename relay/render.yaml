@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pku-api-relay
+    runtime: node
+    rootDir: relay
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PERPLEXITY_API_KEY
+        sync: false
