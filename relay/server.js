@@ -1,10 +1,10 @@
 /**
- * PKU API 中转隧道 + 数据中枢 v3.0
+ * PKU API 中转阁 · 数据中枢 v4.0
  * 1. CORS 中转 — OpenRouter/Gemini/Perplexity
- * 2. 考卷库 — 接收题库站上传的原始题目
- * 3. 情报库 — 接收天机阁的实时情报
- * 4. 试卷工厂 — 最强模型融合情报+题库，生成今日特供试卷
- * 5. 游戏投喂 — 各游戏APP直接拉取试卷
+ * 2. 考卷库 — 接收题库站上传的完整密卷
+ * 3. 情报库 — 接收天机阁的每日情报(所有分支)
+ * 4. 试卷工厂 — 双脑合璧(Claude+Gemini) 融合情报+密卷 → 创新预测卷
+ * 5. 游戏投喂 — 各游戏APP直接拉取今日特供
  */
 const express = require('express');
 const cors = require('cors');
@@ -23,21 +23,38 @@ const KEYS = {
 // 数据仓库 (内存持久化)
 // =============================================
 const VAULT = {
-  // 原始题库 (题库搜集站上传)
   rawQuestions: { '101': [], '201': [], '301': [], '408': [] },
-  // 今日情报 (天机阁上传)
   intelligence: { '101': [], '201': [], '301': [], '408': [] },
-  // 今日特供试卷 (最强模型生成)
   papers: { '101': null, '201': null, '301': null, '408': null },
-  // 统计
   stats: { totalRaw: 0, totalPapers: 0, lastGenerated: null }
 };
 
+// 真实考研试卷结构
 const SUBJECTS = {
-  '101': '政治 — 马原/毛中特/史纲/思修',
-  '201': '英语 — 阅读/翻译/写作',
-  '301': '数学 — 高数/线代/概率论',
-  '408': '计算机 — 数据结构/OS/网络/组成原理'
+  '101': {
+    label: '政治', score: 100, time: 180,
+    structure: '单选16题(每题1分=16分) + 多选17题(每题2分=34分) + 分析5题(每题10分=50分)',
+    gameCount: 33, // 游戏投喂客观题数
+    topics: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策'
+  },
+  '201': {
+    label: '英语一', score: 100, time: 180,
+    structure: '完形填空20题(0.5分=10分) + 阅读理解20题(2分=40分) + 新题型5题(2分=10分) + 翻译5题(2分=10分) + 写作2题(30分)',
+    gameCount: 30,
+    topics: '词汇语法、阅读理解、完形填空、新题型(七选五/排序/标题匹配)、翻译(英译中)'
+  },
+  '301': {
+    label: '数学一', score: 150, time: 180,
+    structure: '单选10题(每题5分=50分) + 填空6题(每题5分=30分) + 解答6题(共70分)',
+    gameCount: 16,
+    topics: '高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代数20%(行列式/矩阵/特征值/二次型) 概率论20%(随机变量/数字特征/假设检验)'
+  },
+  '408': {
+    label: '计算机', score: 150, time: 180,
+    structure: '单选40题(每题2分=80分) + 综合应用7题(共70分)',
+    gameCount: 40,
+    topics: '数据结构45分(线性表/树/图/排序/查找) 计算机组成原理45分(CPU/存储器/总线/IO) 操作系统35分(进程/内存/文件) 计算机网络25分(TCP/IP/路由/HTTP)'
+  }
 };
 
 // =============================================
@@ -49,7 +66,7 @@ app.get('/', (req, res) => {
   const intelCount = Object.values(VAULT.intelligence).reduce((s, a) => s + a.length, 0);
   const paperCount = Object.values(VAULT.papers).filter(p => p).length;
   res.json({
-    status: '🚀 PKU 数据中枢 v3.0',
+    status: '🚀 PKU 中转阁 v4.0 — 双脑合璧·情报驱动',
     vault: { rawQuestions: rawCount, intelligence: intelCount, papers: `${paperCount}/4科` },
     stats: VAULT.stats,
     timestamp: new Date().toISOString()
@@ -193,47 +210,48 @@ async function callGemini(model, messages, maxTokens) {
   return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
 
-// 生成今日特供试卷
+// 生成今日预测试卷 (融合情报+密卷→创新推演)
 async function generatePaper(subject) {
-  console.log(`\n[PAPER] 🏭 开始生成 ${subject} 今日特供试卷...`);
+  const meta = SUBJECTS[subject];
+  console.log(`\n[PAPER] 🏭 ${subject} ${meta.label} 预测卷生成 (${meta.gameCount}题·${meta.score}分)`);
 
-  // 收集素材
   const rawQ = VAULT.rawQuestions[subject] || [];
   const intel = VAULT.intelligence[subject] || [];
 
-  // 取最近的情报摘要
-  const latestIntel = intel.slice(-3).map(i => i.content).join('\n---\n');
-  // 取最近的题目样本
-  const sampleQ = rawQ.slice(-20).map(q => `[${q.type}] ${q.question}`).join('\n');
+  // 从天机阁情报中提取最新摘要
+  const latestIntel = intel.slice(-5).map(i => i.content).join('\n---\n');
+  // 从题库密卷中提取样本(避免重复)
+  const sampleQ = rawQ.slice(-30).map(q => `[${q.type||'single'}] ${q.stem||q.question||''}`).join('\n');
 
-  const prompt = `你是中国研究生考试${SUBJECTS[subject]}的顶级命题专家。
+  const prompt = `你是全国硕士研究生招生考试${meta.label}(${subject})命题组核心专家。
 
-## 今日最新情报
-${latestIntel || '(暂无情报，请根据历年高频考点出题)'}
+【试卷规格】
+科目: ${meta.label}(${subject}) | 满分: ${meta.score}分 | 时长: ${meta.time}分钟
+真实结构: ${meta.structure}
+考点范围: ${meta.topics}
 
-## 已有题目样本参考
-${sampleQ || '(暂无样本)'}
+【天机阁今日最新情报】
+${latestIntel || '(暂无情报，请根据历年高频考点+当前时政热点出题)'}
 
-## 任务
-基于以上情报和素材，生成一份**15道高质量模拟试卷**：
-- 8道单选题 (type:"single")
-- 4道多选题 (type:"multi")
-- 3道判断题 (type:"judge")
+【题库已有密卷样本(仅做参考，严禁重复)】
+${sampleQ ? sampleQ.substring(0, 2000) : '(暂无样本)'}
 
-要求：
-1. 紧跟最新考研命题趋势和热点
-2. 难度分布: 简单30% 中等50% 困难20%
-3. 避免与样本重复
-4. 每题必须有详细解析
+【你的核心任务】
+基于以上情报和考点分析，推演今年最可能出现的考题方向，生成 ${meta.gameCount} 道创新预测题：
+1. 融合情报中的最新热点趋势
+2. 参考已有密卷但严禁重复
+3. 重点预测今年可能考的新题型和新方向
+4. 每道题必须有4个选项(ABCD)
+5. 难度分布: 基础30% + 中等45% + 拔高25%
+6. 每题配专业级详细解析(含考点出处和解题思路)
 
-严格输出JSON数组格式。每题包含: question, options(数组), answer, type, analysis, difficulty(1-5)。
-第一个字符必须是[，最后一个字符必须是]。禁止输出任何多余文字。`;
+输出: 纯JSON数组，第一个字符[，最后一个字符]
+[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3}]`;
 
   try {
-    // 🧠 双脑合璧: Claude(推理精准) + Gemini(创意发散) 并行出题
-    const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。第一个字符必须是[，最后一个字符必须是]。';
+    const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字。第一个字符必须是[，最后一个字符必须是]。';
 
-    // Claude via OpenRouter
+    // 🧠 双脑合璧: Claude(推理精准) + Gemini-3.1-Pro(创意发散)
     const claudeCall = fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
@@ -246,7 +264,6 @@ ${sampleQ || '(暂无样本)'}
       return { name: 'Claude-4.5', raw: (d.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim() };
     });
 
-    // Gemini 纯血直连
     const geminiCall = callGemini('gemini-3.1-pro-preview', [
       { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
     ], 8000).then(raw => ({ name: 'Gemini-3.1-Pro', raw }));
@@ -259,16 +276,13 @@ ${sampleQ || '(暂无样本)'}
     const failed = results.filter(r => r.status === 'rejected');
 
     if (succeeded.length >= 2) {
-      // 双脑合璧！合并两个模型的题目
       console.log(`[PAPER] ✅ 双脑合璧! Claude: ${succeeded[0].raw.length}c + Gemini: ${succeeded[1].raw.length}c`);
-      raw = succeeded[0].raw; // 用Claude的完整输出作为主体(推理更精准)
+      raw = succeeded[0].raw;
       usedModel = 'Claude+Gemini 双脑合璧';
     } else if (succeeded.length === 1) {
       raw = succeeded[0].raw;
       usedModel = succeeded[0].name;
-      console.log(`[PAPER] ⚡ 单脑模式: ${usedModel} (${raw.length}c)`);
     } else {
-      // 双脑都失败，启用 DeepSeek-V3.2 兜底
       console.log(`[PAPER] ⚠️ 双脑均失败, 启用V3.2兜底...`);
       failed.forEach(f => console.log(`  ❌ ${f.reason?.message}`));
       const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -285,39 +299,40 @@ ${sampleQ || '(暂无样本)'}
       usedModel = 'DeepSeek-V3.2';
     }
 
+    // JSON修复
     let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    const match = cleaned.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('No JSON array in response');
-
-    let jsonStr = match[0];
-    // Fix common JSON issues
-    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');           // trailing commas
-    jsonStr = jsonStr.replace(/}\s*{/g, '},{');                  // missing commas between objects
-    jsonStr = jsonStr.replace(/"\s*\n\s*"/g, '","');             // broken strings
-    jsonStr = jsonStr.replace(/\t/g, ' ');                       // tabs
-    // Fix truncated JSON (close unclosed brackets)
-    const opens = (jsonStr.match(/\[/g) || []).length;
-    const closes = (jsonStr.match(/\]/g) || []).length;
-    if (opens > closes) jsonStr += ']'.repeat(opens - closes);
+    const start = cleaned.indexOf('[');
+    if (start === -1) throw new Error('No JSON array');
+    cleaned = cleaned.substring(start);
+    const end = cleaned.lastIndexOf(']');
+    if (end !== -1) cleaned = cleaned.substring(0, end + 1);
+    else cleaned = cleaned.replace(/,\s*$/, '') + ']';
+    cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
 
     let parsed;
-    try { parsed = JSON.parse(jsonStr); } catch(e1) {
-      // Last resort: eval-like approach with Function
-      try {
-        const fn = new Function('return ' + jsonStr);
-        parsed = fn();
-      } catch(e2) {
-        throw new Error(`${e1.message}`);
+    try { parsed = JSON.parse(cleaned); } catch(e1) {
+      const objs = [];
+      const re = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
+      let m;
+      while ((m = re.exec(cleaned)) !== null) {
+        try { objs.push(JSON.parse(m[0])); } catch(e2) {
+          try { objs.push(JSON.parse(m[0].replace(/,\s*}/g, '}'))); } catch(e3) {}
+        }
       }
+      if (objs.length > 0) parsed = objs;
+      else throw new Error('JSON修复失败: ' + e1.message);
     }
 
     const paper = {
       id: `paper-${subject}-${Date.now()}`,
       subject,
-      subjectName: SUBJECTS[subject],
+      subjectName: meta.label,
+      totalScore: meta.score,
+      timeMinutes: meta.time,
+      structure: meta.structure,
       generatedAt: new Date().toISOString(),
       generator: usedModel || 'AI',
-      intelSources: intel.slice(-3).length,
+      intelSources: intel.slice(-5).length,
       rawPoolSize: rawQ.length,
       questions: parsed.map((q, i) => ({
         ...q,
@@ -330,7 +345,7 @@ ${sampleQ || '(暂无样本)'}
     VAULT.stats.totalPapers++;
     VAULT.stats.lastGenerated = new Date().toISOString();
 
-    console.log(`[PAPER] ✅ ${subject} 试卷生成完毕 | ${paper.questions.length}题 | 基于${paper.intelSources}条情报+${paper.rawPoolSize}道原始题`);
+    console.log(`[PAPER] ✅ ${subject} ${meta.label} 预测卷完成 | ${paper.questions.length}题 | 情报${paper.intelSources}条+密卷${paper.rawPoolSize}道`);
     return paper;
   } catch (err) {
     console.error(`[PAPER] ❌ ${subject} 生成失败:`, err.message);
@@ -482,7 +497,7 @@ app.get('/hub/status', (req, res) => {
   const status = {};
   for (const subj of Object.keys(SUBJECTS)) {
     status[subj] = {
-      name: SUBJECTS[subj],
+      name: SUBJECTS[subj].label,
       rawQuestions: (VAULT.rawQuestions[subj] || []).length,
       intelligence: (VAULT.intelligence[subj] || []).length,
       paper: VAULT.papers[subj] ? {
