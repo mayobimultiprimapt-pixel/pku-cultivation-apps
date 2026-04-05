@@ -264,9 +264,8 @@ let latestIntel = "";
 async function doPerplexitySearch(topic) {
     const sysPrompt = "你是一级绝密情报引擎。精确定位考研重点、预测命中率。返回带[1][2]引用的专业报告结构。必须使用一级警报、二级警报等严格分级。输出详尽。";
     if (gatewayMode === 'direct') {
-        const key = window.API_KEYS?.PERPLEXITY;
-        if(!key) throw new Error("直连模式未配置本地 PERPLEXITY 秘钥。请切换中转。");
-        
+                const key = window.PKU_KEYS?.PERPLEXITY;
+                                              if (!key) throw new Error("Local PERPLEXITY key missing. Check api-keys.js.");
         const res = await fetch("https://api.perplexity.ai/chat/completions", {
             method: "POST",
             headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
