@@ -230,10 +230,28 @@ ${sampleQ || '(暂无样本)'}
 第一个字符必须是[，最后一个字符必须是]。禁止输出任何多余文字。`;
 
   try {
-    const raw = await callGemini('gemini-3.1-pro-preview', [
-      { role: 'system', content: '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。' },
-      { role: 'user', content: prompt }
-    ], 8000);
+    // 用 DeepSeek V3.2 (极速) 生成试卷, Gemini 太慢会超时
+    const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字、markdown标记。第一个字符必须是[，最后一个字符必须是]。';
+    let raw;
+    try {
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+          'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
+        body: JSON.stringify({ model: 'deepseek/deepseek-v3.2', messages: [
+          { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+        ], temperature: 0.7, max_tokens: 8000 })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(`OR ${r.status}`);
+      raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      console.log(`[PAPER] DeepSeek-V3.2 => ${raw.length} chars`);
+    } catch(orErr) {
+      console.log(`[PAPER] DeepSeek失败, 回退Gemini: ${orErr.message}`);
+      raw = await callGemini('gemini-3.1-pro-preview', [
+        { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
+      ], 8000);
+    }
 
     let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const match = cleaned.match(/\[[\s\S]*\]/);
@@ -266,7 +284,7 @@ ${sampleQ || '(暂无样本)'}
       subject,
       subjectName: SUBJECTS[subject],
       generatedAt: new Date().toISOString(),
-      generator: 'Gemini-3.1-Pro',
+      generator: 'DeepSeek-V3.2',
       intelSources: intel.slice(-3).length,
       rawPoolSize: rawQ.length,
       questions: parsed.map((q, i) => ({
