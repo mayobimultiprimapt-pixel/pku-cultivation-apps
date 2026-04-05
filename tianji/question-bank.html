@@ -147,6 +147,7 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
         <option value="claude">Claude-4-Sonnet · 结构化</option>
         <option value="gpt4o">GPT-4o · 通用平衡</option>
         <option value="deepseekV3">DeepSeek-V3 · 极速</option>
+        <option value="gemini">💎 Gemini-2.5-Pro · 谷歌最强</option>
       </select>
       <button class="btn btn-gold" onclick="startCollection()" id="btnStart">⚡ 启动采集</button>
       <div class="progress-wrap" id="progressWrap">
@@ -233,6 +234,7 @@ const MODELS = {
   claude: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'anthropic/claude-sonnet-4-20250514', name: 'Claude-4', icon: '🎯', desc: '结构化分析' },
   gpt4o: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openai/gpt-4o', name: 'GPT-4o', icon: '⚡', desc: '通用平衡' },
   deepseekV3: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-chat', name: 'DeepSeek-V3', icon: '🚀', desc: '极速生成' },
+  gemini: { url: 'GEMINI_DIRECT', model: 'gemini-2.5-pro', name: 'Gemini-2.5-Pro', icon: '💎', desc: '谷歌最强推理' },
   perplexity: { url: 'https://api.perplexity.ai/chat/completions', model: 'sonar-pro', name: 'Perplexity', icon: '🔍', desc: '实时情报' }
 };
 
@@ -274,8 +276,23 @@ async function callAI(channel, messages, maxTokens = 4000) {
   const key = getKey(channel);
   if (!key) throw new Error(`${m.name} 密钥未配置`);
 
+  // Gemini uses a different API format
+  if (channel === 'gemini') {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${m.model}:generateContent?key=${key}`;
+    const contents = messages.filter(m=>m.role!=='system').map(m => ({role: m.role==='assistant'?'model':'user', parts:[{text:m.content}]}));
+    const sysMsg = messages.find(m=>m.role==='system');
+    const body = { contents, generationConfig: { temperature: 0.7, maxOutputTokens: maxTokens } };
+    if (sysMsg) body.system_instruction = { parts: [{ text: sysMsg.content }] };
+    const res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error(`${m.name} ${res.status}`);
+    const data = await res.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return text.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+  }
+
+  // OpenAI-compatible (OpenRouter / Perplexity)
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` };
-  if (['deepseek','claude'].includes(channel)) {
+  if (['deepseek','claude','gpt4o','deepseekV3'].includes(channel)) {
     headers['HTTP-Referer'] = location.href;
     headers['X-Title'] = 'PKU Exam Vault';
   }
@@ -334,7 +351,7 @@ async function startCollection() {
   log.innerHTML = '';
 
   const channels = channelPref === 'all'
-    ? ['deepseek','claude','gpt4o','deepseekV3']
+    ? ['deepseek','claude','gpt4o','deepseekV3','gemini']
     : [channelPref];
   const batchSize = 10;
   let collected = 0;
