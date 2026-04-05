@@ -103,8 +103,8 @@ canvas{display:block}
 </style></head><body>
 <canvas id="C"></canvas>
 <div class="minimap"><canvas id="M" width="150" height="150"></canvas></div>
-<div class="hud h-top"><div>存活 <b id="alive">20</b>/20</div><div class="zone-warn" id="zw">⚠ 毒圈来袭！喝可乐！</div></div>
-<div class="timer-ring hud" id="gTimer">⏱ 15:00</div>
+<div class="hud h-top"><div>存活 <b id="alive">100</b>/100</div><div class="zone-warn" id="zw">⚠ 毒圈来袭！喝可乐！</div></div>
+<div class="timer-ring hud" id="gTimer">⏱ 60:00</div>
 <div class="hp-wrap hud"><div class="hp-lbl"><span id="hpL">HP 100</span><span id="lvL">炼气期 Lv.1</span></div><div class="hp-bar"><div class="hp-fill" id="hpF" style="width:100%;background:linear-gradient(90deg,#2ea043,#58d666)"></div></div></div>
 <div class="xp-wrap hud"><div class="xp-bar"><div class="xp-fill" id="xpF" style="width:0%"></div></div><div class="xp-txt" id="xpT">EXP 0/100</div></div>
 <div class="ctrls hud"><span>🎮<b>WASD</b>移动</span><span>🔫<b>SPACE</b>答题击杀</span><span>📦<b>F</b>拾取·<b>E</b>空投</span><span>🥤<b>Q</b>喝可乐</span></div>
@@ -127,7 +127,7 @@ canvas{display:block}
 <div class="scr lobby on" id="lobbyS">
 <div class="logo">🍗</div>
 <h1>考研大逃杀 · 和平精英</h1>
-<div class="sub">和平精英 × 考研 — 15分钟完整模考 · 每日AI刷新</div>
+<div class="sub">和平精英 × 考研 — 100人大逃杀 · 1小时完整试卷 · 答题=战斗</div>
 <div class="maps" id="mapSel">
 <div class="map-card sel" onclick="selMap(0)" style="background:linear-gradient(135deg,#05102a,#0a2255)"><div class="icon">🏝️</div><div class="name">海岛 · 艾伦格</div><div class="desc">408 计算机专业基础</div></div>
 <div class="map-card" onclick="selMap(1)" style="background:linear-gradient(135deg,#0a2a0a,#0a3a1a)"><div class="icon">🌴</div><div class="name">雨林 · 萨诺</div><div class="desc">301 数学一</div></div>
@@ -135,7 +135,7 @@ canvas{display:block}
 <div class="map-card" onclick="selMap(3)" style="background:linear-gradient(135deg,#1a1a2a,#2a2a4a)"><div class="icon">❄️</div><div class="name">雪地 · 维寒迪</div><div class="desc">101 思想政治</div></div>
 </div>
 <div class="tips"><span>🎮<b>WASD</b>移动</span><span>🔫<b>SPACE</b>答题击杀</span><span>📦<b>F</b>拾取答题</span><span>🥤<b>Q</b>毒圈可乐</span><span>📦<b>E</b>空投大题</span></div>
-<div style="font-size:.6em;color:#555">20人大逃杀·一局=完整试卷·活到最后🍗吃鸡</div>
+<div style="font-size:.6em;color:#555">100人大逃杀 · 人机主动攻击 · 击杀=搜集知识点 · 空投=大题装备攻击力</div>
 <button class="start-btn" onclick="startGame()">🪂 跳伞进入战场</button>
 </div>
 <!-- Result -->
