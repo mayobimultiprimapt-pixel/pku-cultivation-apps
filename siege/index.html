@@ -234,6 +234,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 </div>
 
 <script src="../api-keys.js"></script>
+<script src="../shared/relay-loader.js"></script>
 <script src="questions.js"></script>
 <script src="ai-engine.js"></script>
 <script>
@@ -434,6 +435,12 @@ async function dropPieces() {
 
 // ---- Question System ----
 function getQuestion(subject, type) {
+  // 优先从中转站拉取
+  if (window.PKU_RELAY?.ready) {
+    const q = PKU_RELAY.getQuestion(subject, type);
+    if (q) return q;
+  }
+  // Fallback到本地题库
   if (typeof QUESTION_BANK === 'undefined') return null;
   const bank = QUESTION_BANK[subject];
   if (!bank) return null;

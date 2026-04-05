@@ -69,7 +69,11 @@ var kpt={q:'空投大题',subj:MP[mi].s,type:'essay'};kp.push(kpt);
 aKF('📦 攻击力+5 护盾+3 HP+40 EXP+80');uBag()}
 function useHeal(){if(P.co>0&&P.hp<100){P.co--;P.hp=Math.min(100,P.hp+15);aKF('🥤+15HP');uBag()}else if(P.bd>0&&P.hp<100){P.bd--;P.hp=Math.min(100,P.hp+10);aKF('🩹+10HP');uBag()}else if(P.md>0&&P.hp<100){P.md--;P.hp=Math.min(100,P.hp+30);aKF('💊+30HP');uBag()}}
 var qM='fight';
-function sQ(mode){qM=mode;qA=true;var m=MP[mi],qs=QB[m.s],q=qs[~~(Math.random()*qs.length)];
+function sQ(mode){qM=mode;qA=true;var m=MP[mi];
+// 优先从中转站拉取
+var q;
+if(window.PKU_RELAY&&PKU_RELAY.ready){var rq=PKU_RELAY.getQuestion(m.s,'single');if(rq){q={q:rq.stem||rq.question,o:rq.options,a:typeof rq.answer==='number'?rq.answer:(rq.options||[]).findIndex(function(o){return o.charAt(0)===rq.answer})};if(q.a<0)q.a=0}}
+if(!q){var qs=QB[m.s];q=qs[~~(Math.random()*qs.length)]}
 var label=mode==='fight'?'🔫 主动攻击 <b>'+cB.nm+'</b>':mode==='defend'?'⚔️ <b>'+cB.nm+'</b> 向你开火！':'📦 拾取答题';
 document.getElementById('qM').innerHTML=label;
 var ht='';if(P.hi>0){var wi;do{wi=~~(Math.random()*4)}while(wi===q.a);ht='<span class="tag">📖排除'+String.fromCharCode(65+wi)+'</span>';P.hi--;uBag()}
