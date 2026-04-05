@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中转阁 · 数据中枢控制台</title>
+<meta name="description" content="PKU考研数据中枢 - 自动抓取情报、试卷、生成新题、投喂游戏">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070b14;--bg2:#0d1524;--bg3:#141e30;--card:#111b2e;--border:rgba(100,180,255,.12);--text:#e0e8f0;--sub:#7a8da8;--dim:#4a5a70;--accent:#00d4ff;--accent2:#7b61ff;--gold:#ffd700;--green:#39ff14;--red:#ff2e63;--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+
+/* Header */
+.header{text-align:center;padding:30px 16px 20px;background:linear-gradient(180deg,rgba(0,212,255,.06) 0%,transparent 100%)}
+.header h1{font-family:var(--font-d);font-size:clamp(20px,5vw,32px);letter-spacing:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.header .sub{font-size:11px;color:var(--sub);letter-spacing:3px;margin-top:4px;font-family:var(--font-d)}
+.version{display:inline-block;padding:2px 8px;background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:10px;font-size:9px;color:var(--accent);font-family:var(--font-d);margin-top:8px}
+
+/* Status Grid */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:0 16px;max-width:900px;margin:0 auto 20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;transition:.3s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.6}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.stat-icon{font-size:24px;margin-bottom:6px}
+.stat-val{font-family:var(--font-d);font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-top:4px;font-family:var(--font-d)}
+
+/* Panel */
+.container{max-width:900px;margin:0 auto;padding:0 16px 40px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.panel-title{font-family:var(--font-d);font-size:12px;letter-spacing:3px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-title .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Subject Cards */
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.subj-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.3s}
+.subj-card:hover{border-color:var(--accent)}
+.subj-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.subj-code{font-family:var(--font-d);font-size:18px;font-weight:900}
+.subj-name{font-size:11px;color:var(--sub)}
+.subj-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.subj-stat{background:rgba(0,212,255,.04);border-radius:8px;padding:8px;text-align:center}
+.subj-stat .sv{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--text)}
+.subj-stat .sl{font-size:9px;color:var(--dim)}
+.s101 .subj-code{color:#ff6b6b}.s201 .subj-code{color:#4ecdc4}.s301 .subj-code{color:#ffe66d}.s408 .subj-code{color:#39ff14}
+
+/* Buttons */
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.btn{padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:.3s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000}
+.btn-green{background:linear-gradient(135deg,var(--green),#00cc88);color:#000}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent)}
+.btn-full{grid-column:1/-1}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Log */
+.log-area{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:300px;overflow-y:auto;font-family:var(--font-d);font-size:11px;line-height:1.8}
+.log-area::-webkit-scrollbar{width:3px}
+.log-area::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+.log-entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-entry.success{color:var(--green)}.log-entry.error{color:var(--red)}.log-entry.info{color:var(--accent)}
+
+/* Feed Status */
+.feed-grid{display:grid;gap:8px}
+.feed-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
+.feed-name{font-size:13px;font-weight:700}
+.feed-status{font-family:var(--font-d);font-size:10px;padding:3px 10px;border-radius:8px}
+.feed-online{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.3)}
+.feed-offline{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.3)}
+.feed-count{font-family:var(--font-d);font-size:12px;color:var(--sub)}
+
+/* Paper Display */
+.paper-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}
+.paper-header{display:flex;justify-content:space-between;align-items:center}
+.paper-title{font-size:14px;font-weight:700}
+.paper-meta{font-family:var(--font-d);font-size:9px;color:var(--dim)}
+.paper-stats{display:flex;gap:12px;margin-top:8px}
+.paper-tag{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(0,212,255,.1);color:var(--accent)}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.panel{animation:fadeIn .5s ease}
+
+/* Back button */
+.back-link{display:inline-flex;align-items:center;gap:4px;color:var(--sub);text-decoration:none;font-size:12px;padding:8px 16px;transition:.3s}
+.back-link:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<a href="../" class="back-link">← 返回应用集</a>
+
+<div class="header">
+  <h1>中 转 阁</h1>
+  <div class="sub">DATA NEXUS · INTELLIGENCE HUB</div>
+  <div class="version" id="versionBadge">v3.0 · CONNECTING...</div>
+</div>
+
+<!-- Status Overview -->
+<div class="status-grid" id="statusGrid">
+  <div class="stat-card">
+    <div class="stat-icon">📡</div>
+    <div class="stat-val" id="stIntel">-</div>
+    <div class="stat-label">TODAY INTEL</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📝</div>
+    <div class="stat-val" id="stRaw">-</div>
+    <div class="stat-label">RAW QUESTIONS</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📋</div>
+    <div class="stat-val" id="stPapers">-</div>
+    <div class="stat-label">PAPERS GEN</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⏱️</div>
+    <div class="stat-val" id="stUptime">-</div>
+    <div class="stat-label">UPTIME</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Subject Breakdown -->
+  <div class="panel">
+    <div class="panel-title"><span class="dot"></span>各科数据仓库</div>
+    <div class="subject-grid" id="subjectGrid">
+      <div class="subj-card s101"><div class="subj-header"><span class="subj-code">101</span><span class="subj-name">政治</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s101raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s101intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s101paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s101time">—</div><div class="sl">生成时间</div></div></div></div>
+      <div class="subj-card s201"><div class="subj-header"><span class="subj-code">201</span><span class="subj-name">英语</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s201raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s201intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s201paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s201time">—</div><div class="sl">生成时间</div></div></div></div>
+      <div class="subj-card s301"><div class="subj-header"><span class="subj-code">301</span><span class="subj-name">数学</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s301raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s301intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s301paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s301time">—</div><div class="sl">生成时间</div></div></div></div>
+      <div class="subj-card s408"><div class="subj-header"><span class="subj-code">408</span><span class="subj-name">计算机</span></div><div class="subj-stats"><div class="subj-stat"><div class="sv" id="s408raw">0</div><div class="sl">原始题</div></div><div class="subj-stat"><div class="sv" id="s408intel">0</div><div class="sl">情报</div></div><div class="subj-stat"><div class="sv" id="s408paper">—</div><div class="sl">试卷</div></div><div class="subj-stat"><div class="sv" id="s408time">—</div><div class="sl">生成时间</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="panel">
+    <div class="panel-title"><span class="dot" style="background:var(--gold)"></span>中枢控制</div>
+    <div class="btn-grid">
+      <button class="btn btn-primary" onclick="collectIntel()">📡 抓取今日情报</button>
+      <button class="btn btn-gold" onclick="generatePapers()">📋 生成今日试卷</button>
+      <button class="btn btn-green btn-full" onclick="autoAll()">🔥 一键全流程（情报→出卷→投喂）</button>
+    </div>
+    <div style="margin-top:12px">
+      <select id="subjectSelect" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px">
+        <option value="all">全部科目</option>
+        <option value="101">101 政治</option>
+        <option value="201">201 英语</option>
+        <option value="301">301 数学</option>
+        <option value="408">408 计算机</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Game Feed Status -->
+  <div class="panel">
+    <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span>游戏投喂状态</div>
+    <div class="feed-grid">
+      <div class="feed-item">
+        <div><div class="feed-name">👻 猛鬼考研宿舍</div></div>
+        <div class="feed-count" id="feedGhost">待接入</div>
+        <div class="feed-status feed-offline" id="feedGhostStatus">STANDBY</div>
+      </div>
+      <div class="feed-item">
+        <div><div class="feed-name">🎮 北大消消乐</div></div>
+        <div class="feed-count" id="feedSiege">已接入</div>
+        <div class="feed-status feed-online" id="feedSiegeStatus">ONLINE</div>
+      </div>
+      <div class="feed-item">
+        <div><div class="feed-name">🔫 刺激战场</div></div>
+        <div class="feed-count" id="feedBattle">已接入</div>
+        <div class="feed-status feed-online" id="feedBattleStatus">ONLINE</div>
+      </div>
+      <div class="feed-item">
+        <div><div class="feed-name">🔮 天机阁情报</div></div>
+        <div class="feed-count" id="feedTianji">数据源</div>
+        <div class="feed-status feed-online" id="feedTianjiStatus">SOURCE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operation Log -->
+  <div class="panel">
+    <div class="panel-title"><span class="dot" style="background:var(--red)"></span>操作日志</div>
+    <div class="log-area" id="logArea">
+      <div class="log-entry info">[系统] 中转阁控制台启动中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const RELAY = 'https://pku-api-relay.onrender.com';
+
+function log(msg, cls = '') {
+  const area = document.getElementById('logArea');
+  const time = new Date().toLocaleTimeString('zh-CN');
+  area.innerHTML += `<div class="log-entry ${cls}">[${time}] ${msg}</div>`;
+  area.scrollTop = area.scrollHeight;
+}
+
+// 刷新状态
+async function refreshStatus() {
+  try {
+    const r = await fetch(`${RELAY}/hub/status`);
+    const data = await r.json();
+    document.getElementById('versionBadge').textContent = 'v3.0 · ONLINE';
+    document.getElementById('versionBadge').style.borderColor = 'var(--green)';
+    document.getElementById('versionBadge').style.color = 'var(--green)';
+    document.getElementById('stUptime').textContent = data.uptime || '-';
+
+    let totalRaw = 0, totalIntel = 0, totalPapers = 0;
+    for (const [subj, info] of Object.entries(data.subjects || {})) {
+      totalRaw += info.rawQuestions || 0;
+      totalIntel += info.intelligence || 0;
+      if (info.paper) totalPapers++;
+
+      const el = (id) => document.getElementById(id);
+      el(`s${subj}raw`).textContent = info.rawQuestions || 0;
+      el(`s${subj}intel`).textContent = info.intelligence || 0;
+      if (info.paper) {
+        el(`s${subj}paper`).textContent = info.paper.questions + '题';
+        el(`s${subj}time`).textContent = new Date(info.paper.generatedAt).toLocaleTimeString('zh-CN');
+      }
+    }
+    document.getElementById('stIntel').textContent = totalIntel;
+    document.getElementById('stRaw').textContent = totalRaw;
+    document.getElementById('stPapers').textContent = `${totalPapers}/4`;
+  } catch(e) {
+    document.getElementById('versionBadge').textContent = 'v3.0 · OFFLINE';
+    document.getElementById('versionBadge').style.borderColor = 'var(--red)';
+    log('❌ 无法连接中转站: ' + e.message, 'error');
+  }
+}
+
+// 抓取情报
+async function collectIntel() {
+  const subj = document.getElementById('subjectSelect').value;
+  log('📡 开始抓取情报...', 'info');
+  try {
+    const body = subj === 'all' ? {} : { subject: subj };
+    const r = await fetch(`${RELAY}/hub/collect-intel`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.success) {
+      (data.results || []).forEach(r => {
+        if (r.success) log(`✅ ${r.subject} 情报 ${r.length}字`, 'success');
+        else log(`❌ ${r.subject} 失败: ${r.error}`, 'error');
+      });
+    } else {
+      log('❌ 情报抓取失败', 'error');
+    }
+    refreshStatus();
+  } catch(e) {
+    log('❌ ' + e.message, 'error');
+  }
+}
+
+// 生成试卷
+async function generatePapers() {
+  const subj = document.getElementById('subjectSelect').value;
+  log('📋 开始生成今日试卷...', 'info');
+  try {
+    const body = subj === 'all' ? {} : { subject: subj };
+    const r = await fetch(`${RELAY}/paper/generate`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.success) {
+      if (data.paper) {
+        log(`✅ ${subj} 试卷 ${data.paper.questions.length}题 by ${data.paper.generator}`, 'success');
+      } else if (data.papers) {
+        for (const [s, p] of Object.entries(data.papers)) {
+          if (p.questions) log(`✅ ${s} 试卷 ${p.questions.length}题`, 'success');
+          else log(`❌ ${s} 失败: ${p.error}`, 'error');
+        }
+      }
+    }
+    refreshStatus();
+  } catch(e) {
+    log('❌ ' + e.message, 'error');
+  }
+}
+
+// 一键全流程
+async function autoAll() {
+  log('🔥 一键全流程启动！', 'info');
+  try {
+    const r = await fetch(`${RELAY}/paper/auto`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+    });
+    const data = await r.json();
+    if (data.success) {
+      log(`⏱ 总耗时: ${data.elapsed}`, 'info');
+      (data.report?.intel || []).forEach(i => {
+        if (i.chars) log(`📡 ${i.subject} 情报 ${i.chars}字`, 'success');
+        else log(`❌ ${i.subject} 情报失败`, 'error');
+      });
+      (data.report?.papers || []).forEach(p => {
+        if (p.questions) log(`📋 ${p.subject} 试卷 ${p.questions}题`, 'success');
+        else log(`❌ ${p.subject} 出卷失败: ${p.error}`, 'error');
+      });
+    }
+    refreshStatus();
+  } catch(e) {
+    log('❌ ' + e.message, 'error');
+  }
+}
+
+// Init
+log('🚀 连接中转站...', 'info');
+refreshStatus().then(() => log('✅ 中转阁控制台就绪', 'success'));
+// Auto refresh every 30s
+setInterval(refreshStatus, 30000);
+</script>
+</body>
+</html>
