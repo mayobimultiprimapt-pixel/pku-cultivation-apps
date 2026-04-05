@@ -180,27 +180,44 @@ const SUBJECTS = {
     name: '考研政治', score: 100, time: 180,
     structure: '单选16题(每题1分=16分) + 多选17题(每题2分=34分) + 分析5题(每题10分=50分)',
     topics: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策',
-    count: 33 // 16+17 客观题(分析题用游戏UI不好出)
+    sections: [
+      { type:'single', label:'单项选择题', count:16, score:1,  note:'四选一，考查基本概念/原理/时政识记' },
+      { type:'multi',  label:'多项选择题', count:17, score:2,  note:'四选多(≥2个正确答案)，全对才得2分' }
+    ],
+    count: 33
   },
   '201': {
     name: '考研英语一', score: 100, time: 180,
-    structure: '完形填空20题(每题0.5分=10分) + 阅读理解A节20题(每题2分=40分) + 新题型B节5题(每题2分=10分) + 翻译C节5句(每句2分=10分) + 写作2题(小作文10分+大作文20分=30分)',
-    topics: '英语知识运用(词汇/语法/上下文连贯)、传统阅读理解(主旨/细节/推断/态度/词义)、新题型(七选五/段落排序/小标题匹配)、英译汉翻译(复杂句式)、应用文写作+图表议论文写作',
-    count: 45 // 完形20+阅读A20+新题型B5 (翻译5句和写作2题不适合游戏)
+    structure: '完形填空20题(0.5分=10分) + 阅读A节20题(2分=40分) + 新题型B节5题(2分=10分) + 翻译C节5句(2分=10分) + 写作2题(30分)',
+    topics: '词汇/语法/上下文连贯、阅读理解(主旨/细节/推断/态度/词义)、七选五/段落排序/小标题匹配',
+    sections: [
+      { type:'cloze',   label:'完形填空',   count:20, score:0.5, note:'约350词文章20空，四选一考词汇/语法/连贯' },
+      { type:'reading', label:'阅读理解A节', count:20, score:2,   note:'4篇文章各5题，主旨/细节/推断/态度/词义' },
+      { type:'newtype', label:'新题型B节',   count:5,  score:2,   note:'七选五/段落排序/小标题匹配' }
+    ],
+    count: 45
   },
   '301': {
     name: '考研数学一', score: 150, time: 180,
     structure: '单选10题(每题5分=50分) + 填空6题(每题5分=30分) + 解答6题(共70分)',
-    topics: '高等数学60%(极限/连续/导数/积分/微分方程/级数/多元函数/重积分/曲线曲面积分)、线性代数20%(行列式/矩阵/向量/线性方程组/特征值/二次型)、概率论与数理统计20%(随机事件/随机变量/数字特征/大数定律/假设检验)',
-    count: 16 // 10单选+6填空
+    topics: '高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代数20%(行列式/矩阵/特征值/二次型) 概率论20%(随机变量/数字特征/假设检验)',
+    sections: [
+      { type:'single', label:'选择题', count:10, score:5, note:'四选一，基本概念/性质/计算/简单应用' },
+      { type:'blank',  label:'填空题', count:6,  score:5, note:'直接填写结果，基本运算/公式/简单推理' }
+    ],
+    count: 16
   },
   '408': {
     name: '计算机学科专业基础', score: 150, time: 180,
     structure: '单选40题(每题2分=80分) + 综合应用7题(共70分)',
-    topics: '数据结构45分(线性表/栈队列/树/二叉树/图/排序/查找/散列)、计算机组成原理45分(数据表示/运算器/存储器/指令系统/CPU/总线/IO)、操作系统35分(进程管理/内存管理/文件系统/IO系统)、计算机网络25分(体系结构/物理层/链路层/网络层/传输层/应用层)',
-    count: 40 // 40道单选
+    topics: '数据结构45分(线性表/树/图/排序/查找) 计算机组成原理45分(CPU/存储器/总线/IO) 操作系统35分(进程/内存/文件) 计算机网络25分(TCP/IP/路由/HTTP)',
+    sections: [
+      { type:'single', label:'单项选择题', count:40, score:2, note:'四选一，覆盖四大模块所有基础知识点' }
+    ],
+    count: 40
   }
 };
+
 
 const MODELS = {
   // Gemini 全家族
@@ -346,28 +363,35 @@ async function collectPaper() {
   const paperNum = getVault(subj).length + 1;
   addLog(`📋 开始采集 ${meta.name} 第${paperNum}套密卷 (${meta.count}题·${meta.score}分·${meta.time}分钟)`, 'info');
 
-  const prompt = `你是全国硕士研究生招生考试命题组核心专家。现在生成一套完整的${meta.name}(${subj})考研模拟客观题试卷。
+  // 按sections生成精确的分节说明
+  const sectionsDesc = meta.sections.map(s =>
+    `▸ ${s.label}：严格生成 ${s.count} 题，type="${s.type}"，每题${s.score}分 — ${s.note}`
+  ).join('\n');
+
+  const totalBySection = meta.sections.map(s => `${s.label}${s.count}题`).join(' + ');
+
+  const prompt = `你是全国硕士研究生招生考试命题组核心专家。严格按真实试卷结构生成 ${meta.name}(${subj}) 第${paperNum}套模拟密卷。
 
 【试卷规格】
-- 科目：${meta.name}(${subj})
-- 满分：${meta.score}分 / 考试时长：${meta.time}分钟
-- 真实结构：${meta.structure}
+科目：${meta.name}(${subj}) | 满分：${meta.score}分 | 时长：${meta.time}分钟
+真实结构：${meta.structure}
+本次生成客观题部分：${totalBySection} = 共${meta.count}题
 
-【你的任务】
-生成 ${meta.count} 道客观题(选择题)，严格按照真实考研真题的难度、风格和考点分布。
+【分节出题要求（必须严格遵守题数）】
+${sectionsDesc}
 
 【考点覆盖】
 ${meta.topics}
 
-【出题标准】
-1. 严格符合全国硕士研究生招生考试真题难度
-2. 每道题必须有4个选项(ABCD)
+【质量标准】
+1. 每一节的题目数量必须精确（不多不少）
+2. 每道题有4个选项(ABCD)，多选题有≥2个正确答案
 3. 难度分布：基础30% + 中等45% + 拔高25%
 4. 每题配专业级详细解析（含考点出处和解题思路）
-5. 像黄冈密卷一样精准命中高频核心考点
+5. 严格符合考研真题难度，像黄冈密卷一样精准
 
-【输出格式】纯JSON数组，第一个字符必须是[，最后必须是]
-[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"所属章节","difficulty":3,"score":${subj === '301' ? 5 : subj === '408' ? 2 : subj === '101' ? 1 : 2}}]`;
+【输出格式】纯JSON数组，第一个字符[，最后一个字符]，禁止多余文字
+[{"id":"q001","type":"${meta.sections[0].type}","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
 
   const channels = enginePref === 'all'
     ? ['gemini31pro','claude','gpt4','gemini3flash','deepseekV3','gemini25pro','deepseek']

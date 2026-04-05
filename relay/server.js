@@ -223,30 +223,40 @@ async function generatePaper(subject) {
   // 从题库密卷中提取样本(避免重复)
   const sampleQ = rawQ.slice(-30).map(q => `[${q.type||'single'}] ${q.stem||q.question||''}`).join('\n');
 
+  // 按真实考试结构分节描述
+  const sectionsDesc = meta.sections.map(s =>
+    `▸ ${s.label}：严格生成 ${s.count} 题，type="${s.type}"，每题${s.score}分 — ${s.note}`
+  ).join('\n');
+  const totalBySection = meta.sections.map(s => `${s.label}${s.count}题`).join(' + ');
+
   const prompt = `你是全国硕士研究生招生考试${meta.label}(${subject})命题组核心专家。
 
 【试卷规格】
 科目: ${meta.label}(${subject}) | 满分: ${meta.score}分 | 时长: ${meta.time}分钟
 真实结构: ${meta.structure}
 考点范围: ${meta.topics}
+本次任务: ${totalBySection} = 共${meta.gameCount}道预测题
 
-【天机阁今日最新情报】
-${latestIntel || '(暂无情报，请根据历年高频考点+当前时政热点出题)'}
+【分节出题要求（必须严格遵守每节题数）】
+${sectionsDesc}
 
-【题库已有密卷样本(仅做参考，严禁重复)】
+【天机阁今日最新情报（命题趋势推演依据）】
+${latestIntel || '(暂无情报，请根据历年高频考点+当前时政热点推演今年命题方向)'}
+
+【题库已有密卷样本（仅做参考，严禁重复）】
 ${sampleQ ? sampleQ.substring(0, 2000) : '(暂无样本)'}
 
-【你的核心任务】
-基于以上情报和考点分析，推演今年最可能出现的考题方向，生成 ${meta.gameCount} 道创新预测题：
-1. 融合情报中的最新热点趋势
-2. 参考已有密卷但严禁重复
-3. 重点预测今年可能考的新题型和新方向
-4. 每道题必须有4个选项(ABCD)
+【核心任务：情报驱动预测出题】
+基于以上情报推演今年最可能出现的考题方向，生成全部 ${meta.gameCount} 道创新预测题：
+1. 每节题数必须精确（不多不少）
+2. 融合情报中的最新热点趋势
+3. 严禁与已有密卷重复
+4. 每道题有4个选项(ABCD)，多选题≥2个正确答案
 5. 难度分布: 基础30% + 中等45% + 拔高25%
 6. 每题配专业级详细解析(含考点出处和解题思路)
 
-输出: 纯JSON数组，第一个字符[，最后一个字符]
-[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3}]`;
+输出: 纯JSON数组，第一个字符[，最后一个字符]，禁止多余文字
+[{"id":"q001","type":"${meta.sections[0].type}","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
 
   try {
     const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字。第一个字符必须是[，最后一个字符必须是]。';
