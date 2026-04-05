@@ -106,12 +106,9 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
     <div class="stat-card s408"><div class="sc-num" id="st408">0</div><div class="sc-label">408 计算机</div></div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" onclick="switchVaultTab('generate')">🤖 AI采集</div>
-    <div class="tab" onclick="switchVaultTab('papers')">📋 考卷库</div>
-    <div class="tab" onclick="switchVaultTab('intel')">🔮 情报投喂</div>
-    <div class="tab" onclick="switchVaultTab('export')">📡 分发管理</div>
+    <div class="tab active" onclick="switchVaultTab('generate')">🤖 AI精准采集</div>
+    <div class="tab" onclick="switchVaultTab('papers')">📋 完整试卷库</div>
   </div>
 
   <!-- Tab: AI采集 -->
@@ -158,42 +155,16 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
     </div>
   </div>
 
-  <!-- Tab: 考卷库 -->
+  <!-- Tab: 完整试卷库 -->
   <div class="vault-tab" id="tabPapers" style="display:none">
     <div class="section">
       <div class="section-title"><span class="icon">📋</span>完整试卷库</div>
-      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">每套卷子还原真实考研试卷结构，包含完整题型和分值</p>
-      <button class="btn btn-gold" onclick="generateFullPaper()">📝 AI生成一套完整密卷</button>
-      <div id="paperList" style="margin-top:12px"></div>
-    </div>
-  </div>
-
-  <!-- Tab: 情报投喂 -->
-  <div class="vault-tab" id="tabIntel" style="display:none">
-    <div class="section">
-      <div class="section-title"><span class="icon">🔮</span>天机阁情报 → 精准出题</div>
-      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">
-        调用 Perplexity sonar-pro 实时搜索最新考研动态，<br>
-        结合历年真题频率分析，用 DeepSeek-R1 精准生成预测题
-      </p>
-      <input id="intelTopic" placeholder="输入考点/主题，如：唯物辩证法、TCP三次握手、泰勒展开..."/>
-      <button class="btn btn-red" onclick="intelGenerate()">🎯 情报精准投喂</button>
-      <div class="progress-wrap" id="intelProgress">
-        <div class="progress-text" id="intelProgressText"></div>
-        <div class="progress-bar"><div class="progress-fill" id="intelProgressFill"></div></div>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">采集的题目自动组成完整试卷 · 每套还原真实考研结构 · 自动推送中转阁</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold" onclick="generateFullPaper()" style="flex:1">📝 立即组卷</button>
+        <button class="btn btn-outline" onclick="exportJSON()" style="flex:1">💾 导出JSON</button>
       </div>
-      <div class="log" id="intelLog" style="display:none"></div>
-    </div>
-  </div>
-
-  <!-- Tab: 分发管理 -->
-  <div class="vault-tab" id="tabExport" style="display:none">
-    <div class="section">
-      <div class="section-title"><span class="icon">📡</span>题库分发状态</div>
-      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">题库通过 localStorage 自动分发到所有游戏</p>
-      <div id="distStatus"></div>
-      <button class="btn btn-outline" onclick="exportJSON()" style="margin-top:12px">💾 导出全部题库 (JSON)</button>
-      <button class="btn btn-outline" onclick="clearBank()" style="margin-top:4px;color:var(--red);border-color:rgba(255,46,99,.3)">🗑️ 清空题库</button>
+      <div id="paperList" style="margin-top:12px"></div>
     </div>
   </div>
 </div>
@@ -254,11 +225,10 @@ function renderEngines() {
 function switchVaultTab(tab) {
   document.querySelectorAll('.vault-tab').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const tabMap = {generate:'tabGenerate',papers:'tabPapers',intel:'tabIntel',export:'tabExport'};
+  const tabMap = {generate:'tabGenerate',papers:'tabPapers'};
   document.getElementById(tabMap[tab]).style.display = 'block';
   event.target.classList.add('active');
   if (tab === 'papers') renderPapers();
-  if (tab === 'export') renderDistStatus();
 }
 
 // ---- Stats ----
