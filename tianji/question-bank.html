@@ -144,10 +144,10 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
       <select id="genChannel">
         <option value="all">🔥 全通道轮换（推荐）</option>
         <option value="deepseek">DeepSeek-R1 · 最强推理</option>
-        <option value="claude">Claude-4-Sonnet · 结构化</option>
-        <option value="gpt4o">GPT-4o · 通用平衡</option>
-        <option value="deepseekV3">DeepSeek-V3 · 极速</option>
-        <option value="gemini">💎 Gemini-2.5-Pro · 谷歌最强</option>
+        <option value="claude">Claude-4.5-Sonnet · 结构化</option>
+        <option value="gpt4">GPT-4.1 · 通用平衡</option>
+        <option value="deepseekV3">DeepSeek-V3.2 · 极速</option>
+        <option value="gemini">💎 Gemini-3.1-Pro · 谷歌最强</option>
       </select>
       <button class="btn btn-gold" onclick="startCollection()" id="btnStart">⚡ 启动采集</button>
       <div class="progress-wrap" id="progressWrap">
@@ -221,8 +221,7 @@ function getKey(channel) {
   if (!keys.mirror) keys.mirror = keys.openrouter; // Use same OR key as mirror fallback
   if (!keys.perplexity) keys.perplexity = atob('cHBseC10VWMyTGdTNlRDb2JxaWozRTYyOHBMaXJiaWl6Z2Q5SWhRb0tOSWxUVjFMMXZwekI=');
 
-  if (['deepseek','claude'].includes(channel)) return keys.openrouter;
-  if (['gpt4o','deepseekV3'].includes(channel)) return keys.mirror || keys.openrouter;
+  if (['deepseek','claude','gpt4','deepseekV3'].includes(channel)) return keys.openrouter;
   if (channel === 'perplexity') return keys.perplexity;
   if (channel === 'gemini') return keys.gemini;
   return keys.openrouter;
@@ -230,11 +229,11 @@ function getKey(channel) {
 
 // ---- Model configs ----
 const MODELS = {
-  deepseek: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-r1', name: 'DeepSeek-R1', icon: '🧠', desc: '最强推理链' },
-  claude: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'anthropic/claude-sonnet-4-20250514', name: 'Claude-4', icon: '🎯', desc: '结构化分析' },
-  gpt4o: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openai/gpt-4o', name: 'GPT-4o', icon: '⚡', desc: '通用平衡' },
-  deepseekV3: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-chat', name: 'DeepSeek-V3', icon: '🚀', desc: '极速生成' },
-  gemini: { url: 'GEMINI_DIRECT', model: 'gemini-2.5-pro', name: 'Gemini-2.5-Pro', icon: '💎', desc: '谷歌最强推理' },
+  deepseek: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1', icon: '🧠', desc: '最强推理链' },
+  claude: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5', icon: '🎯', desc: '结构化分析' },
+  gpt4: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openai/gpt-4.1', name: 'GPT-4.1', icon: '⚡', desc: '通用平衡' },
+  deepseekV3: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-v3.2', name: 'DeepSeek-V3.2', icon: '🚀', desc: '极速生成' },
+  gemini: { url: 'GEMINI_DIRECT', model: 'gemini-3.1-pro-preview', name: 'Gemini-3.1-Pro', icon: '💎', desc: '谷歌最强推理' },
   perplexity: { url: 'https://api.perplexity.ai/chat/completions', model: 'sonar-pro', name: 'Perplexity', icon: '🔍', desc: '实时情报' }
 };
 
@@ -347,7 +346,7 @@ async function startCollection() {
   log.innerHTML = '';
 
   const channels = channelPref === 'all'
-    ? ['deepseek','claude','gpt4o','deepseekV3','gemini']
+    ? ['deepseek','claude','gpt4','deepseekV3','gemini']
     : [channelPref];
   const batchSize = 10;
   let collected = 0;

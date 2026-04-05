@@ -8,7 +8,7 @@ const AI_QUESTION_ENGINE = {
   channels: {
     deepseek: {
       url: 'https://openrouter.ai/api/v1/chat/completions',
-      model: 'deepseek/deepseek-r1',
+      model: 'deepseek/deepseek-r1-0528',
       getName: () => 'DeepSeek-R1'
     },
     claude: {
