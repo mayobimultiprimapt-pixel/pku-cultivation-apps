@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>天机阁 · 题库搜集站 — 绝密考卷金库</title>
+<title>题库搜集站 · 绝密考卷金库</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#06060e;--bg2:#0c0c18;--bg3:#141428;--card:rgba(16,16,36,.95);--text:#e4e4f0;--dim:#4a4a6a;--sub:#7a7a9a;--border:rgba(255,255,255,.06);--gold:#ffd700;--red:#ff2e63;--blue:#3b82f6;--green:#39ff14;--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:720px;margin:0 auto;padding:16px}
-
-/* Header */
 .vault-header{text-align:center;padding:30px 0 20px;position:relative}
 .vault-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .vault-title{font-family:var(--font-d);font-size:20px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -19,38 +17,39 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .vault-badge{display:inline-block;margin-top:10px;padding:4px 14px;border:1px solid var(--red);border-radius:20px;font-family:var(--font-d);font-size:8px;letter-spacing:3px;color:var(--red);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* Stats Dashboard */
+/* Stats */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.2s}
+.stat-card:hover,.stat-card.active{transform:translateY(-2px);border-color:var(--gold)}
 .stat-card .sc-num{font-family:var(--font-d);font-size:24px;font-weight:900}
 .stat-card .sc-label{font-size:10px;color:var(--sub);margin-top:2px}
-.stat-card.s101 .sc-num{color:var(--red)}
-.stat-card.s201 .sc-num{color:var(--blue)}
-.stat-card.s301 .sc-num{color:var(--gold)}
-.stat-card.s408 .sc-num{color:var(--green)}
+.stat-card.s101 .sc-num{color:var(--red)}.stat-card.s201 .sc-num{color:var(--blue)}
+.stat-card.s301 .sc-num{color:var(--gold)}.stat-card.s408 .sc-num{color:var(--green)}
 
 /* Sections */
 .section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
 .section-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title .icon{font-size:20px}
 
-/* AI Engine Panel */
-.engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.engine-card{padding:12px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.2s;text-align:center}
-.engine-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto}
+.tab{padding:8px 16px;border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;transition:.2s}
+.tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold)}
+
+/* Engine Grid */
+.engine-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.engine-card{padding:10px;border:1px solid var(--border);border-radius:10px;text-align:center;transition:.2s}
 .engine-card.active{border-color:var(--gold);background:rgba(255,215,0,.05)}
-.engine-card .ec-model{font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:1px}
-.engine-card .ec-name{font-size:11px;color:var(--sub);margin-top:2px}
+.engine-card .ec-model{font-family:var(--font-d);font-size:9px;font-weight:700}
 .engine-card .ec-status{font-size:9px;margin-top:4px;color:var(--green)}
 
 /* Controls */
-select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:var(--font-b);margin:4px 0}
+select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:var(--font-b);margin:4px 0}
 .btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:.2s;margin-top:8px}
 .btn-gold{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000}
 .btn-red{background:linear-gradient(135deg,var(--red),#ff6b8a);color:#fff}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* Progress */
 .progress-wrap{margin:12px 0;display:none}
@@ -61,36 +60,39 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
 
 /* Log */
 .log{max-height:200px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;font-family:monospace;font-size:11px;line-height:1.8}
-.log::-webkit-scrollbar{width:3px}
-.log::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
+.log::-webkit-scrollbar{width:3px}.log::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
 .log-entry{border-bottom:1px solid var(--border);padding:2px 0}
-.log-entry.success{color:var(--green)}
-.log-entry.error{color:var(--red)}
-.log-entry.info{color:var(--blue)}
+.log-entry.success{color:var(--green)}.log-entry.error{color:var(--red)}.log-entry.info{color:var(--blue)}
 
-/* Paper List */
-.paper-item{padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:.2s}
-.paper-item:hover{border-color:var(--gold)}
-.paper-item .pi-title{font-size:13px;font-weight:600}
-.paper-item .pi-meta{font-size:10px;color:var(--sub);margin-top:2px}
-.paper-item .pi-badge{font-family:var(--font-d);font-size:9px;padding:3px 8px;border-radius:6px;letter-spacing:1px}
-.paper-item .pi-badge.real{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.3)}
-.paper-item .pi-badge.mock{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.3)}
-.paper-item .pi-badge.predicted{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.3)}
+/* Paper Cards */
+.paper-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;transition:.2s}
+.paper-card:hover{border-color:var(--gold)}
+.paper-head{display:flex;justify-content:space-between;align-items:center}
+.paper-title{font-size:14px;font-weight:700}
+.paper-badge{font-family:var(--font-d);font-size:9px;padding:3px 10px;border-radius:6px;letter-spacing:1px}
+.paper-badge.s101{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.3)}
+.paper-badge.s201{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+.paper-badge.s301{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.3)}
+.paper-badge.s408{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.3)}
+.paper-meta{font-size:10px;color:var(--sub);margin-top:4px}
+.paper-preview{margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:12px;line-height:1.8;max-height:200px;overflow-y:auto;display:none}
+.paper-preview.show{display:block}
+.paper-q{padding:6px 0;border-bottom:1px solid var(--border)}
+.paper-q .stem{font-weight:600}.paper-q .opts{color:var(--sub);margin-left:16px}
+.paper-q .ans{color:var(--green);font-size:11px;margin-left:16px}
+
+/* Subject Filter Tabs */
+.subj-tabs{display:flex;gap:6px;margin-bottom:12px}
+.subj-tab{padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid var(--border);transition:.2s}
+.subj-tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold)}
 
 /* Nav */
-.back-btn{display:inline-flex;align-items:center;gap:4px;color:var(--sub);font-size:12px;text-decoration:none;margin-bottom:12px;cursor:pointer}
-.back-btn:hover{color:var(--text)}
-
-/* Tabs */
-.tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto}
-.tab{padding:8px 16px;border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;transition:.2s}
-.tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold)}
+.back-btn{display:inline-flex;align-items:center;gap:4px;color:var(--sub);font-size:12px;text-decoration:none;margin-bottom:12px}.back-btn:hover{color:var(--text)}
 </style>
 </head>
 <body>
 <div class="container">
-  <a class="back-btn" href="../tianji/">← 返回天机阁</a>
+  <a class="back-btn" href="../">← 返回应用集</a>
   
   <div class="vault-header">
     <div class="vault-title">题库搜集站</div>
@@ -98,230 +100,190 @@ select,input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid
     <div class="vault-badge">⚠ AUTHORIZED PERSONNEL ONLY</div>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats: 每科试卷数 -->
   <div class="stats-grid">
-    <div class="stat-card s101"><div class="sc-num" id="st101">0</div><div class="sc-label">101 政治</div></div>
-    <div class="stat-card s201"><div class="sc-num" id="st201">0</div><div class="sc-label">201 英语</div></div>
-    <div class="stat-card s301"><div class="sc-num" id="st301">0</div><div class="sc-label">301 数学</div></div>
-    <div class="stat-card s408"><div class="sc-num" id="st408">0</div><div class="sc-label">408 计算机</div></div>
+    <div class="stat-card s101"><div class="sc-num" id="st101">0</div><div class="sc-label">101 政治卷</div></div>
+    <div class="stat-card s201"><div class="sc-num" id="st201">0</div><div class="sc-label">201 英语卷</div></div>
+    <div class="stat-card s301"><div class="sc-num" id="st301">0</div><div class="sc-label">301 数学卷</div></div>
+    <div class="stat-card s408"><div class="sc-num" id="st408">0</div><div class="sc-label">408 计算机卷</div></div>
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchVaultTab('generate')">🤖 AI精准采集</div>
-    <div class="tab" onclick="switchVaultTab('papers')">📋 完整试卷库</div>
+    <div class="tab active" onclick="switchTab('collect')">🤖 采集密卷</div>
+    <div class="tab" onclick="switchTab('vault')">📋 试卷金库</div>
   </div>
 
-  <!-- Tab: AI采集 -->
-  <div class="vault-tab" id="tabGenerate">
+  <!-- Tab: 采集密卷 -->
+  <div class="vault-tab" id="tabCollect">
     <div class="section">
-      <div class="section-title"><span class="icon">🧠</span>AI 大脑矩阵 — 全通道火力全开</div>
-      <div class="engine-grid" id="engineGrid"></div>
-    </div>
-    <div class="section">
-      <div class="section-title"><span class="icon">⚙️</span>采集参数</div>
-      <select id="genSubject">
+      <div class="section-title"><span class="icon">🎯</span>采集一套完整密卷</div>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">
+        选择科目 → AI生成一套完整考研试卷（15-30题）→ 自动存入金库 → 中转阁自动抓取
+      </p>
+      <select id="paperSubject">
         <option value="101">101 政治 — 马原/毛中特/史纲/思修</option>
         <option value="201">201 英语一 — 阅读/完形/翻译/写作</option>
         <option value="301">301 数学一 — 高数/线代/概率</option>
         <option value="408">408 计算机 — DS/CO/OS/NET</option>
       </select>
-      <select id="genMode">
-        <option value="mixed">混合出题（单选+多选+判断）</option>
-        <option value="single">纯单选题</option>
-        <option value="multi">纯多选题</option>
-        <option value="paper">完整套卷模式（还原真实试卷结构）</option>
-      </select>
-      <select id="genCount">
-        <option value="10">10 题 · 快速试探</option>
-        <option value="30">30 题 · 标准采集</option>
-        <option value="50" selected>50 题 · 深度搜集</option>
-        <option value="100">100 题 · 大批量</option>
-        <option value="500">500 题 · 全面覆盖 ⚡</option>
-      </select>
-      <select id="genChannel">
+      <select id="paperEngine">
         <option value="all">🔥 全通道轮换（推荐）</option>
-        <option value="deepseek">DeepSeek-R1 · 最强推理</option>
-        <option value="claude">Claude-4.5-Sonnet · 结构化</option>
-        <option value="gpt4">GPT-4.1 · 通用平衡</option>
-        <option value="deepseekV3">DeepSeek-V3.2 · 极速</option>
-        <option value="gemini">💎 Gemini-3.1-Pro · 谷歌最强</option>
+        <option value="deepseek">🧠 DeepSeek-R1 · 最强推理</option>
+        <option value="claude">🎯 Claude-4.5-Sonnet · 结构化</option>
+        <option value="gpt4">⚡ GPT-4.1 · 通用平衡</option>
+        <option value="deepseekV3">🚀 DeepSeek-V3.2 · 极速</option>
+        <option value="gemini">💎 Gemini-3.1-Pro · 创意</option>
       </select>
-      <button class="btn btn-gold" onclick="startCollection()" id="btnStart">⚡ 启动采集</button>
+      <button class="btn btn-gold" onclick="collectPaper()" id="btnCollect">⚡ 采集一套密卷</button>
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-text" id="progressText">准备中...</div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
-      <div class="log" id="genLog" style="display:none"></div>
+      <div class="log" id="collectLog" style="display:none"></div>
     </div>
   </div>
 
-  <!-- Tab: 完整试卷库 -->
-  <div class="vault-tab" id="tabPapers" style="display:none">
+  <!-- Tab: 试卷金库 -->
+  <div class="vault-tab" id="tabVault" style="display:none">
     <div class="section">
-      <div class="section-title"><span class="icon">📋</span>完整试卷库</div>
-      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">采集的题目自动组成完整试卷 · 每套还原真实考研结构 · 自动推送中转阁</p>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-gold" onclick="generateFullPaper()" style="flex:1">📝 立即组卷</button>
-        <button class="btn btn-outline" onclick="exportJSON()" style="flex:1">💾 导出JSON</button>
+      <div class="section-title"><span class="icon">📋</span>试卷金库</div>
+      <div class="subj-tabs">
+        <div class="subj-tab active" onclick="filterSubj('all')">全部</div>
+        <div class="subj-tab" onclick="filterSubj('101')">101 政治</div>
+        <div class="subj-tab" onclick="filterSubj('201')">201 英语</div>
+        <div class="subj-tab" onclick="filterSubj('301')">301 数学</div>
+        <div class="subj-tab" onclick="filterSubj('408')">408 计算机</div>
       </div>
-      <div id="paperList" style="margin-top:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-outline" onclick="exportAll()" style="flex:1">💾 导出全部</button>
+        <button class="btn btn-outline" onclick="clearAll()" style="flex:1;color:var(--red);border-color:rgba(255,46,99,.3)">🗑️ 清空</button>
+      </div>
+      <div id="vaultList"></div>
     </div>
   </div>
+
 </div>
 
 <script src="../api-keys.js"></script>
-<script src="../shared/question-bank.js"></script>
 <script>
 // ============================================================
-//  天机阁 · 题库搜集站 — 控制中心
+//  题库搜集站 v2.0 — 每次采集 = 一套完整试卷
 // ============================================================
 
-// ---- API Key 获取 ----
-function getKey(channel) {
-  const keys = {
-    openrouter: null, mirror: null, gemini: null, perplexity: null
-  };
-  // Read from shared PKU_KEYS (set by ../api-keys.js)
-  if (window.PKU_KEYS) {
-    keys.openrouter = window.PKU_KEYS.OPENROUTER_API_KEY;
-    keys.gemini = window.PKU_KEYS.GEMINI_API_KEY;
-    keys.perplexity = window.PKU_KEYS.PERPLEXITY_API_KEY;
-  }
-  // Fallback: embedded (Base64)
-  if (!keys.openrouter) keys.openrouter = atob('c2stb3ItdjEtYzdiZWEyMDc3ZGFlM2Q5MzA0ODM3NmFmMTdiNjljNzZiNmQ4ZjdlNjRiYWFjNDAwOTg0YzM5YWEzZTk4NDM5YQ==');
-  if (!keys.mirror) keys.mirror = keys.openrouter; // Use same OR key as mirror fallback
-  if (!keys.perplexity) keys.perplexity = atob('cHBseC10VWMyTGdTNlRDb2JxaWozRTYyOHBMaXJiaWl6Z2Q5SWhRb0tOSWxUVjFMMXZwekI=');
-
-  if (['deepseek','claude','gpt4','deepseekV3'].includes(channel)) return keys.openrouter;
-  if (channel === 'perplexity') return keys.perplexity;
-  if (channel === 'gemini') return keys.gemini;
-  return keys.openrouter;
-}
-
-// ---- Model configs ----
-const MODELS = {
-  deepseek: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1', icon: '🧠', desc: '最强推理链' },
-  claude: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5', icon: '🎯', desc: '结构化分析' },
-  gpt4: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openai/gpt-4.1', name: 'GPT-4.1', icon: '⚡', desc: '通用平衡' },
-  deepseekV3: { url: 'https://openrouter.ai/api/v1/chat/completions', model: 'deepseek/deepseek-v3.2', name: 'DeepSeek-V3.2', icon: '🚀', desc: '极速生成' },
-  gemini: { url: 'GEMINI_DIRECT', model: 'gemini-3.1-pro-preview', name: 'Gemini-3.1-Pro', icon: '💎', desc: '谷歌最强推理' },
-  perplexity: { url: 'https://api.perplexity.ai/chat/completions', model: 'sonar-pro', name: 'Perplexity', icon: '🔍', desc: '实时情报' }
+const RELAY_URL = 'https://pku-api-relay.onrender.com';
+const SUBJECTS = {
+  '101': { name: '考研政治', topics: '马克思主义基本原理(唯物论/辩证法/认识论/唯物史观/政治经济学)、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策', count: 20 },
+  '201': { name: '考研英语一', topics: '词汇与语法、阅读理解(主旨/细节/推断/态度/词义)、完形填空、新题型(排序/匹配/标题)、翻译(英译中)、写作(应用文/议论文)', count: 20 },
+  '301': { name: '考研数学一', topics: '高等数学(极限/连续/导数/积分/微分方程/级数/多元函数)、线性代数(行列式/矩阵/向量/特征值/二次型)、概率论与数理统计(随机变量/数字特征/假设检验)', count: 20 },
+  '408': { name: '计算机学科专业基础', topics: '数据结构(线性表/树/图/排序/查找)、计算机组成原理(数据表示/CPU/存储器/总线/IO)、操作系统(进程/内存/文件/IO)、计算机网络(体系结构/物理层/链路层/网络层/传输层/应用层)', count: 20 }
 };
 
-// ---- Render engine grid ----
-function renderEngines() {
-  const grid = document.getElementById('engineGrid');
-  grid.innerHTML = Object.entries(MODELS).map(([k,m]) => `
-    <div class="engine-card active" id="eng-${k}">
-      <div style="font-size:24px">${m.icon}</div>
-      <div class="ec-model">${m.name}</div>
-      <div class="ec-name">${m.desc}</div>
-      <div class="ec-status">● 在线</div>
-    </div>
-  `).join('');
-}
+const MODELS = {
+  deepseek: { url: 'OR', model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1', icon: '🧠' },
+  claude: { url: 'OR', model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5', icon: '🎯' },
+  gpt4: { url: 'OR', model: 'openai/gpt-4.1', name: 'GPT-4.1', icon: '⚡' },
+  deepseekV3: { url: 'OR', model: 'deepseek/deepseek-v3.2', name: 'V3.2', icon: '🚀' },
+  gemini: { url: 'GEMINI', model: 'gemini-3.1-pro-preview', name: 'Gemini-3.1', icon: '💎' }
+};
 
-// ---- Tab switching ----
-function switchVaultTab(tab) {
-  document.querySelectorAll('.vault-tab').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const tabMap = {generate:'tabGenerate',papers:'tabPapers'};
-  document.getElementById(tabMap[tab]).style.display = 'block';
-  event.target.classList.add('active');
-  if (tab === 'papers') renderPapers();
+// ---- Storage ----
+function getVault(subj) {
+  try { return JSON.parse(localStorage.getItem(`vault_${subj}`) || '[]'); } catch(e) { return []; }
+}
+function saveVault(subj, papers) {
+  localStorage.setItem(`vault_${subj}`, JSON.stringify(papers));
+}
+function addPaper(subj, paper) {
+  const vault = getVault(subj);
+  vault.unshift(paper);
+  saveVault(subj, vault);
+  updateStats();
 }
 
 // ---- Stats ----
 function updateStats() {
-  const stats = PKU_QBANK.getStats();
-  ['101','201','301','408'].forEach(sub => {
-    document.getElementById('st'+sub).textContent = stats[sub]?.questions || 0;
+  ['101','201','301','408'].forEach(s => {
+    document.getElementById('st' + s).textContent = getVault(s).length;
   });
 }
 
-// ---- 中转隧道地址 ----
-const RELAY_URL = 'https://pku-api-relay.onrender.com';
+// ---- Tab Switch ----
+function switchTab(tab) {
+  document.querySelectorAll('.vault-tab').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tab === 'collect') {
+    document.getElementById('tabCollect').style.display = 'block';
+  } else {
+    document.getElementById('tabVault').style.display = 'block';
+    renderVault();
+  }
+  event.target.classList.add('active');
+}
 
-// ---- AI Call (通过隧道中转, 25s超时) ----
-async function callAI(channel, messages, maxTokens = 4000) {
-  const m = MODELS[channel];
-
+// ---- AI Call (25s超时) ----
+async function callAI(channel, messages) {
   let url, body;
+  const m = MODELS[channel];
   if (channel === 'gemini') {
     url = `${RELAY_URL}/gemini/generate`;
-    body = { model: m.model, messages, max_tokens: maxTokens };
-  } else if (channel === 'perplexity') {
-    url = `${RELAY_URL}/perplexity/search`;
-    body = { model: m.model, messages, max_tokens: maxTokens };
+    body = { model: m.model, messages, max_tokens: 8000 };
   } else {
-    // OpenRouter: deepseek, claude, gpt4, deepseekV3
     url = `${RELAY_URL}/v1/chat/completions`;
-    body = { model: m.model, messages, temperature: 0.7, max_tokens: maxTokens };
+    body = { model: m.model, messages, temperature: 0.7, max_tokens: 8000 };
   }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-
+  const ctrl = new AbortController();
+  const tmout = setTimeout(() => ctrl.abort(), 25000);
   try {
     const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body), signal: ctrl.signal
     });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(`${m.name} ${res.status}: ${errData.error?.message || res.statusText}`);
-    }
-
+    clearTimeout(tmout);
+    if (!res.ok) throw new Error(`${m.name} ${res.status}`);
     const data = await res.json();
     return data.choices?.[0]?.message?.content || '';
   } catch(e) {
-    clearTimeout(timeout);
-    if (e.name === 'AbortError') throw new Error(`${m.name}: 25s超时`);
+    clearTimeout(tmout);
+    if (e.name === 'AbortError') throw new Error(`${m.name}: 超时`);
     throw e;
   }
 }
 
-// ---- Question Generation Prompt ----
-function makePrompt(subject, count, type) {
-  const meta = {
-    '101': { name:'考研政治(101)', topics:'马克思主义基本原理(唯物论/辩证法/认识论/唯物史观/政治经济学)、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策' },
-    '201': { name:'考研英语一(201)', topics:'词汇与语法、阅读理解(主旨/细节/推断/态度/词义)、完形填空、新题型(排序/匹配/标题)、翻译(英译中)、写作(应用文/议论文)' },
-    '301': { name:'考研数学一(301)', topics:'高等数学(极限/连续/导数/积分/微分方程/级数/多元函数/重积分/曲线曲面积分)、线性代数(行列式/矩阵/向量/线性方程组/特征值/二次型)、概率论与数理统计(随机事件/随机变量/数字特征/大数定律/数理统计)' },
-    '408': { name:'计算机学科专业基础(408)', topics:'数据结构(线性表/栈/队列/树/二叉树/图/排序/查找/散列)、计算机组成原理(数据表示/运算器/存储器/指令系统/CPU/总线/IO)、操作系统(进程管理/内存管理/文件系统/IO系统)、计算机网络(体系结构/物理层/数据链路层/网络层/传输层/应用层)' }
-  }[subject];
-
-  const typeMap = { single:'单选题(ABCD四个选项，只有一个正确)', multi:'多选题(ABCD四个选项，2-4个正确)', judge:'判断题(A.正确 B.错误)', mixed:'混合(单选为主，穿插多选和判断)' };
-
-  return `你是北大考研命题组核心专家，精通${meta.name}全部考纲。
-
-任务：生成 ${count} 道高质量${typeMap[type]||typeMap.mixed}。
-
-要求：
-1. 严格符合全国硕士研究生招生考试真题的难度和风格
-2. 覆盖考点：${meta.topics}
-3. 像黄冈密卷一样精准命中高频考点
-4. 每题都有专业级详细解析（含考点出处和解题思路）
-5. 难度分布：基础35% + 中等40% + 拔高25%
-
-输出格式：纯JSON数组，不要任何其他文字
-[{"id":"q001","type":"single","stem":"题目","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3}]`;
+// ---- JSON修复器 ----
+function repairJSON(raw) {
+  let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  s = s.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const start = s.indexOf('[');
+  if (start === -1) throw new Error('未找到JSON数组');
+  s = s.substring(start);
+  const end = s.lastIndexOf(']');
+  if (end === -1) { s = s.replace(/,\s*$/, '') + ']'; }
+  else { s = s.substring(0, end + 1); }
+  s = s.replace(/,\s*([}\]])/g, '$1');
+  try { return JSON.parse(s); } catch(e1) {
+    const objs = [];
+    const re = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
+    let m;
+    while ((m = re.exec(s)) !== null) {
+      try { objs.push(JSON.parse(m[0])); } catch(e2) {
+        try { objs.push(JSON.parse(m[0].replace(/,\s*}/g, '}'))); } catch(e3) {}
+      }
+    }
+    if (objs.length > 0) return objs;
+    throw new Error('JSON修复失败');
+  }
 }
 
-// ---- Collection Engine ----
-async function startCollection() {
-  const subject = document.getElementById('genSubject').value;
-  const mode = document.getElementById('genMode').value;
-  const count = parseInt(document.getElementById('genCount').value);
-  const channelPref = document.getElementById('genChannel').value;
-  const btn = document.getElementById('btnStart');
+// ---- 采集一套完整密卷 ----
+async function collectPaper() {
+  const subj = document.getElementById('paperSubject').value;
+  const enginePref = document.getElementById('paperEngine').value;
+  const btn = document.getElementById('btnCollect');
   const pw = document.getElementById('progressWrap');
   const pt = document.getElementById('progressText');
   const pf = document.getElementById('progressFill');
-  const log = document.getElementById('genLog');
+  const log = document.getElementById('collectLog');
+  const meta = SUBJECTS[subj];
 
   btn.disabled = true;
   btn.textContent = '⏳ 采集中...';
@@ -329,267 +291,178 @@ async function startCollection() {
   log.style.display = 'block';
   log.innerHTML = '';
 
-  const channels = channelPref === 'all'
-    ? ['deepseek','claude','gpt4','deepseekV3','gemini']
-    : [channelPref];
-  const batchSize = 10;
-
-  function addLog(msg, cls='') {
+  function addLog(msg, cls = '') {
     log.innerHTML += `<div class="log-entry ${cls}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
     log.scrollTop = log.scrollHeight;
   }
 
-  addLog(`🚀 启动采集 | 科目:${subject} | 目标:${count}题 | 通道:${channels.map(c=>MODELS[c].name).join('/')}`, 'info');
-  addLog(`⚡ 并行模式 — ${channels.length}个通道同时出击！`, 'info');
+  const paperNum = getVault(subj).length + 1;
+  addLog(`📋 开始采集 ${meta.name} 第${paperNum}套密卷 (${meta.count}题)`, 'info');
 
-  // 构建并行任务
-  const types = ['single','multi','judge','single','single'];
-  const tasks = [];
-  let taskIndex = 0;
-  for (let i = 0; i < count; i += batchSize) {
-    const batch = Math.min(batchSize, count - i);
-    const ch = channels[taskIndex % channels.length];
-    const type = mode === 'mixed' ? types[taskIndex % types.length] : (mode === 'paper' ? 'single' : mode);
-    tasks.push({ ch, batch, type, index: taskIndex });
-    taskIndex++;
-  }
+  const prompt = `你是北大考研命题组核心专家。现在生成一套完整的${meta.name}考研模拟试卷。
 
-  pt.textContent = `🔥 ${tasks.length} 个任务并行出击中...`;
-  pf.style.width = '10%';
+要求：
+1. 共 ${meta.count} 道题，严格符合考研真题的难度和风格
+2. 覆盖考点：${meta.topics}
+3. 题型：单选题为主(15题) + 多选题(3题) + 判断题(2题)
+4. 难度分布：基础30% + 中等45% + 拔高25%
+5. 每题配详细解析（含考点出处和解题思路）
+6. 像黄冈密卷一样精准命中高频考点
 
-  // 超级JSON修复器(处理各种LLM输出问题)
-  function repairJSON(raw) {
-    // 1. 去掉思考标签
-    let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-    // 2. 去掉markdown代码块
-    s = s.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    // 3. 去掉开头多余文字(找到第一个[)
-    const start = s.indexOf('[');
-    if (start === -1) throw new Error('未找到JSON数组');
-    s = s.substring(start);
-    // 4. 去掉结尾多余文字(找到最后一个])
-    const end = s.lastIndexOf(']');
-    if (end === -1) {
-      // 尝试补全截断的数组
-      s = s.replace(/,\s*$/, '') + ']';
-    } else {
-      s = s.substring(0, end + 1);
-    }
-    // 5. 修复常见问题
-    s = s.replace(/,\s*([}\]])/g, '$1');           // 尾逗号
-    s = s.replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":'); // 单引号key
-    s = s.replace(/:\s*'([^']*)'/g, ': "$1"');     // 单引号value
-    s = s.replace(/\n/g, '\\n');                    // 未转义换行
-    s = s.replace(/\\n"/g, '"');                    // 修复值末尾的\n"
-    s = s.replace(/\\n\s*}/g, '}');                 // 修复对象末尾
-    s = s.replace(/\\n\s*,/g, ',');                 // 修复逗号前
-    // 6. 尝试解析
-    try { return JSON.parse(s); } catch(e1) {
-      // 7. 逐个对象提取
-      const objs = [];
-      const re = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
-      let m;
-      while ((m = re.exec(s)) !== null) {
-        try { objs.push(JSON.parse(m[0])); } catch(e2) {
-          try { objs.push(JSON.parse(m[0].replace(/,\s*}/g, '}'))); } catch(e3) {}
-        }
-      }
-      if (objs.length > 0) return objs;
-      throw new Error('JSON修复失败: ' + e1.message);
+输出: 纯JSON数组
+[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"所属章节","difficulty":3}]`;
+
+  const channels = enginePref === 'all'
+    ? ['claude','gpt4','deepseekV3','gemini','deepseek']
+    : [enginePref];
+
+  let questions = null;
+  let usedEngine = '';
+
+  for (const ch of channels) {
+    try {
+      addLog(`${MODELS[ch].icon} ${MODELS[ch].name} 正在出卷...`);
+      pf.style.width = '40%';
+      pt.textContent = `${MODELS[ch].name} 生成中...`;
+
+      const content = await callAI(ch, [
+        { role: 'system', content: '你是考研命题专家。严格输出JSON数组，第一个字符必须是[，最后一个字符必须是]。禁止任何多余文字。' },
+        { role: 'user', content: prompt }
+      ]);
+
+      questions = repairJSON(content);
+      usedEngine = MODELS[ch].name;
+      addLog(`✅ ${MODELS[ch].name} 出卷成功! ${questions.length}题`, 'success');
+      break;
+    } catch(e) {
+      addLog(`❌ ${MODELS[ch].name}: ${e.message}`, 'error');
     }
   }
 
-  // 单个采集任务
-  async function runTask(task) {
-    const { ch, batch, type } = task;
-    addLog(`${MODELS[ch].icon} ${MODELS[ch].name} → 生成 ${batch} 道${type}题...`);
-    const content = await callAI(ch, [
-      { role: 'system', content: '你是考研命题专家。严格要求：直接输出JSON数组，禁止输出任何多余文字、解释、markdown代码块标记。第一个字符必须是[，最后一个字符必须是]。' },
-      { role: 'user', content: makePrompt(subject, batch, type) }
-    ]);
-    const parsed = repairJSON(content);
-    return parsed.map((q,j) => ({
-      ...q, id: `ai-${subject}-${Date.now()}-${j}-${Math.random().toString(36).slice(2,6)}`,
-      source: MODELS[ch].name, generated: Date.now()
-    }));
-  }
-
-  // 全部并行发射！
-  const results = await Promise.allSettled(tasks.map(t => runTask(t)));
-  let collected = 0;
-
-  results.forEach((r, i) => {
-    const ch = tasks[i].ch;
-    if (r.status === 'fulfilled') {
-      const questions = r.value;
-      const total = PKU_QBANK.saveQuestions(subject, questions);
-      collected += questions.length;
-      addLog(`✅ ${MODELS[ch].name} 成功 +${questions.length} 题 | 库存: ${total}`, 'success');
-      // 投喂中转站
-      try { fetch(`${RELAY_URL}/feed/upload`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ questions, subject, source: MODELS[ch].name }) }); } catch(e) {}
-    } else {
-      addLog(`❌ ${MODELS[ch].name} 失败: ${r.reason?.message || r.reason}`, 'error');
-    }
-  });
-
-  pf.style.width = '100%';
-  pt.textContent = `✅ 采集完成！本次新增 ${collected} 题`;
-  btn.textContent = '⚡ 继续采集';
-  btn.disabled = false;
-  addLog(`🎉 采集完毕 | 新增 ${collected} 题`, 'success');
-  updateStats();
-}
-
-// ---- Intel-driven Generation ----
-async function intelGenerate() {
-  const topic = document.getElementById('intelTopic').value.trim();
-  if (!topic) { alert('请输入考点主题'); return; }
-  const subject = document.getElementById('genSubject').value;
-  const log = document.getElementById('intelLog');
-  const pt = document.getElementById('intelProgressText');
-  const pf = document.getElementById('intelProgressFill');
-  document.getElementById('intelProgress').classList.add('show');
-  log.style.display = 'block';
-  log.innerHTML = '';
-
-  function addLog(msg, cls='') {
-    log.innerHTML += `<div class="log-entry ${cls}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-    log.scrollTop = log.scrollHeight;
-  }
-
-  // Step 1: Perplexity 搜索情报
-  addLog('🔍 Perplexity sonar-pro 搜索最新情报...', 'info');
-  pt.textContent = '🔍 搜索考研情报...';
-  pf.style.width = '20%';
-
-  let intel = '';
-  try {
-    intel = await callAI('perplexity', [
-      { role: 'system', content: '你是考研情报分析师。简洁回答。' },
-      { role: 'user', content: `分析"${topic}"在考研${subject}中的出题规律：1.历年真题出现频率 2.常见考法(选择/判断/分析) 3.2025-2026年预测方向 4.易错点` }
-    ], 2000);
-    addLog('✅ 情报采集完成', 'success');
-  } catch(e) {
-    addLog(`⚠️ 情报搜索失败: ${e.message}，继续出题`, 'error');
-    intel = `关于"${topic}"的常规考点分析`;
-  }
-
-  // Step 2: DeepSeek-R1 结合情报精准出题
-  addLog('🧠 DeepSeek-R1 结合情报精准出题...', 'info');
-  pt.textContent = '🧠 AI精准出题中...';
-  pf.style.width = '60%';
-
-  try {
-    const content = await callAI('deepseek', [
-      { role: 'system', content: '你是考研命题专家。只输出JSON数组。' },
-      { role: 'user', content: `基于以下情报分析，围绕"${topic}"生成15道精准考题：\n\n【情报】${intel}\n\n输出纯JSON数组：[{"id":"","type":"single","stem":"","options":["A.","B.","C.","D."],"answer":"A","analysis":"","chapter":"${topic}","difficulty":3}]` }
-    ]);
-
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('JSON解析失败');
-    const questions = JSON.parse(jsonMatch[0]).map((q,j) => ({
-      ...q, id: `intel-${subject}-${Date.now()}-${j}`,
-      source: '情报投喂·DeepSeek-R1', generated: Date.now(), topic
-    }));
-
-    PKU_QBANK.saveQuestions(subject, questions);
-    addLog(`✅ 精准投喂 +${questions.length} 题`, 'success');
-    pf.style.width = '100%';
-    pt.textContent = `✅ 情报投喂完成 +${questions.length} 题`;
-  } catch(e) {
-    addLog(`❌ 出题失败: ${e.message}`, 'error');
-    pt.textContent = '❌ ' + e.message;
-  }
-  updateStats();
-}
-
-// ---- Papers ----
-function generateFullPaper() {
-  const subject = document.getElementById('genSubject')?.value || '101';
-  const paper = PKU_QBANK.generatePaper(subject);
-  if (!paper) { alert('题库数量不足，请先采集更多题目'); return; }
-  PKU_QBANK.savePaper(subject, paper);
-  renderPapers();
-  alert(`✅ 已生成: ${paper.title}`);
-}
-
-function renderPapers() {
-  const list = document.getElementById('paperList');
-  let all = [];
-  ['101','201','301','408'].forEach(sub => {
-    PKU_QBANK.getPapers(sub).forEach(p => { p._sub = sub; all.push(p); });
-  });
-  all.sort((a,b) => (b.generated||0) - (a.generated||0));
-
-  if (all.length === 0) {
-    list.innerHTML = '<p style="text-align:center;color:var(--dim);padding:20px">暂无试卷，请先采集题目后生成</p>';
+  if (!questions || questions.length === 0) {
+    addLog('❌ 所有通道均失败', 'error');
+    pt.textContent = '❌ 采集失败';
+    btn.textContent = '⚡ 重新采集';
+    btn.disabled = false;
     return;
   }
-  list.innerHTML = all.map(p => `
-    <div class="paper-item">
-      <div>
-        <div class="pi-title">${p.title || '未命名试卷'}</div>
-        <div class="pi-meta">${p._sub} | ${p.fullScore}分 | ${p.timeLimit}分钟 | ${p.sections?.reduce((s,sec)=>s+sec.questions?.length,0)||0}题</div>
+
+  // 组装完整试卷
+  pf.style.width = '80%';
+  pt.textContent = '📋 组装试卷...';
+
+  const paper = {
+    id: `paper-${subj}-${Date.now()}`,
+    title: `${meta.name} · 密卷 #${paperNum}`,
+    subject: subj,
+    subjectName: meta.name,
+    engine: usedEngine,
+    generatedAt: new Date().toISOString(),
+    questionCount: questions.length,
+    questions: questions.map((q, i) => ({
+      ...q,
+      id: q.id || `q${String(i+1).padStart(3,'0')}`,
+      num: i + 1
+    }))
+  };
+
+  addPaper(subj, paper);
+  addLog(`📋 ${paper.title} (${paper.questionCount}题) 已存入金库`, 'success');
+
+  // 推送中转阁
+  try {
+    await fetch(`${RELAY_URL}/feed/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questions: paper.questions, subject: subj, source: usedEngine, paperTitle: paper.title })
+    });
+    addLog('📡 已推送至中转阁', 'success');
+  } catch(e) {
+    addLog('⚠️ 中转阁推送失败(不影响本地存储)', 'error');
+  }
+
+  pf.style.width = '100%';
+  pt.textContent = `✅ ${paper.title} 采集完成！`;
+  btn.textContent = '⚡ 采集下一套';
+  btn.disabled = false;
+  updateStats();
+}
+
+// ---- 试卷金库渲染 ----
+let currentFilter = 'all';
+
+function filterSubj(subj) {
+  currentFilter = subj;
+  document.querySelectorAll('.subj-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderVault();
+}
+
+function renderVault() {
+  const list = document.getElementById('vaultList');
+  let allPapers = [];
+
+  const subjects = currentFilter === 'all' ? ['101','201','301','408'] : [currentFilter];
+  subjects.forEach(s => {
+    getVault(s).forEach(p => allPapers.push(p));
+  });
+
+  allPapers.sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
+
+  if (allPapers.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--dim);padding:30px">暂无试卷，去「采集密卷」生成吧！</p>';
+    return;
+  }
+
+  list.innerHTML = allPapers.map((p, idx) => `
+    <div class="paper-card">
+      <div class="paper-head">
+        <div>
+          <div class="paper-title">${p.title}</div>
+          <div class="paper-meta">${p.questionCount || p.questions?.length || 0}题 · ${p.engine || 'AI'} · ${new Date(p.generatedAt).toLocaleString('zh-CN')}</div>
+        </div>
+        <span class="paper-badge s${p.subject}">${p.subject}</span>
       </div>
-      <div class="pi-badge mock">AI密卷</div>
+      <div style="margin-top:8px">
+        <button class="btn btn-outline" style="padding:8px;font-size:12px;margin:0" onclick="togglePreview(${idx})">📖 展开试卷</button>
+      </div>
+      <div class="paper-preview" id="preview-${idx}">
+        ${(p.questions || []).map((q, qi) => `
+          <div class="paper-q">
+            <div class="stem">${q.num || qi+1}. ${q.stem || q.question || ''}</div>
+            <div class="opts">${(q.options || []).join(' &nbsp; ')}</div>
+            <div class="ans">✅ ${q.answer || ''} ${q.analysis ? '| ' + q.analysis.substring(0, 60) + '...' : ''}</div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `).join('');
 }
 
-// ---- Distribution Status ----
-function renderDistStatus() {
-  const div = document.getElementById('distStatus');
-  const stats = PKU_QBANK.getStats();
-  const games = [
-    { name: '消消乐 · 考研三消', path: '/siege/', icon: '🎮' },
-    { name: '刺激战场', path: '/battleground/', icon: '🔫' },
-    { name: '猛鬼考研宿舍', path: '/ghost-dorm/', icon: '👻' }
-  ];
-  div.innerHTML = `
-    <div style="margin-bottom:12px">
-      ${['101','201','301','408'].map(sub => {
-        const s = stats[sub] || {questions:0,papers:0};
-        return `<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border);font-size:13px">
-          <span>${sub}</span>
-          <span style="font-family:var(--font-d);color:var(--gold)">${s.questions} 题 · ${s.papers} 卷</span>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:8px">自动分发到：</div>
-    ${games.map(g => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px">
-        <span>${g.icon} ${g.name}</span>
-        <span style="font-size:10px;color:var(--green)">● 已连接</span>
-      </div>
-    `).join('')}
-  `;
+function togglePreview(idx) {
+  const el = document.getElementById('preview-' + idx);
+  el.classList.toggle('show');
 }
 
-// ---- Export ----
-function exportJSON() {
+// ---- Export & Clear ----
+function exportAll() {
   const data = {};
-  ['101','201','301','408'].forEach(sub => {
-    data[sub] = { questions: PKU_QBANK.getQuestions(sub), papers: PKU_QBANK.getPapers(sub) };
-  });
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
+  ['101','201','301','408'].forEach(s => { data[s] = getVault(s); });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
-  a.href = url; a.download = `pku_exam_vault_${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(url);
+  a.href = URL.createObjectURL(blob);
+  a.download = `exam_vault_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
 }
 
-function clearBank() {
-  if (!confirm('确认清空所有题库？此操作不可恢复！')) return;
-  ['101','201','301','408'].forEach(sub => {
-    localStorage.removeItem('pku_qbank_' + sub);
-    localStorage.removeItem('pku_papers_' + sub);
-  });
+function clearAll() {
+  if (!confirm('确认清空所有试卷？此操作不可恢复！')) return;
+  ['101','201','301','408'].forEach(s => localStorage.removeItem(`vault_${s}`));
   updateStats();
-  alert('已清空');
+  renderVault();
 }
 
 // ---- Init ----
-renderEngines();
 updateStats();
 </script>
 </body>
