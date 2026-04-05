@@ -680,6 +680,15 @@ function startQuickDrill() {
   if (typeof QUESTION_BANK === 'undefined') { alert('题库未加载'); return; }
   score = 0; answered = 0; correct = 0; lives = 3; combo = 1;
   gameActive = true;
+  // 异步从中转阁补充题库（不阻塞游戏开始）
+  if (window.RelayQuestions) {
+    RelayQuestions.loadSmart(currentSubject, QUESTION_BANK[currentSubject] || []).then(result => {
+      if (result.fromRelay && result.questions.length > 0) {
+        QUESTION_BANK[currentSubject] = result.questions;
+        console.log('[中转阁] ✅ 消消乐题库已增强:', result.questions.length + '题');
+      }
+    }).catch(() => {});
+  }
   drillNext();
 }
 
@@ -838,5 +847,7 @@ async function startAIGenerate() {
 
 updateTotalStats();
 </script>
+<script src="../shared/relay-questions.js"></script>
+<script src="questions.js"></script>
 </body>
 </html>

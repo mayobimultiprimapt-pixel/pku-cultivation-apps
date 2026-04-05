@@ -17,7 +17,14 @@ for(var i=0;i<BOT_COUNT;i++){var a=R(0,6.28),d=300+R(0,SZ/2-400);
 bots.push({x:SZ/2+Math.cos(a)*d,y:SZ/2+Math.sin(a)*d,hp:40+R(0,60),sp:.8+R(0,1.2),alive:true,nm:NM[i%NM.length],mt:0,md:R(0,6.28),sk:.2+R(0,.6),cl:'hsl('+~~R(0,360)+',65%,55%)',lt:[LT[~~R(0,LT.length)]],aggro:R(80,200),atkCd:0})}
 lts=[];for(var i=0;i<60;i++)lts.push({x:100+R(0,SZ-200),y:100+R(0,SZ-200),tp:LT[~~R(0,LT.length)],tk:false,nq:true});
 ads=[];for(var i=0;i<8;i++)ads.push({x:400+R(0,SZ-800),y:400+R(0,SZ-800),op:false,fy:-300-i*200,ld:false,t:~~R(0,4)});
-zn={cx:SZ/2,cy:SZ/2,r:SZ/2,tr:SZ/2,dm:1};gS=Date.now();requestAnimationFrame(lp)}
+zn={cx:SZ/2,cy:SZ/2,r:SZ/2,tr:SZ/2,dm:1};gS=Date.now();requestAnimationFrame(lp);
+// 异步从中转阁补充题库（不阻塞游戏）
+var curSubj=MP[mi].s;
+if(window.RelayQuestions){
+  RelayQuestions.init(curSubj, QB[curSubj]||[], function(qs, src){
+    if(qs&&qs.length>0){QB[curSubj]=qs;aKF('📡 中转阁题库已加载('+src+' '+qs.length+'题)');} 
+  });
+}}
 function lp(){if(go)return;gt++;uP();uB();uZ();cZ();bAtk();bF();uAD();pt=pt.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.life--;return p.life>0});dR();dMM();uH();
 var rem=Math.max(0,GAME_TIME-(Date.now()-gS)/1000),mm=~~(rem/60),ss=~~(rem%60);document.getElementById('gTimer').textContent='⏱'+mm+':'+(ss<10?'0':'')+ss;
 if(rem<=0&&!go)eG(bots.filter(function(b){return b.alive}).length===0);requestAnimationFrame(lp)}
