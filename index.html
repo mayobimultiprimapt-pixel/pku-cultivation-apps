@@ -133,7 +133,12 @@
     .tag-study { background: rgba(8,247,254,.08); color: var(--cyan); border: 1px solid rgba(8,247,254,.15); }
     .tag-cultivation { background: rgba(157,78,221,.1); color: var(--purple); border: 1px solid rgba(157,78,221,.2); }
     .tag-ai { background: rgba(57,255,20,.08); color: var(--green); border: 1px solid rgba(57,255,20,.15); }
+    .tag-intel { background: linear-gradient(135deg,rgba(255,46,99,.12),rgba(255,215,0,.12)); color: var(--gold); border: 1px solid rgba(255,215,0,.25); }
     .tag-wip { background: rgba(255,255,255,.05); color: #888; border: 1px solid rgba(255,255,255,.1); }
+    .card-link-badge { display:flex;gap:4px;flex-wrap:wrap;margin-top:8px }
+    .card-link-badge span { font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--dim);border:1px solid rgba(255,255,255,.06) }
+    .card.vault-glow { border-color:rgba(255,215,0,.15) }
+    .card.vault-glow::before { background:linear-gradient(90deg,var(--red),var(--gold),var(--green));opacity:.6 }
     .tag-cloud { background: rgba(255,215,0,.08); color: var(--gold); border: 1px solid rgba(255,215,0,.15); }
     .tag-beauty { background: rgba(244,114,182,.1); color: #f472b6; border: 1px solid rgba(244,114,182,.2); }
     .tag-download { background: rgba(96,165,250,.08); color: #60a5fa; border: 1px solid rgba(96,165,250,.15); }
@@ -177,10 +182,10 @@
     <div class="section-title">🎮 考研游戏</div>
     <div class="grid">
       <a class="card" href="./siege/">
-        <div class="card-icon">🏰</div>
-        <div class="card-title">北大攻城录 · 考研征途</div>
-        <div class="card-desc">以攻城掠地的方式征服考研四大科目，RPG 式闯关体验</div>
-        <span class="card-tag tag-game">GAME</span>
+        <div class="card-icon">🧩</div>
+        <div class="card-title">北大消消乐 · 考研三消</div>
+        <div class="card-desc">三消 × 考研真题 — 8×8棋盘消除触发答题 · 四科101/201/301/408 · 模考+刷题+错题本 · AI出题引擎</div>
+        <span class="card-tag tag-game">GAME · MATCH-3</span>
       </a>
 
       <a class="card" href="./battleground/">
@@ -200,6 +205,18 @@
 
     <div class="section-title">🧠 AI 军师</div>
     <div class="grid">
+      <a class="card vault-glow" href="./tianji/question-bank.html">
+        <div class="card-icon">📦</div>
+        <div class="card-title" style="background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">题库搜集站 · 绝密考卷金库</div>
+        <div class="card-desc">5大顶尖AI（DeepSeek-R1/Claude-4/GPT-4o/V3/Perplexity）实时生成考研真题 · 情报精准投喂 · 完整套卷组卷 · 自动分发到所有游戏</div>
+        <span class="card-tag tag-intel">⚡ AI VAULT · TOP SECRET</span>
+        <div class="card-link-badge">
+          <span>📡→ 消消乐</span>
+          <span>📡→ 刺激战场</span>
+          <span>📡→ 猛鬼宿舍</span>
+        </div>
+      </a>
+
       <a class="card" href="./tianji/">
         <div class="card-icon">🏯</div>
         <div class="card-title">天机阁 · 情报与推演</div>
