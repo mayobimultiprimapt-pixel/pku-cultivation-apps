@@ -128,11 +128,15 @@ select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(-
       </select>
       <select id="paperEngine">
         <option value="all">🔥 全通道轮换（推荐）</option>
-        <option value="deepseek">🧠 DeepSeek-R1 · 最强推理</option>
+        <option value="gemini31pro">💎 Gemini-3.1-Pro · 最强旗舰</option>
+        <option value="gemini3flash">⚡ Gemini-3-Flash · 高性能</option>
+        <option value="gemini25pro">🧠 Gemini-2.5-Pro · 深度推理</option>
         <option value="claude">🎯 Claude-4.5-Sonnet · 结构化</option>
-        <option value="gpt4">⚡ GPT-4.1 · 通用平衡</option>
+        <option value="gpt4">🌐 GPT-4.1 · 通用平衡</option>
+        <option value="deepseek">🔬 DeepSeek-R1 · 最强推理</option>
         <option value="deepseekV3">🚀 DeepSeek-V3.2 · 极速</option>
-        <option value="gemini">💎 Gemini-3.1-Pro · 创意</option>
+        <option value="gemini25flash">💨 Gemini-2.5-Flash · 快速</option>
+        <option value="gemini31lite">🪶 Gemini-3.1-Flash-Lite · 经济</option>
       </select>
       <button class="btn btn-gold" onclick="collectPaper()" id="btnCollect">⚡ 采集一套密卷</button>
       <div class="progress-wrap" id="progressWrap">
@@ -179,11 +183,17 @@ const SUBJECTS = {
 };
 
 const MODELS = {
-  deepseek: { url: 'OR', model: 'deepseek/deepseek-r1-0528', name: 'DeepSeek-R1', icon: '🧠' },
-  claude: { url: 'OR', model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5', icon: '🎯' },
-  gpt4: { url: 'OR', model: 'openai/gpt-4.1', name: 'GPT-4.1', icon: '⚡' },
-  deepseekV3: { url: 'OR', model: 'deepseek/deepseek-v3.2', name: 'V3.2', icon: '🚀' },
-  gemini: { url: 'GEMINI', model: 'gemini-3.1-pro-preview', name: 'Gemini-3.1', icon: '💎' }
+  // Gemini 全家族
+  gemini31pro:  { url: 'GEMINI', model: 'gemini-3.1-pro-preview',       name: 'Gemini-3.1-Pro',   icon: '💎' },
+  gemini3flash: { url: 'GEMINI', model: 'gemini-3-flash-preview',       name: 'Gemini-3-Flash',   icon: '⚡' },
+  gemini25pro:  { url: 'GEMINI', model: 'gemini-2.5-pro',               name: 'Gemini-2.5-Pro',   icon: '🧠' },
+  gemini25flash:{ url: 'GEMINI', model: 'gemini-2.5-flash',             name: 'Gemini-2.5-Flash', icon: '💨' },
+  gemini31lite: { url: 'GEMINI', model: 'gemini-3.1-flash-lite-preview',name: 'Gemini-3.1-Lite',  icon: '🪶' },
+  // 其他最强模型
+  claude:       { url: 'OR', model: 'anthropic/claude-sonnet-4.5', name: 'Claude-4.5',  icon: '🎯' },
+  gpt4:         { url: 'OR', model: 'openai/gpt-4.1',             name: 'GPT-4.1',    icon: '🌐' },
+  deepseek:     { url: 'OR', model: 'deepseek/deepseek-r1-0528',   name: 'DeepSeek-R1', icon: '🔬' },
+  deepseekV3:   { url: 'OR', model: 'deepseek/deepseek-v3.2',      name: 'V3.2',        icon: '🚀' }
 };
 
 // ---- Storage ----
@@ -229,8 +239,8 @@ async function callAI(channel, messages) {
   const m = MODELS[channel];
   let url, headers, body;
 
-  if (channel === 'gemini') {
-    // Gemini走中转(不支持CORS)
+  if (m.url === 'GEMINI') {
+    // Gemini全家族走中转(不支持CORS)
     url = `${RELAY_URL}/gemini/generate`;
     headers = { 'Content-Type': 'application/json' };
     body = { model: m.model, messages, max_tokens: 8000 };
@@ -330,7 +340,7 @@ async function collectPaper() {
 [{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"所属章节","difficulty":3}]`;
 
   const channels = enginePref === 'all'
-    ? ['gpt4','claude','deepseekV3','gemini','deepseek']
+    ? ['gemini31pro','claude','gpt4','gemini3flash','deepseekV3','gemini25pro','deepseek']
     : [enginePref];
 
   let questions = null;
