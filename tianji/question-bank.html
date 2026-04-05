@@ -292,10 +292,6 @@ async function callAI(channel, messages, maxTokens = 4000) {
 
   // OpenAI-compatible (OpenRouter / Perplexity)
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` };
-  if (['deepseek','claude','gpt4o','deepseekV3'].includes(channel)) {
-    headers['HTTP-Referer'] = location.href;
-    headers['X-Title'] = 'PKU Exam Vault';
-  }
 
   const res = await fetch(m.url, {
     method: 'POST', headers,
