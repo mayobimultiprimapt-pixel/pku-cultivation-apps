@@ -1117,56 +1117,137 @@ document.getElementById('btnGo').addEventListener('click', async () => {
     const question = document.getElementById('qQ').value || '求问天机';
     const gua = clientDivine(curM, parseInt(document.getElementById('n1').value)||0, parseInt(document.getElementById('n2').value)||0, parseInt(document.getElementById('n3').value)||0, document.getElementById('qT').value||'');
     renderGua(gua);
-    // DeepSeek-R1 混合断卦
     document.getElementById('dsPanel').style.display = '';
-    document.getElementById('dsOut').innerHTML = '<span class="loading"></span> DeepSeek-R1 梅花+六爻混合断卦中...';
+    document.getElementById('dsOut').innerHTML = '<span class="loading"></span> 启动梅花+六爻双轨混合断卦...';
     const extra = [
       document.getElementById('exEvent').value ? '事类：'+document.getElementById('exEvent').value : '',
       document.getElementById('exGender').value ? '问卦人：'+document.getElementById('exGender').value : '',
       document.getElementById('extra').value || ''
     ].filter(Boolean).join(' | ');
-    // 构建六爻排盘文本
-    let tableText = '六神 | 爻位 | 地支 | 六亲 | 标记\n';
+
+    // 六爻排盘文本
+    let tableText = '六神 | 爻位 | 地支五行 | 六亲 | 标记\n';
     for(let i=5;i>=0;i--){const r=gua.liuyaoTable[i];
-      let mark='';if(r.isShi)mark+='世';if(r.isYing)mark+='应';if(r.isDong)mark+='◎动';
-      tableText+=`${r.god} | ${r.yao} | ${r.branch}${r.branchWx} | ${r.rel} | ${mark}\n`;
+      let mark='';if(r.isShi)mark+='【世爻】';if(r.isYing)mark+='【应爻】';if(r.isDong)mark+='◎动爻';
+      tableText+=`${r.god} | 第${r.pos}爻${r.yao} | ${r.branch}(${r.branchWx}) | ${r.rel} | ${mark}\n`;
     }
-    const divinePrompt = `你是梅花易数+六爻纳甲双修大师。请根据以下完整卦象进行混合断卦推演：
+
+    const divinePrompt = `你是梅花易数+六爻纳甲双修大师，同时是2026年考研命题趋势分析专家。
 
 ## 卦问
 ${question}
 
-## 第一层：梅花易数
-- 起卦：${gua.method} · ${gua.time_info} · 日干支：${gua.dayGZ}
-- 取数：上卦数${gua.inputNums.upG}(${gua.ben_gua.upper_name}${gua.ben_gua.upper_symbol}) 下卦数${gua.inputNums.loG}(${gua.ben_gua.lower_name}${gua.ben_gua.lower_symbol}) 动爻数${gua.dong_yao}
-- 本卦：${gua.ben_gua.name}（上${gua.ben_gua.upper_name}${gua.ben_gua.upper_symbol} 下${gua.ben_gua.lower_name}${gua.ben_gua.lower_symbol}）
-- 互卦：${gua.hu_gua.name} | 变卦：${gua.bian_gua.name}
-- 动爻：第${gua.dong_yao}爻（${gua.dong_yao<=3?'在下卦':'在上卦'}）
-- 体卦：${gua.tiyong.ti.name}(${gua.tiyong.ti.wuxing})·${gua.tiyong.ti.pos}
-- 用卦：${gua.tiyong.yong.name}(${gua.tiyong.yong.wuxing})·${gua.tiyong.yong.pos}
-- 体用关系：${gua.tiyong.relation} → ${gua.tiyong.fortune}
+## 起卦方式
+${gua.method} · ${gua.time_info} · 日干支：${gua.dayGZ}
+上卦数${gua.inputNums.upN}÷8余${gua.inputNums.upG} → ${gua.ben_gua.upper_name}${gua.ben_gua.upper_symbol}
+下卦数${gua.inputNums.loN}÷8余${gua.inputNums.loG} → ${gua.ben_gua.lower_name}${gua.ben_gua.lower_symbol}
+动爻数${gua.inputNums.dongN}÷6余${gua.dong_yao} → 第${gua.dong_yao}爻动
 
-## 第二层：六爻纳甲排盘
+## 第一层·梅花易数
+- 本卦：${gua.ben_gua.name}（上${gua.ben_gua.upper_name}${gua.ben_gua.upper_symbol} 下${gua.ben_gua.lower_name}${gua.ben_gua.lower_symbol}）
+- 互卦：${gua.hu_gua.name}${gua.hu_gua.upper_symbol}${gua.hu_gua.lower_symbol}（看隐藏过程）
+- 变卦：${gua.bian_gua.name}${gua.bian_gua.upper_symbol}${gua.bian_gua.lower_symbol}（看最终结果）
+- 动爻：第${gua.dong_yao}爻（位于${gua.dong_yao<=3?'下卦':'上卦'}）
+- 体卦：${gua.tiyong.ti.name}(${gua.tiyong.ti.wuxing}) ${gua.tiyong.ti.pos}
+- 用卦：${gua.tiyong.yong.name}(${gua.tiyong.yong.wuxing}) ${gua.tiyong.yong.pos}
+- 体用关系：${gua.tiyong.relation} → 基调「${gua.tiyong.fortune}」
+
+体用解读口诀：
+· 用生体 → 外部助力涌入，轻松得志
+· 体生用 → 主动付出，消耗自身能量
+· 体克用 → 能掌控局面，但费力
+· 用克体 → 外部压力巨大，需谨慎应对
+· 体用比和 → 势均力敌，顺畅吉利
+
+## 第二层·六爻纳甲完整排盘
 - 卦宫：${gua.palace.name}宫(${gua.palace.wuxing}) · ${gua.palace.type}
-- 世爻：第${gua.palace.shi}爻 | 应爻：第${gua.palace.ying}爻
+- 世爻（代表问卦人）：第${gua.palace.shi}爻
+- 应爻（代表所问之事/外部环境）：第${gua.palace.ying}爻
+- 动爻（关键变化点）：第${gua.dong_yao}爻
+
+六爻排盘（从初爻→上爻）：
 ${tableText}
+
+六亲解读对照（以卦宫${gua.palace.wuxing}为基准）：
+· 父母爻 → 生我者：主文书、学业、成绩、保护（考研问卦时尤重）
+· 子孙爻 → 我生者：主平安、解忧、医疗、克制官鬼压力
+· 妻财爻 → 我克者：主财富、物质获得、资源
+· 官鬼爻 → 克我者：主官禄（录取）、竞争压力、考试本身
+· 兄弟爻 → 同我者：主竞争对手、劳苦、消耗
+
+六神含义：
+· 青龙：紫气东来，主喜庆贵人、顺利进展
+· 朱雀：口舌文书，主考试成绩、通知书、口试
+· 勾陈：拖延牵绊，主迟滞纠结、田土争议
+· 腾蛇：虚惊缠绕，主思维过度、暗中变化、莫名忧虑
+· 白虎：刚硬凶险，主压力激增、紧迫冲击
+· 玄武：暗昧隐秘，主信息不明、暗中角力
+
+世应关系核心法则：
+· 世（你）旺相 + 应（目标）动生世 → 大吉，外力助推
+· 世（你）旺相 + 世动克应 → 你能掌控，但费力
+· 世（你）被克 + 应动克世 → 凶，外部压力压制
+· 官鬼爻旺动 + 临朱雀 → 考试通知在即，成绩出炉
+· 父母爻旺动 + 世爻 → 文书得力，录取文书可期
+
 ${extra ? '## 附加情报\n'+extra : ''}
 
-## 请按以下结构输出：
-1. 【梅花断】体用生克定大势（吉凶方向）
-2. 【六爻断】世应关系、用神分析、六亲生克
-3. 【六神加象】结合六神（${gua.liuyaoTable[gua.palace.shi-1].god}临世）解读细节
-4. 【互变分析】互卦看过程，变卦看结果
-5. 【混合结论】综合梅花+六爻的最终判断
-6. 【行动建议】具体可执行的行动方向
-7. 【吉凶等级】大吉/小吉/平/小凶/大凶
+## 请严格按以下七步结构输出断卦报告：
 
-风格：修仙气质+军事情报分析。`;
-    const result = await callAI('你是精通邵康节先天易学的梅花易数大师，同时精通京房六爻纳甲体系，擅长梅花+六爻混合断卦。', divinePrompt, 8192, 'divine');
+1. 【梅花断势】根据本卦卦象、体用生克关系，判断整体吉凶大势与方向
+2. 【六爻细断】分析世爻强弱、应爻响应、动爻变化对世爻的影响
+3. 【六亲用神】找出与卦问最相关的用神爻（考研→官鬼爻/父母爻），判断其旺衰
+4. 【六神加象】六神临世、临动爻的具体暗示（朱雀/白虎/青龙等对考研的特殊含义）
+5. 【互变推演】互卦揭示的隐藏过程；变卦指示的最终趋势
+6. 【考研命题天机】（重要！）结合本卦五行、动爻六亲，推演今年可能的命题方向。格式：
+   - 🔴 一级天机（必考级）：[具体知识点+命中概率]
+   - 🟡 二级天机（高概率）：[具体知识点+命中概率]
+   - 🟢 三级天机（潜在风险）：[具体知识点+命中概率]
+7. 【终极裁断】综合梅花+六爻+命题天机的最终吉凶等级（大吉/小吉/平/小凶/大凶）和三条行动建议
+
+输出风格：天机阁修仙情报风格，精准克制，带卦象术语。`;
+
+    const result = await callAI(
+      '你是精通邵康节先天易学的梅花易数大师，同时精通京房六爻纳甲体系，并兼任2026年考研命题趋势情报分析官，擅长梅花+六爻混合断卦并从卦象中提取考研命题天机。',
+      divinePrompt, 8192, 'divine'
+    );
     document.getElementById('dsOut').textContent = result;
+
+    // ======= 断卦天机 → 自动推送情报到中转阁 =======
+    if (result && result.length > 100) {
+      try {
+        const ts = new Date().toLocaleString('zh-CN');
+        // 存入 localStorage 的情报库（标记为卦象天机）
+        const divineSummary = `【卦象天机 · ${gua.ben_gua.name}→${gua.bian_gua.name}】\n起卦：${gua.method}\n问题：${question}\n体用：${gua.tiyong.relation}→${gua.tiyong.fortune}\n\n${result.slice(0, 1500)}`;
+        ['101','201','301','408'].forEach(sub => {
+          if (question.includes(sub) || question.includes(
+            sub==='101'?'政治':sub==='201'?'英语':sub==='301'?'数学':'计算机'
+          )) {
+            const cached = JSON.parse(localStorage.getItem('tianji_intel_' + sub) || '[]');
+            cached.unshift({ date: ts, summary: divineSummary.replace(/\n/g,'<br>'), source: '卦象天机' });
+            if(cached.length > 30) cached.length = 30;
+            localStorage.setItem('tianji_intel_' + sub, JSON.stringify(cached));
+          }
+        });
+        // 尝试推送到中转阁
+        const relayUrl = 'https://pku-api-relay.onrender.com';
+        fetch(`${relayUrl}/feed/intelligence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subject: question.includes('408')?'408':question.includes('301')?'301':question.includes('201')?'201':'101',
+            content: divineSummary,
+            source: `天机阁卦象 · ${gua.ben_gua.name}→${gua.bian_gua.name}`,
+            date: ts
+          })
+        }).then(()=>console.log('[天机] ✅ 卦象天机已送入中转阁')).catch(()=>{});
+      } catch(e) { console.warn('[天机] 卦象天机推送失败:', e.message); }
+    }
+
   } catch (e) { document.getElementById('guaOut').innerHTML = `<div style="color:var(--red);text-align:center;padding:20px">失败: ${e.message}</div>` }
   b.disabled = false; b.innerHTML = '🔮 起卦推演';
 });
+
 
 // ============ 渲染：梅花卦象 + 六爻排盘表 ============
 const SHEN_TIPS = {
