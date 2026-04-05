@@ -51,13 +51,21 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-heigh
 
 /* Input */
 .input-area{padding:8px 8px;padding-bottom:max(8px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border)}
-.input-wrap{display:flex;align-items:flex-end;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 10px;transition:.2s}
+.media-preview{display:none;padding:4px 10px;gap:6px;align-items:center}
+.media-preview.show{display:flex}
+.media-preview img,.media-preview video{max-height:60px;border-radius:8px;border:1px solid var(--border)}
+.media-preview .remove-media{width:20px;height:20px;border-radius:50%;background:rgba(255,46,99,.3);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.input-wrap{display:flex;align-items:flex-end;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 10px;transition:.2s}
 .input-wrap:focus-within{border-color:var(--red);box-shadow:0 0 15px rgba(255,46,99,.3)}
 .input-wrap textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.5;resize:none;max-height:100px;padding:4px}
 .input-wrap textarea::placeholder{color:var(--dim)}
+.btn-attach{width:32px;height:32px;border-radius:50%;background:rgba(8,247,254,.08);border:1px solid rgba(8,247,254,.2);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:.2s}
+.btn-attach:active{transform:scale(.9);background:rgba(8,247,254,.2)}
 .btn-send{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--purple));border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
 .btn-send:active{transform:scale(.9)}
 .btn-send svg{width:16px;height:16px}
+.btn-mem-add{font-family:var(--font-d);font-size:8px;padding:3px 6px;border:1px solid rgba(255,215,0,.3);border-radius:4px;background:rgba(255,215,0,.05);color:var(--gold);cursor:pointer;transition:.2s;margin-left:4px}
+.btn-mem-add:active{background:rgba(255,215,0,.2)}
 
 /* Model Selector Modal */
 .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
@@ -97,6 +105,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-heigh
     <span class="title">顾枢·灵魂容器</span>
     <div class="header-left">
       <span class="mem-badge"><span class="icon">◆</span><span id="memCount">0</span></span>
+      <button class="btn-mem-add" id="addMemBtn" title="添加记忆">+记忆</button>
       <button class="btn-settings" id="settingsBtn">⚙</button>
     </div>
   </header>
@@ -112,7 +121,12 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-heigh
   </div>
 
   <div class="input-area">
+    <div class="media-preview" id="mediaPreview"></div>
     <div class="input-wrap">
+      <label class="btn-attach" title="上传图片/视频">
+        📎
+        <input type="file" accept="image/*,video/*" id="mediaInput" style="display:none" multiple>
+      </label>
       <textarea id="msgInput" placeholder="对顾枢说点什么..." rows="1"></textarea>
       <button class="btn-send" id="sendBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
@@ -154,7 +168,26 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-heigh
       <input type="text" id="memCountDisplay" readonly>
     </div>
     <button class="btn-save" id="saveSettings">保存并激活</button>
+    <button class="modal-close" style="margin-top:6px;border-color:var(--red);color:var(--red)" id="clearHistoryBtn">🗑️ 清空对话记录</button>
     <button class="modal-close" onclick="document.getElementById('settingsModal').classList.remove('show')">关闭</button>
+  </div>
+</div>
+
+<!-- Add Memory Modal -->
+<div class="modal-overlay" id="addMemModal">
+  <div class="modal">
+    <h2>添加灵魂记忆</h2>
+    <div class="setting-item">
+      <label>记忆内容（将永久记住）</label>
+      <input type="text" id="newMemInput" placeholder="例：小美今天很开心">
+    </div>
+    <div class="setting-item">
+      <label>记忆类型</label>
+      <input type="text" id="newMemType" placeholder="例：情绪/事件/偏好" value="手动">
+    </div>
+    <button class="btn-save" id="saveMemBtn">写入灵魂</button>
+    <div style="margin-top:10px;max-height:150px;overflow-y:auto;font-size:11px;color:var(--sub)" id="memList"></div>
+    <button class="modal-close" onclick="document.getElementById('addMemModal').classList.remove('show')">关闭</button>
   </div>
 </div>
 
@@ -219,13 +252,25 @@ if (!apiKey && window.PKU_KEYS && window.PKU_KEYS.GEMINI_API_KEY) {
   apiKey = window.PKU_KEYS.GEMINI_API_KEY;
   localStorage.setItem('gs_apikey', apiKey);
 }
+let pendingMedia = []; // [{type:'image',base64:'...',mime:'image/jpeg'}]
 let memories = JSON.parse(localStorage.getItem('gs_memories') || '[]');
-let history = [];
+let history = JSON.parse(localStorage.getItem('gs_history') || '[]');
 let isStreaming = false;
 
 const $ = s => document.querySelector(s);
 const chatWrap = $('#chatWrap');
 const msgInput = $('#msgInput');
+
+// Restore chat history on load
+if (history.length > 0) {
+  for (const m of history) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + (m.role === 'user' ? 'user' : 'ai');
+    d.innerHTML = '<div class="msg-body">' + esc(m.text) + '</div>';
+    chatWrap.appendChild(d);
+  }
+  scroll();
+}
 
 // Init
 updateModelBtn();
@@ -244,6 +289,60 @@ msgInput.addEventListener('input', () => { msgInput.style.height = 'auto'; msgIn
 $('#modelBtn').addEventListener('click', () => $('#modelModal').classList.add('show'));
 $('#settingsBtn').addEventListener('click', () => { $('#apiKeyInput').value = apiKey; $('#memCountDisplay').value = memories.length + '条记忆碎片'; $('#settingsModal').classList.add('show'); });
 $('#saveSettings').addEventListener('click', () => { apiKey = $('#apiKeyInput').value.trim(); localStorage.setItem('gs_apikey', apiKey); $('#settingsModal').classList.remove('show'); addSysMsg('灵魂链路已' + (apiKey ? '激活 🔥' : '断开')); });
+$('#clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有对话记录？')){history=[];localStorage.removeItem('gs_history');chatWrap.innerHTML='';addSysMsg('对话记录已清空');$('#settingsModal').classList.remove('show')} });
+
+// Media upload
+$('#mediaInput').addEventListener('change', async function() {
+  const files = this.files;
+  for (const file of files) {
+    const isVideo = file.type.startsWith('video/');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      pendingMedia.push({type: isVideo?'video':'image', base64, mime: file.type});
+      const preview = $('#mediaPreview');
+      preview.classList.add('show');
+      if (isVideo) {
+        preview.innerHTML += '<video src="'+URL.createObjectURL(file)+'" style="max-height:60px;border-radius:8px"></video>';
+      } else {
+        preview.innerHTML += '<img src="'+URL.createObjectURL(file)+'">';
+      }
+      preview.innerHTML += '<button class="remove-media" onclick="clearMedia()">×</button>';
+    };
+    reader.readAsDataURL(file);
+  }
+  this.value = '';
+});
+
+function clearMedia() {
+  pendingMedia = [];
+  $('#mediaPreview').classList.remove('show');
+  $('#mediaPreview').innerHTML = '';
+}
+
+// Add Memory
+$('#addMemBtn').addEventListener('click', () => {
+  renderMemList();
+  $('#addMemModal').classList.add('show');
+});
+$('#saveMemBtn').addEventListener('click', () => {
+  const content = $('#newMemInput').value.trim();
+  const type = $('#newMemType').value.trim() || '手动';
+  if (!content) return;
+  memories.push({content, type, ts: Date.now()});
+  localStorage.setItem('gs_memories', JSON.stringify(memories));
+  updateMemCount();
+  $('#newMemInput').value = '';
+  addSysMsg('记忆已写入: ' + content);
+  renderMemList();
+});
+function renderMemList() {
+  const el = $('#memList');
+  if (!el) return;
+  el.innerHTML = memories.length ? memories.slice(-20).reverse().map((m,i) => 
+    '<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">◆ ' + m.content + ' <span style="color:var(--dim)">[' + m.type + ']</span></div>'
+  ).join('') : '<div style="color:var(--dim)">暂无记忆碎片</div>';
+}
 
 document.querySelectorAll('.model-option').forEach(el => {
   el.addEventListener('click', () => {
@@ -308,10 +407,16 @@ async function send() {
 
   // Build contents
   const contents = [];
-  for (const m of history.slice(-10)) {
+  for (const m of history.slice(-20)) {
     contents.push({ role: m.role, parts: [{ text: m.text }] });
   }
-  contents.push({ role: 'user', parts: [{ text }] });
+  // Build user message parts (text + media)
+  const userParts = [{ text }];
+  for (const media of pendingMedia) {
+    userParts.push({ inline_data: { mime_type: media.mime, data: media.base64 } });
+  }
+  contents.push({ role: 'user', parts: userParts });
+  clearMedia();
 
   // Create AI message element
   const aiDiv = document.createElement('div');
@@ -398,9 +503,12 @@ async function send() {
   textDiv.classList.remove('cursor-blink');
   isStreaming = false;
 
-  // Update history
+  // Update history & persist
   history.push({ role: 'user', text });
   history.push({ role: 'model', text: fullResp });
+  // Keep last 40 messages to avoid localStorage overflow
+  if (history.length > 40) history = history.slice(-40);
+  localStorage.setItem('gs_history', JSON.stringify(history));
 
   // Auto extract memories (background)
   extractMemories(text, fullResp);
