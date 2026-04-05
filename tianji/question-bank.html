@@ -176,10 +176,30 @@ select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(-
 
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
 const SUBJECTS = {
-  '101': { name: '考研政治', topics: '马克思主义基本原理(唯物论/辩证法/认识论/唯物史观/政治经济学)、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策', count: 20 },
-  '201': { name: '考研英语一', topics: '词汇与语法、阅读理解(主旨/细节/推断/态度/词义)、完形填空、新题型(排序/匹配/标题)、翻译(英译中)、写作(应用文/议论文)', count: 20 },
-  '301': { name: '考研数学一', topics: '高等数学(极限/连续/导数/积分/微分方程/级数/多元函数)、线性代数(行列式/矩阵/向量/特征值/二次型)、概率论与数理统计(随机变量/数字特征/假设检验)', count: 20 },
-  '408': { name: '计算机学科专业基础', topics: '数据结构(线性表/树/图/排序/查找)、计算机组成原理(数据表示/CPU/存储器/总线/IO)、操作系统(进程/内存/文件/IO)、计算机网络(体系结构/物理层/链路层/网络层/传输层/应用层)', count: 20 }
+  '101': {
+    name: '考研政治', score: 100, time: 180,
+    structure: '单选16题(每题1分=16分) + 多选17题(每题2分=34分) + 分析5题(每题10分=50分)',
+    topics: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策',
+    count: 33 // 16+17 客观题(分析题用游戏UI不好出)
+  },
+  '201': {
+    name: '考研英语一', score: 100, time: 180,
+    structure: '完形填空20题(每题0.5分=10分) + 阅读理解20题(每题2分=40分) + 新题型5题(每题2分=10分) + 翻译5题(每题2分=10分) + 写作2题(10+20=30分)',
+    topics: '词汇语法、阅读理解(主旨/细节/推断/态度)、完形填空、新题型(七选五/排序/标题匹配)、翻译(英译中)、写作(应用文/议论文)',
+    count: 30 // 客观题为主
+  },
+  '301': {
+    name: '考研数学一', score: 150, time: 180,
+    structure: '单选10题(每题5分=50分) + 填空6题(每题5分=30分) + 解答6题(共70分)',
+    topics: '高等数学60%(极限/连续/导数/积分/微分方程/级数/多元函数/重积分/曲线曲面积分)、线性代数20%(行列式/矩阵/向量/线性方程组/特征值/二次型)、概率论与数理统计20%(随机事件/随机变量/数字特征/大数定律/假设检验)',
+    count: 16 // 10单选+6填空
+  },
+  '408': {
+    name: '计算机学科专业基础', score: 150, time: 180,
+    structure: '单选40题(每题2分=80分) + 综合应用7题(共70分)',
+    topics: '数据结构45分(线性表/栈队列/树/二叉树/图/排序/查找/散列)、计算机组成原理45分(数据表示/运算器/存储器/指令系统/CPU/总线/IO)、操作系统35分(进程管理/内存管理/文件系统/IO系统)、计算机网络25分(体系结构/物理层/链路层/网络层/传输层/应用层)',
+    count: 40 // 40道单选
+  }
 };
 
 const MODELS = {
@@ -324,20 +344,30 @@ async function collectPaper() {
   }
 
   const paperNum = getVault(subj).length + 1;
-  addLog(`📋 开始采集 ${meta.name} 第${paperNum}套密卷 (${meta.count}题)`, 'info');
+  addLog(`📋 开始采集 ${meta.name} 第${paperNum}套密卷 (${meta.count}题·${meta.score}分·${meta.time}分钟)`, 'info');
 
-  const prompt = `你是北大考研命题组核心专家。现在生成一套完整的${meta.name}考研模拟试卷。
+  const prompt = `你是全国硕士研究生招生考试命题组核心专家。现在生成一套完整的${meta.name}(${subj})考研模拟客观题试卷。
 
-要求：
-1. 共 ${meta.count} 道题，严格符合考研真题的难度和风格
-2. 覆盖考点：${meta.topics}
-3. 题型：单选题为主(15题) + 多选题(3题) + 判断题(2题)
-4. 难度分布：基础30% + 中等45% + 拔高25%
-5. 每题配详细解析（含考点出处和解题思路）
-6. 像黄冈密卷一样精准命中高频考点
+【试卷规格】
+- 科目：${meta.name}(${subj})
+- 满分：${meta.score}分 / 考试时长：${meta.time}分钟
+- 真实结构：${meta.structure}
 
-输出: 纯JSON数组
-[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"所属章节","difficulty":3}]`;
+【你的任务】
+生成 ${meta.count} 道客观题(选择题)，严格按照真实考研真题的难度、风格和考点分布。
+
+【考点覆盖】
+${meta.topics}
+
+【出题标准】
+1. 严格符合全国硕士研究生招生考试真题难度
+2. 每道题必须有4个选项(ABCD)
+3. 难度分布：基础30% + 中等45% + 拔高25%
+4. 每题配专业级详细解析（含考点出处和解题思路）
+5. 像黄冈密卷一样精准命中高频核心考点
+
+【输出格式】纯JSON数组，第一个字符必须是[，最后必须是]
+[{"id":"q001","type":"single","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"所属章节","difficulty":3,"score":${subj === '301' ? 5 : subj === '408' ? 2 : subj === '101' ? 1 : 2}}]`;
 
   const channels = enginePref === 'all'
     ? ['gemini31pro','claude','gpt4','gemini3flash','deepseekV3','gemini25pro','deepseek']
@@ -383,6 +413,9 @@ async function collectPaper() {
     title: `${meta.name} · 密卷 #${paperNum}`,
     subject: subj,
     subjectName: meta.name,
+    totalScore: meta.score,
+    timeMinutes: meta.time,
+    structure: meta.structure,
     engine: usedEngine,
     generatedAt: new Date().toISOString(),
     questionCount: questions.length,
@@ -446,7 +479,7 @@ function renderVault() {
       <div class="paper-head">
         <div>
           <div class="paper-title">${p.title}</div>
-          <div class="paper-meta">${p.questionCount || p.questions?.length || 0}题 · ${p.engine || 'AI'} · ${new Date(p.generatedAt).toLocaleString('zh-CN')}</div>
+          <div class="paper-meta">${p.questionCount || p.questions?.length || 0}题 · ${p.totalScore || '?'}分 · ${p.timeMinutes || 180}min · ${p.engine || 'AI'} · ${new Date(p.generatedAt).toLocaleString('zh-CN')}</div>
         </div>
         <span class="paper-badge s${p.subject}">${p.subject}</span>
       </div>
