@@ -209,6 +209,15 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
       <div class="card-body" id="verdictBody"></div>
     </div>
 
+    <!-- 🧠 DeepSeek 大白话解读 -->
+    <div class="card" id="cardAI" style="display:none">
+      <div class="card-head"><span class="card-icon">🧠</span><span class="card-title">DeepSeek · 大白话精准解读</span><span class="card-badge" style="background:rgba(8,247,254,.1);color:var(--cyan);border:1px solid rgba(8,247,254,.15)">AI</span></div>
+      <div class="card-body">
+        <button class="btn btn-gold" id="btnAIRead" onclick="aiInterpret()" style="width:100%;margin-bottom:12px">🧠 一键 DeepSeek 大白话解读</button>
+        <div id="aiResult" style="white-space:pre-wrap;line-height:2;font-size:14px;color:var(--text);display:none"></div>
+      </div>
+    </div>
+
     <!-- 模板输出 -->
     <div class="card" id="cardTemplate">
       <div class="card-head"><span class="card-icon">📝</span><span class="card-title">完整排盘模板</span></div>
@@ -451,6 +460,7 @@ function doFullCast(n1,n2,n3){
   renderTemplate(n1,n2,n3,upperNum,lowerNum,dongYao,upper,lower,benName,huName,bianName,tiTri,yongTri,tiYongRel,yaoData,palaceTri);
 
   document.getElementById('resultArea').classList.add('show');
+  document.getElementById('cardAI').style.display = ''; // 显示DeepSeek解读面板
   document.getElementById('resultArea').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -621,6 +631,84 @@ function copyTemplate(){
     btn.textContent='✅ 已复制';
     setTimeout(()=>btn.textContent='📋 复制模板',2000);
   }).catch(()=>alert('复制失败，请手动选择'));
+}
+
+// ═══ DeepSeek-R1 大白话精准解读 (通过中转阁) ═══
+const RELAY_URL = 'https://pku-api-relay.onrender.com';
+let _lastTemplateText = '';
+
+async function aiInterpret() {
+  const btn = document.getElementById('btnAIRead');
+  const resultEl = document.getElementById('aiResult');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite"></span> DeepSeek-R1 推演中...';
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:20px">🧠 DeepSeek-R1 正在深度推演中，请稍候...</div>';
+
+  const template = document.getElementById('templateOutput').textContent;
+  const prompt = `你是梅花易数+六爻纳甲双修大师。请根据以下完整排盘，用大白话给出精准解读。
+
+要求：
+1. 用大白话，绝对不要废话，直接给结论
+2. 分析体用生克关系，判断吉凶
+3. 动爻、世应、六亲、六兽的具体含义
+4. 互卦看过程，变卦看结果
+5. 给出明确的吉凶判定和行动建议
+6. 如果是考试相关，给出具体复习建议
+
+排盘数据：
+${template}`;
+
+  try {
+    // 通道1: OpenRouter (DeepSeek R1)
+    const orKeys = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
+    const embKeys = (() => { try { return JSON.parse(atob('eyJvcl9rZXkiOiAic2stb3ItdjEtOGIzYzgzN2IzZDQ5YjM5MWM4YzY4YjE1Y2MyMjEyOTc1MjM0OTYzYTRkNDVjZDI0NjhiM2U3MmEwMTgwNzk3YyJ9')); } catch(e) { return {}; } })();
+    const orKey = orKeys.or_key || embKeys.or_key || '';
+    if (orKey) {
+      console.log('[推演阁] 🧠 OpenRouter DeepSeek-R1 启动...');
+      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + orKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-r1',
+          messages: [{ role: 'system', content: '你是梅花易数+六爻纳甲双修大师，用大白话说话，简洁有力量。全部用中文。' }, { role: 'user', content: prompt }],
+          temperature: 0.7, max_tokens: 4096
+        })
+      });
+      const data = await resp.json();
+      if (!data.error) {
+        let text = (data.choices || [{}])[0]?.message?.content || '';
+        text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+        if (text) {
+          resultEl.textContent = text;
+          btn.disabled = false; btn.innerHTML = '🧠 再次解读';
+          console.log('[推演阁] ✅ DeepSeek-R1 解读完成! (' + text.length + '字)');
+          return;
+        }
+      }
+    }
+    // 通道2: 中转阁 Relay
+    console.log('[推演阁] 🔁 中转阁 DeepSeek-R1...');
+    const resp2 = await fetch(RELAY_URL + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-r1',
+        messages: [{ role: 'system', content: '你是梅花易数+六爻纳甲双修大师，用大白话说话，简洁有力量。全部用中文。' }, { role: 'user', content: prompt }],
+        temperature: 0.7, max_tokens: 4096
+      })
+    });
+    const data2 = await resp2.json();
+    if (data2.error) throw new Error(data2.error.message || JSON.stringify(data2.error));
+    let text2 = (data2.choices || [{}])[0]?.message?.content || '';
+    text2 = text2.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    resultEl.textContent = text2 || '解读失败，请重试';
+    console.log('[推演阁] ✅ 中转阁 DeepSeek 解读完成!');
+  } catch(e) {
+    resultEl.innerHTML = '<div style="color:var(--red)">❌ 解读失败: ' + e.message + '</div>';
+    console.error('[推演阁] ❌', e);
+  }
+  btn.disabled = false; btn.innerHTML = '🧠 一键 DeepSeek 大白话解读';
 }
 </script>
 </body>
