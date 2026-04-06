@@ -879,12 +879,46 @@ ${rawIntel}
       updatedAt: new Date().toISOString(), count: merged.length, lastSource: 'tianji-theft+gemini-pro'
     }));
     console.log(`[天机] ✅ ${subject} 金库更新: +${newQ.length}题 (总${merged.length}题)`);
-    return { subject, newCount: newQ.length, totalCount: merged.length, rawIntelLength: rawIntel.length };
+    return { subject, newCount: newQ.length, totalCount: merged.length, rawIntelLength: rawIntel.length, rawIntel, paperRaw };
   } else {
     // JSON解析失败, 存原始文本
     localStorage.setItem('tianji_raw_paper_' + subject, paperRaw);
-    return { subject, newCount: 0, totalCount: existing.length, rawIntelLength: rawIntel.length, rawSaved: true };
+    return { subject, newCount: 0, totalCount: existing.length, rawIntelLength: rawIntel.length, rawSaved: true, rawIntel, paperRaw };
   }
+}
+
+
+// ═══ 情报展示：窃取结果可视化 + 一键复制 ═══
+function displayTheftDetails(container, subCode, subName, result) {
+  const { rawIntel, paperRaw, newCount, totalCount } = result;
+  const detailHTML = `
+    <div class="intel-card" style="border-color:rgba(255,215,0,.12);margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="color:var(--gold);font-weight:700;font-size:13px">📡 ${subCode} ${subName} 情报详情</span>
+        <div style="display:flex;gap:6px">
+          <button onclick="this.parentElement.parentElement.nextElementSibling.style.display=this.parentElement.parentElement.nextElementSibling.style.display==='none'?'block':'none'" class="copy-btn" style="position:static">📖 展开/折叠</button>
+          <button onclick="navigator.clipboard.writeText(this.closest('.intel-card').querySelector('.intel-raw').textContent).then(()=>this.textContent='✅ 已复制').catch(()=>{})" class="copy-btn" style="position:static">📋 复制情报</button>
+        </div>
+      </div>
+      <div style="display:block">
+        <div style="font-size:11px;color:var(--cyan);margin-bottom:4px;font-weight:600">🔍 原始情报 (${(rawIntel||'').length}字)</div>
+        <div class="intel-raw" style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-word">${(rawIntel||'[无]').replace(/</g,'&lt;')}</div>
+      </div>
+      ${newCount > 0 ? `
+      <div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--green);font-weight:600">📝 生成考题 (${newCount}题)</span>
+          <button onclick="navigator.clipboard.writeText(localStorage.getItem('Global_Vault_'+'${subCode}')||'[]').then(()=>this.textContent='✅ JSON已复制')" class="copy-btn" style="position:static">📋 复制JSON到终端</button>
+        </div>
+        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(57,255,20,.1);border-radius:8px;padding:12px;font-size:11px;line-height:1.6;color:var(--sub);max-height:200px;overflow-y:auto;white-space:pre-wrap">${(paperRaw||'[原始文本]').replace(/</g,'&lt;').substring(0,2000)}${(paperRaw||'').length>2000?'\n...（已截断）':''}</div>
+      </div>
+      ` : `
+      <div style="margin-top:8px;color:var(--amber);font-size:11px">⚠️ 考卷JSON解析失败，原始文本已存储。可点击复制后手动处理。</div>
+      <button onclick="navigator.clipboard.writeText(localStorage.getItem('tianji_raw_paper_'+'${subCode}')||'').then(()=>this.textContent='✅ 已复制')" class="copy-btn" style="position:static;margin-top:6px">📋 复制原始出卷文本</button>
+      `}
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', detailHTML);
 }
 
 // 全科窃取
@@ -907,6 +941,10 @@ async function stealAllSubjects() {
       const result = await stealAndForge(sub);
       progressEl.style.width = ((i + 1) / subjects.length * 100) + '%';
       resultEl.innerHTML += `<div style="color:var(--green);margin:4px 0">✅ ${sub} ${subNames[sub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字${result.rawSaved ? ' [原始存储]' : ''}</div>`;
+      // 展示情报详情
+      const detailContainer = document.createElement('div');
+      resultEl.appendChild(detailContainer);
+      displayTheftDetails(detailContainer, sub, subNames[sub], result);
     } catch(e) {
       resultEl.innerHTML += `<div style="color:var(--red);margin:4px 0">❌ ${sub} ${subNames[sub]}: ${e.message}</div>`;
     }
@@ -929,7 +967,9 @@ async function stealSingleSubject() {
   
   try {
     const result = await stealAndForge(curSub);
-    resultEl.innerHTML = `<div style="color:var(--green)">✅ ${curSub} ${subNames[curSub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字</div>`;
+    resultEl.innerHTML = `<div style="color:var(--green);margin-bottom:12px">✅ ${curSub} ${subNames[curSub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字</div>`;
+    // 展示情报详情
+    displayTheftDetails(resultEl, curSub, subNames[curSub], result);
     document.getElementById('theftStatus').textContent = '✅ 窃取+出卷完成!';
   } catch(e) {
     resultEl.innerHTML = `<div style="color:var(--red)">❌ ${curSub} ${subNames[curSub]}: ${e.message}</div>`;
