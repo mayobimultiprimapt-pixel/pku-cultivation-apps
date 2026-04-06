@@ -27,6 +27,9 @@ const CourtApp = (() => {
         document.querySelectorAll('.gamemode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         gameMode = btn.dataset.gamemode;
+        // Update start button text
+        document.getElementById('btnStart').textContent =
+          gameMode === 'tavern' ? '🍺 进入酒馆' : '⚡ 升堂开审';
       });
     });
 
@@ -43,6 +46,11 @@ const CourtApp = (() => {
 
   // ─── 开始庭审 ───────────────────────────────────────
   function startTrial() {
+    if (gameMode === 'tavern') {
+      // Route to Liar's Tavern
+      TavernUI.start(mode);
+      return;
+    }
     CourtEngine.init(mode);
     show('courtScreen');
     loadCase();
