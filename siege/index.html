@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>北大消消乐 · 考研三消大作战</title>
-<meta name="description" content="消除方块触发考研真题，四科101/201/301/408全覆盖">
+<title>北大消消�?· 考研三消大作�?/title>
+<meta name="description" content="消除方块触发考研真题，四�?01/201/301/408全覆�?>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#08080f;--bg2:#10101c;--bg3:#181830;--card:rgba(20,20,42,.92);--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--accent:#ff2e63;--accent2:#ffd700}
@@ -122,14 +122,14 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 <!-- Screen 1: Subject Select -->
 <div class="screen active" id="scrSubject">
   <div class="hero">
-    <h1>北大消消乐</h1>
+    <h1>北大消消�?/h1>
     <p>POSTGRAD MATCH-3 EXAM BATTLE</p>
   </div>
   <div class="sub-grid">
     <div class="sub-card s101" onclick="selectSubject('101')">
       <div class="sc-code">101</div>
       <div class="sc-name">政治 · 红色风暴</div>
-      <div class="sc-desc">马原/毛中特/史纲/思修</div>
+      <div class="sc-desc">马原/毛中�?史纲/思修</div>
     </div>
     <div class="sub-card s201" onclick="selectSubject('201')">
       <div class="sc-code">201</div>
@@ -143,16 +143,16 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     </div>
     <div class="sub-card s408" onclick="selectSubject('408')">
       <div class="sc-code">408</div>
-      <div class="sc-name">计算机 · 天网格斗</div>
+      <div class="sc-name">计算�?· 天网格斗</div>
       <div class="sc-desc">数据结构/组成/OS/网络</div>
     </div>
   </div>
   <div style="margin-top:20px;display:grid;gap:8px">
-    <button class="btn-secondary" onclick="showScreen('scrErrors')">📕 错题本</button>
+    <button class="btn-secondary" onclick="showScreen('scrErrors')">📕 错题�?/button>
     <button class="btn-secondary" onclick="showAIPanel()" style="border-color:var(--accent2);color:var(--accent2)">🤖 AI出题引擎 · 顶尖模型实时生成</button>
   </div>
   <div style="text-align:center;margin-top:16px;font-family:var(--font-d);font-size:9px;color:var(--dim);letter-spacing:2px">
-    <span id="totalStats">总答题: 0 | 正确率: 0%</span>
+    <span id="totalStats">总答�? 0 | 正确�? 0%</span>
   </div>
 </div>
 
@@ -162,24 +162,24 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   <div class="mode-cards">
     <div class="mode-card" onclick="startGame()">
       <div class="mc-icon">🎮</div>
-      <div><div class="mc-title">三消闯关</div><div class="mc-desc">消除方块触发真题，答对加分 答错扣血</div></div>
+      <div><div class="mc-title">三消闯关</div><div class="mc-desc">消除方块触发真题，答对加�?答错扣血</div></div>
     </div>
     <div class="mode-card" onclick="startExam()">
       <div class="mc-icon">📝</div>
-      <div><div class="mc-title">模考模式</div><div class="mc-desc">完整试卷模拟，还原考场体验</div></div>
+      <div><div class="mc-title">模考模�?/div><div class="mc-desc">完整试卷模拟，还原考场体验</div></div>
     </div>
     <div class="mode-card" onclick="startQuickDrill()">
-      <div class="mc-icon">⚡</div>
-      <div><div class="mc-title">快速刷题</div><div class="mc-desc">随机抽题连刷，专攻薄弱环节</div></div>
+      <div class="mc-icon">�?/div>
+      <div><div class="mc-title">快速刷�?/div><div class="mc-desc">随机抽题连刷，专攻薄弱环�?/div></div>
     </div>
   </div>
-  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:16px">← 返回</button>
+  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:16px">�?返回</button>
 </div>
 
 <!-- Screen 3: Game -->
 <div class="screen" id="scrGame">
   <div class="hud">
-    <button class="btn-back" onclick="endGame()">← 退出</button>
+    <button class="btn-back" onclick="endGame()">�?退�?/button>
     <div class="hud-item"><div class="hud-label">SCORE</div><div class="hud-val" id="hudScore">0</div></div>
     <div class="hud-item"><div class="hud-label">COMBO</div><div class="hud-val hud-combo" id="hudCombo">x1</div></div>
     <div class="hud-item"><div class="hud-label">LIVES</div><div class="hud-val" id="hudLives">❤️❤️❤️</div></div>
@@ -191,7 +191,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 <!-- Screen 4: Exam Mode -->
 <div class="screen" id="scrExam">
   <div class="hud">
-    <button class="btn-back" onclick="endGame()">← 退出</button>
+    <button class="btn-back" onclick="endGame()">�?退�?/button>
     <div class="hud-item"><div class="hud-label">PROGRESS</div><div class="hud-val" id="examProg">1/50</div></div>
     <div class="hud-item"><div class="hud-label">CORRECT</div><div class="hud-val" id="examCorrect">0</div></div>
     <div class="hud-item"><div class="hud-label">TIME</div><div class="hud-val" id="examTime">00:00</div></div>
@@ -207,9 +207,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     <div class="r-score" id="resScore">0</div>
     <div style="font-size:12px;color:var(--dim);margin-top:4px" id="resGrade">评级</div>
     <div class="r-stats">
-      <div class="r-stat"><div class="rs-val" id="resTotal">0</div><div class="rs-lbl">总题数</div></div>
+      <div class="r-stat"><div class="rs-val" id="resTotal">0</div><div class="rs-lbl">总题�?/div></div>
       <div class="r-stat"><div class="rs-val" id="resRight">0</div><div class="rs-lbl">正确</div></div>
-      <div class="r-stat"><div class="rs-val" id="resRate">0%</div><div class="rs-lbl">正确率</div></div>
+      <div class="r-stat"><div class="rs-val" id="resRate">0%</div><div class="rs-lbl">正确�?/div></div>
     </div>
   </div>
   <button class="btn-primary" onclick="showScreen('scrMode')">再来一局</button>
@@ -219,9 +219,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 <!-- Screen 6: Error Book -->
 <div class="screen" id="scrErrors">
-  <div class="hero"><h1>📕 错题本</h1></div>
+  <div class="hero"><h1>📕 错题�?/h1></div>
   <div id="errorList"></div>
-  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:12px">← 返回</button>
+  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:12px">�?返回</button>
 </div>
 
 <!-- Question Overlay -->
@@ -232,12 +232,11 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     <div class="q-stem" id="qStem"></div>
     <div class="q-opts" id="qOpts"></div>
     <div class="q-analysis" id="qAnalysis"></div>
-    <button class="q-next" id="qNext" onclick="closeQuestion()">继续游戏 →</button>
+    <button class="q-next" id="qNext" onclick="closeQuestion()">继续游戏 �?/button>
   </div>
 </div>
 
-<script src="../api-keys.js"></script>
-<script src="../shared/relay-loader.js"></script>
+<!-- Keys handled by relay server --><script src="../shared/relay-loader.js"></script>
 <script src="questions.js"></script>
 <script src="ai-engine.js"></script>
 <!-- 天机阁全局军火库挂载点 -->
@@ -251,7 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
            if(parsed && parsed.length > 0) {
               if(!window.QUESTION_BANK) window.QUESTION_BANK = {};
               window.QUESTION_BANK[sub] = parsed;
-              console.log('✅ [天机总控] 成功装载前线情报弹药: ' + sub + ' 共 ' + parsed.length + ' 发');
+              console.log('�?[天机总控] 成功装载前线情报弹药: ' + sub + ' �?' + parsed.length + ' �?);
            }
         }catch(e){}
      }
@@ -260,15 +259,15 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 <script>
 // ============================================================
-//  北大消消乐 · 考研三消大作战 — 游戏引擎
+//  北大消消�?· 考研三消大作�?�?游戏引擎
 // ============================================================
 
 const GRID_SIZE = 8;
 const PIECE_TYPES = {
-  '101': ['🔴','⭐','📕','🏛️','⚖️','🔥'],
+  '101': ['🔴','�?,'📕','🏛�?,'⚖️','🔥'],
   '201': ['🔵','📘','✏️','🌍','📖','🎯'],
-  '301': ['🟡','📐','🔢','📊','💡','⚡'],
-  '408': ['🟢','💻','🖥️','📡','🔧','🌐']
+  '301': ['🟡','📐','🔢','📊','💡','�?],
+  '408': ['🟢','💻','🖥�?,'📡','🔧','🌐']
 };
 const SUB_CLASSES = {'101':'subject-101','201':'subject-201','301':'subject-301','408':'subject-408'};
 
@@ -296,7 +295,7 @@ function selectSubject(sub) {
   document.body.className = SUB_CLASSES[sub] || '';
   document.getElementById('modeTitle').textContent = {
     '101':'101 政治 · 红色风暴','201':'201 英语 · 密码矩阵',
-    '301':'301 数学 · 算经迷阵','408':'408 计算机 · 天网格斗'
+    '301':'301 数学 · 算经迷阵','408':'408 计算�?· 天网格斗'
   }[sub];
   showScreen('scrMode');
 }
@@ -461,8 +460,7 @@ function getQuestion(subject, type) {
     const q = PKU_RELAY.getQuestion(subject, type);
     if (q) return q;
   }
-  // Fallback到本地题库
-  if (typeof QUESTION_BANK === 'undefined') return null;
+  // Fallback到本地题�?  if (typeof QUESTION_BANK === 'undefined') return null;
   const bank = QUESTION_BANK[subject];
   if (!bank) return null;
   const pool = bank.filter(q => {
@@ -485,9 +483,9 @@ function showQuestion(q, matchType) {
     const next = document.getElementById('qNext');
     const timerEl = document.getElementById('qTimer');
 
-    const typeNames = {single:'单选题',multi:'多选题',judge:'判断题',fill:'填空题',material:'材料分析'};
+    const typeNames = {single:'单选题',multi:'多选题',judge:'判断�?,fill:'填空�?,material:'材料分析'};
     const points = {single:1,multi:3,judge:5,material:10,fill:5};
-    badge.textContent = `${typeNames[q.type]||'选择题'} · ${points[matchType]||1}分`;
+    badge.textContent = `${typeNames[q.type]||'选择�?} · ${points[matchType]||1}分`;
     stem.textContent = q.stem;
     opts.innerHTML = '';
     analysis.classList.remove('show');
@@ -511,7 +509,7 @@ function showQuestion(q, matchType) {
       answered = true;
       clearInterval(timer);
       // Show analysis
-      analysis.innerHTML = `<strong>答案：${q.answer}</strong><br>${q.analysis || ''}`;
+      analysis.innerHTML = `<strong>答案�?{q.answer}</strong><br>${q.analysis || ''}`;
       analysis.classList.add('show');
       next.classList.add('show');
       questionCallback = () => {
@@ -555,7 +553,7 @@ function showQuestion(q, matchType) {
         const submitBtn = document.createElement('div');
         submitBtn.className = 'q-opt';
         submitBtn.style.cssText = 'text-align:center;background:linear-gradient(135deg,var(--sc,#ff2e63),var(--accent2));color:#000;font-weight:700;';
-        submitBtn.textContent = '✓ 提交答案';
+        submitBtn.textContent = '�?提交答案';
         submitBtn.addEventListener('click', () => {
           if (answered) return;
           const selected = [...opts.querySelectorAll('.q-opt.correct')].map(o => o.textContent.charAt(0)).sort().join('');
@@ -595,8 +593,8 @@ function endGame() {
     const rate = Math.round(correct / answered * 100);
     document.getElementById('resRate').textContent = rate + '%';
     document.getElementById('resGrade').textContent = 
-      rate >= 90 ? '🏆 S级 · 北大稳了' : rate >= 75 ? '🥇 A级 · 实力强劲' :
-      rate >= 60 ? '🥈 B级 · 继续努力' : '🥉 C级 · 需要加强';
+      rate >= 90 ? '🏆 S�?· 北大稳了' : rate >= 75 ? '🥇 A�?· 实力强劲' :
+      rate >= 60 ? '🥈 B�?· 继续努力' : '🥉 C�?· 需要加�?;
     saveProgress();
     showScreen('scrResult');
   } else {
@@ -613,7 +611,7 @@ function updateHUD() {
 
 // ---- Exam Mode ----
 function startExam() {
-  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加载'); return; }
+  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加�?); return; }
   const bank = QUESTION_BANK[currentSubject] || [];
   examQuestions = [...bank].sort(() => Math.random() - 0.5).slice(0, Math.min(50, bank.length));
   examIndex = 0; correct = 0; answered = 0; score = 0;
@@ -639,7 +637,7 @@ function showExamQuestion() {
   
   const numEl = document.createElement('div');
   numEl.className = 'exam-q-num';
-  numEl.textContent = `第 ${examIndex+1} 题 / 共 ${examQuestions.length} 题 · ${({single:'单选',multi:'多选',judge:'判断',fill:'填空',material:'材料'})[q.type]||'选择'}`;
+  numEl.textContent = `�?${examIndex+1} �?/ �?${examQuestions.length} �?· ${({single:'单�?,multi:'多�?,judge:'判断',fill:'填空',material:'材料'})[q.type]||'选择'}`;
   wrap.appendChild(numEl);
   
   const stemEl = document.createElement('div');
@@ -671,12 +669,12 @@ function showExamQuestion() {
         
         const analysisEl = document.createElement('div');
         analysisEl.className = 'q-analysis show';
-        analysisEl.innerHTML = `<strong>答案：${q.answer}</strong><br>${q.analysis||''}`;
+        analysisEl.innerHTML = `<strong>答案�?{q.answer}</strong><br>${q.analysis||''}`;
         wrap.appendChild(analysisEl);
         
         const nextBtn = document.createElement('button');
         nextBtn.className = 'btn-primary';
-        nextBtn.textContent = examIndex < examQuestions.length - 1 ? '下一题 →' : '查看成绩';
+        nextBtn.textContent = examIndex < examQuestions.length - 1 ? '下一�?�? : '查看成绩';
         nextBtn.addEventListener('click', () => { examIndex++; showExamQuestion(); });
         wrap.appendChild(nextBtn);
         
@@ -698,7 +696,7 @@ function updateExamTimer() {
 
 // ---- Quick Drill ----
 function startQuickDrill() {
-  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加载'); return; }
+  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加�?); return; }
   score = 0; answered = 0; correct = 0; lives = 3; combo = 1;
   gameActive = true;
   // 异步从中转阁补充题库（不阻塞游戏开始）
@@ -706,7 +704,7 @@ function startQuickDrill() {
     RelayQuestions.loadSmart(currentSubject, QUESTION_BANK[currentSubject] || []).then(result => {
       if (result.fromRelay && result.questions.length > 0) {
         QUESTION_BANK[currentSubject] = result.questions;
-        console.log('[中转阁] ✅ 消消乐题库已增强:', result.questions.length + '题');
+        console.log('[中转阁] �?消消乐题库已增强:', result.questions.length + '�?);
       }
     }).catch(() => {});
   }
@@ -753,7 +751,7 @@ function renderErrorBook() {
     <div class="err-item">
       <div style="font-family:var(--font-d);font-size:9px;color:var(--dim)">${e.subject} · ${new Date(e.ts).toLocaleDateString('zh-CN')}</div>
       <div class="ei-q">${esc(e.stem.slice(0,120))}</div>
-      <div class="ei-a">✅ 正确答案：${e.answer}</div>
+      <div class="ei-a">�?正确答案�?{e.answer}</div>
       ${e.analysis ? '<div style="font-size:11px;color:var(--sub);margin-top:4px">'+esc(e.analysis.slice(0,150))+'</div>' : ''}
     </div>
   `).join('');
@@ -778,7 +776,7 @@ function updateTotalStats() {
     total += p.total; cor += p.correct;
   });
   document.getElementById('totalStats').textContent = 
-    `总答题: ${total} | 正确率: ${total > 0 ? Math.round(cor/total*100) : 0}%`;
+    `总答�? ${total} | 正确�? ${total > 0 ? Math.round(cor/total*100) : 0}%`;
 }
 
 // ---- Utils ----
@@ -794,18 +792,17 @@ function showAIPanel() {
   modal.innerHTML = `
     <div class="q-badge" style="background:rgba(255,215,0,.1);color:var(--accent2);border-color:var(--accent2)">🤖 AI 出题引擎</div>
     <div class="q-stem" style="font-size:13px;line-height:1.8">
-      调用顶尖大模型实时生成考研真题，注入游戏题库。<br>
-      支持 DeepSeek-R1 / Claude-4 / GPT-4o 多模型轮换出题。
-    </div>
+      调用顶尖大模型实时生成考研真题，注入游戏题库�?br>
+      支持 DeepSeek-R1 / Claude-4 / GPT-4o 多模型轮换出题�?    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0">
       ${['101','201','301','408'].map(sub => {
         const s = stats[sub] || {total:0};
-        const names = {'101':'政治','201':'英语','301':'数学','408':'计算机'};
+        const names = {'101':'政治','201':'英语','301':'数学','408':'计算�?};
         return `<div style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;text-align:center">
           <div style="font-family:var(--font-d);font-size:16px;font-weight:700">${sub}</div>
           <div style="font-size:11px;color:var(--sub)">${names[sub]}</div>
           <div style="font-family:var(--font-d);font-size:20px;color:var(--accent2);margin-top:4px">${s.total}</div>
-          <div style="font-size:9px;color:var(--dim)">AI题</div>
+          <div style="font-size:9px;color:var(--dim)">AI�?/div>
         </div>`;
       }).join('')}
     </div>
@@ -814,31 +811,31 @@ function showAIPanel() {
         <option value="101">101 政治</option>
         <option value="201">201 英语</option>
         <option value="301">301 数学</option>
-        <option value="408">408 计算机</option>
+        <option value="408">408 计算�?/option>
       </select>
     </div>
     <div style="margin:8px 0">
       <select id="aiCount" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
         <option value="10">生成 10 题（快速）</option>
-        <option value="30">生成 30 题（标准）</option>
-        <option value="50" selected>生成 50 题（完整）</option>
-        <option value="100">生成 100 题（大量）</option>
+        <option value="30">生成 30 题（标准�?/option>
+        <option value="50" selected>生成 50 题（完整�?/option>
+        <option value="100">生成 100 题（大量�?/option>
       </select>
     </div>
     <div id="aiProgress" style="display:none;margin:12px 0">
-      <div style="font-size:12px;color:var(--sub);margin-bottom:6px" id="aiProgressText">准备中...</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:6px" id="aiProgressText">准备�?..</div>
       <div style="width:100%;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden">
         <div id="aiProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s"></div>
       </div>
     </div>
-    <button class="btn-primary" onclick="startAIGenerate()" id="aiStartBtn">⚡ 开始生成</button>
-    <button class="btn-secondary" onclick="document.getElementById('qOverlay').classList.remove('show')" style="margin-top:8px">← 返回</button>
+    <button class="btn-primary" onclick="startAIGenerate()" id="aiStartBtn">�?开始生�?/button>
+    <button class="btn-secondary" onclick="document.getElementById('qOverlay').classList.remove('show')" style="margin-top:8px">�?返回</button>
   `;
   overlay.classList.add('show');
 }
 
 async function startAIGenerate() {
-  if (typeof AI_QUESTION_ENGINE === 'undefined') { alert('AI引擎未加载'); return; }
+  if (typeof AI_QUESTION_ENGINE === 'undefined') { alert('AI引擎未加�?); return; }
   const subject = document.getElementById('aiSubject').value;
   const count = parseInt(document.getElementById('aiCount').value);
   const btn = document.getElementById('aiStartBtn');
@@ -847,7 +844,7 @@ async function startAIGenerate() {
   const progBar = document.getElementById('aiProgressBar');
   
   btn.disabled = true;
-  btn.textContent = '⏳ 生成中...';
+  btn.textContent = '�?生成�?..';
   progress.style.display = 'block';
   
   try {
@@ -856,11 +853,11 @@ async function startAIGenerate() {
       progBar.style.width = Math.round(pct * 100) + '%';
     });
     progBar.style.width = '100%';
-    progText.textContent = `✅ 成功生成 ${results.length} 道新题！已注入游戏题库`;
-    btn.textContent = '🎉 完成！';
+    progText.textContent = `�?成功生成 ${results.length} 道新题！已注入游戏题库`;
+    btn.textContent = '🎉 完成�?;
     setTimeout(() => showAIPanel(), 2000); // 刷新统计
   } catch(e) {
-    progText.textContent = '❌ ' + e.message;
+    progText.textContent = '�?' + e.message;
     btn.textContent = '重试';
     btn.disabled = false;
   }

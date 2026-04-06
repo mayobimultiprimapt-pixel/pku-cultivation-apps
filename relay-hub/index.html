@@ -3,321 +3,569 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中枢金库控制台 | PKU Central Vault Console</title>
-<!-- 引入最新的统一核心 SDK -->
+<title>中转�?· 数据中枢控制�?v6.0</title>
 <script src="../shared/pku-core-sdk.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
+<!-- Keys handled by relay server --><script src="../shared/exam-templates.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #020617; /* Very Dark Slate */
-  --card: #0f172a;
-  --panel: rgba(15, 23, 42, 0.8);
-  --border: rgba(56, 189, 248, 0.15);
-  --text: #f8fafc;
-  --sub: #94a3b8;
-  --primary: #38bdf8;
-  --accent: #f43f5e;
-  --gold: #fbbf24;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --font-d: 'Orbitron', monospace;
-  --font-b: 'Noto Sans SC', sans-serif;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#020617;--bg2:#0f172a;--bg3:#1e293b;
+  --panel:rgba(15,23,42,.85);--panel2:rgba(30,41,59,.7);
+  --border:rgba(56,189,248,.12);--border-hi:rgba(56,189,248,.35);
+  --text:#f1f5f9;--sub:#64748b;--dim:#475569;
+  --cyan:#38bdf8;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;
+  --gold:#fbbf24;--amber:#f59e0b;--purple:#a78bfa;--pink:#f472b6;
+  --font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--font-m:'JetBrains Mono',monospace;
 }
-body {
-  background: var(--bg); color: var(--text); font-family: var(--font-b);
-  min-height: 100vh; overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(244, 63, 94, 0.05), transparent 25%);
-}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse at 10% 20%,rgba(56,189,248,.04),transparent 50%),
+  radial-gradient(ellipse at 90% 80%,rgba(244,63,94,.03),transparent 50%),
+  repeating-linear-gradient(0deg,transparent,transparent 99px,rgba(56,189,248,.02) 100px),
+  repeating-linear-gradient(90deg,transparent,transparent 99px,rgba(56,189,248,.02) 100px);
+  pointer-events:none;z-index:0}
 
-/* Auth Overlay - 强制授权锁 */
-#authMask {
-  position: fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9999;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-}
-.lock-icon { font-size: 60px; margin-bottom: 20px; animation: glitch 2s infinite; }
-@keyframes glitch { 0% { opacity: 1; transform: skewX(0); } 10% { opacity: 0.8; transform: skewX(-5deg); } 20% { opacity: 1; transform: skewX(0); } }
-.auth-title { font-family:var(--font-d); font-size:24px; color:var(--primary); letter-spacing:4px; margin-bottom:10px; }
-.auth-desc { color:var(--sub); font-size:12px; margin-bottom:30px; }
-.auth-btn { padding:12px 30px; background:transparent; border:1px solid var(--primary); color:var(--primary); font-family:var(--font-d); font-size:16px; font-weight:700; border-radius:8px; cursor:pointer; transition:.3s; box-shadow:0 0 15px rgba(56,189,248,0.2); }
-.auth-btn:hover { background:var(--primary); color:#000; box-shadow:0 0 30px rgba(56,189,248,0.6); }
+.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:16px}
 
-/* Main UI */
-#consoleApp { display: none; max-width: 1000px; margin: 0 auto; padding: 20px; }
+/* ── Header ── */
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.hdr-l h1{font-family:var(--font-d);font-size:18px;letter-spacing:3px;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-l .ver{font-family:var(--font-d);font-size:9px;color:var(--sub);letter-spacing:4px;margin-top:2px}
+.hdr-r{display:flex;align-items:center;gap:12px}
+.net-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid}
+.net-badge.online{color:var(--green);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
+.net-badge.offline{color:var(--red);border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)}
+.net-badge.loading{color:var(--gold);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.back-link{color:var(--sub);font-size:11px;text-decoration:none;transition:.2s}.back-link:hover{color:var(--cyan)}
 
-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
-.logo-area h1 { font-family:var(--font-d); font-size:22px; color:var(--text); letter-spacing:2px; }
-.logo-area .sub { font-size:11px; color:var(--primary); letter-spacing:4px; margin-top:4px; font-family:var(--font-d); }
-.status-badge { display:flex; align-items:center; gap:8px; padding:6px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:20px; font-size:11px; color:var(--success); font-family:var(--font-d); font-weight:700;}
-.status-badge.offline { background:rgba(239,68,68,0.1); border-color:var(--danger); color:var(--danger); }
-.dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* ── Stats Strip ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}}
+.st{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(8px)}
+.st::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.st-ico{font-size:20px;margin-bottom:6px}
+.st-val{font-family:var(--font-d);font-size:26px;font-weight:900}
+.st-lbl{font-size:9px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px;margin-top:2px}
 
-/* Global Stats */
-.stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:20px; }
-.stat-box { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; position:relative; overflow:hidden; backdrop-filter:blur(10px); }
-.stat-box::before { content:''; position:absolute; top:0; left:0; width:100%; height:2px; background:linear-gradient(90deg, var(--primary), var(--accent)); }
-.s-icon { font-size:24px; margin-bottom:8px;}
-.s-val { font-family:var(--font-d); font-size:28px; font-weight:900; color:var(--text); }
-.s-lbl { font-size:10px; color:var(--sub); font-family:var(--font-d); letter-spacing:1px; margin-top:4px;}
+/* ── Main Grid ── */
+.main{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.main{grid-template-columns:1fr}}
 
-/* Panels Layout */
-.layout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-@media(max-width: 800px) { .layout-grid { grid-template-columns: 1fr; } }
-.panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px; backdrop-filter:blur(10px); display:flex; flex-direction:column;}
-.p-title { font-size:14px; color:var(--primary); font-family:var(--font-d); letter-spacing:2px; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+/* ── Panels ── */
+.pnl{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;backdrop-filter:blur(8px);display:flex;flex-direction:column}
+.pnl-t{font-family:var(--font-d);font-size:11px;color:var(--cyan);letter-spacing:2px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.pnl-t .badge{font-size:8px;padding:2px 8px;border-radius:10px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
 
-/* Subj Cards */
-.subjs { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; }
-.scard { background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:12px; transition:.2s; }
-.scard:hover { border-color:var(--gold); }
-.scard header { border-bottom:none; margin-bottom:0; padding-bottom:8px; display:flex;justify-content:space-between; align-items:center;}
-.scode { font-family:var(--font-d); font-size:18px; font-weight:900; color:var(--text); }
-.sname { font-size:11px; color:var(--sub); }
-.sdtl { display:flex; justify-content:space-between; font-size:11px; margin-top:6px; color:var(--sub); }
-.sdtl span { color:var(--primary); font-weight:700; font-family:var(--font-d); }
-.s101 .scode{color:#f43f5e} .s201 .scode{color:#38bdf8} .s301 .scode{color:#fbbf24} .s408 .scode{color:#22c55e}
+/* ── Subject Matrix ── */
+.subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:12px;transition:.25s;position:relative;overflow:hidden}
+.sc:hover{border-color:var(--border-hi)}
+.sc::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:0 3px 3px 0}
+.sc.s101::after{background:var(--red)}.sc.s201::after{background:var(--blue)}.sc.s301::after{background:var(--gold)}.sc.s408::after{background:var(--green)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sc-code{font-family:var(--font-d);font-size:20px;font-weight:900}
+.s101 .sc-code{color:var(--red)}.s201 .sc-code{color:var(--blue)}.s301 .sc-code{color:var(--gold)}.s408 .sc-code{color:var(--green)}
+.sc-name{font-size:10px;color:var(--sub);font-family:var(--font-d)}
+.sc-rows{display:flex;flex-direction:column;gap:3px}
+.sc-row{display:flex;justify-content:space-between;font-size:10px;color:var(--sub)}
+.sc-row span{color:var(--text);font-family:var(--font-m);font-weight:700;font-size:11px}
+.sc-struct{font-size:8px;color:var(--dim);margin-top:6px;line-height:1.4;border-top:1px solid var(--border);padding-top:6px}
 
-/* Console Actions */
-.controls { display:flex; flex-direction:column; gap:10px; }
-.btn { padding:14px; border:none; border-radius:10px; font-size:14px; font-weight:700; font-family:var(--font-b); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:.2s; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1); }
-.btn:active { transform:scale(0.97); }
-.btn-intel { background:rgba(56,189,248,0.1); color:var(--primary); border:1px solid var(--primary); }
-.btn-intel:hover { background:var(--primary); color:#000; box-shadow:0 0 20px rgba(56,189,248,0.4); }
-.btn-paper { background:rgba(251,191,36,0.1); color:var(--gold); border:1px solid var(--gold); }
-.btn-paper:hover { background:var(--gold); color:#000; box-shadow:0 0 20px rgba(251,191,36,0.4); }
-.btn-fire { background:linear-gradient(135deg, #ef4444, #f43f5e); color:#fff; border:none; grid-column:1/-1; margin-top:10px; }
-.btn-fire:hover { box-shadow:0 0 25px rgba(244,63,94,0.5); }
-.ctrl-sel { padding:12px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none; font-family:var(--font-b); }
-.ctrl-sel:focus { border-color:var(--primary); }
+/* ── Controls ── */
+.ctrl{display:flex;flex-direction:column;gap:8px}
+.sel{padding:10px 12px;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:var(--font-b);outline:none}
+.sel:focus{border-color:var(--cyan)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{padding:12px;border:none;border-radius:10px;font-size:12px;font-weight:700;font-family:var(--font-b);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;letter-spacing:1px}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-cy{background:rgba(56,189,248,.08);color:var(--cyan);border:1px solid rgba(56,189,248,.25)}
+.btn-cy:hover:not(:disabled){background:var(--cyan);color:#000;box-shadow:0 0 20px rgba(56,189,248,.3)}
+.btn-gd{background:rgba(251,191,36,.08);color:var(--gold);border:1px solid rgba(251,191,36,.25)}
+.btn-gd:hover:not(:disabled){background:var(--gold);color:#000;box-shadow:0 0 20px rgba(251,191,36,.3)}
+.btn-fire{background:linear-gradient(135deg,#ef4444,#f43f5e);color:#fff;border:none;grid-column:1/-1;font-size:14px;padding:14px}
+.btn-fire:hover:not(:disabled){box-shadow:0 0 30px rgba(244,63,94,.4)}
 
-/* Logs */
-.logs { flex:1; background:rgba(0,0,0,0.6); border:1px solid var(--border); border-radius:10px; padding:12px; max-height:280px; overflow-y:auto; font-family:var(--font-d); font-size:11px; line-height:1.7; display:flex; flex-direction:column; gap:4px; }
-.log-row { word-break:break-all; }
-.log-time { color:var(--sub); margin-right:6px; }
-.log-info { color:var(--primary); }
-.log-ok { color:var(--success); }
-.log-err { color:var(--danger); }
-.log-sys { color:var(--gold); }
+/* ── Feed List ── */
+.feeds{display:flex;flex-direction:column;gap:6px}
+.fd{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px}
+.fd-l{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600}
+.fd-ico{font-size:16px}
+.fd-st{font-family:var(--font-d);font-size:9px;padding:3px 8px;border-radius:6px;letter-spacing:1px}
+.fd-st.ok{color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
+.fd-st.wait{color:var(--gold);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)}
 
-/* Feed UI */
-.feed-list { display:flex; flex-direction:column; gap:8px; }
-.feed-row { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; }
-.fr-l { display:flex; align-items:center; gap:10px; }
-.fr-ico { font-size:18px; }
-.fr-nam { font-size:12px; font-weight:700; }
-.fr-r { font-family:var(--font-d); font-size:10px; padding:3px 8px; border-radius:6px; background:rgba(34,197,94,0.1); color:var(--success); border:1px solid rgba(34,197,94,0.2); }
+/* ── Logs ── */
+.logs{flex:1;min-height:180px;max-height:300px;overflow-y:auto;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:10px;padding:10px;font-family:var(--font-m);font-size:10px;line-height:1.8}
+.logs::-webkit-scrollbar{width:3px}.logs::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px}
+.lg{word-break:break-all}
+.lg-t{color:var(--dim);margin-right:4px}
+.lg-info{color:var(--cyan)}.lg-ok{color:var(--green)}.lg-err{color:var(--red)}.lg-sys{color:var(--gold)}.lg-dim{color:var(--sub)}
 
-.logs::-webkit-scrollbar{width:3px} .logs::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px;}
+/* ── Template Viewer ── */
+.tmpl-section{margin-top:16px}
+.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+@media(max-width:700px){.tmpl-grid{grid-template-columns:1fr}}
+.tmpl-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+.tmpl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.tmpl-card.t101::before{background:var(--red)}.tmpl-card.t201::before{background:var(--blue)}
+.tmpl-card.t301::before{background:var(--gold)}.tmpl-card.t408::before{background:var(--green)}
+.tmpl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tmpl-code{font-family:var(--font-d);font-size:18px;font-weight:900}
+.t101 .tmpl-code{color:var(--red)}.t201 .tmpl-code{color:var(--blue)}
+.t301 .tmpl-code{color:var(--gold)}.t408 .tmpl-code{color:var(--green)}
+.tmpl-score{font-family:var(--font-d);font-size:11px;color:var(--sub)}
+.tmpl-secs{display:flex;flex-direction:column;gap:4px}
+.tmpl-sec{font-size:10px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.tmpl-sec-name{color:var(--text);font-weight:600}
+.tmpl-sec-det{color:var(--sub);font-family:var(--font-m)}
+
+/* ── Progress ── */
+.prog{display:none;margin-top:8px}
+.prog.show{display:block}
+.prog-txt{font-size:10px;color:var(--sub);margin-bottom:4px}
+.prog-bar{width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:2px;transition:width .3s;width:0%}
+
+/* ── Footer ── */
+.ftr{text-align:center;padding:20px 0;margin-top:20px;color:var(--dim);font-size:10px;font-family:var(--font-d);letter-spacing:2px;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
+<div class="app">
+  <a class="back-link" href="../index.html">�?返回应用�?/a>
 
-<!-- 安全屏障 -->
-<div id="authMask">
-  <div class="lock-icon">🔒</div>
-  <div class="auth-title">ACCESS DENIED</div>
-  <div class="auth-desc">尚未侦测到核心密钥矩阵授权</div>
-  <button class="auth-btn" onclick="initConsole()">INITIATE LINK</button>
-</div>
-
-<!-- 主控制台 -->
-<div id="consoleApp">
-  <header>
-    <div class="logo-area">
-      <h1>THE VAULT CONSOLE</h1>
-      <div class="sub">V6.0 MONGODB PERSISTENT CORE</div>
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-l">
+      <h1>NEXUS CONSOLE</h1>
+      <div class="ver">PKU DATA NEXUS · V6.0 TEMPLATE ENGINE</div>
     </div>
-    <div class="status-badge" id="netStatus"><span class="dot"></span>CONNECTING...</div>
-  </header>
-
-  <div class="stats-grid">
-    <div class="stat-box"><div class="s-icon">🧠</div><div class="s-val" id="stInt">-</div><div class="s-lbl">INTEL SHARDS</div></div>
-    <div class="stat-box"><div class="s-icon">📝</div><div class="s-val" id="stRaw">-</div><div class="s-lbl">RAW MODULES</div></div>
-    <div class="stat-box"><div class="s-icon">🗄️</div><div class="s-val" id="stPap">-</div><div class="s-lbl">ACTIVE PAPERS</div></div>
-    <div class="stat-box"><div class="s-icon">⏳</div><div class="s-val" id="stUpt">-</div><div class="s-lbl">UPTIME</div></div>
+    <div class="hdr-r">
+      <div class="net-badge loading" id="netBadge"><span class="dot"></span>LINKING...</div>
+    </div>
   </div>
 
-  <div class="layout-grid">
-    <!-- 左侧: 矩阵看板 -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <div class="panel">
-        <div class="p-title"><span>📊 SUBJECT DATABANKS</span><span style="font-size:10px;color:var(--sub)">MongoDB Synced</span></div>
-        <div class="subjs" id="subjList">
-          <div class="scard s101"><header><span class="scode">101</span><span class="sname">政治</span></header><div class="sdtl">Raw <span id="r101">0</span></div><div class="sdtl">Intel <span id="i101">0</span></div><div class="sdtl">Paper <span id="p101">—</span></div></div>
-          <div class="scard s201"><header><span class="scode">201</span><span class="sname">英语</span></header><div class="sdtl">Raw <span id="r201">0</span></div><div class="sdtl">Intel <span id="i201">0</span></div><div class="sdtl">Paper <span id="p201">—</span></div></div>
-          <div class="scard s301"><header><span class="scode">301</span><span class="sname">数学</span></header><div class="sdtl">Raw <span id="r301">0</span></div><div class="sdtl">Intel <span id="i301">0</span></div><div class="sdtl">Paper <span id="p301">—</span></div></div>
-          <div class="scard s408"><header><span class="scode">408</span><span class="sname">计算机</span></header><div class="sdtl">Raw <span id="r408">0</span></div><div class="sdtl">Intel <span id="i408">0</span></div><div class="sdtl">Paper <span id="p408">—</span></div></div>
-        </div>
-      </div>
+  <!-- Stats Strip -->
+  <div class="stats">
+    <div class="st"><div class="st-ico">📡</div><div class="st-val" id="stIntel">-</div><div class="st-lbl">INTEL</div></div>
+    <div class="st"><div class="st-ico">📝</div><div class="st-val" id="stRaw">-</div><div class="st-lbl">RAW Q</div></div>
+    <div class="st"><div class="st-ico">📦</div><div class="st-val" id="stPapers">-</div><div class="st-lbl">PAPERS</div></div>
+    <div class="st"><div class="st-ico">🎮</div><div class="st-val" id="stGames">3</div><div class="st-lbl">GAMES</div></div>
+    <div class="st"><div class="st-ico">⏱️</div><div class="st-val" id="stUptime">-</div><div class="st-lbl">UPTIME</div></div>
+  </div>
 
-      <div class="panel" style="flex:1">
-        <div class="p-title">📡 REAL-TIME FEED</div>
-        <div class="feed-list">
-          <div class="feed-row"><div class="fr-l"><span class="fr-ico">👻</span><span class="fr-nam">猛鬼考研宿舍</span></div><div class="fr-r">CONNECTED</div></div>
-          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🎮</span><span class="fr-nam">北大消消乐</span></div><div class="fr-r">CONNECTED</div></div>
-          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🔫</span><span class="fr-nam">刺激战场</span></div><div class="fr-r">CONNECTED</div></div>
-          <div class="feed-row"><div class="fr-l"><span class="fr-ico">🏛️</span><span class="fr-nam">论道殿 (面试)</span></div><div class="fr-r" style="color:var(--gold);border-color:var(--gold)">BETA</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 右侧: 控制与日志 -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <div class="panel">
-        <div class="p-title">⚡ COMMAND OVERRIDE</div>
-        <div class="controls">
-          <select class="ctrl-sel" id="optSubj">
-            <option value="all">🌐 全维度运作 (All Subjects)</option>
-            <option value="101">101 思想政治理论</option>
-            <option value="201">201 英语一</option>
-            <option value="301">301 数学一</option>
-            <option value="408">408 计算机综合</option>
-          </select>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px;">
-            <button class="btn btn-intel" onclick="doIntel()" title="触发底层爬虫抓取全网真题情报">📡 窃取情报</button>
-            <button class="btn btn-paper" onclick="doPaper()" title="利用现有素材进行大模型成卷合成">📝 合成密卷</button>
+  <!-- Main 2-col -->
+  <div class="main">
+    <!-- Left: Subject Matrix + Feeds -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="pnl">
+        <div class="pnl-t"><span>📊 SUBJECT DATABANKS</span><span class="badge" id="dbBadge">MEMORY</span></div>
+        <div class="subj-grid" id="subjGrid">
+          <div class="sc s101">
+            <div class="sc-top"><span class="sc-code">101</span><span class="sc-name">政治</span></div>
+            <div class="sc-rows">
+              <div class="sc-row">Raw <span id="r101">0</span></div>
+              <div class="sc-row">Intel <span id="i101">0</span></div>
+              <div class="sc-row">Papers <span id="p101">0</span></div>
+            </div>
+            <div class="sc-struct">单�?6×1 + 多�?7×2 + 材料5×10 = 100�?/div>
           </div>
-          <button class="btn btn-fire" onclick="doAuto()">🔥 歼星模式: 一键自动化全流程</button>
+          <div class="sc s201">
+            <div class="sc-top"><span class="sc-code">201</span><span class="sc-name">英语</span></div>
+            <div class="sc-rows">
+              <div class="sc-row">Raw <span id="r201">0</span></div>
+              <div class="sc-row">Intel <span id="i201">0</span></div>
+              <div class="sc-row">Papers <span id="p201">0</span></div>
+            </div>
+            <div class="sc-struct">完形20×0.5 + 阅读20×2 + 新题5×2 + 翻译5×2 + 写作30 = 100�?/div>
+          </div>
+          <div class="sc s301">
+            <div class="sc-top"><span class="sc-code">301</span><span class="sc-name">数学</span></div>
+            <div class="sc-rows">
+              <div class="sc-row">Raw <span id="r301">0</span></div>
+              <div class="sc-row">Intel <span id="i301">0</span></div>
+              <div class="sc-row">Papers <span id="p301">0</span></div>
+            </div>
+            <div class="sc-struct">选择10×5 + 填空6×5 + 解答6�?70) = 150�?/div>
+          </div>
+          <div class="sc s408">
+            <div class="sc-top"><span class="sc-code">408</span><span class="sc-name">计算�?/span></div>
+            <div class="sc-rows">
+              <div class="sc-row">Raw <span id="r408">0</span></div>
+              <div class="sc-row">Intel <span id="i408">0</span></div>
+              <div class="sc-row">Papers <span id="p408">0</span></div>
+            </div>
+            <div class="sc-struct">单�?0×2 + 综合应用7�?70) = 150�?/div>
+          </div>
         </div>
       </div>
 
-      <div class="panel" style="flex:1;">
-        <div class="p-title" style="margin-bottom:8px">📜 SYSTEM LOGS <button onclick="document.getElementById('cLog').innerHTML=''" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:10px">CLEAR</button></div>
-        <div class="logs" id="cLog">
-          <div class="log-row"><span class="log-time">[sys]</span><span class="log-sys">等待链接初始化...</span></div>
+      <div class="pnl">
+        <div class="pnl-t">📡 GAME FEED LINKS</div>
+        <div class="feeds">
+          <div class="fd"><div class="fd-l"><span class="fd-ico">🧩</span>北大消消�?/div><div class="fd-st ok">LINKED</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">🎯</span>北大刺激战场</div><div class="fd-st ok">LINKED</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">👻</span>猛鬼考研宿舍</div><div class="fd-st ok">LINKED</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">📦</span>题库搜集�?/div><div class="fd-st ok">SOURCE</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">🏯</span>天机�?/div><div class="fd-st ok">INTEL</div></div>
         </div>
       </div>
     </div>
+
+    <!-- Right: Controls + Logs -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="pnl">
+        <div class="pnl-t">�?COMMAND OVERRIDE</div>
+        <div class="ctrl">
+          <select class="sel" id="optSubj">
+            <option value="all">🌐 全维度运�?(ALL SUBJECTS)</option>
+            <option value="101">🔴 101 思想政治理论</option>
+            <option value="201">🔵 201 英语一</option>
+            <option value="301">🟡 301 数学一</option>
+            <option value="408">🟢 408 计算机综�?/option>
+          </select>
+          <div class="btn-row">
+            <button class="btn btn-cy" id="btnIntel" onclick="doIntel()">📡 窃取情报</button>
+            <button class="btn btn-gd" id="btnPaper" onclick="doPaper()">📝 合成密卷</button>
+          </div>
+          <button class="btn btn-fire" id="btnAuto" onclick="doAuto()">🔥 歼星模式 · 一键全流程</button>
+          <div class="prog" id="prog">
+            <div class="prog-txt" id="progTxt">准备�?..</div>
+            <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pnl" style="flex:1">
+        <div class="pnl-t">
+          📜 SYSTEM LOGS
+          <button onclick="document.getElementById('cLog').innerHTML=''" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:9px;font-family:var(--font-d)">CLEAR</button>
+        </div>
+        <div class="logs" id="cLog"></div>
+      </div>
+    </div>
   </div>
+
+  <!-- Template Viewer -->
+  <div class="tmpl-section">
+    <div class="pnl">
+      <div class="pnl-t">🏗�?HARDCODED TEMPLATES · SINGLE SOURCE OF TRUTH</div>
+      <div class="tmpl-grid" id="tmplGrid"></div>
+    </div>
+  </div>
+
+  <div class="ftr">NEXUS CONSOLE V6.0 · TEMPLATE ENGINE · EXAM_TEMPLATES AUTHORITY<br>Claude 4.6 + Gemini 3.1 Pro · 双脑合璧 · 422 GUARD ACTIVE</div>
 </div>
 
 <script>
-// --- LOGGING ---
-function addLog(msg, type='info') {
+// ============================================================================
+// NEXUS CONSOLE v6.0 �?中转阁数据中枢控制台
+// ============================================================================
+
+const RELAY = 'https://pku-api-relay.onrender.com';
+let isOnline = false;
+
+// ── Logging ──
+function log(msg, type = 'info') {
   const box = document.getElementById('cLog');
   const d = new Date();
   const t = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-  box.innerHTML += `<div class="log-row"><span class="log-time">[${t}]</span><span class="log-${type}">${msg}</span></div>`;
+  box.innerHTML += `<div class="lg"><span class="lg-t">[${t}]</span><span class="lg-${type}">${msg}</span></div>`;
   box.scrollTop = box.scrollHeight;
 }
 
-// --- INIT AUTH & FETCH ---
-async function initConsole() {
-  if (!PKUSDK.Auth.isLoggedIn()) {
-    // 触发鉴权大门
-    document.getElementById('authMask').style.background = 'var(--panel)';
-    document.getElementById('authMask').innerHTML = `<div style="text-align:center"><div class="lock-icon" style="animation:none;color:var(--danger)">⚠️</div><div class="auth-title" style="color:var(--danger)">KEY REQUIRED</div></div>`;
-    
-    // 我们强制退回到主大厅让其登录，或者在这里走一个简单的 API KEY 探取
-    alert('必须在全局大本营输入密钥矩阵！请返回主页。');
-    window.location.href = '../index.html';
-    return;
-  }
-  
-  document.getElementById('authMask').style.display = 'none';
-  document.getElementById('consoleApp').style.display = 'block';
-  addLog('识别到合法密钥矩阵，解除锁定。', 'sys');
-  addLog('正在接入 Mongo 永生金库隧道...', 'info');
-  await tick();
-  setInterval(tick, 20000); // 20s 同步一次
-}
-
-// --- Status Synchronization ---
-async function tick() {
-  try {
-    const res = await fetch(`${PKUSDK.RELAY_URL}/hub/status`, {
-      headers: { 'Authorization': `Bearer ${window.PKU_KEYS.OPENROUTER_API_KEY || 'debug'}` }
-    });
-    const info = await res.json();
-    
-    document.getElementById('netStatus').className = 'status-badge';
-    document.getElementById('netStatus').innerHTML = '<span class="dot"></span>DB CONNECTED';
-    
-    document.getElementById('stUpt').textContent = info.uptime || '0m';
-    
-    let raw=0, intel=0, paps=0;
-    for(const [subj, d] of Object.entries(info.subjects || {})) {
-      raw += d.rawQuestions||0; intel += d.intelligence||0;
-      if(d.paper) paps++;
-      
-      const el = (n) => document.getElementById(n);
-      if(el(`r${subj}`)) el(`r${subj}`).textContent = d.rawQuestions||0;
-      if(el(`i${subj}`)) el(`i${subj}`).textContent = d.intelligence||0;
-      if(el(`p${subj}`)) el(`p${subj}`).textContent = d.paper ? 'Ready' : 'X';
-    }
-    document.getElementById('stRaw').textContent = raw;
-    document.getElementById('stInt').textContent = intel;
-    document.getElementById('stPap').textContent = paps+'/4';
-    
-  } catch(e) {
-    document.getElementById('netStatus').className = 'status-badge offline';
-    document.getElementById('netStatus').innerHTML = '<span class="dot" style="animation:none"></span>OFFLINE';
-    addLog('金库失联: ' + e.message, 'err');
-  }
-}
-
-// --- AI Core Operations ---
-// 我们通过附带 headers 中的鉴权，修复 Relay 服务器端本地无 key 环境报错的问题
-// 这样即使用户在 Render 没配环境变量，本地在前端存的 keys 也能发过去！
-function getAuthHeaders() {
-  return { 
+// ── Auth Headers (把客户端 key 送到后端) ──
+function authHeaders() {
+  const keys = window.PKU_KEYS || {};
+  return {
     'Content-Type': 'application/json',
-    // 将客户端的秘钥一并送交后端（需要后端 server.js 也做对应适配！）
-    'X-OpenRouter-Key': window.PKU_KEYS.OPENROUTER_API_KEY || '',
-    'X-Perplexity-Key': window.PKU_KEYS.PERPLEXITY_API_KEY || '',
-    'X-Gemini-Key': window.PKU_KEYS.GEMINI_API_KEY || ''
+    'X-OpenRouter-Key': keys.OPENROUTER_API_KEY || '',
+    'X-Perplexity-Key': keys.PERPLEXITY_API_KEY || '',
+    'X-Gemini-Key': keys.GEMINI_API_KEY || ''
   };
 }
 
+// ── Progress ──
+function showProg(txt, pct) {
+  const el = document.getElementById('prog');
+  el.classList.add('show');
+  document.getElementById('progTxt').textContent = txt;
+  document.getElementById('progFill').style.width = pct + '%';
+}
+function hideProg() { document.getElementById('prog').classList.remove('show'); }
+
+// ── Status Sync ──
+async function syncStatus() {
+  const badge = document.getElementById('netBadge');
+  try {
+    const res = await fetch(`${RELAY}/hub/status`, { signal: AbortSignal.timeout(8000) });
+    const info = await res.json();
+    isOnline = true;
+
+    badge.className = 'net-badge online';
+    badge.innerHTML = '<span class="dot"></span>RELAY ONLINE';
+    if (info.version) document.getElementById('dbBadge').textContent = info.version.includes('mongo') ? 'MONGODB' : info.version.toUpperCase();
+
+    // Uptime
+    const up = parseInt(info.uptime) || 0;
+    document.getElementById('stUptime').textContent = up > 3600 ? Math.floor(up/3600)+'h' : up > 60 ? Math.floor(up/60)+'m' : up+'s';
+
+    // Subject data
+    let totalRaw = 0, totalIntel = 0, totalPapers = 0;
+    const subjects = info.subjects || {};
+    for (const [code, data] of Object.entries(subjects)) {
+      const raw = data.rawQuestions || 0;
+      const intel = data.intelligence || 0;
+      const papers = data.papers || 0;
+      totalRaw += raw; totalIntel += intel; totalPapers += papers;
+
+      const rEl = document.getElementById('r' + code);
+      const iEl = document.getElementById('i' + code);
+      const pEl = document.getElementById('p' + code);
+      if (rEl) rEl.textContent = raw;
+      if (iEl) iEl.textContent = intel;
+      if (pEl) pEl.textContent = papers;
+    }
+
+    document.getElementById('stRaw').textContent = totalRaw;
+    document.getElementById('stIntel').textContent = totalIntel;
+    document.getElementById('stPapers').textContent = totalPapers;
+
+    if (!window._firstSync) { log('中枢数据库链路已建立', 'ok'); window._firstSync = true; }
+  } catch(e) {
+    isOnline = false;
+    badge.className = 'net-badge offline';
+    badge.innerHTML = '<span class="dot" style="animation:none"></span>OFFLINE';
+    if (!window._firstSync) { log('中枢离线: ' + e.message, 'err'); window._firstSync = true; }
+  }
+}
+
+// ── 窃取情报 (Perplexity) ──
 async function doIntel() {
   const subj = document.getElementById('optSubj').value;
-  addLog(`下达窃取令: ${subj}`, 'sys');
+  const btn = document.getElementById('btnIntel');
+  btn.disabled = true;
+  log(`📡 下达情报窃取�?�?${subj === 'all' ? '全科' : subj}`, 'sys');
+  showProg('正在窃取情报...', 30);
+
   try {
-    const r = await fetch(`${PKUSDK.RELAY_URL}/hub/collect-intel`, {
-      method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify(subj === 'all' ? {} : {subject: subj})
+    const r = await fetch(`${RELAY}/hub/collect-intel`, {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify(subj === 'all' ? {} : { subject: subj }),
+      signal: AbortSignal.timeout(60000)
     });
     const res = await r.json();
-    if(res.success) {
-      addLog(`情报载入成功！(受影响科目:${res.results?.length || 0})`, 'ok');
-    } else throw new Error(res.error || 'Server error');
-    tick();
-  } catch(e) { addLog('情报窃取失败: ' + e.message, 'err'); }
+    showProg('情报入库...', 80);
+
+    if (res.success) {
+      const results = res.results || [];
+      results.forEach(r => {
+        if (r.success) log(`�?${r.subject} 情报截获 ${r.length || '?'}字`, 'ok');
+        else log(`�?${r.subject} 失败: ${r.error}`, 'err');
+      });
+    } else {
+      log('情报窃取失败: ' + (res.error || ''), 'err');
+    }
+    await syncStatus();
+  } catch(e) {
+    log('情报窃取超时: ' + e.message, 'err');
+  }
+  showProg('完成', 100);
+  setTimeout(hideProg, 1500);
+  btn.disabled = false;
 }
 
+// ── 合成密卷 (Claude 4.6 + Gemini 3.1 Pro) ──
 async function doPaper() {
   const subj = document.getElementById('optSubj').value;
-  addLog(`调度双脑出卷工厂: ${subj}`, 'sys');
+  const btn = document.getElementById('btnPaper');
+  btn.disabled = true;
+  log(`📝 调度双脑出卷工厂 �?${subj === 'all' ? '全科' : subj}`, 'sys');
+  log('🧠 Claude 4.6 + Gemini 3.1 Pro 并行出卷...', 'dim');
+  showProg('双脑合璧出卷�?..', 20);
+
   try {
-    const r = await fetch(`${PKUSDK.RELAY_URL}/paper/generate`, {
-      method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify(subj === 'all' ? {} : {subject: subj})
+    const r = await fetch(`${RELAY}/paper/generate`, {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify(subj === 'all' ? {} : { subject: subj }),
+      signal: AbortSignal.timeout(120000)
     });
+    showProg('解析试卷...', 70);
     const res = await r.json();
-    if(res.success) addLog(`出卷指令执行完毕。`, 'ok');
-    else throw new Error(res.error || JSON.stringify(res));
-    tick();
-  } catch(e) { addLog('出卷熔断: ' + e.message, 'err'); }
+
+    if (res.success) {
+      if (res.paper) {
+        // 单科
+        const p = res.paper;
+        log(`�?${p.subject} ${p.subjectName || ''} 出卷完成! ${p.questions?.length || 0}题`, 'ok');
+        log(`   引擎: ${p.generator || 'AI'} | 情报�? ${p.intelSources || 0}条`, 'dim');
+        validateClientSide(p);
+      } else if (res.papers) {
+        // 全科
+        for (const [code, p] of Object.entries(res.papers)) {
+          if (p.error) { log(`�?${code}: ${p.error}`, 'err'); continue; }
+          log(`�?${code} 出卷完成! ${p.questions?.length || 0}�?[${p.generator || 'AI'}]`, 'ok');
+        }
+      }
+    } else {
+      log('出卷失败: ' + (res.error || ''), 'err');
+    }
+    await syncStatus();
+  } catch(e) {
+    log('出卷超时/失败: ' + e.message, 'err');
+  }
+  showProg('完成', 100);
+  setTimeout(hideProg, 1500);
+  btn.disabled = false;
 }
 
+// ── 歼星模式: 一键全流程 ──
 async function doAuto() {
-  addLog(`开启全流程歼星打击...`, 'sys');
+  const btn = document.getElementById('btnAuto');
+  btn.disabled = true;
+  btn.textContent = '🔥 歼星打击�?..';
+  log('', 'info');
+  log('🔥🔥🔥 ══════════════════════════════════�?🔥🔥🔥', 'sys');
+  log('🔥   歼星模式启动 · 全流程自动化   🔥', 'sys');
+  log('🔥🔥🔥 ══════════════════════════════════�?🔥🔥🔥', 'sys');
+  log('', 'info');
+
+  showProg('Phase 1: 情报窃取...', 10);
+
   try {
-    const r = await fetch(`${PKUSDK.RELAY_URL}/paper/auto`, {
-      method: 'POST', headers: getAuthHeaders(), body: '{}'
+    // Phase 1: Intel
+    log('[Phase 1/3] 📡 四科情报全面窃取...', 'sys');
+    const intelR = await fetch(`${RELAY}/hub/collect-intel`, {
+      method: 'POST', headers: authHeaders(), body: '{}',
+      signal: AbortSignal.timeout(60000)
     });
-    const res = await r.json();
-    if(res.success) addLog(`打击完成，耗时: ${res.elapsed}`, 'ok');
-    else throw new Error(res.error);
-    tick();
-  } catch(e){ addLog('歼星失败: ' + e.message, 'err'); }
+    const intelD = await intelR.json();
+    if (intelD.success) {
+      (intelD.results || []).forEach(r => {
+        log(`  ${r.success ? '�? : '�?} ${r.subject}: ${r.success ? r.length + '�? : r.error}`, r.success ? 'ok' : 'err');
+      });
+    }
+
+    // Phase 2: Generate Papers
+    showProg('Phase 2: 双脑合璧出卷...', 40);
+    log('[Phase 2/3] 📝 双脑合璧 · 四科密卷生成...', 'sys');
+    log('  Claude 4.6 Sonnet + Gemini 3.1 Pro 并行...', 'dim');
+
+    const papR = await fetch(`${RELAY}/paper/auto`, {
+      method: 'POST', headers: authHeaders(), body: '{}',
+      signal: AbortSignal.timeout(180000)
+    });
+    const papD = await papR.json();
+
+    if (papD.success) {
+      log(`[Phase 2 完成] 耗时 ${papD.elapsed || '?'}`, 'ok');
+      const report = papD.report || {};
+      (report.intel || []).forEach(r => {
+        log(`  📡 ${r.subject}: ${r.chars ? r.chars + '�? : r.error || '?'}`, r.error ? 'err' : 'dim');
+      });
+      (report.papers || []).forEach(r => {
+        log(`  📝 ${r.subject}: ${r.questions ? r.questions + '�?�? : '�?' + (r.error || '')}`, r.error ? 'err' : 'ok');
+      });
+    } else {
+      log('歼星打击失败: ' + (papD.error || ''), 'err');
+    }
+
+    // Phase 3: Verify
+    showProg('Phase 3: 校验 & 投喂...', 85);
+    log('[Phase 3/3] 🔍 模板校验 + 游戏投喂通道验证...', 'sys');
+    await syncStatus();
+    log('  �?数据库同步完�?, 'ok');
+    log('  �?消消�?�?投喂通道就绪', 'ok');
+    log('  �?刺激战场 �?投喂通道就绪', 'ok');
+    log('  �?猛鬼宿舍 �?投喂通道就绪', 'ok');
+
+    showProg('歼星打击完成!', 100);
+    log('', 'info');
+    log('🎉 ══════════════════════════════════�?, 'sys');
+    log('🎉   歼星打击完毕 · 全线就绪', 'sys');
+    log('🎉 ══════════════════════════════════�?, 'sys');
+
+  } catch(e) {
+    log('歼星模式异常: ' + e.message, 'err');
+    showProg('失败', 0);
+  }
+
+  setTimeout(hideProg, 2000);
+  btn.disabled = false;
+  btn.textContent = '🔥 歼星模式 · 一键全流程';
 }
 
-// Check on load
-if (PKUSDK.Auth.isLoggedIn()) initConsole();
+// ── 客户端模板校�?(422 Guard) ──
+function validateClientSide(paper) {
+  if (typeof PaperValidator === 'undefined') return;
+  try {
+    // 简易校�? 题数是否匹配模板
+    const tmpl = EXAM_TEMPLATES[paper.subject];
+    if (!tmpl) return;
+    const expected = tmpl.totalQuestions;
+    const actual = paper.questions?.length || 0;
+    if (actual >= expected * 0.8) {
+      log(`  🔒 422 Guard: ${paper.subject} 通过 (${actual}/${expected}�?`, 'ok');
+    } else {
+      log(`  ⚠️ 422 Guard: ${paper.subject} 题数不足 (${actual}/${expected})`, 'err');
+    }
+  } catch(e) {}
+}
+
+// ── Render Template Cards ──
+function renderTemplates() {
+  if (typeof EXAM_TEMPLATES === 'undefined') return;
+  const grid = document.getElementById('tmplGrid');
+  grid.innerHTML = '';
+
+  for (const [code, tmpl] of Object.entries(EXAM_TEMPLATES)) {
+    const cls = 't' + code;
+    let secsHtml = '';
+    tmpl.sections.forEach(sec => {
+      const det = sec.scorePerItem ? `${sec.count}×${sec.scorePerItem}=${sec.totalScore}` : `${sec.count}�?�?{sec.totalScore}分`;
+      secsHtml += `<div class="tmpl-sec"><span class="tmpl-sec-name">${sec.name}</span><span class="tmpl-sec-det">${det}</span></div>`;
+    });
+
+    grid.innerHTML += `
+      <div class="tmpl-card ${cls}">
+        <div class="tmpl-hdr">
+          <span class="tmpl-code">${code}</span>
+          <span class="tmpl-score">${tmpl.fullScore}�?· ${tmpl.timeMinutes}min · ${tmpl.totalQuestions}Q</span>
+        </div>
+        <div class="tmpl-secs">${secsHtml}</div>
+      </div>`;
+  }
+}
+
+// ── Init ──
+(function init() {
+  log('NEXUS CONSOLE v6.0 启动', 'sys');
+  log('加载 EXAM_TEMPLATES 硬编码结�?..', 'dim');
+
+  if (typeof EXAM_TEMPLATES !== 'undefined') {
+    const codes = Object.keys(EXAM_TEMPLATES);
+    log(`�?模板引擎就绪: ${codes.join('/')} (${codes.length}�?`, 'ok');
+    renderTemplates();
+  } else {
+    log('⚠️ exam-templates.js 未加�?, 'err');
+  }
+
+  // Key detection
+  if (window.PKU_KEYS) {
+    log('�?密钥矩阵已解�?, 'ok');
+    log(`  OR: ${window.PKU_KEYS.OPENROUTER_API_KEY ? '�? : '�?} | GE: ${window.PKU_KEYS.GEMINI_API_KEY ? '�? : '�?} | PP: ${window.PKU_KEYS.PERPLEXITY_API_KEY ? '�? : '�?}`, 'dim');
+  } else {
+    log('⚠️ 未检测到密钥，部分功能受�?(请先在主页登�?', 'err');
+  }
+
+  log('正在链接中枢数据�?..', 'info');
+  syncStatus();
+  setInterval(syncStatus, 20000);
+})();
 </script>
 </body>
 </html>

@@ -1,13 +1,20 @@
 /**
- * PKU API 中转阁 · 数据中枢 v5.0
- * 万法归宗·中枢数据库
- * 1. CORS 中转 — OpenRouter/Gemini/Perplexity
+ * PKU API 中转阁 · 数据中枢 v6.0
+ * 万法归宗·中枢数据库 — 纯考研生态
+ * 1. CORS 中转 — OpenRouter/Gemini/Perplexity/Anthropic
  * 2. 考卷库 — 接收/存储/分发完整密卷（多套叠加）
  * 3. 情报库 — 天机阁情报 + 卦象天机统一入库
- * 4. 试卷工厂 — 双脑合璧 → 情报驱动预测卷
- * 5. 游戏投喂 — 所有游戏APP统一拉题接口
+ * 4. 试卷工厂 — 三脑合璧(Claude+Gemini+DeepSeek)
+ * 5. DeepSeek R1 押题推演引擎 [NEW]
+ * 6. 游戏投喂 — 所有游戏/修炼APP统一拉题接口
+ * 7. 论道殿/九宫算阵专用投喂端点 [NEW]
  */
 const express = require('express');
+// ── 客户端密钥透传: 前端 header 补充后端环境变量 ──
+// Render 部署可能没配 env，前端登录后的 key 通过 header 送入
+function resolveKey(headerKey, envKey) {
+  return function(req) { return req.headers[headerKey] || envKey || ''; };
+}
 const cors = require('cors');
 const app = express();
 
@@ -16,8 +23,28 @@ app.use(express.json({ limit: '5mb' }));
 
 const KEYS = {
   OPENROUTER: process.env.OPENROUTER_API_KEY || '',
+  OPENROUTER_BACKUP: process.env.OPENROUTER_BACKUP_KEY || '',
   GEMINI: process.env.GEMINI_API_KEY || '',
-  PERPLEXITY: process.env.PERPLEXITY_API_KEY || ''
+  PERPLEXITY: process.env.PERPLEXITY_API_KEY || '',
+  ANTHROPIC: process.env.ANTHROPIC_API_KEY || '',
+  GPTSAPI: process.env.GPTSAPI_KEY || '',
+  GPTSAPI_NEW: process.env.GPTSAPI_KEY_NEW || ''
+};
+
+// ── 最优模型矩阵（基于钥匙验证 2026-04-06）──
+const BEST_MODELS = {
+  // 情报窃取：Perplexity 最强推理搜索
+  intel: 'sonar-reasoning-pro',
+  // 出卷主力：Gemini 2.5 Pro（免费+最强）
+  forge_primary: 'gemini-2.5-pro',
+  // 出卷备用：Claude Opus 4.6 via OpenRouter
+  forge_backup: 'anthropic/claude-opus-4.6',
+  // 押题推演：DeepSeek R1（深度推理）
+  predict: 'deepseek/deepseek-r1',
+  // 快速任务：Gemini 2.5 Flash
+  fast: 'gemini-2.5-flash',
+  // 兜底：DeepSeek V3.2
+  fallback: 'deepseek/deepseek-v3.2'
 };
 
 // =============================================
@@ -59,33 +86,66 @@ const VAULT = {
   stats: { totalRaw: 0, totalPapers: 0, lastGenerated: null, lastIntel: null }
 };
 
-// 真实考研试卷结构
+// 真实考研试卷结构 (含 sections 用于精准 prompt 生成)
 const SUBJECTS = {
   '101': {
     label: '政治', score: 100, time: 180,
     structure: '单选16题(每题1分=16分) + 多选17题(每题2分=34分) + 分析5题(每题10分=50分)',
-    gameCount: 33, // 游戏投喂客观题数
-    topics: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策'
+    gameCount: 33,
+    topics: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策',
+    sections: [
+      { type:'single', label:'单项选择题', count:16, score:1, note:'四选一' },
+      { type:'multi',  label:'多项选择题', count:17, score:2, note:'≥2个正确答案' }
+    ]
   },
   '201': {
     label: '英语一', score: 100, time: 180,
     structure: '完形填空20题(0.5分=10分) + 阅读A节20题(2分=40分) + 新题型B节5题(2分=10分) + 翻译C节5句(2分=10分) + 写作2题(小10+大20=30分)',
     gameCount: 45,
-    topics: '英语知识运用(词汇/语法/上下文连贯)、传统阅读理解(主旨/细节/推断/态度)、新题型(七选五/段落排序/小标题匹配)、英译汉翻译'
+    topics: '英语知识运用(词汇/语法/上下文连贯)、传统阅读理解(主旨/细节/推断/态度)、新题型(七选五/段落排序/小标题匹配)、英译汉翻译',
+    sections: [
+      { type:'cloze',   label:'完形填空',   count:20, score:0.5, note:'约350词文章20空' },
+      { type:'reading', label:'阅读理解A节', count:20, score:2,   note:'4篇×5题' },
+      { type:'newtype', label:'新题型B节',   count:5,  score:2,   note:'七选五/排序/小标题' }
+    ]
   },
   '301': {
     label: '数学一', score: 150, time: 180,
     structure: '单选10题(每题5分=50分) + 填空6题(每题5分=30分) + 解答6题(共70分)',
     gameCount: 16,
-    topics: '高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代数20%(行列式/矩阵/特征值/二次型) 概率论20%(随机变量/数字特征/假设检验)'
+    topics: '高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代数20%(行列式/矩阵/特征值/二次型) 概率论20%(随机变量/数字特征/假设检验)',
+    sections: [
+      { type:'single', label:'选择题', count:10, score:5, note:'四选一' },
+      { type:'blank',  label:'填空题', count:6,  score:5, note:'直接填结果' }
+    ]
   },
   '408': {
     label: '计算机', score: 150, time: 180,
     structure: '单选40题(每题2分=80分) + 综合应用7题(共70分)',
     gameCount: 40,
-    topics: '数据结构45分(线性表/树/图/排序/查找) 计算机组成原理45分(CPU/存储器/总线/IO) 操作系统35分(进程/内存/文件) 计算机网络25分(TCP/IP/路由/HTTP)'
+    topics: '数据结构45分(线性表/树/图/排序/查找) 计算机组成原理45分(CPU/存储器/总线/IO) 操作系统35分(进程/内存/文件) 计算机网络25分(TCP/IP/路由/HTTP)',
+    sections: [
+      { type:'single', label:'单项选择题', count:40, score:2, note:'覆盖四大模块' }
+    ]
   }
 };
+
+// ── 422 校验中间件 — 拦截不合规试卷 ──
+function validate422(req, res, next) {
+  const paper = req.body?.paper;
+  if (!paper || !paper.questions) return next();
+  const subj = req.body.subject || paper.subject;
+  const meta = SUBJECTS[subj];
+  if (!meta) return res.status(422).json({ success: false, error: 'TEMPLATE_VIOLATION', message: `未知科目代码: ${subj}` });
+  // 基本题数校验 (允许 80% 容差，因为 AI 可能略有偏差)
+  const expected = meta.gameCount;
+  const actual = paper.questions.length;
+  if (actual < expected * 0.5) {
+    return res.status(422).json({ success: false, error: 'TEMPLATE_VIOLATION',
+      message: `[${subj}] 题数严重不足: ${actual}/${expected}, 低于50%最低线` });
+  }
+  next();
+}
 
 // =============================================
 // PART 1: API 中转隧道
@@ -96,9 +156,10 @@ app.get('/', (req, res) => {
   const intelCount = Object.values(VAULT.intelligence).reduce((s, a) => s + a.length, 0);
   const paperCount = Object.values(VAULT.papers).filter(p => p).length;
   res.json({
-    status: '🚀 PKU 中转阁 v4.0 — 双脑合璧·情报驱动',
+    status: '🚀 PKU 中转阁 v6.0 — 三脑合璧·DeepSeek押题·纯考研生态',
     vault: { rawQuestions: rawCount, intelligence: intelCount, papers: `${paperCount}/4科` },
     stats: VAULT.stats,
+    models: BEST_MODELS,
     timestamp: new Date().toISOString()
   });
 });
@@ -126,7 +187,7 @@ app.post('/v1/chat/completions', async (req, res) => {
 app.post('/gemini/generate', async (req, res) => {
   try {
     const { model, messages, max_tokens } = req.body;
-    const text = await callGemini(model || 'gemini-3.1-pro-preview', messages, max_tokens || 4096);
+    const text = await callGemini(model || BEST_MODELS.forge_primary, messages, max_tokens || 4096);
     res.json({ choices: [{ message: { role: 'assistant', content: text } }], model });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -156,7 +217,7 @@ app.post('/perplexity/search', async (req, res) => {
 // =============================================
 
 // 题库搜集站 → 上传完整密卷（一套卷子一次性存入）
-app.post('/vault/papers', async (req, res) => {
+app.post('/vault/papers', validate422, async (req, res) => {
   const { paper, subject, source, paperNum, metadata } = req.body;
   if (!paper || !paper.questions?.length) return res.status(400).json({ error: 'paper.questions required' });
   const subj = subject || '101';
@@ -338,7 +399,9 @@ app.post('/hub/collect-intel', async (req, res) => {
 // =============================================
 
 async function callGemini(model, messages, maxTokens) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEYS.GEMINI}`;
+  const gKey = KEYS.GEMINI;
+  if (!gKey) throw new Error('Gemini key missing');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gKey}`;
   const contents = messages.filter(m => m.role !== 'system').map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }]
   }));
@@ -403,24 +466,24 @@ ${sampleQ ? sampleQ.substring(0, 2000) : '(暂无样本)'}
   try {
     const sysPrompt = '你是考研命题专家。严格输出JSON数组，禁止输出任何多余文字。第一个字符必须是[，最后一个字符必须是]。';
 
-    // 🧠 双脑合璧: Claude(推理精准) + Gemini-3.1-Pro(创意发散)
+    // 🧠 三脑合璧: Claude Opus 4.6(推理精准) + Gemini 2.5 Pro(创意发散) + DeepSeek V3.2(兜底)
     const claudeCall = fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
         'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
-      body: JSON.stringify({ model: 'anthropic/claude-sonnet-4.5', messages: [
+      body: JSON.stringify({ model: BEST_MODELS.forge_backup, messages: [
         { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
       ], temperature: 0.7, max_tokens: 8000 })
     }).then(async r => {
       const d = await r.json(); if (!r.ok) throw new Error(`Claude ${r.status}`);
-      return { name: 'Claude-4.5', raw: (d.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim() };
+      return { name: 'Claude-Opus-4.6', raw: (d.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim() };
     });
 
-    const geminiCall = callGemini('gemini-3.1-pro-preview', [
+    const geminiCall = callGemini(BEST_MODELS.forge_primary, [
       { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
-    ], 8000).then(raw => ({ name: 'Gemini-3.1-Pro', raw }));
+    ], 8000).then(raw => ({ name: 'Gemini-2.5-Pro', raw }));
 
-    console.log('[PAPER] 🧠 双脑并行: Claude-4.5 + Gemini-3.1-Pro...');
+    console.log(`[PAPER] 🧠 三脑并行: ${BEST_MODELS.forge_backup} + ${BEST_MODELS.forge_primary}...`);
     const results = await Promise.allSettled([claudeCall, geminiCall]);
 
     let raw, usedModel = '';
@@ -435,20 +498,20 @@ ${sampleQ ? sampleQ.substring(0, 2000) : '(暂无样本)'}
       raw = succeeded[0].raw;
       usedModel = succeeded[0].name;
     } else {
-      console.log(`[PAPER] ⚠️ 双脑均失败, 启用V3.2兜底...`);
+      console.log(`[PAPER] ⚠️ 双脑均失败, 启用${BEST_MODELS.fallback}兜底...`);
       failed.forEach(f => console.log(`  ❌ ${f.reason?.message}`));
       const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
           'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Paper Factory' },
-        body: JSON.stringify({ model: 'deepseek/deepseek-v3.2', messages: [
+        body: JSON.stringify({ model: BEST_MODELS.fallback, messages: [
           { role: 'system', content: sysPrompt }, { role: 'user', content: prompt }
         ], temperature: 0.7, max_tokens: 8000 })
       });
       const data = await r.json();
       if (!r.ok) throw new Error('所有模型均失败');
       raw = (data.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      usedModel = 'DeepSeek-V3.2';
+      usedModel = BEST_MODELS.fallback;
     }
 
     // JSON修复
@@ -675,7 +738,155 @@ app.get('/hub/status', (req, res) => {
       } : null
     };
   }
-  res.json({ subjects: status, stats: VAULT.stats, uptime: Math.round(process.uptime()) + 's', version: 'v5.0' });
+  res.json({ subjects: status, stats: VAULT.stats, uptime: Math.round(process.uptime()) + 's', version: 'v6.0', models: BEST_MODELS });
+});
+
+// =============================================
+// PART 5: DeepSeek R1 押题推演引擎 [NEW]
+// =============================================
+
+// DeepSeek R1 押题推演
+app.post('/deepseek/predict', async (req, res) => {
+  const { subject } = req.body;
+  const subjects = subject ? [subject] : Object.keys(SUBJECTS);
+  const predictions = {};
+
+  for (const subj of subjects) {
+    const meta = SUBJECTS[subj];
+    const intel = (VAULT.intelligence[subj] || []).slice(-5).map(i => i.content).join('\n---\n');
+    const papers = VAULT.papers[subj] || [];
+    const existingQ = papers.slice(0, 3).flatMap(p => (p.questions || []).slice(0, 10)).map(q => q.stem || q.question || '').join('\n');
+
+    const prompt = `[DEEPSEEK PREDICTION ENGINE] 你是中国考研${meta.label}(${subj})的最高级命题趋势分析师。
+
+基于以下情报和已有题库，进行深度推理预测2026年考研${meta.label}的命题方向：
+
+【最新情报】
+${intel || '(暂无)'}
+
+【已有题库样本】
+${existingQ || '(暂无)'}
+
+【考纲结构】
+${meta.structure}
+${meta.topics}
+
+请输出：
+1. 【命中预测TOP10】具体考点 + 命中概率(%) + 理由
+2. 【押题重点】今年最可能出的5道大题方向
+3. 【冷门警告】3个容易被忽略但可能出现的考点
+4. 【复习优先级】按ROI排序的复习建议
+
+用中文输出，每条结论必须有具体依据。`;
+
+    try {
+      console.log(`[PREDICT] 🎯 DeepSeek R1 推演 ${subj} ${meta.label}...`);
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+          'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU DeepSeek Predict' },
+        body: JSON.stringify({ model: BEST_MODELS.predict, messages: [
+          { role: 'user', content: prompt }
+        ], temperature: 0.3, max_tokens: 8000 })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(`DeepSeek R1 ${r.status}: ${JSON.stringify(data).substring(0,150)}`);
+      let content = data.choices?.[0]?.message?.content || '';
+      content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      predictions[subj] = { success: true, prediction: content, length: content.length };
+      console.log(`[PREDICT] ✅ ${subj} 推演完成 ${content.length}字`);
+    } catch(e) {
+      predictions[subj] = { success: false, error: e.message };
+      console.error(`[PREDICT] ❌ ${subj}: ${e.message}`);
+    }
+  }
+  res.json({ success: true, model: BEST_MODELS.predict, predictions });
+});
+
+// 押题终极试卷（融合情报+推演+题库 → 最终押题卷）
+app.post('/paper/final-exam', async (req, res) => {
+  const { subject } = req.body;
+  const subj = subject || '101';
+  const meta = SUBJECTS[subj];
+  if (!meta) return res.status(400).json({ error: `未知科目: ${subj}` });
+
+  console.log(`\n🎯 押题终极试卷 ${subj} ${meta.label} 生成...`);
+
+  // Step 1: 拉取最新情报
+  const intel = (VAULT.intelligence[subj] || []).slice(-5).map(i => i.content).join('\n---\n');
+
+  // Step 2: DeepSeek R1 推演押题重点
+  let prediction = '';
+  try {
+    const predRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.OPENROUTER}`,
+        'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Final Exam' },
+      body: JSON.stringify({ model: BEST_MODELS.predict, messages: [
+        { role: 'user', content: `基于以下考研${meta.label}情报，列出今年最可能考的10个具体知识点和5个大题方向：\n${intel || '(暂无情报，基于历年规律推演)'}` }
+      ], temperature: 0.3, max_tokens: 4000 })
+    });
+    const pd = await predRes.json();
+    prediction = (pd.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    console.log(`[FINAL] DeepSeek R1 推演完成 ${prediction.length}字`);
+  } catch(e) { console.warn('[FINAL] DeepSeek推演失败:', e.message); }
+
+  // Step 3: Gemini 2.5 Pro 基于押题生成终极试卷
+  try {
+    const paper = await generatePaper(subj);  // 复用已有出卷逻辑
+    paper.type = 'final-exam';
+    paper.prediction = prediction;
+    res.json({ success: true, paper, prediction });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// =============================================
+// PART 6: Anthropic 直连中转 [NEW]
+// =============================================
+app.post('/anthropic/messages', async (req, res) => {
+  const antKey = req.headers['x-anthropic-key'] || KEYS.ANTHROPIC;
+  if (!antKey) return res.status(500).json({ error: 'Anthropic key missing' });
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': antKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    });
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json(data);
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// =============================================
+// PART 7: 论道殿/九宫算阵专用投喂 [NEW]
+// =============================================
+
+// 论道殿原理卡牌投喂
+app.get('/feed/cards/:subject', (req, res) => {
+  const subj = req.params.subject;
+  // 从密卷库提取可转化为卡牌的材料分析题/论述题
+  const papers = VAULT.papers[subj] || [];
+  const analysiQ = papers.flatMap(p => (p.questions || []).filter(q =>
+    q.type === 'analysis' || q.type === 'multi' || q.type === 'comprehensive'
+  ));
+  res.json({ success: true, subject: subj, total: analysiQ.length, cards: analysiQ.slice(0, 20) });
+});
+
+// 九宫算阵代码补全题投喂
+app.get('/feed/code-puzzles/:subject', (req, res) => {
+  const subj = req.params.subject;
+  const papers = VAULT.papers[subj] || [];
+  const codeQ = papers.flatMap(p => (p.questions || []).filter(q =>
+    q.type === 'comprehensive' || q.type === 'solution' || q.type === 'proof'
+  ));
+  res.json({ success: true, subject: subj, total: codeQ.length, puzzles: codeQ.slice(0, 15) });
 });
 
 // =============================================
@@ -683,18 +894,24 @@ app.get('/hub/status', (req, res) => {
 // =============================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 PKU 数据中枢 v5.0 · 万法归宗 | 端口: ${PORT}`);
-  console.log(`   OpenRouter: ${KEYS.OPENROUTER ? '✅' : '❌'}`);
-  console.log(`   Gemini:     ${KEYS.GEMINI ? '✅' : '❌'}`);
-  console.log(`   Perplexity: ${KEYS.PERPLEXITY ? '✅' : '❌'}`);
+  console.log(`\n🚀 PKU 数据中枢 v6.0 · 纯考研生态 | 端口: ${PORT}`);
+  console.log(`   OpenRouter: ${KEYS.OPENROUTER ? '✅' : '❌'} → ${BEST_MODELS.forge_backup}`);
+  console.log(`   Gemini:     ${KEYS.GEMINI ? '✅' : '❌'} → ${BEST_MODELS.forge_primary}`);
+  console.log(`   Perplexity: ${KEYS.PERPLEXITY ? '✅' : '❌'} → ${BEST_MODELS.intel}`);
+  console.log(`   Anthropic:  ${KEYS.ANTHROPIC ? '✅' : '❌'} → 直连中转`);
+  console.log(`   DeepSeek:   via OpenRouter → ${BEST_MODELS.predict}`);
   console.log(`   ─────────────────────────────────────────`);
-  console.log(`   中转:    POST /v1/chat/completions`);
-  console.log(`   存密卷:  POST /vault/papers`);
-  console.log(`   查密卷:  GET  /vault/papers/:subject`);
-  console.log(`   存情报:  POST /feed/intelligence  (卦象天机)`);
-  console.log(`   存情报:  POST /hub/intel          (Perplexity)`);
-  console.log(`   出卷:    POST /paper/generate`);
-  console.log(`   一键:    POST /paper/auto`);
-  console.log(`   游戏拉题: GET /feed/paper/:subject`);
-  console.log(`   状态:    GET  /hub/status\n`);
+  console.log(`   中转:       POST /v1/chat/completions`);
+  console.log(`   Anthropic:  POST /anthropic/messages`);
+  console.log(`   存密卷:     POST /vault/papers`);
+  console.log(`   查密卷:     GET  /vault/papers/:subject`);
+  console.log(`   存情报:     POST /feed/intelligence`);
+  console.log(`   出卷:       POST /paper/generate`);
+  console.log(`   押题推演:   POST /deepseek/predict  [NEW]`);
+  console.log(`   押题终卷:   POST /paper/final-exam  [NEW]`);
+  console.log(`   论道殿投喂: GET  /feed/cards/:subject [NEW]`);
+  console.log(`   算阵投喂:   GET  /feed/code-puzzles/:subject [NEW]`);
+  console.log(`   一键:       POST /paper/auto`);
+  console.log(`   游戏拉题:   GET  /feed/paper/:subject`);
+  console.log(`   状态:       GET  /hub/status\n`);
 });

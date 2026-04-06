@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>识海天碑 · 炼木成器</title>
+  <meta name="description" content="SM-2 间隔重复记忆系统 — 北大考研修仙应用">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ 顶部导航 ═══ -->
+  <header class="top-bar">
+    <div class="title">识海天碑</div>
+    <div class="qi-display">
+      <span>灵力</span>
+      <span class="qi-value" id="qiLevel">Lv.1</span>
+      <span>·</span>
+      <span id="cultivationRank">炼气期</span>
+    </div>
+  </header>
+
+  <!-- ═══ 主界面 ═══ -->
+  <main class="app-container" id="mainView">
+
+    <!-- 神识之树 -->
+    <section class="spirit-tree-section">
+      <div class="tree-canvas-wrap">
+        <canvas id="spiritTreeCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- 记忆保持率 -->
+    <div class="retention-ring-wrap">
+      <div class="retention-ring">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="42" />
+          <circle class="ring-fill" id="retentionRing" cx="50" cy="50" r="42"
+                  stroke-dasharray="263.9" stroke-dashoffset="263.9" />
+        </svg>
+        <div class="ring-text">
+          <span class="pct" id="retentionPct">0%</span>
+          <span class="label">RETENTION</span>
+        </div>
+      </div>
+      <div class="retention-info">
+        <div class="info-line">今日待复习: <span class="val" id="dueCount">0</span> 张</div>
+        <div class="info-line">新卡片: <span class="val" id="newCount">0</span> 张</div>
+        <div class="info-line">已掌握: <span class="val" id="masteredCount">0</span> 张</div>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-dashboard">
+      <div class="stat-card">
+        <div class="stat-value" id="totalCards">0</div>
+        <div class="stat-label">总卡片</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value due" id="dueCards">0</div>
+        <div class="stat-label">待渡劫</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value withering" id="witheringCards">0</div>
+        <div class="stat-label">煞气侵</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value mastered" id="masteredCards">0</div>
+        <div class="stat-label">已通灵</div>
+      </div>
+    </div>
+
+    <!-- 科目筛选 -->
+    <div class="subject-filters">
+      <button class="subject-chip active" data-subject="all">全部</button>
+      <button class="subject-chip" data-subject="101">政治</button>
+      <button class="subject-chip" data-subject="201">英语</button>
+      <button class="subject-chip" data-subject="301">数学</button>
+      <button class="subject-chip" data-subject="408">408</button>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="action-buttons">
+      <button class="btn-primary start-review" id="btnStartReview" onclick="App.startReview()">
+        ⚡ 开始渡劫
+      </button>
+      <button class="btn-primary add-card" onclick="App.showAddCardModal()">
+        ✦ 刻碑
+      </button>
+    </div>
+  </main>
+
+  <!-- ═══ 复习界面 (渡劫) ═══ -->
+  <div class="review-overlay" id="reviewOverlay">
+    <div class="review-progress">
+      <div class="fill" id="reviewProgressFill" style="width: 0%"></div>
+    </div>
+    <div class="review-header">
+      <span class="counter" id="reviewCounter">0 / 0</span>
+      <button class="close-btn" onclick="App.exitReview()">✕</button>
+    </div>
+
+    <!-- 翻转卡片 -->
+    <div class="flip-card-container" id="flipCardContainer">
+      <div class="flip-card" id="flipCard" onclick="App.flipCard()">
+        <div class="card-face card-front">
+          <span class="subject-badge" id="cardSubjectBadge"></span>
+          <div class="leaf-icon" id="cardLeafIcon">🌱</div>
+          <div class="question-text" id="cardQuestion"></div>
+          <div class="tap-hint">— 点击翻开答案 —</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="answer-label">◆ 答 案 ◆</div>
+          <div class="answer-text" id="cardAnswer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 提示面板 -->
+    <div class="ai-hint-panel" id="aiHintPanel">
+      <div class="ai-action-btns" id="aiActionBtns">
+        <button class="ai-action-btn" onclick="App.requestHint()"><span class="btn-icon">💡</span>灵光一闪</button>
+        <button class="ai-action-btn" onclick="App.requestExplanation()"><span class="btn-icon">📖</span>深入理解</button>
+        <button class="ai-action-btn" onclick="App.requestMasterClass()"><span class="btn-icon">👑</span>顾枢亲讲</button>
+      </div>
+      <div class="ai-hint-box" id="aiHintBox">
+        <div class="hint-label" id="aiHintLabel">SPIRIT HINT</div>
+        <div class="hint-content" id="aiHintContent"></div>
+      </div>
+    </div>
+
+    <!-- 评分按钮 -->
+    <div class="grade-buttons" id="gradeButtons">
+      <button class="grade-btn forgot" onclick="App.gradeCard(0)">
+        <span class="grade-label">忘记</span>
+        <span class="grade-interval">走火入魔</span>
+      </button>
+      <button class="grade-btn hard" onclick="App.gradeCard(3)">
+        <span class="grade-label">困难</span>
+        <span class="grade-interval" id="gradeHardInterval"></span>
+      </button>
+      <button class="grade-btn good" onclick="App.gradeCard(4)">
+        <span class="grade-label">记得</span>
+        <span class="grade-interval" id="gradeGoodInterval"></span>
+      </button>
+      <button class="grade-btn easy" onclick="App.gradeCard(5)">
+        <span class="grade-label">轻松</span>
+        <span class="grade-interval" id="gradeEasyInterval"></span>
+      </button>
+    </div>
+
+    <!-- 完成界面 -->
+    <div class="review-complete" id="reviewComplete">
+      <div class="complete-icon">🌳</div>
+      <div class="complete-title">渡劫圆满</div>
+      <div class="complete-stats">
+        <div class="c-stat">
+          <div class="c-val" id="completeTotal">0</div>
+          <div class="c-label">总复习</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-val" id="completeCorrect">0</div>
+          <div class="c-label">已悟道</div>
+        </div>
+        <div class="c-stat">
+          <div class="c-val" id="completeAccuracy">0%</div>
+          <div class="c-label">正确率</div>
+        </div>
+      </div>
+      <button class="btn-back-home" onclick="App.exitReview()">返回灵树</button>
+    </div>
+  </div>
+
+  <!-- ═══ 添加卡片 Modal ═══ -->
+  <div class="modal-overlay" id="addCardModal">
+    <div class="modal-sheet">
+      <div class="modal-title">✦ 刻碑 · 新增记忆节点</div>
+      <div class="form-group">
+        <label>科目</label>
+        <select id="newCardSubject">
+          <option value="101">101 · 政治</option>
+          <option value="201">201 · 英语</option>
+          <option value="301">301 · 数学</option>
+          <option value="408">408 · 计算机综合</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>章节</label>
+        <input type="text" id="newCardChapter" placeholder="如：马原、计网、高数...">
+      </div>
+      <div class="form-group">
+        <label>知识点/标签</label>
+        <input type="text" id="newCardTopic" placeholder="如：TCP三次握手">
+      </div>
+      <div class="form-group">
+        <label>问题 (正面)</label>
+        <textarea id="newCardQuestion" placeholder="输入问题..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>答案 (背面)</label>
+        <textarea id="newCardAnswer" placeholder="输入答案..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal btn-cancel" onclick="App.hideAddCardModal()">取消</button>
+        <button class="btn-modal btn-save" onclick="App.saveNewCard()">刻入天碑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 底部导航 ═══ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active">
+      <span class="nav-icon">🌳</span>
+      <span>灵树</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='../debate-arena/index.html'">
+      <span class="nav-icon">🃏</span>
+      <span>论道</span>
+    </button>
+    <button class="nav-item" onclick="alert('九宫算阵 · 开发中')">
+      <span class="nav-icon">⚔️</span>
+      <span>算阵</span>
+    </button>
+    <button class="nav-item" onclick="alert('修仙档案 · 开发中')">
+      <span class="nav-icon">👤</span>
+      <span>道途</span>
+    </button>
+  </nav>
+
+  <script src="card-database.js"></script>
+  <script src="sm2-engine.js"></script>
+  <script src="ai-service.js"></script>
+  <script src="spirit-tree.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

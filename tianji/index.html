@@ -2,389 +2,357 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>天机阁 · 【四象限大一统】移动枢纽</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
-<script src="../api-keys.js"></script>
-<style>
-/* CSS Reset and Mobile App Shell */
-:root {
-  --bg: #06060c; --bg2: #0c0c18; --bg3: #14142a; --card: rgba(18,18,36,.9); 
-  --red: #ff2e63; --cyan: #08f7fe; --gold: #ffd700; --purple: #9d4edd; --green: #39ff14; --amber: #ff8c00; 
-  --text: #e8e8f0; --dim: #555570; --sub: #8888a8; --border: rgba(255,255,255,.06);
-  --font-d: 'Orbitron', monospace; --font-b: 'Noto Sans SC', sans-serif; --font-c: 'Ma Shan Zheng', cursive;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:var(--font-b); background:var(--bg); color:var(--text); display:flex; justify-content:center; min-height:100vh; overflow:hidden; }
-
-.bg-grid { position:fixed; top:0; left:0; width:100%; height:100%; background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px); pointer-events:none; z-index:0; }
-
-/* 核心外壳 */
-#app-shell { position:relative; width:100%; max-width:480px; height:100vh; background:var(--bg); border-left:1px solid var(--border); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:1; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.8); }
-
-/* 顶栏网关开关 */
-.top-bar { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:rgba(6,6,12,.95); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,215,0,.08); z-index:10; }
-.top-bar .title { font-family:var(--font-c); font-size:20px; background:linear-gradient(135deg,var(--gold),var(--amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing: 2px;}
-.gateway-toggle { display:flex; gap:0; background:var(--bg3); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
-.gw-btn { padding:6px 12px; font-size:11px; cursor:pointer; color:var(--sub); background:transparent; border:none; outline:none; transition:0.3s; font-family:var(--font-b); font-weight:600; }
-.gw-btn.active { background:rgba(255,46,99,.15); color:var(--red); text-shadow:0 0 8px rgba(255,46,99,.5); }
-
-/* 视图容器 */
-#viewport { flex:1; overflow-y:auto; overflow-x:hidden; position:relative; scroll-behavior:smooth; }
-#viewport::-webkit-scrollbar { display:none; }
-.screen { display:none; padding:20px; padding-bottom:100px; animation:fadeIn 0.3s ease; }
-.screen.active { display:block; }
-@keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-
-/* 底部 Tab */
-.bottom-tab-bar { position:absolute; bottom:0; left:0; width:100%; display:flex; justify-content:space-around; align-items:center; background:rgba(12,12,24,.98); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:12px 0 24px 0; z-index:20; height:80px; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-.tab-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; background:transparent; border:none; outline:none; color:var(--dim); cursor:pointer; transition:0.3s; }
-.tab-btn .t-icon { font-size:24px; filter:grayscale(1); transition:0.3s; }
-.tab-btn .t-lbl { font-size:11px; font-weight:700; font-family:var(--font-b); letter-spacing: 1px;}
-.tab-btn.active { color:var(--cyan); }
-.tab-btn.active .t-icon { filter:grayscale(0); transform:translateY(-4px); text-shadow:0 0 15px rgba(255,215,0,.6); }
-
-/* 情报与雷达 UI */
-.subject-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-.sub-tab{padding:14px 10px; border:1px solid var(--border); border-radius:12px; background:var(--card); cursor:pointer; transition:.3s; flex:1; min-width:45%; text-align:center;}
-.sub-tab:hover{border-color:var(--amber);}
-.sub-tab.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1);}
-.sub-tab .code{font-family:var(--font-d);font-size:24px;font-weight:900;color:var(--red);line-height:1;}
-.sub-tab .name{font-size:11px;color:var(--sub);margin-top:6px; font-weight: 600;}
-
-.radar-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
-.radar-module{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.4s;position:relative;overflow:hidden;}
-.radar-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0.8;transition:.3s;}
-.radar-module.mod-heat::before{background:linear-gradient(90deg,#ff2e63,#ff8c00,#ffd700);}
-.radar-module.mod-prof::before{background:linear-gradient(90deg,#9d4edd,#08f7fe);}
-.radar-module.mod-poli::before{background:linear-gradient(90deg,#ff2e63,#39ff14);}
-.radar-module.mod-cs::before{background:linear-gradient(90deg,#08f7fe,#9d4edd);}
-.rm-title{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:4px;margin-top:8px;}
-.rm-tag{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px; border:1px solid var(--border);}
-.tag-live{background:rgba(57,255,20,.1);color:var(--green);border-color:rgba(57,255,20,.2);}
-.tag-data{background:rgba(8,247,254,.08);color:var(--cyan);border-color:rgba(8,247,254,.15);}
-.tag-ai-deep{background:rgba(157,78,221,.1);color:var(--purple);border-color:rgba(157,78,221,.2);}
-
-
-.section-title{font-family:var(--font-d);font-size:11px;letter-spacing:3px;color:var(--cyan);display:flex;align-items:center;gap:8px;margin:30px 0 16px;}
-.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--cyan),transparent);}
-
-.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px; transition:.3s;position:relative;margin-bottom:12px;}
-.intel-card .date{font-family:var(--font-d);font-size:10px;color:var(--cyan);letter-spacing:1px;}
-.intel-card .summary{margin-top:12px;font-size:13px;line-height:2;color:var(--text); white-space:pre-wrap;}
-
-.btn{width:100%; padding:16px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--red),var(--purple)); color:#fff; font-family:var(--font-b); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 10px 20px rgba(255,46,99,.2); transition: 0.3s;}
-.btn:active{transform:scale(0.96);}
-
-/* 终端造卷面板 */
-.terminal-window{display:flex;flex-direction:column;height:calc(100vh - 280px); background:#050505; border:1px solid #333; border-radius:12px; overflow:hidden; font-family:'Courier New',Courier,monospace; box-shadow: 0 0 30px rgba(0,0,0,0.8) inset;}
-.term-header{background:#111; padding:10px 14px; flex-shrink:0; display:flex; gap:8px; align-items:center; border-bottom: 1px solid #222;}
-.term-dot{width:12px; height:12px; border-radius:50%;}
-.term-body{flex:1; padding:16px; color:#0f0; font-size:12px; overflow-y:auto; line-height:1.5; display:flex; flex-direction:column; gap:6px; max-height:100%;}
-.log-line{white-space:pre-wrap; word-wrap:break-word;}
-.log-json{color:#08f7fe; white-space:pre-wrap;}
-.log-sys{color:#ff2e63; font-weight: bold;}
-.blink { animation: blink 1s step-end infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-
-/* 游戏战区面板 */
-.game-card{display:flex; align-items:center; padding:20px 16px; background:var(--card); border:1px solid var(--border); border-radius:16px; margin-bottom:16px; cursor:pointer; transition:0.3s; text-decoration:none; color:var(--text); position: relative; overflow: hidden;}
-.game-card:hover{border-color:var(--gold); transform:translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
-.game-card::after {content: '>'; position: absolute; right: 20px; font-family: var(--font-d); color: var(--sub); font-size: 20px;}
-.g-icon{font-size:36px; margin-right:16px; filter: drop-shadow(0 0 10px rgba(255,215,0,0.3));}
-.g-info .title{font-size:18px; font-weight:700; font-family:var(--font-c); color:var(--gold); margin-bottom:8px; letter-spacing: 1px;}
-.g-info .desc{font-size:12px; color:var(--sub); line-height: 1.5;}
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>天机�?· 情报与推�?/title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<!-- Keys handled by relay server --><style>
+:root{--bg:#050510;--card:rgba(10,15,20,.92);--green:#39ff14;--cyan:#08f7fe;--red:#ff2e63;--gold:#ffd700;--purple:#9d4edd;--amber:#ff8c00;--text:#c8d6e5;--dim:#3a4a5a;--sub:#6a7a8a;--border:rgba(57,255,20,.12);--glow:rgba(57,255,20,.08);--fd:'Orbitron',monospace;--fb:'Noto Sans SC',sans-serif;--fc:'Ma Shan Zheng',cursive;--ft:'Share Tech Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;overflow:hidden}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);display:flex;justify-content:center}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 30% 50%,rgba(57,255,20,.03),transparent 60%),radial-gradient(ellipse at 70% 20%,rgba(8,247,254,.03),transparent 60%),repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(57,255,20,.012) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(57,255,20,.012) 60px)}
+#app{position:relative;width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;z-index:1;border-left:1px solid var(--border);border-right:1px solid var(--border);background:var(--bg);overflow:hidden}
+/* Top Header */
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(5,10,15,.97);border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr .logo{font-family:var(--fc);font-size:24px;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-shadow:none}
+.hdr .ver{font-family:var(--fd);font-size:8px;color:var(--dim);letter-spacing:1px}
+/* Two-Tab Nav */
+.nav{display:flex;background:rgba(5,10,15,.95);border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-i{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;cursor:pointer;color:var(--dim);transition:.3s;border-bottom:2px solid transparent;font-weight:700}
+.nav-i.on{color:var(--green);border-bottom-color:var(--green);text-shadow:0 0 10px rgba(57,255,20,.5)}
+.nav-i .ic{font-size:20px}.nav-i .lb{font-family:var(--fd);font-size:10px;letter-spacing:2px}
+/* Viewport */
+#vp{flex:1;overflow-y:auto;overflow-x:hidden}
+#vp::-webkit-scrollbar{width:3px}#vp::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
+.pn{display:none;padding:16px 14px 40px;animation:fu .3s ease}.pn.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* Section headers */
+.sh{font-family:var(--fd);font-size:9px;letter-spacing:3px;color:var(--green);display:flex;align-items:center;gap:8px;margin:16px 0 10px;text-transform:uppercase}
+.sh::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--green),transparent)}
+/* Subject row */
+.srow{display:flex;gap:8px;margin-bottom:12px}
+.sc{flex:1;padding:10px 4px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:.3s}
+.sc:hover{border-color:var(--amber)}.sc.on{border-color:var(--green);background:rgba(57,255,20,.04);box-shadow:0 0 12px var(--glow)}
+.sc .n{font-family:var(--fd);font-size:20px;font-weight:900;color:var(--green)}.sc .l{font-size:9px;color:var(--sub);margin-top:3px}
+/* Radar */
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;position:relative;overflow:hidden}
+.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.rc.h::before{background:linear-gradient(90deg,#ff2e63,#ffd700)}.rc.p::before{background:linear-gradient(90deg,#9d4edd,#08f7fe)}
+.rc.t::before{background:linear-gradient(90deg,#ff2e63,#39ff14)}.rc.x::before{background:linear-gradient(90deg,#08f7fe,#9d4edd)}
+.rc .rt{font-size:11px;font-weight:700;color:var(--gold);margin:3px 0}
+.rc .rs{font-size:9px;color:var(--sub)}
+/* Terminal */
+.term{background:#030308;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;box-shadow:0 0 30px rgba(0,0,0,.8) inset}
+.th{background:rgba(10,15,20,.95);padding:7px 12px;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(57,255,20,.06)}
+.dot{width:8px;height:8px;border-radius:50%}.th .tg{color:var(--dim);font-size:9px;margin-left:8px;font-family:var(--ft);letter-spacing:1px}
+.to{padding:10px;color:var(--green);font-size:10px;font-family:var(--ft);line-height:1.5;min-height:180px;max-height:40vh;overflow-y:auto}
+.to::-webkit-scrollbar{width:3px}.to::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
+.tl{white-space:pre-wrap;word-wrap:break-word;margin-bottom:2px}
+.tl-s{color:var(--red);font-weight:bold}.tl-j{color:var(--cyan)}.tl-o{color:var(--green)}.tl-w{color:var(--amber)}
+.bk{animation:bk 1s step-end infinite}@keyframes bk{50%{opacity:0}}
+/* Progress */
+.pw{margin:6px 0;background:rgba(255,255,255,.04);border-radius:4px;height:6px;overflow:hidden;border:1px solid rgba(57,255,20,.06)}
+.pb{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));border-radius:4px;transition:width .4s;width:0%}
+/* Big button */
+.bb{width:100%;padding:18px;border-radius:12px;border:none;font-family:var(--fd);font-size:16px;font-weight:900;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.3s;margin:12px 0;color:#000;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 8px 24px rgba(57,255,20,.15);position:relative;overflow:hidden}
+.bb:active{transform:scale(.97)}
+.bb::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);animation:shimmer 3s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.bb:disabled{opacity:.5;cursor:not-allowed}
+/* Engine cards */
+.eng{display:flex;gap:6px;margin-bottom:10px}
+.eg{flex:1;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;text-align:center}
+.eg .en{font-family:var(--fd);font-size:7px;color:var(--cyan);letter-spacing:1px}.eg .em{font-size:10px;font-weight:700;color:var(--green);margin-top:2px}
+/* Game entries */
+.ge{display:flex;align-items:center;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.ge:hover{border-color:var(--green);box-shadow:0 8px 20px rgba(0,0,0,.5)}
+.ge::after{content:'>';position:absolute;right:14px;font-family:var(--fd);color:var(--dim);font-size:16px}
+.gi{font-size:28px;margin-right:12px}.gt{font-size:14px;font-weight:700;font-family:var(--fc);color:var(--gold);margin-bottom:3px}
+.gd{font-size:10px;color:var(--sub)}.ga{font-size:9px;color:var(--green);margin-top:3px;font-family:var(--ft)}
+/* Vault stats */
+.vs{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px}
+.vs-r{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(57,255,20,.04);font-size:11px}
+.vs-r:last-child{border:none}.vs-l{color:var(--sub)}.vs-v{font-family:var(--ft);color:var(--green);font-weight:700}
+.vs-v.empty{color:var(--red)}
+/* Footer */
+.ft{flex-shrink:0;padding:5px 14px;background:rgba(5,5,16,.98);border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--ft);font-size:8px;color:var(--dim)}
+/* Game overlay */
+.ov{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column}.ov.on{display:flex}
+.ov-h{background:var(--card);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.ov-t{color:var(--green);font-family:var(--fc);font-size:16px}.ov-x{background:var(--red);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-weight:700;cursor:pointer;font-size:12px}
+.ov-f{flex:1;width:100%;border:none;background:#000}
+/* Intel preview */
+.ip{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;max-height:200px;overflow-y:auto;font-size:11px;line-height:1.7;color:var(--sub)}
+.ip::-webkit-scrollbar{width:3px}.ip::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
+.ip .tag{font-family:var(--fd);font-size:8px;color:var(--cyan);letter-spacing:1px;margin-bottom:6px}
 </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-
-<div id="app-shell">
-  <div class="top-bar">
-    <div class="title">天机阁 V7.5 壳层</div>
-    <div class="gateway-toggle">
-      <button class="gw-btn" id="gw-relay" onclick="setGateway('relay')">⚡ 渲染中转</button>
-      <button class="gw-btn active" id="gw-direct" onclick="setGateway('direct')">🌐 本地直连</button>
+<div class="bg"></div>
+<div id="app">
+  <div class="hdr">
+    <div class="logo">天机�?/div>
+    <div class="ver">IRON-SYS v10.0</div>
+  </div>
+  <div class="nav">
+    <div class="nav-i on" onclick="go('forge',this)"><span class="ic">📡</span><span class="lb">情报造办</span></div>
+    <div class="nav-i" onclick="go('battle',this)"><span class="ic">⚔️</span><span class="lb">诛魔战区</span></div>
+  </div>
+  <div id="vp">
+    <!-- ════════ TAB 1: 情报造办 ════════ -->
+    <div id="p-forge" class="pn on">
+      <div class="sh">target selection</div>
+      <div class="srow">
+        <div class="sc on" onclick="pick('101',this)"><div class="n">101</div><div class="l">政治</div></div>
+        <div class="sc" onclick="pick('201',this)"><div class="n">201</div><div class="l">英语</div></div>
+        <div class="sc" onclick="pick('301',this)"><div class="n">301</div><div class="l">数学</div></div>
+        <div class="sc" onclick="pick('408',this)"><div class="n">408</div><div class="l">计算�?/div></div>
+      </div>
+      <div class="sh">exam trend radar</div>
+      <div class="rg">
+        <div class="rc h"><div class="rt">🔥 考点热力�?/div><div class="rs">高频命中追踪</div></div>
+        <div class="rc p"><div class="rt">🎓 教授风向</div><div class="rs">命题人研究方�?/div></div>
+        <div class="rc t"><div class="rt">🏛�?时政雷达</div><div class="rs">政策热点捕获</div></div>
+        <div class="rc x"><div class="rt">🧬 交叉�?/div><div class="rs">跨学科趋�?/div></div>
+      </div>
+      <div class="sh">terminal console</div>
+      <div class="term">
+        <div class="th">
+          <div class="dot" style="background:#ff5f56"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#27c93f"></div>
+          <div class="tg">TERMINAL CONSOLE</div>
+        </div>
+        <div class="to" id="to">
+          <div class="tl tl-s">> PKU IRON-FOUNDRY V10.0</div>
+          <div class="tl">> PIPELINE: PERPLEXITY �?GEMINI/CLAUDE �?VAULT</div>
+          <div class="tl">> STATUS: IDLE</div>
+          <div class="tl"><span class="bk">_</span></div>
+        </div>
+      </div>
+      <div class="pw"><div class="pb" id="pb"></div></div>
+      <div class="eng">
+        <div class="eg"><div class="en">SEARCH</div><div class="em">sonar-pro</div></div>
+        <div class="eg"><div class="en">ENGINE A</div><div class="em">Gemini 3.1</div></div>
+        <div class="eg"><div class="en">ENGINE B</div><div class="em">Opus 4.6</div></div>
+      </div>
+      <button class="bb" id="mainBtn" onclick="runPipeline()">INITIATE WEAPONIZATION</button>
+      <div id="intelPreview"></div>
+    </div>
+    <!-- ════════ TAB 2: 诛魔战区 ════════ -->
+    <div id="p-battle" class="pn">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-family:var(--fc);font-size:26px;color:var(--red);text-shadow:0 0 12px rgba(255,46,99,.3)">诛魔战区</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:4px">弹药来自情报造办�?· 每套完整试卷架构</div>
+      </div>
+      <div class="sh">ammo vault status</div>
+      <div class="vs" id="vs"></div>
+      <div class="sh">enter battlefield</div>
+      <div class="ge" onclick="openGame('../ghost-dorm/index.html')"><div class="gi">👻</div><div><div class="gt">猛鬼考研宿舍</div><div class="gd">塔防答题 · 熬战至破�?/div><div class="ga" id="a1"></div></div></div>
+      <div class="ge" onclick="openGame('../battleground/index.html')"><div class="gi">🪂</div><div><div class="gt">北大刺激战场</div><div class="gd">孤岛毒圈 · 智力对决</div><div class="ga" id="a2"></div></div></div>
+      <div class="ge" onclick="openGame('../siege/index.html')"><div class="gi">⚔️</div><div><div class="gt">北大消消�?/div><div class="gd">三消×知识盲区屠杀</div><div class="ga" id="a3"></div></div></div>
     </div>
   </div>
-
-  <div id="viewport">
-    
-    <!-- Tab 1: 命题枢纽 -->
-    <div id="screen-intel" class="screen active">
-       <div class="subject-tabs">
-          <div class="sub-tab active" data-sub="101" onclick="switchSubject('101')">
-            <div class="code">101</div><div class="name">政治·朝堂暗谍</div>
-          </div>
-          <div class="sub-tab" data-sub="201" onclick="switchSubject('201')">
-            <div class="code">201</div><div class="name">英语·密码破译</div>
-          </div>
-          <div class="sub-tab" data-sub="301" onclick="switchSubject('301')">
-            <div class="code">301</div><div class="name">数学·大漠算经</div>
-          </div>
-          <div class="sub-tab" data-sub="408" onclick="switchSubject('408')">
-            <div class="code">408</div><div class="name">计算机·天网矩阵</div>
-          </div>
-       </div>
-
-       <div class="radar-grid">
-          <div class="radar-module mod-heat">
-            <div class="rm-title">🔥 考点热力图</div>
-            <span class="rm-tag tag-data">DATA ANALYSIS</span>
-          </div>
-          <div class="radar-module mod-prof">
-            <div class="rm-title">🎓 命题教授风向</div>
-            <span class="rm-tag tag-ai-deep">AI DEEP</span>
-          </div>
-          <div class="radar-module mod-poli">
-            <div class="rm-title">🏛️ 时政热点雷达</div>
-            <span class="rm-tag tag-live">LIVE</span>
-          </div>
-          <div class="radar-module mod-cs">
-             <div class="rm-title">🧬 学科交叉网</div>
-            <span class="rm-tag tag-ai-deep">AI DEEP</span>
-          </div>
-       </div>
-
-       <div class="section-title">实时命题网·情报窃取记录</div>
-       <div id="intelResult" style="margin-bottom:20px;">
-          <div class="intel-card">
-              <div class="date">⚠️ STATUS: WAITING...</div>
-              <div class="summary" style="color:var(--dim)">请选择科目并点击下方按钮，启动 IRON PROTOCOL 进行深网数据挖掘与清洗。</div>
-          </div>
-       </div>
-       <button class="btn" id="btnExtract" onclick="fireExtraction()">👁️‍🗨️ 启动窃取 (Perplexity)</button>
-    </div>
-
-    <!-- Tab 2: 暗网印卷 -->
-    <div id="screen-foundry" class="screen">
-       <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px;">
-          <div style="font-size:13px; color:var(--text); line-height:1.8; margin-bottom:12px;">
-             ⚡ <b>说明：</b>当左侧情报兵提取完成后，点击下方注入按钮喂给 <b>Gemini 3.1 Pro</b>。<br>
-             终端将其强压为 101/201/301/408 规范化 JSON 考卷数据并注入本地设备 <code>localStorage</code> 弹药库中。全过程安全免疫闭环。
-          </div>
-          <button class="btn" style="background:linear-gradient(135deg,var(--gold),var(--amber)); color:#000; box-shadow: 0 8px 20px rgba(255,215,0,0.2);" onclick="startGeminiForge()">⚙️ 启动压模装填 (Gemini 3.1)</button>
-       </div>
-
-       <div class="terminal-window">
-          <div class="term-header">
-             <div class="term-dot" style="background:#ff5f56"></div>
-             <div class="term-dot" style="background:#ffbd2e"></div>
-             <div class="term-dot" style="background:#27c93f"></div>
-             <div style="color:#888; font-size:11px; margin-left:12px; font-weight:bold;">root@dark-foundry:~#</div>
-          </div>
-          <div class="term-body" id="termLogs">
-             <div class="log-sys">PKU IRON-FOUNDRY SYSTEM V7 READY.</div>
-             <div class="log-line">Waiting for intelligence payload... <span class="blink">_</span></div>
-          </div>
-       </div>
-    </div>
-
-    <!-- Tab 3: 终极战区 -->
-    <div id="screen-battle" class="screen">
-       <div style="text-align:center; margin-bottom:30px;">
-           <div style="font-family:var(--font-c); font-size:28px; color:var(--red); text-shadow:0 0 15px rgba(255,46,99,.5); margin-bottom:8px;">
-              弹药已装填完毕
-           </div>
-           <div style="font-size:12px; color:var(--sub); letter-spacing: 1px;">点开游戏即可直接读取最新注入的考研真题命脉</div>
-       </div>
-
-       <a href="../ghost-dorm/index.html" class="game-card">
-          <div class="g-icon">👻</div>
-          <div class="g-info">
-             <div class="title">猛鬼考研宿舍</div>
-             <div class="desc">塔防答题生存战，熬战至破晓曙光</div>
-          </div>
-       </a>
-
-       <a href="../battleground/index.html" class="game-card">
-          <div class="g-icon">🪂</div>
-          <div class="g-info">
-             <div class="title">北大刺激战场</div>
-             <div class="desc">孤岛毒圈，智力对决与空投物资争夺</div>
-          </div>
-       </a>
-
-       <a href="../siege/index.html" class="game-card">
-          <div class="g-icon">⚔️</div>
-          <div class="g-info">
-             <div class="title">北大消消乐</div>
-             <div class="desc">休闲三消包裹的残忍考研知识盲区屠杀</div>
-          </div>
-       </a>
-    </div>
-
-  </div>
-
-  <div class="bottom-tab-bar">
-     <button class="tab-btn active" onclick="switchTab('intel')">
-       <div class="t-icon">📡</div><div class="t-lbl">雷达情报</div>
-     </button>
-     <button class="tab-btn" onclick="switchTab('foundry')">
-       <div class="t-icon">💻</div><div class="t-lbl">暗网印卷</div>
-     </button>
-     <button class="tab-btn" onclick="switchTab('battle')">
-       <div class="t-icon">⚔️</div><div class="t-lbl">赛博战区</div>
-     </button>
-  </div>
+  <div class="ft"><span>AIGEN_SYS v10.0</span><span id="ft2"></span></div>
 </div>
-
+<!-- Game Overlay -->
+<div class="ov" id="ov">
+  <div class="ov-h"><div class="ov-t" id="ovT">Loading...</div><button class="ov-x" onclick="closeGame()">退�?[X]</button></div>
+  <iframe class="ov-f" id="ovF" src=""></iframe>
+</div>
 <script>
-// ==== UI 交互逻辑 ====
-function switchTab(tabId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('screen-' + tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
+// ===== CONFIG =====
+let SJ='101',running=false;
+const BP={
+  '101':{name:'Politics',total:38,struct:'16 single-choice(1pt each=16pt) + 17 multi-choice(2pt each=34pt) + 5 essay/analysis(10pt each=50pt). Total=100pt. Generate: 16 with type:"single" + 17 with type:"multi" + 5 with type:"analysis" = exactly 38 items.'},
+  '201':{name:'English',total:52,struct:'20 cloze(0.5pt each=10pt) + 20 reading-A(2pt each=40pt) + 5 reading-B(2pt each=10pt) + 5 translation(2pt each=10pt) + 1 short-essay(10pt) + 1 long-essay(20pt). Total=100pt. Generate: 20 type:"cloze" + 20 type:"reading" + 5 type:"reading-b" + 5 type:"translation" + 2 type:"writing" = exactly 52 items.'},
+  '301':{name:'Math',total:22,struct:'10 choice(5pt each=50pt) + 6 fill-blank(5pt each=30pt) + 6 proof/solve(variable pts=70pt). Total=150pt. Generate: 10 type:"single" + 6 type:"fill" + 6 type:"proof" = exactly 22 items.'},
+  '408':{name:'CS',total:47,struct:'40 single-choice(2pt each=80pt) + 7 comprehensive(variable pts=70pt). Total=150pt. Covers: DataStructures(~30%), ComputerOrg(~30%), OS(~23%), Network(~17%). Generate: 40 type:"single" + 7 type:"comprehensive" = exactly 47 items.'}
+};
+const IRON_SYS=`[SYSTEM OVERRIDE] Codename IRON JUDGE. You are the ultimate exam intelligence extractor for China National Postgraduate Entrance Exam.
+=== IRON PROTOCOL v3.0 ===
+1. ALL items MUST have source tags [1][2][3]
+2. Grade: 【🔴CRITICAL】【🟡HIGH】【🟢MODERATE�?3. Every topic: hit probability % (e.g. 87%)
+4. Five sections:
+  ■【高频考点命中预测�?0-15 topics with hit rates
+  ■【命题教授研究风向】professors' latest research
+  ■【时政热点×考点映射�?-month events→exam points
+  ■【学科前沿交叉趋势】cutting-edge trends
+  ■【实战复习优先级】study strategy by ROI
+5. Output 2500+ chars. NEVER lazy.
+6. FORBIDDEN: hedging like "cannot predict".
+=== END ===`;
+
+// ===== UI =====
+function go(id,el){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nav-i').forEach(t=>t.classList.remove('on'));document.getElementById('p-'+id).classList.add('on');el.classList.add('on');if(id==='battle')refreshVault()}
+function pick(s,el){SJ=s;document.querySelectorAll('.sc').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
+setInterval(()=>{document.getElementById('ft2').textContent=new Date().toLocaleTimeString()},1000);
+
+// ===== TERMINAL =====
+function tl(m,c){const o=document.getElementById('to'),d=document.createElement('div');d.className='tl'+(c?' tl-'+c:'');d.textContent=m;o.appendChild(d);o.scrollTop=o.scrollHeight}
+function sp(p){document.getElementById('pb').style.width=p+'%'}
+function sl(ms){return new Promise(r=>setTimeout(r,ms))}
+
+// ===== NETWORK (本地直连 + 中转站双通道) =====
+const RELAY='https://pku-api-relay.onrender.com';
+
+async function searchIntel(sys,usr){
+  // 优先本地 PKU_SEARCH (直连 Perplexity)
+  if(window.PKU_SEARCH){
+    try{return await PKU_SEARCH(sys,usr)}catch(e){tl('> ⚠️ Direct Perplexity failed, trying relay...','w')}
+  }
+  // Fallback: 中转�?  const r=await fetch(RELAY+'/perplexity/search',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'sonar-pro',messages:[{role:'system',content:sys},{role:'user',content:usr}],max_tokens:4096})});
+  const d=await r.json();if(!r.ok||d.error)throw new Error(d.error?.message||d.error||'Relay Perplexity failed');
+  return d.choices?.[0]?.message?.content||d.content||'';
 }
 
-let currentSubject = '101';
-function switchSubject(sub) {
-    currentSubject = sub;
-    document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    document.getElementById('intelResult').innerHTML = `<div class="intel-card"><div class="date">⚠️ STANDBY</div><div class="summary" style="color:var(--dim)">已切换搜捕目标网络至 [ ${sub} ]，请重新执行窃取协议。</div></div>`;
+async function callGemini(sys,usr){
+  // 优先本地直连
+  const key=window.PKU_KEYS?.GEMINI_API_KEY;
+  if(key){
+    try{
+      const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key='+key;
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}],generationConfig:{temperature:0.6,maxOutputTokens:8192}})});
+      const d=await r.json();if(d.error)throw new Error(d.error.message);
+      return d.candidates[0].content.parts[0].text;
+    }catch(e){tl('> ⚠️ Direct Gemini failed: '+e.message+', trying relay...','w')}
+  }
+  // Fallback: 中转�?  const r=await fetch(RELAY+'/gemini/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'gemini-3.1-pro-preview',messages:[{role:'system',content:sys},{role:'user',content:usr}],max_tokens:8192})});
+  const d=await r.json();if(!r.ok||d.error)throw new Error(d.error?.message||d.error||'Relay Gemini failed');
+  return d.choices?.[0]?.message?.content||'';
 }
 
-// ==== 网络及请求引擎逻辑 (GATEWAY) ====
-let gatewayMode = localStorage.getItem('PKU_GATEWAY_MODE') || 'direct';
-function setGateway(mode) {
-    gatewayMode = mode;
-    localStorage.setItem('PKU_GATEWAY_MODE', mode);
-    document.querySelectorAll('.gw-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`gw-${mode}`).classList.add('active');
-    console.log("[NETWORK] System Gateway Ruoted to:", mode);
+async function callClaude(sys,usr){
+  // 优先本地 PKU_AI (直连 OpenRouter)
+  if(window.PKU_AI){
+    try{return await PKU_AI(sys,usr,{model:'anthropic/claude-opus-4.6',maxTokens:8192,temperature:0.6})}
+    catch(e){tl('> ⚠️ Direct Claude failed, trying relay...','w')}
+  }
+  // Fallback: 中转�?  const r=await fetch(RELAY+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'anthropic/claude-opus-4.6',messages:[{role:'system',content:sys},{role:'user',content:usr}],temperature:0.6,max_tokens:8192})});
+  const d=await r.json();if(!r.ok||d.error)throw new Error(d.error?.message||d.error||'Relay Claude failed');
+  let c=d.choices?.[0]?.message?.content||'';
+  return c.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
 }
-setGateway(gatewayMode);
 
-let latestIntel = "";
+// ===== MAIN PIPELINE =====
+async function runPipeline(){
+  if(running)return;running=true;
+  const btn=document.getElementById('mainBtn');btn.disabled=true;btn.textContent='PROCESSING...';
+  const bp=BP[SJ];const o=document.getElementById('to');o.innerHTML='';
+  tl('> ══════════════════════════════════','s');
+  tl('> PKU IRON-FOUNDRY V10.0 PIPELINE','s');
+  tl('> ══════════════════════════════════','s');
+  tl('> TARGET: ['+SJ+'] '+bp.name+' | '+bp.total+' questions');sp(2);
+  await sl(150);
 
-// ==== Fetcher: Perplexity sonar-pro ====
-async function doPerplexitySearch(topic) {
-    const sysPrompt = "你是一级绝密情报引擎。精确定位考研重点、预测命中率。返回带[1][2]引用的专业报告结构。必须使用一级警报、二级警报等严格分级。输出详尽。";
-    if (gatewayMode === 'direct') {
-        const key = window.API_KEYS?.PERPLEXITY;
-        if(!key) throw new Error("直连模式未配置本地 PERPLEXITY 秘钥。请切换中转。");
-        
-        const res = await fetch("https://api.perplexity.ai/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "sonar-pro",
-                messages: [{role:"system",content:sysPrompt}, {role:"user",content:topic}],
-                temperature: 0.1
-            })
-        });
-        const data = await res.json();
-        if(data.error) throw new Error(data.error.message);
-        return data.choices[0].message.content;
-    } else {
-        const res = await fetch("https://pku-api-relay.onrender.com/perplexity/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ system_prompt: sysPrompt, user_prompt: topic })
-        });
-        const data = await res.json();
-        if(data.error) throw new Error(data.error);
-        return data.content || "Relay Fetch Error";
+  // ── PHASE 1: PERPLEXITY INTEL ──
+  tl('');tl('> �?PHASE 1/2: INTELLIGENCE EXTRACTION','w');
+  tl('> Connecting: Perplexity sonar-pro...');sp(5);
+  let intel='';
+  try{
+    const usr='EXECUTE IRON PROTOCOL. Subject:['+SJ+'] Year:2026 University:PKU. Analyze latest trends, professor research, current events. All sources tagged.';
+    intel=await searchIntel(IRON_SYS,usr);
+    tl('> �?Intel received: '+intel.length+' chars','o');sp(25);
+    const preview=document.getElementById('intelPreview');
+    preview.innerHTML='<div class="ip"><div class="tag">LATEST INTEL ['+SJ+'] | '+new Date().toLocaleTimeString()+'</div>'+intel.substring(0,500).replace(/\n/g,'<br>')+'...</div>';
+  }catch(e){
+    tl('> ⚠️ Intel extraction failed: '+e.message,'w');
+    tl('> Proceeding with generic exam blueprint...','w');sp(10);
+    intel='Generate exam questions based on standard 2026 exam syllabus for subject '+SJ+'. Cover all major chapters evenly.';
+  }
+  await sl(150);
+
+  // ── PHASE 2: FORGE COMPLETE PAPER ──
+  tl('');tl('> �?PHASE 2/2: WEAPONIZATION','w');
+  tl('> Blueprint: '+bp.struct.substring(0,80)+'...');sp(30);
+  const forgeSys='You are an exam paper forge. Output ONLY a pure JSON array. NO markdown, NO backticks, NO text before/after the JSON. '+bp.struct+' Format per item: {"q":"question text","type":"single/multi/analysis/cloze/reading/reading-b/translation/writing/fill/proof/comprehensive","o":["A","B","C","D"],"a":0,"difficulty":3,"analysis":"explanation","chapter":"chapter name","points":5}. For non-choice: o=[], a=-1. EXACTLY '+bp.total+' items total.';
+  const forgeUsr='Using this intelligence, generate a COMPLETE '+bp.name+'('+SJ+') exam paper:\n\n'+intel;
+
+  let vaultData=null;
+  // Try Engine A: Gemini
+  tl('> [ENGINE A] Gemini 3.1 Pro launching...','o');sp(35);
+  try{
+    const raw=await callGemini(forgeSys,forgeUsr);
+    tl('> [ENGINE A] Response received','o');sp(55);
+    const cleaned=raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    tl('');tl('> === DATA STREAM ===','s');
+    cleaned.split('\n').slice(0,25).forEach(l=>tl(l,'j'));sp(65);
+    vaultData=JSON.parse(cleaned);
+    if(!Array.isArray(vaultData))throw new Error('Not array');
+    tl('> [ENGINE A] �?Parsed: '+vaultData.length+'/'+bp.total,'o');sp(70);
+  }catch(e){
+    tl('> [ENGINE A] �?'+e.message,'s');
+    // Fallback Engine B: Claude
+    tl('> [ENGINE B] Claude Opus 4.6 launching...','w');sp(40);
+    try{
+      const raw2=await callClaude(forgeSys,forgeUsr);
+      tl('> [ENGINE B] Response received','o');sp(60);
+      const cleaned2=raw2.replace(/```json/g,'').replace(/```/g,'').trim();
+      tl('');tl('> === DATA STREAM ===','s');
+      cleaned2.split('\n').slice(0,25).forEach(l=>tl(l,'j'));
+      vaultData=JSON.parse(cleaned2);
+      if(!Array.isArray(vaultData))throw new Error('Not array');
+      tl('> [ENGINE B] �?Parsed: '+vaultData.length+'/'+bp.total,'o');sp(70);
+    }catch(e2){
+      tl('> [ENGINE B] �?'+e2.message,'s');
+      tl('> BOTH ENGINES FAILED. Abort.','s');sp(0);
+      running=false;btn.disabled=false;btn.textContent='INITIATE WEAPONIZATION';return;
     }
+  }
+
+  // ── INJECT TO VAULT ──
+  sp(80);
+  tl('');tl('> INJECTING TO VAULT...','w');
+  const vk='Global_Vault_'+SJ;
+  // Append to existing vault (multi-paper storage)
+  let existing=[];
+  try{const e=localStorage.getItem(vk);if(e)existing=JSON.parse(e)}catch(x){}
+  const combined=[...vaultData,...existing];
+  localStorage.setItem(vk,JSON.stringify(combined));
+  localStorage.setItem(vk+'_ts',new Date().toISOString());
+  sp(95);await sl(200);
+  tl('');
+  tl('> ════════════════════════════════','s');
+  tl('> �?OPERATION COMPLETE','o');
+  tl('> New paper: '+vaultData.length+' items forged','o');
+  tl('> Vault total: '+combined.length+' rounds ['+SJ+']','o');
+  tl('> Storage: Global_Vault_'+SJ);
+  tl('> ════════════════════════════════','s');
+  tl('> PROCEED TO ⚔️ 诛魔战区','w');
+  sp(100);
+  running=false;btn.disabled=false;btn.textContent='INITIATE WEAPONIZATION';
 }
 
-// ==== Fetcher: Gemini 3.1 Forge ====
-async function doGeminiForge(intelText) {
-    const sysPrompt = "你是无情的考研试卷压模机。读取用户的情报，严格输出合法的JSON数组。字段：[{q:'题目', o:['A项','B项','C项','D项'], a:0, difficulty:2, analysis:'解析'}]。不要Markdown反引号，只需纯JSON文本数组。";
-    if (gatewayMode === 'direct') {
-        const key = window.API_KEYS?.GEMINI;
-        if(!key) throw new Error("直连模式未配置本地 GEMINI 秘钥。");
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${key}`;
-        
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                system_instruction: { parts: [{text: sysPrompt}] },
-                contents: [{ role:"user", parts:[{text: intelText}] }],
-                generationConfig: { temperature: 0.7 }
-            })
-        });
-        const data = await res.json();
-        if(data.error) throw new Error(data.error.message);
-        return data.candidates[0].content.parts[0].text;
-    } else {
-        const res = await fetch("https://pku-api-relay.onrender.com/gemini/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ system_prompt: sysPrompt, user_prompt: intelText })
-        });
-        const data = await res.json();
-        if(data.error) throw new Error(data.error);
-        return data.content || "Relay Fetch Error";
-    }
+// ===== VAULT STATUS =====
+function refreshVault(){
+  const subs=['101','201','301','408'],nm={'101':'政治','201':'英语','301':'数学','408':'计算�?};
+  let h='';
+  subs.forEach(s=>{
+    const v=localStorage.getItem('Global_Vault_'+s),ts=localStorage.getItem('Global_Vault_'+s+'_ts');
+    let count=0,status='empty';
+    if(v){try{count=JSON.parse(v).length;status='loaded'}catch(e){status='corrupted'}}
+    h+='<div class="vs-r"><span class="vs-l">['+s+'] '+nm[s]+'</span><span class="vs-v'+(status==='empty'?' empty':'')+'">'+
+      (status==='loaded'?'�?'+count+' 发弹�?:(status==='corrupted'?'⚠️ 损坏':'�?无弹�?))+
+      (ts?' · '+new Date(ts).toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'')+'</span></div>';
+  });
+  document.getElementById('vs').innerHTML=h;
 }
+refreshVault();
 
-// ==== Actions ====
-async function fireExtraction() {
-    const box = document.getElementById('intelResult');
-    box.innerHTML = `<div class="intel-card"><div class="date">🔴 FETCHING 跨域潜行中...</div><div class="summary" style="color:var(--cyan)">正在连接 Perplexity 引擎，这可能需要约 15-30 秒...<br><br>💡提示：如果中转模式下卡阻，请拨动界面上方开关至【🌐 本地直连】模式。</div></div>`;
-    
-    try {
-        const topic = `启动 IRON PROTOCOL 拦截2026年考研极密情报。目标代码：${currentSubject}。要求：必须覆盖最新时政/选材/前沿，精确到知识点和出题概率，附带出处。`;
-        const res = await doPerplexitySearch(topic);
-        latestIntel = res; 
-        
-        box.innerHTML = `<div class="intel-card">
-           <div class="date">✅ DECRYPTED | ${new Date().toLocaleTimeString()}</div>
-           <div class="summary">${res.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>
-        </div>`;
-    } catch (e) {
-        box.innerHTML = `<div class="intel-card" style="border-color:red">
-           <div class="date" style="color:red">❌ INTERCEPT FAILED</div>
-           <div class="summary" style="color:red">信号丢失！错误：${e.message}</div>
-        </div>`;
-    }
+// ===== GAME OVERLAY =====
+function openGame(url){
+  const t={'ghost-dorm':'👻 猛鬼考研宿舍','battleground':'🪂 北大刺激战场','siege':'⚔️ 北大消消�?};
+  let title='诛魔战区';for(let k in t)if(url.includes(k))title=t[k];
+  document.getElementById('ovT').textContent=title;
+  document.getElementById('ovF').src=url+'?t='+Date.now();
+  document.getElementById('ov').classList.add('on');
 }
-
-function tLog(msg, type="sys") {
-    const b = document.getElementById('termLogs');
-    const d = document.createElement('div');
-    d.className = type === 'json' ? "log-json" : (type === 'sys' ? "log-sys" : "log-line");
-    d.innerText = msg;
-    b.appendChild(d);
-    b.scrollTop = b.scrollHeight;
-}
-
-async function startGeminiForge() {
-    if(!latestIntel) {
-        tLog("⚠️ ERROR: NO INTEL DETECTED. Please FIRE EXTRACTION first.", "sys");
-        alert("长官，请先在【雷达情报】窃取并确认情报后，再启动压模！");
-        return;
-    }
-    tLog(`\n[${new Date().toLocaleTimeString()}] INITIATING FORGE PROTOCOL...`, "sys");
-    tLog(`Gateway: ${gatewayMode.toUpperCase()}`);
-    tLog(`Loading target blueprint: [${currentSubject}]...`);
-    tLog(`Connecting to Global Inference Engine (Gemini 3.1 Pro)...`);
-    
-    try {
-        const rawJsonText = await doGeminiForge("根据以下情报严格生成包含10道高质量考研题干的JSON：\n" + latestIntel);
-        tLog(">>> GEMINI RESPONSE RECEIVED!");
-        
-        const cleanJsonStr = rawJsonText.replace(/```json|```/g, '').trim();
-        tLog(cleanJsonStr, "json");
-        
-        const vaultData = JSON.parse(cleanJsonStr);
-        if(!Array.isArray(vaultData)) throw new Error("Invalid output format. Expected Array.");
-        
-        // 存入 Vault 库
-        const key = "Global_Vault_" + currentSubject;
-        localStorage.setItem(key, JSON.stringify(vaultData));
-        tLog(`[OPERATION COMPLETE] ✅ 成功充能 ${vaultData.length} 发战术级弹药至本地缓存库！`, "sys");
-        tLog(`[PATH] localStorage -> ${key}`, "line");
-        tLog("== 此时可切至【赛博战区】直接开火 ==", "sys");
-    } catch (e) {
-        tLog(`[ERROR] 压模机异常阻断: ${e.message}`, "sys");
-    }
-}
+function closeGame(){document.getElementById('ov').classList.remove('on');document.getElementById('ovF').src=''}
 </script>
+<script src="../shared/vault-loader.js"></script>
 </body>
 </html>

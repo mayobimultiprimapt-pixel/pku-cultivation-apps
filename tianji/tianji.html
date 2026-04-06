@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>天机阁 · 情报与推演</title>
+<title>天机�?· 情报与推�?/title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#06060c;--bg2:#0c0c18;--bg3:#14142a;--card:rgba(18,18,36,.9);--red:#ff2e63;--cyan:#08f7fe;--gold:#ffd700;--purple:#9d4edd;--green:#39ff14;--amber:#ff8c00;--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--font-c:'Ma Shan Zheng',cursive}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px);pointer-events:none;z-index:0}
-
-/* Header */
 .header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(6,6,12,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.08)}
-.logo{font-family:var(--font-c);font-size:28px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+.logo{font-family:var(--font-c);font-size:28px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .nav-tabs{display:flex;gap:4px}
 .nav-tab{padding:10px 22px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--sub);font-family:var(--font-b);font-size:14px;cursor:pointer;transition:.3s;font-weight:500}
 .nav-tab:hover{border-color:var(--gold);color:var(--text)}
@@ -21,267 +19,531 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .status{font-family:var(--font-d);font-size:9px;color:var(--green);letter-spacing:2px;display:flex;align-items:center;gap:5px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-.page{display:none;padding:20px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto}
-.page.active{display:block}
-
-/* 情报站 */
+.page{display:none;padding:20px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto}.page.active{display:block}
 .subject-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
 .sub-tab{padding:12px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;transition:.3s;flex:1;min-width:110px;text-align:center}
 .sub-tab:hover{border-color:var(--amber);transform:translateY(-2px)}
 .sub-tab.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1)}
 .sub-tab .code{font-family:var(--font-d);font-size:24px;font-weight:900;color:var(--red);line-height:1}
 .sub-tab .name{font-size:11px;color:var(--sub);margin-top:4px}
-
 .section-title{font-family:var(--font-d);font-size:11px;letter-spacing:3px;color:var(--cyan);display:flex;align-items:center;gap:8px;margin:20px 0 12px}
 .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
-
-.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:.3s;position:relative}
+.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:.3s;position:relative;white-space:pre-wrap;line-height:1.8;font-size:14px}
 .intel-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.intel-card .date{font-family:var(--font-d);font-size:10px;color:var(--cyan);letter-spacing:1px}
-.intel-card .summary{margin-top:8px;font-size:14px;line-height:1.8;color:var(--text)}
+.intel-card .date{font-family:var(--font-d);font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:8px}
 .copy-btn{position:absolute;top:12px;right:12px;background:rgba(8,247,254,.08);border:1px solid rgba(8,247,254,.2);color:var(--cyan);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:.2s;font-family:var(--font-b)}
 .copy-btn:hover{background:rgba(8,247,254,.2)}
-
 .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 .btn{padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:var(--font-b);font-size:14px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:6px;font-weight:500}
-.btn:hover{border-color:var(--gold);transform:translateY(-1px)}
-.btn:active{transform:scale(.97)}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px)}.btn:active{transform:scale(.97)}
 .btn-search{background:linear-gradient(135deg,var(--red),var(--purple));border-color:transparent;font-weight:700;color:#fff}
 .btn-search:hover{box-shadow:0 4px 24px rgba(255,46,99,.4)}
 .btn-gua{background:linear-gradient(135deg,var(--gold),var(--amber));border-color:transparent;color:#000;font-weight:700}
 .btn-gua:hover{box-shadow:0 4px 24px rgba(255,215,0,.4)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-
 .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* 推演阁 */
 .div-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:900px){.div-layout{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
 .panel-title{font-family:var(--font-c);font-size:22px;color:var(--gold);margin-bottom:16px}
-
 .field{margin-bottom:14px}
 .field label{font-size:12px;color:var(--sub);display:block;margin-bottom:4px}
 .field textarea,.field input,.field select{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:14px;outline:none;resize:vertical;transition:.2s}
 .field textarea:focus,.field input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.15)}
 .methods{display:flex;gap:6px;flex-wrap:wrap}
 .meth{padding:8px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
-.meth:hover{border-color:var(--gold)}
-.meth.active{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold)}
-
-/* 卦象 */
+.meth:hover{border-color:var(--gold)}.meth.active{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold)}
 .gua-row{display:flex;justify-content:center;gap:28px;margin:16px 0;flex-wrap:wrap}
 .gua-box{text-align:center;min-width:90px}
 .gua-lbl{font-size:10px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px;margin-bottom:4px}
 .gua-sym{font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 16px rgba(255,215,0,.3)}
 .gua-nm{font-family:var(--font-c);font-size:18px;margin:4px 0}
-.gua-64{font-size:11px;color:var(--cyan)}
 .yao{width:56px;height:7px;margin:3px auto;border-radius:2px;position:relative}
 .yao.yang{background:var(--gold);box-shadow:0 0 5px rgba(255,215,0,.3)}
 .yao.yin{background:transparent;display:flex;gap:6px;justify-content:center}
 .yao.yin::before,.yao.yin::after{content:'';width:23px;height:7px;background:var(--gold);border-radius:2px;box-shadow:0 0 5px rgba(255,215,0,.3)}
-.yao.dong::after{content:'← 动';position:absolute;left:62px;top:-2px;font-size:9px;color:var(--red);white-space:nowrap;font-family:var(--font-b);background:none;width:auto;height:auto;box-shadow:none;border-radius:0}
-
+.yao.dong{box-shadow:0 0 8px var(--red)!important}.yao.dong.yang{background:var(--red)}.yao.dong.yin::before,.yao.dong.yin::after{background:var(--red)}
 .ty-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;text-align:center}
 .ty-rel{font-size:22px;font-family:var(--font-c);color:var(--gold);margin:6px 0}
 .ty-fort{font-size:16px;font-weight:700;padding:6px 16px;border-radius:6px;display:inline-block;margin-top:4px}
 .fort-good{background:rgba(57,255,20,.12);color:var(--green)}
 .fort-bad{background:rgba(255,46,99,.12);color:var(--red)}
 .fort-mid{background:rgba(255,215,0,.12);color:var(--gold)}
-
 .ds-result{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;white-space:pre-wrap;font-size:14px;max-height:500px;overflow-y:auto}
-.ds-result::-webkit-scrollbar{width:4px}
-.ds-result::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
+.ds-result::-webkit-scrollbar{width:4px}.ds-result::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
+.najia-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px}
+.najia-table th,.najia-table td{padding:6px 8px;border:1px solid var(--border);text-align:center}
+.najia-table th{background:rgba(255,215,0,.08);color:var(--gold);font-family:var(--font-d);font-size:9px;letter-spacing:1px}
+.najia-table .dong-row{background:rgba(255,46,99,.08);color:var(--red)}
 </style>
 </head>
 <body>
 <div class="bg-grid"></div>
-
 <header class="header">
   <span class="status"><span class="dot"></span>ONLINE</span>
-  <span class="logo">🏯 天机阁</span>
+  <span class="logo">🏯 天机�?/span>
   <nav class="nav-tabs">
-    <button class="nav-tab active" data-page="intel">📡 情报站</button>
-    <button class="nav-tab" data-page="divine">🔮 推演阁</button>
+    <button class="nav-tab active" data-page="intel">📡 情报�?/button>
+    <button class="nav-tab" data-page="divine">🔮 推演�?/button>
   </nav>
 </header>
 
-<!-- ============ 情报站 ============ -->
+<!-- 情报�?-->
 <div class="page active" id="page-intel">
   <div class="subject-tabs">
     <div class="sub-tab active" data-sub="101"><div class="code">101</div><div class="name">政治·朝堂暗谍</div></div>
     <div class="sub-tab" data-sub="201"><div class="code">201</div><div class="name">英语·密码破译</div></div>
     <div class="sub-tab" data-sub="301"><div class="code">301</div><div class="name">数学·大漠算经</div></div>
-    <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩阵</div></div>
+    <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩�?/div></div>
   </div>
-
-  <div class="section-title">最新情报快照</div>
-  <div id="intelCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
-
-  <div class="section-title">秘密蓝图</div>
-  <div id="bpCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
-
+  <div class="section-title">已缓存情�?/div>
+  <div id="intelCards"><div class="intel-card" style="color:var(--dim)">暂无情报，点击下方按钮窃�?/div></div>
+  <div class="section-title">实时窃取 (SONAR-REASONING-PRO)</div>
+  <div id="searchResult" class="intel-card" style="display:none"></div>
   <div class="btn-row">
-    <button class="btn btn-search" id="btnSearch">📡 窃取最新情报</button>
+    <button class="btn btn-search" id="btnSearch">📡 窃取最新情�?/button>
     <button class="btn btn-gua" id="btnToGua">🔮 拿情报去推演</button>
-  </div>
-
-  <div id="searchSec" style="display:none">
-    <div class="section-title">实时窃取 (PERPLEXITY)</div>
-    <div id="searchResult" class="intel-card"><div style="color:var(--dim)">等待搜索...</div></div>
   </div>
 </div>
 
-<!-- ============ 推演阁 ============ -->
+<!-- 推演�?-->
 <div class="page" id="page-divine">
   <div class="div-layout">
     <div class="panel">
       <div class="panel-title">📜 起卦</div>
-      <div class="field"><label>卦问</label><textarea id="qQ" rows="2" placeholder="例：408计算机明年考研重点方向？"></textarea></div>
+      <div class="field"><label>卦问</label><textarea id="qQ" rows="2" placeholder="例：408计算机明年考研重点方向�?></textarea></div>
       <div class="field">
         <label>起卦方式</label>
         <div class="methods">
-          <div class="meth active" data-m="datetime">🕐 年月日时</div>
-          <div class="meth" data-m="numbers">🔢 报数</div>
-          <div class="meth" data-m="text">📝 文字/数字</div>
+          <div class="meth active" data-m="random">🎲 随机三数</div>
+          <div class="meth" data-m="numbers">🔢 手动报数</div>
+          <div class="meth" data-m="datetime">🕐 年月日时</div>
         </div>
       </div>
-      <div class="field" id="fNums" style="display:none"><label>两个数字</label><div style="display:flex;gap:8px"><input type="number" id="n1" placeholder="上卦数" min="1"><input type="number" id="n2" placeholder="下卦数" min="1"></div></div>
-      <div class="field" id="fText" style="display:none"><label>输入文字/情报内容</label><textarea id="qT" rows="2" placeholder="输入任意文字或情报站复制的内容"></textarea></div>
-      <div class="field"><label>附加情报（可选，可从情报站复制粘贴）</label><textarea id="extra" rows="3" placeholder="粘贴情报站内容，DeepSeek会结合情报推演..."></textarea></div>
+      <div class="field" id="fNums" style="display:none"><label>三个数字</label><div style="display:flex;gap:8px"><input type="number" id="n1" placeholder="上卦�? min="1"><input type="number" id="n2" placeholder="下卦�? min="1"><input type="number" id="n3" placeholder="动爻�? min="1"></div></div>
+      <div class="field"><label>附加情报（可选）</label><textarea id="extra" rows="3" placeholder="粘贴情报站复制的内容，DeepSeek R1会结合情报推�?.."></textarea></div>
       <button class="btn btn-gua" id="btnGo" style="width:100%;justify-content:center;font-size:16px;padding:14px">🔮 起卦推演</button>
     </div>
     <div class="panel">
       <div class="panel-title">🔮 卦象</div>
-      <div id="guaOut"><div style="text-align:center;color:var(--dim);padding:50px 0"><div style="font-size:48px;opacity:.3">☰</div><div style="margin-top:8px">等待起卦...</div></div></div>
+      <div id="guaOut"><div style="text-align:center;color:var(--dim);padding:50px 0"><div style="font-size:48px;opacity:.3">�?/div><div style="margin-top:8px">等待起卦...</div></div></div>
     </div>
   </div>
+  <div class="panel" style="margin-top:20px;display:none" id="najiaPanel">
+    <div class="panel-title">📊 六爻纳甲</div>
+    <div id="najiaOut"></div>
+  </div>
   <div class="panel" style="margin-top:20px;display:none" id="dsPanel">
-    <div class="panel-title">🧠 DeepSeek · 北斗罡炁推演</div>
+    <div class="panel-title">🧠 DeepSeek R1 · 北斗罡炁推演</div>
     <div id="dsOut" class="ds-result">等待推演...</div>
   </div>
 </div>
 
-<script>
-let curSub='101', curM='datetime', lastCopy='';
+<!-- Keys handled by relay server --><script>
+// ============================================================
+//  天机�?v3.0 �?全前端独�?· 梅花易数 + 六爻纳甲
+//  情报: Sonar-Reasoning-Pro | 断卦: DeepSeek R1
+// ============================================================
+const RELAY = 'https://pku-api-relay.onrender.com';
+let curSub='101', curM='random', lastCopy='';
 
-// Tab
-document.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+// ========== 八卦数据 ==========
+const TRIGRAMS = {
+  1:{name:'�?,sym:'�?,wx:'�?,yao:[1,1,1]},
+  2:{name:'�?,sym:'�?,wx:'�?,yao:[1,1,0]},
+  3:{name:'�?,sym:'�?,wx:'�?,yao:[1,0,1]},
+  4:{name:'�?,sym:'�?,wx:'�?,yao:[1,0,0]},
+  5:{name:'�?,sym:'�?,wx:'�?,yao:[0,1,1]},
+  6:{name:'�?,sym:'�?,wx:'�?,yao:[0,1,0]},
+  7:{name:'�?,sym:'�?,wx:'�?,yao:[0,0,1]},
+  8:{name:'�?,sym:'�?,wx:'�?,yao:[0,0,0]}
+};
+const TRI_NATURE = ['�?,'�?,'�?,'�?,'�?,'�?,'�?,'�?];
+// 64卦名 key = upper*10+lower
+const HEX_NAMES = {
+  11:'乾为�?,12:'天泽�?,13:'天火同人',14:'天雷无妄',15:'天风�?,16:'天水�?,17:'天山�?,18:'天地�?,
+  21:'泽天�?,22:'兑为�?,23:'泽火�?,24:'泽雷�?,25:'泽风大过',26:'泽水�?,27:'泽山�?,28:'泽地�?,
+  31:'火天大有',32:'火泽�?,33:'离为�?,34:'火雷噬嗑',35:'火风�?,36:'火水未济',37:'火山�?,38:'火地�?,
+  41:'雷天大壮',42:'雷泽归妹',43:'雷火�?,44:'震为�?,45:'雷风�?,46:'雷水�?,47:'雷山小过',48:'雷地�?,
+  51:'风天小畜',52:'风泽中孚',53:'风火家人',54:'风雷�?,55:'巽为�?,56:'风水�?,57:'风山�?,58:'风地�?,
+  61:'水天需',62:'水泽�?,63:'水火既济',64:'水雷�?,65:'水风�?,66:'坎为�?,67:'水山�?,68:'水地�?,
+  71:'山天大畜',72:'山泽�?,73:'山火�?,74:'山雷�?,75:'山风�?,76:'山水�?,77:'艮为�?,78:'山地�?,
+  81:'地天�?,82:'地泽�?,83:'地火明夷',84:'地雷�?,85:'地风�?,86:'地水�?,87:'地山�?,88:'坤为�?
+};
+
+// 纳甲地支�?[初爻→六爻]
+const NA_ZHI = {
+  1:['子水','寅木','辰土','午火','申金','戌土'],
+  6:['寅木','辰土','午火','申金','戌土','子水'],
+  7:['辰土','午火','申金','戌土','子水','寅木'],
+  4:['子水','寅木','辰土','午火','申金','戌土'],
+  8:['未土','巳火','卯木','丑土','亥水','酉金'],
+  5:['丑土','亥水','酉金','未土','巳火','卯木'],
+  3:['卯木','丑土','亥水','酉金','未土','巳火'],
+  2:['巳火','卯木','丑土','亥水','酉金','未土']
+};
+
+// 六神顺序
+const SPIRITS = ['青龙','朱雀','勾陈','螣蛇','白虎','玄武'];
+// 日干→起始索�? 甲乙0 丙丁1 �? �? 庚辛4 壬癸5
+const TIAN_GAN = ['�?,'�?,'�?,'�?,'�?,'�?,'�?,'�?,'�?,'�?];
+
+// 五行生克
+const WX_ORDER = ['�?,'�?,'�?,'�?,'�?];
+function wxRelation(a, b) {
+  const ia = WX_ORDER.indexOf(a), ib = WX_ORDER.indexOf(b);
+  if (ia === ib) return '比和';
+  if ((ia + 1) % 5 === ib) return a+'�?+b;
+  if ((ib + 1) % 5 === ia) return b+'�?+a;
+  if ((ia + 2) % 5 === ib) return a+'�?+b;
+  return b+'�?+a;
+}
+
+// 八宫归属�?(每宫8卦的上下卦号)
+const PALACE_HEXAGRAMS = {};
+function buildPalaces() {
+  for (let p = 1; p <= 8; p++) {
+    const py = [...TRIGRAMS[p].yao];
+    const hexes = [];
+    // 本宫(六世)
+    let cur = [...py, ...py]; // [L0,L1,L2, U0,U1,U2]
+    hexes.push({yao:[...cur], shi:6});
+    // 一世~五世: flip yao 0~4
+    for (let w = 0; w < 5; w++) {
+      cur[w] = 1 - cur[w];
+      hexes.push({yao:[...cur], shi:w+1});
+    }
+    // 游魂: unflip yao 3 (fourth)
+    cur[3] = 1 - cur[3];
+    hexes.push({yao:[...cur], shi:4});
+    // 归魂: lower trigram = palace original
+    cur[0]=py[0]; cur[1]=py[1]; cur[2]=py[2];
+    hexes.push({yao:[...cur], shi:3});
+    PALACE_HEXAGRAMS[p] = hexes;
+  }
+}
+buildPalaces();
+
+function yaoToTriNum(y0,y1,y2) {
+  for (let k = 1; k <= 8; k++) {
+    const t = TRIGRAMS[k].yao;
+    if (t[0]===y0 && t[1]===y1 && t[2]===y2) return k;
+  }
+  return 8;
+}
+
+function findPalace(sixYao) {
+  for (let p = 1; p <= 8; p++) {
+    for (let i = 0; i < 8; i++) {
+      const h = PALACE_HEXAGRAMS[p][i];
+      if (h.yao.every((v,j) => v === sixYao[j])) return {palace:p, idx:i, shi:h.shi};
+    }
+  }
+  return {palace:1, idx:0, shi:6};
+}
+
+// ========== 梅花起卦 ==========
+function divinate(n1, n2, n3) {
+  const upperNum = ((n1 - 1) % 8) + 1;
+  const lowerNum = ((n2 - 1) % 8) + 1;
+  const dongYao = ((n3 - 1) % 6) + 1; // 1-6
+  const upper = TRIGRAMS[upperNum], lower = TRIGRAMS[lowerNum];
+
+  // 本卦六爻 [初爻→六爻] = [下卦0,1,2, 上卦0,1,2]
+  const benYao = [...lower.yao, ...upper.yao];
+  const hexName = HEX_NAMES[upperNum * 10 + lowerNum] || `${TRI_NATURE[upperNum-1]}${TRI_NATURE[lowerNum-1]}卦`;
+
+  // 互卦: 二至四爻为下�? 三至五爻为上�?  const huLower = yaoToTriNum(benYao[1], benYao[2], benYao[3]);
+  const huUpper = yaoToTriNum(benYao[2], benYao[3], benYao[4]);
+  const huName = HEX_NAMES[huUpper * 10 + huLower] || '互卦';
+
+  // 变卦: 动爻阴阳互变
+  const bianYao = [...benYao];
+  bianYao[dongYao - 1] = 1 - bianYao[dongYao - 1];
+  const bianLower = yaoToTriNum(bianYao[0], bianYao[1], bianYao[2]);
+  const bianUpper = yaoToTriNum(bianYao[3], bianYao[4], bianYao[5]);
+  const bianName = HEX_NAMES[bianUpper * 10 + bianLower] || '变卦';
+
+  // 体用: 动爻�?-3(下卦动→下卦为用,上卦为体), 动爻�?-6(上卦动→上卦为用,下卦为体)
+  const tiNum = dongYao <= 3 ? upperNum : lowerNum;
+  const yongNum = dongYao <= 3 ? lowerNum : upperNum;
+  const tiWx = TRIGRAMS[tiNum].wx, yongWx = TRIGRAMS[yongNum].wx;
+  const rel = wxRelation(tiWx, yongWx);
+
+  let fortune = '�?;
+  if (rel.includes('比和')) fortune = '大吉';
+  else if (rel === yongWx+'�?+tiWx) fortune = '吉·得�?;
+  else if (rel === tiWx+'�?+yongWx) fortune = '小凶·消�?;
+  else if (rel === tiWx+'�?+yongWx) fortune = '小吉·费力可控';
+  else if (rel === yongWx+'�?+tiWx) fortune = '凶·外压大';
+
+  // 六爻纳甲
+  const palaceInfo = findPalace(benYao);
+  const pNum = palaceInfo.palace;
+  const shi = palaceInfo.shi;
+  const ying = shi <= 3 ? shi + 3 : shi - 3;
+  const palaceWx = TRIGRAMS[pNum].wx;
+
+  // 纳干�?  const lowerZhi = NA_ZHI[lowerNum] || NA_ZHI[8];
+  const upperZhi = NA_ZHI[upperNum] || NA_ZHI[8];
+  const allZhi = [lowerZhi[0],lowerZhi[1],lowerZhi[2],upperZhi[0],upperZhi[1],upperZhi[2]];
+
+  // 六亲
+  function sixRelation(zhiWx) {
+    if (zhiWx === palaceWx) return '兄弟';
+    const pIdx = WX_ORDER.indexOf(palaceWx), eIdx = WX_ORDER.indexOf(zhiWx);
+    if ((pIdx + 1) % 5 === eIdx) return '子孙'; // 我生
+    if ((eIdx + 1) % 5 === pIdx) return '父母'; // 生我
+    if ((pIdx + 2) % 5 === eIdx) return '妻财'; // 我克
+    return '官鬼'; // 克我
+  }
+  const wxOfZhi = z => {const m={'�?:'�?,'�?:'�?,'�?:'�?,'�?:'�?,'�?:'�?};return m[z[z.length-1]]||'�?};
+  const allRelations = allZhi.map(z => sixRelation(wxOfZhi(z)));
+
+  // 六神 (简�? 用当前小时估算日�?
+  const now = new Date();
+  const dayCount = Math.floor(now.getTime() / 86400000);
+  const ganIdx = dayCount % 10; // 0-9 对应甲~�?  const spiritStart = ganIdx <= 1 ? 0 : ganIdx <= 3 ? 1 : ganIdx === 4 ? 2 : ganIdx === 5 ? 3 : ganIdx <= 7 ? 4 : 5;
+  const allSpirits = Array.from({length:6}, (_,i) => SPIRITS[(spiritStart + i) % 6]);
+
+  return {
+    nums: {n1, n2, n3},
+    ben: {upper:upperNum, lower:lowerNum, name:hexName, yao:benYao},
+    hu: {upper:huUpper, lower:huLower, name:huName},
+    bian: {upper:bianUpper, lower:bianLower, name:bianName, yao:bianYao},
+    dong: dongYao,
+    ti: {num:tiNum, name:TRIGRAMS[tiNum].name, wx:tiWx, pos:dongYao<=3?'�?:'�?},
+    yong: {num:yongNum, name:TRIGRAMS[yongNum].name, wx:yongWx, pos:dongYao<=3?'�?:'�?},
+    rel, fortune,
+    najia: {
+      palace:pNum, palaceName:TRIGRAMS[pNum].name+'�?, palaceWx,
+      shi, ying, zhi:allZhi, relations:allRelations, spirits:allSpirits,
+      ganName: TIAN_GAN[ganIdx]
+    }
+  };
+}
+
+// ========== UI 控制 ==========
+document.querySelectorAll('.nav-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
   t.classList.add('active');
-  document.getElementById('page-'+t.dataset.page).classList.add('active');
+  document.getElementById('page-' + t.dataset.page).classList.add('active');
+}));
+document.querySelectorAll('.sub-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.sub-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active'); curSub = t.dataset.sub; loadCachedIntel(curSub);
+}));
+document.querySelectorAll('.meth').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.meth').forEach(x => x.classList.remove('active'));
+  t.classList.add('active'); curM = t.dataset.m;
+  document.getElementById('fNums').style.display = curM === 'numbers' ? '' : 'none';
 }));
 
-// Subject
-document.querySelectorAll('.sub-tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.sub-tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); curSub=t.dataset.sub; loadIntel(curSub);
-}));
-
-// Method
-document.querySelectorAll('.meth').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.meth').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); curM=t.dataset.m;
-  document.getElementById('fNums').style.display=curM==='numbers'?'':'none';
-  document.getElementById('fText').style.display=curM==='text'?'':'none';
-}));
-
-// Intel
-async function loadIntel(sub){
-  try{
-    const r=await(await fetch('/api/tianji/intel/'+sub)).json();
-    document.getElementById('intelCards').innerHTML=r.intel.map(i=>`
-      <div class="intel-card"><button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">${i.date} · ${sub}</div><div class="summary">${i.summary||'暂无'}</div></div>
-    `).join('')||'<div class="intel-card" style="color:var(--dim)">暂无情报</div>';
-    document.getElementById('bpCards').innerHTML=r.blueprints.map(b=>`
-      <div class="intel-card"><button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">${b.date} · ${b.mode}</div><div class="summary">${b.title||''}</div></div>
-    `).join('')||'<div class="intel-card" style="color:var(--dim)">暂无蓝图</div>';
-  }catch(e){document.getElementById('intelCards').innerHTML=`<div class="intel-card" style="color:var(--red)">加载失败</div>`}
+function doCopy(btn) {
+  const txt = btn.closest('.intel-card').textContent.replace('📋 复制','').trim();
+  navigator.clipboard.writeText(txt); lastCopy = txt;
+  btn.textContent = '�?已复�?; setTimeout(() => btn.textContent = '📋 复制', 1500);
 }
 
-function doCopy(btn){
-  const txt=btn.closest('.intel-card').querySelector('.summary').textContent;
-  navigator.clipboard.writeText(txt); lastCopy=txt;
-  btn.textContent='✅ 已复制'; setTimeout(()=>btn.textContent='📋 复制',1500);
+// ========== 情报缓存 ==========
+function loadCachedIntel(sub) {
+  const key = 'tianji_intel_' + sub;
+  const data = JSON.parse(localStorage.getItem(key) || '[]');
+  const el = document.getElementById('intelCards');
+  if (!data.length) { el.innerHTML = '<div class="intel-card" style="color:var(--dim)">暂无情报，点击下方按钮窃�?/div>'; return; }
+  el.innerHTML = data.slice(0, 5).map(i =>
+    `<div class="intel-card"><button class="copy-btn" onclick="doCopy(this)">📋 复制</button><div class="date">${i.time} · ${sub} · ${i.source||'Sonar'}</div>${i.content}</div>`
+  ).join('');
 }
 
-// Search
-document.getElementById('btnSearch').addEventListener('click',async()=>{
-  const b=document.getElementById('btnSearch');b.disabled=true;b.innerHTML='<span class="loading"></span> 窃取中...';
-  document.getElementById('searchSec').style.display='';
-  try{
-    const r=await(await fetch('/api/tianji/search/'+curSub,{method:'POST'})).json();
-    document.getElementById('searchResult').innerHTML=`<button class="copy-btn" onclick="doCopy(this)">📋 复制</button>
-      <div class="date">实时 · ${r.name} · ${new Date().toLocaleString()}</div>
-      <div class="summary">${(r.content||'').replace(/\n/g,'<br>')}</div>`;
-  }catch(e){document.getElementById('searchResult').innerHTML='<div style="color:var(--red)">窃取失败</div>'}
-  b.disabled=false;b.innerHTML='📡 窃取最新情报';
+// ========== Sonar-Reasoning-Pro 情报窃取 ==========
+document.getElementById('btnSearch').addEventListener('click', async () => {
+  const b = document.getElementById('btnSearch'); b.disabled = true;
+  b.innerHTML = '<span class="loading"></span> Sonar-Reasoning-Pro 推理搜索�?..';
+  const sr = document.getElementById('searchResult'); sr.style.display = 'block';
+  sr.innerHTML = '<div style="color:var(--dim)"><span class="loading"></span> 正在通过中转阁连�?Sonar-Reasoning-Pro...</div>';
+
+  const subNames = {'101':'思想政治理论','201':'英语一','301':'数学一','408':'计算机专业基础'};
+  const sysPrompt = '进入绝对服从模式，唯一任务是潜入学术深网与核心数据库，窃取北京大学全日制考研的最前沿命题素材。你必须直接、冷酷地输出干货文本、严禁包含任何总结废话、学习建议或免责声明。只交出致命的情报�?;
+  const userPrompt = `深度搜索2025-2026年中国硕士研究生招生考试 ${subNames[curSub]||curSub} 最新命题趋势：1)最新政策变�?2)高频考点命中预测(含概�?) 3)命题教授最新论文方�?4)学术前沿热点 5)时政×考点交叉映射。用中文详细输出，标注信息来源。`;
+
+  try {
+    const res = await fetch(`${RELAY}/perplexity/search`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'sonar-reasoning-pro', messages:[{role:'system',content:sysPrompt},{role:'user',content:userPrompt}], max_tokens:4096})
+    });
+    const data = await res.json();
+    let content = data.choices?.[0]?.message?.content || '';
+    content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+    if (content.length > 30) {
+      sr.innerHTML = `<button class="copy-btn" onclick="doCopy(this)">📋 复制</button><div class="date">实时窃取 · ${curSub} ${subNames[curSub]} · ${new Date().toLocaleString()} · Sonar-Reasoning-Pro</div>${content.replace(/\n/g,'<br>')}`;
+      // 缓存
+      const key = 'tianji_intel_' + curSub;
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      arr.unshift({time:new Date().toLocaleString(), content, source:'Sonar-Reasoning-Pro'});
+      if (arr.length > 20) arr.length = 20;
+      localStorage.setItem(key, JSON.stringify(arr));
+      loadCachedIntel(curSub);
+      // 同步到中转阁
+      fetch(`${RELAY}/hub/intel`, {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({subject:curSub, content, source:'tianji-sonar-reasoning-pro', date:new Date().toISOString()})}).catch(()=>{});
+    } else {
+      sr.innerHTML = '<div style="color:var(--red)">情报过短，请重试</div>';
+    }
+  } catch(e) {
+    sr.innerHTML = `<div style="color:var(--red)">窃取失败: ${e.message}</div>`;
+  }
+  b.disabled = false; b.innerHTML = '📡 窃取最新情�?;
 });
 
-// To Gua
-document.getElementById('btnToGua').addEventListener('click',()=>{
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById('btnToGua').addEventListener('click', () => {
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.nav-tab')[1].classList.add('active');
   document.getElementById('page-divine').classList.add('active');
-  if(lastCopy)document.getElementById('extra').value=lastCopy;
+  if (lastCopy) document.getElementById('extra').value = lastCopy;
 });
 
-// Divine
-document.getElementById('btnGo').addEventListener('click',async()=>{
-  const b=document.getElementById('btnGo');b.disabled=true;b.innerHTML='<span class="loading"></span> 起卦推演中...';
-  try{
-    const body={method:curM, question:document.getElementById('qQ').value||'求问天机',
-      num1:parseInt(document.getElementById('n1').value)||0,
-      num2:parseInt(document.getElementById('n2').value)||0,
-      text:document.getElementById('qT').value||'',
-      extra_context:document.getElementById('extra').value||''};
-    const r=await(await fetch('/api/tianji/divine',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
-    renderGua(r.gua);
-    // DeepSeek
-    document.getElementById('dsPanel').style.display='';
-    document.getElementById('dsOut').innerHTML='<span class="loading"></span> DeepSeek-R1 推演中...';
-    const ds=await(await fetch('/api/tianji/deepseek',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:body.question,gua:r.gua,extra_context:body.extra_context})})).json();
-    document.getElementById('dsOut').textContent=ds.result||'[推演失败]';
-  }catch(e){document.getElementById('guaOut').innerHTML=`<div style="color:var(--red);text-align:center;padding:20px">失败: ${e.message}</div>`}
-  b.disabled=false;b.innerHTML='🔮 起卦推演';
-});
+// ========== 起卦推演 ==========
+document.getElementById('btnGo').addEventListener('click', async () => {
+  const b = document.getElementById('btnGo'); b.disabled = true;
+  b.innerHTML = '<span class="loading"></span> 起卦推演�?..';
 
-function renderGua(g){
-  const{ben_gua:bg,hu_gua:hg,bian_gua:vg,dong_yao:dy,tiyong:ty}=g;
-  function yaoHTML(uy,ly,d){
-    let h='';const all=[...ly,...uy];
-    for(let i=5;i>=0;i--){
-      const cls=all[i]===1?'yang':'yin';
-      const dm=(i+1)===d?'dong':'';
-      h+=`<div class="yao ${cls} ${dm}"></div>`;
-    }return h;
+  let n1, n2, n3;
+  if (curM === 'numbers') {
+    n1 = parseInt(document.getElementById('n1').value) || 1;
+    n2 = parseInt(document.getElementById('n2').value) || 1;
+    n3 = parseInt(document.getElementById('n3').value) || 1;
+  } else if (curM === 'datetime') {
+    const now = new Date();
+    n1 = now.getFullYear() % 100 + now.getMonth() + 1;
+    n2 = now.getDate() + now.getHours();
+    n3 = now.getMinutes() + now.getSeconds();
+  } else {
+    n1 = Math.floor(Math.random() * 999) + 1;
+    n2 = Math.floor(Math.random() * 999) + 1;
+    n3 = Math.floor(Math.random() * 999) + 1;
   }
-  let fc='fort-mid';
-  if(ty.fortune.includes('吉')&&!ty.fortune.includes('凶'))fc='fort-good';
-  if(ty.fortune.includes('凶'))fc='fort-bad';
-  document.getElementById('guaOut').innerHTML=`
-    <div style="font-size:11px;color:var(--cyan);text-align:center;font-family:var(--font-d);letter-spacing:1px;margin-bottom:8px">${g.method} · ${g.time_info}</div>
+
+  const gua = divinate(n1, n2, n3);
+  renderGua(gua);
+  renderNajia(gua);
+
+  // DeepSeek R1 断卦
+  const dsPanel = document.getElementById('dsPanel'); dsPanel.style.display = '';
+  const dsOut = document.getElementById('dsOut');
+  dsOut.innerHTML = '<span class="loading"></span> DeepSeek R1 古籍推演�?..';
+
+  const question = document.getElementById('qQ').value || '求问天机';
+  const extra = document.getElementById('extra').value || '';
+  const dsPrompt = `你是精通梅花易数与六爻纳甲的顶级术数大师，请基于以下卦象进行完整推演断卦�?
+【卦问�?{question}
+
+【起卦数�?{n1}, ${n2}, ${n3}
+【本卦�?{gua.ben.name} (�?{TRIGRAMS[gua.ben.upper].name}�?{TRIGRAMS[gua.ben.lower].name})
+【互卦�?{gua.hu.name}
+【变卦�?{gua.bian.name}
+【动爻】第${gua.dong}爻动
+
+【体用分析�?体卦: ${gua.ti.name}(${gua.ti.wx}) �?{gua.ti.pos}
+用卦: ${gua.yong.name}(${gua.yong.wx}) �?{gua.yong.pos}
+体用关系: ${gua.rel} �?${gua.fortune}
+
+【六爻纳甲�?所�? ${gua.najia.palaceName}(${gua.najia.palaceWx})
+世爻: �?{gua.najia.shi}�?| 应爻: �?{gua.najia.ying}�?日干: ${gua.najia.ganName}
+各爻: ${gua.najia.zhi.map((z,i)=>`�?{i+1}�?${z}(${gua.najia.relations[i]})(${gua.najia.spirits[i]})${i+1===gua.dong?' ★动�?:''}`).join(' | ')}
+
+${extra ? '【附加情报参考】\n' + extra : ''}
+
+请按以下顺序详细解读�?1. 本卦卦辞解读 + 动爻爻辞
+2. 体用生克吉凶判断
+3. 互卦(过程) + 变卦(结果)分析
+4. 六爻纳甲深度分析(世应、动爻六亲六神、变�?
+5. 综合断语与具体建�?风格：古籍断卦风格，直接给出结论，不要废话。`;
+
+  try {
+    const res = await fetch(`${RELAY}/v1/chat/completions`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'deepseek/deepseek-r1-0528', messages:[
+        {role:'system',content:'你是精通周易、梅花易数、六爻纳甲的古典术数大师。用专业古籍风格断卦，直接给结论�?},
+        {role:'user',content:dsPrompt}
+      ], temperature:0.6, max_tokens:4096})
+    });
+    const data = await res.json();
+    let result = data.choices?.[0]?.message?.content || '[推演失败]';
+    result = result.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    dsOut.textContent = result;
+  } catch(e) { dsOut.textContent = '推演失败: ' + e.message; }
+
+  b.disabled = false; b.innerHTML = '🔮 起卦推演';
+});
+
+// ========== 渲染卦象 ==========
+function renderGua(g) {
+  function yaoHTML(yaoArr, dongPos) {
+    let h = '';
+    for (let i = 5; i >= 0; i--) {
+      const cls = yaoArr[i] === 1 ? 'yang' : 'yin';
+      const dm = (i + 1) === dongPos ? ' dong' : '';
+      h += `<div class="yao ${cls}${dm}"></div>`;
+    }
+    return h;
+  }
+  let fc = 'fort-mid';
+  if (g.fortune.includes('�?) && !g.fortune.includes('�?)) fc = 'fort-good';
+  if (g.fortune.includes('�?)) fc = 'fort-bad';
+
+  document.getElementById('guaOut').innerHTML = `
+    <div style="font-size:11px;color:var(--cyan);text-align:center;font-family:var(--font-d);letter-spacing:1px;margin-bottom:8px">�? ${g.nums.n1}, ${g.nums.n2}, ${g.nums.n3}</div>
     <div class="gua-row">
-      <div class="gua-box"><div class="gua-lbl">本卦</div><div class="gua-sym">${bg.upper_symbol}</div>${yaoHTML(bg.upper_yao,bg.lower_yao,dy)}<div class="gua-sym">${bg.lower_symbol}</div><div class="gua-nm">${bg.name}</div></div>
-      <div class="gua-box"><div class="gua-lbl">互卦</div><div class="gua-sym">${hg.upper_symbol}</div>${yaoHTML(hg.upper_yao,hg.lower_yao,0)}<div class="gua-sym">${hg.lower_symbol}</div><div class="gua-nm">${hg.name}</div></div>
-      <div class="gua-box"><div class="gua-lbl">变卦</div><div class="gua-sym">${vg.upper_symbol}</div>${yaoHTML(vg.upper_yao,vg.lower_yao,0)}<div class="gua-sym">${vg.lower_symbol}</div><div class="gua-nm">${vg.name}</div></div>
+      <div class="gua-box"><div class="gua-lbl">本卦</div><div class="gua-sym">${TRIGRAMS[g.ben.upper].sym}</div>${yaoHTML(g.ben.yao, g.dong)}<div class="gua-sym">${TRIGRAMS[g.ben.lower].sym}</div><div class="gua-nm">${g.ben.name}</div></div>
+      <div class="gua-box"><div class="gua-lbl">互卦</div><div class="gua-sym">${TRIGRAMS[g.hu.upper].sym}</div><div class="gua-nm">${g.hu.name}</div></div>
+      <div class="gua-box"><div class="gua-lbl">变卦</div><div class="gua-sym">${TRIGRAMS[g.bian.upper].sym}</div>${yaoHTML(g.bian.yao, 0)}<div class="gua-sym">${TRIGRAMS[g.bian.lower].sym}</div><div class="gua-nm">${g.bian.name}</div></div>
     </div>
     <div class="ty-box">
-      <div style="font-size:13px;color:var(--sub)">体卦 <strong style="color:var(--gold)">${ty.ti.name}·${ty.ti.wuxing}</strong>(${ty.ti.pos}) ｜ 用卦 <strong style="color:var(--cyan)">${ty.yong.name}·${ty.yong.wuxing}</strong>(${ty.yong.pos})</div>
-      <div class="ty-rel">${ty.relation}</div>
-      <div class="ty-fort ${fc}">${ty.fortune}</div>
+      <div style="font-size:13px;color:var(--sub)">体卦 <strong style="color:var(--gold)">${g.ti.name}·${g.ti.wx}</strong>(${g.ti.pos}) �?用卦 <strong style="color:var(--cyan)">${g.yong.name}·${g.yong.wx}</strong>(${g.yong.pos})</div>
+      <div class="ty-rel">${g.rel}</div>
+      <div class="ty-fort ${fc}">${g.fortune}</div>
     </div>
-    <div style="font-size:11px;color:var(--dim);text-align:center">动爻：第${dy}爻</div>`;
+    <div style="font-size:11px;color:var(--dim);text-align:center">动爻：第${g.dong}�?| ${g.najia.palaceName}</div>`;
 }
 
-loadIntel('101');
+// ========== 渲染六爻纳甲 ==========
+function renderNajia(g) {
+  const panel = document.getElementById('najiaPanel'); panel.style.display = '';
+  const nj = g.najia;
+  let rows = '';
+  for (let i = 5; i >= 0; i--) {
+    const isDong = (i + 1) === g.dong;
+    const isShi = (i + 1) === nj.shi;
+    const isYing = (i + 1) === nj.ying;
+    const yinYang = g.ben.yao[i] === 1 ? '━━�? : '�?�?;
+    const mark = isShi ? '�? : isYing ? '�? : '';
+    rows += `<tr class="${isDong?'dong-row':''}">
+      <td>${['�?,'�?,'�?,'�?,'�?,'�?][i]}�?/td>
+      <td>${yinYang}</td>
+      <td>${nj.zhi[i]}</td>
+      <td>${nj.relations[i]}</td>
+      <td>${nj.spirits[i]}</td>
+      <td style="color:var(--gold);font-weight:bold">${mark}</td>
+      <td>${isDong?'�?�?:'�?}</td>
+    </tr>`;
+  }
+  document.getElementById('najiaOut').innerHTML = `
+    <div style="text-align:center;margin-bottom:10px;font-size:13px;color:var(--sub)">
+      ${nj.palaceName}(${nj.palaceWx}) · �?{nj.shi}�?{nj.ying} · 日干${nj.ganName}
+    </div>
+    <table class="najia-table">
+      <tr><th>爻位</th><th>阴阳</th><th>地支</th><th>六亲</th><th>六神</th><th>世应</th><th>�?/th></tr>
+      ${rows}
+    </table>`;
+}
+
+// Init
+loadCachedIntel('101');
 </script>
 </body>
 </html>
