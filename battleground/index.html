@@ -1,182 +1,192 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0a0a2e">
-<link rel="manifest" href="manifest.json">
-<title>北大刺激战场 · 和平精英</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg,#05050f);overflow:hidden;font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;user-select:none;touch-action:none}
-.bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(46,160,67,.03) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(46,160,67,.03) 50px);pointer-events:none;z-index:0;animation:scanBg 10s linear infinite}
-@keyframes scanBg{0%{background-position:0 0}100%{background-position:50px 50px}}
-canvas{display:block;position:relative;z-index:2}
-.hud{position:fixed;pointer-events:none;z-index:10}
-.h-top{top:0;left:0;right:0;display:flex;justify-content:space-between;padding:8px 12px;font-size:.8em}
-.h-top>div{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 12px;backdrop-filter:blur(4px)}
-.h-top b{color:#2ea043}
-.zone-warn{color:#f85149!important;border-color:rgba(248,81,73,.5)!important;display:none}
-.zone-warn.on{display:block;animation:pulse 1s infinite}
-@keyframes pulse{50%{opacity:.4}}
-.minimap{position:fixed;top:8px;right:8px;width:150px;height:150px;border:1.5px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(0,0,0,.5);overflow:hidden;z-index:10}
-.minimap canvas{width:100%;height:100%}
-.hp-wrap{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:280px;z-index:10}
-.hp-lbl{display:flex;justify-content:space-between;font-size:.65em;color:#aaa;margin-bottom:2px}
-.hp-bar{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
-.hp-fill{height:100%;border-radius:4px;transition:width .3s}
-.xp-wrap{position:fixed;bottom:56px;left:50%;transform:translateX(-50%);width:280px;z-index:10}
-.xp-bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
-.xp-fill{height:100%;background:linear-gradient(90deg,#a855f7,#ec4899);border-radius:2px;transition:width .3s}
-.xp-txt{font-size:.5em;color:#666;text-align:center;margin-top:1px}
-.ctrls{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:6px;font-size:.55em;color:#555;z-index:10}
-.ctrls span{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:5px;padding:2px 6px}
-.ctrls b{color:#2ea043}
-.kfeed{position:fixed;top:50px;right:168px;text-align:right;font-size:.7em;z-index:20}
-.kfeed div{margin-bottom:2px;animation:fadeK 3s forwards;color:#f85149}
-@keyframes fadeK{100%{opacity:0;transform:translateX(20px)}}
-.combo{position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:900;z-index:30;animation:cAnim .8s ease-out forwards;pointer-events:none}
-@keyframes cAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
-.bag{position:fixed;bottom:8px;right:8px;display:flex;gap:3px;z-index:10}
-.bag-s{width:38px;height:38px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1em}
-.timer-ring{position:fixed;top:8px;left:50%;transform:translateX(-50%);font-size:.75em;z-index:10;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 14px;backdrop-filter:blur(4px)}
-/* Quiz */
-.qov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(5px)}
-.qov.on{display:flex}
-.qbox{background:linear-gradient(135deg,#1a0a3a,#2a1a5a);border:2px solid #a855f7;border-radius:16px;padding:20px;width:440px;max-width:92%;box-shadow:0 0 30px rgba(168,85,247,.3)}
-.qbox .en{display:flex;align-items:center;gap:6px;font-size:.75em;color:#aaa;margin-bottom:10px}
-.qbox .en .av{width:28px;height:28px;border-radius:50%;background:#2a2a5a;display:flex;align-items:center;justify-content:center}
-.qbox .en b{color:#f85149}
-.qbox .tm{float:right;color:#f85149;font-weight:700}
-.qbox .qt{font-size:.9em;line-height:1.6;margin-bottom:12px;padding:8px;background:rgba(0,0,0,.3);border-radius:8px}
-.qbox .qt .tag{display:inline-block;font-size:.65em;background:rgba(168,85,247,.2);color:#a855f7;border-radius:4px;padding:1px 6px;margin-right:4px}
-.qbox .os{display:flex;flex-direction:column;gap:6px}
-.qbox .oo{padding:10px 12px;border:1.5px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(20,20,60,.5);cursor:pointer;pointer-events:auto;font-size:.85em;transition:.15s}
-.qbox .oo:hover{border-color:#a855f7;background:rgba(168,85,247,.08)}
-.qbox .oo.ok{border-color:#2ea043!important;background:rgba(46,160,67,.15)!important;color:#58d666!important}
-.qbox .oo.no{border-color:#f85149!important;background:rgba(248,81,73,.12)!important;color:#f85149!important}
-.qbox .sk{text-align:center;margin-top:8px;font-size:.7em;color:#666;cursor:pointer;pointer-events:auto}
-.qbox .ctx{font-size:.7em;color:#888;margin-top:6px;padding:8px;background:rgba(0,0,0,.2);border-radius:6px;display:none}
-.qbox .ctx.on{display:block}
-/* Airdrop panel */
-.adpanel{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:55;backdrop-filter:blur(6px)}
-.adpanel.on{display:flex}
-.adbox{background:linear-gradient(135deg,#1a0a2a,#2a0a4a);border:2px solid #ffd700;border-radius:16px;padding:24px;width:520px;max-width:94%;max-height:80vh;overflow-y:auto}
-.adbox h2{color:#ffd700;font-size:1.1em;margin-bottom:10px}
-.adbox .body{font-size:.85em;line-height:1.8;white-space:pre-wrap;margin-bottom:14px}
-.adbox button{width:100%;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#d4a017,#ffd700);color:#000;font-weight:700;cursor:pointer;pointer-events:auto;font-size:.9em}
-/* Screens */
-.scr{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center}
-.scr.on{display:flex}
-.lobby{background:rgba(5,10,15,0.9);backdrop-filter:blur(8px);flex-direction:column;gap:12px;text-align:center;padding:16px;overflow-y:auto;z-index:100;}
-.lobby .logo{font-size:3.5em;animation:glow 3s infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 6px rgba(46,160,67,.5))}50%{filter:drop-shadow(0 0 25px rgba(46,160,67,.8))}}
-.lobby h1{font-size:1.8em;background:linear-gradient(135deg,#2ea043,#58d666,#a8ff78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.lobby .sub{color:#666;font-size:.7em}
-.maps{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:400px;max-width:90%;margin:0 auto}
-.map-card{border:2px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 10px;cursor:pointer;transition:.2s;text-align:center;pointer-events:auto}
-.map-card:hover{transform:scale(1.03)}
-.map-card.sel{border-color:#2ea043;box-shadow:0 0 20px rgba(46,160,67,.2)}
-.map-card .icon{font-size:2em;margin-bottom:4px}
-.map-card .name{font-weight:700;font-size:.9em}
-.map-card .desc{font-size:.6em;color:#888;margin-top:2px}
-.tips{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;font-size:.6em;margin:4px 0}
-.tips span{background:rgba(20,20,60,.8);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:2px 7px;color:#888}
-.tips b{color:#2ea043}
-.start-btn{padding:14px 50px;border:none;border-radius:12px;background:linear-gradient(135deg,#1a6a1a,#2ea043);color:#fff;font-size:1.1em;font-weight:900;cursor:pointer;pointer-events:auto;letter-spacing:1px;box-shadow:0 4px 25px rgba(46,160,67,.3);transition:.2s}
-.start-btn:hover{transform:scale(1.02)}
-.result{background:rgba(0,0,0,.92);flex-direction:column;gap:14px;text-align:center;padding:20px;overflow-y:auto}
-.result .rk{font-size:4.5em;font-weight:900;background:linear-gradient(135deg,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.result .sts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.result .st{background:rgba(20,20,60,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 16px}
-.result .st b{display:block;font-size:1.6em;color:#58d666}
-.result .st small{color:#666;font-size:.65em}
-.result .errs{text-align:left;max-width:500px;width:90%;max-height:250px;overflow-y:auto;font-size:.75em;line-height:1.6}
-.result .errs .ei{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.15);border-radius:8px;padding:8px;margin-bottom:6px}
-.result .errs .ei b{color:#f85149}
-.result .errs .ei .ans{color:#2ea043;font-size:.9em}
-.rbtn{padding:12px 36px;border:1.5px solid #2ea043;border-radius:10px;background:transparent;color:#2ea043;font-size:.9em;cursor:pointer;pointer-events:auto}
-/* Joystick */
-.joy{position:fixed;bottom:30px;left:30px;width:120px;height:120px;z-index:40;display:none}
-.joy-base{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);position:absolute}
-.joy-stick{width:50px;height:50px;border-radius:50%;background:rgba(46,160,67,.3);border:2px solid rgba(46,160,67,.5);position:absolute;top:35px;left:35px;transition:none}
-.act-btns{position:fixed;bottom:30px;right:30px;display:none;gap:8px;z-index:40}
-.act-btn{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);color:#fff;font-size:.6em;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:auto}
-.act-btn b{font-size:1.4em}
-@media(pointer:coarse){.joy,.act-btns{display:flex!important}.ctrls{display:none!important}}
-</style></head><body>
-<div class="bg-grid"></div>
-<canvas id="C"></canvas>
-<div class="minimap"><canvas id="M" width="150" height="150"></canvas></div>
-<div class="hud h-top"><div>存活 <b id="alive">100</b>/100</div><div class="zone-warn" id="zw">⚠ 毒圈来袭！喝可乐！</div></div>
-<div class="timer-ring hud" id="gTimer">⏱ 60:00</div>
-<div class="hp-wrap hud"><div class="hp-lbl"><span id="hpL">HP 100</span><span id="lvL">炼气期 Lv.1</span></div><div class="hp-bar"><div class="hp-fill" id="hpF" style="width:100%;background:linear-gradient(90deg,#2ea043,#58d666)"></div></div></div>
-<div class="xp-wrap hud"><div class="xp-bar"><div class="xp-fill" id="xpF" style="width:0%"></div></div><div class="xp-txt" id="xpT">EXP 0/100</div></div>
-<div class="ctrls hud"><span>🎮<b>WASD</b>移动</span><span>🔫<b>SPACE</b>答题击杀</span><span>📦<b>F</b>拾取·<b>E</b>空投</span><span>🥤<b>Q</b>喝可乐</span></div>
-<div class="kfeed" id="kf"></div>
-<div class="bag hud" id="bag"><div class="bag-s">🔫</div></div>
-<!-- Quiz -->
-<div class="qov" id="qov"><div class="qbox">
-<div class="en"><div class="av" id="qA">🤖</div><span id="qM">遭遇敌人</span><span class="tm" id="qTm">⏱15</span></div>
-<div class="qt" id="qT"></div><div class="os" id="qO"></div>
-<div class="sk" onclick="skipQ()">跳过 (-5HP)</div>
-<div class="ctx" id="qCtx"></div>
-</div></div>
-<!-- Airdrop panel -->
-<div class="adpanel" id="adP"><div class="adbox">
-<h2>📦 空投补给 · 大题研读</h2>
-<div class="body" id="adBody">加载中...</div>
-<button onclick="closeAD()" id="adBtn">✅ 研读完毕 · 获取奖励</button>
-</div></div>
-<!-- Lobby -->
-<div class="scr lobby on" id="lobbyS">
-<div class="logo">🍗</div>
-<h1>考研大逃杀 · 和平精英</h1>
-<div class="sub">和平精英 × 考研 — 100人大逃杀 · 1小时完整试卷 · 答题=战斗</div>
-<div class="maps" id="mapSel">
-<div class="map-card sel" onclick="selMap(0)" style="background:linear-gradient(135deg,#05102a,#0a2255)"><div class="icon">🏝️</div><div class="name">海岛 · 艾伦格</div><div class="desc">408 计算机专业基础</div></div>
-<div class="map-card" onclick="selMap(1)" style="background:linear-gradient(135deg,#0a2a0a,#0a3a1a)"><div class="icon">🌴</div><div class="name">雨林 · 萨诺</div><div class="desc">301 数学一</div></div>
-<div class="map-card" onclick="selMap(2)" style="background:linear-gradient(135deg,#2a1a05,#3a2a0a)"><div class="icon">🏜️</div><div class="name">沙漠 · 米拉玛</div><div class="desc">201 英语一</div></div>
-<div class="map-card" onclick="selMap(3)" style="background:linear-gradient(135deg,#1a1a2a,#2a2a4a)"><div class="icon">❄️</div><div class="name">雪地 · 维寒迪</div><div class="desc">101 思想政治</div></div>
-</div>
-<div class="tips"><span>🎮<b>WASD</b>移动</span><span>🔫<b>SPACE</b>答题击杀</span><span>📦<b>F</b>拾取答题</span><span>🥤<b>Q</b>毒圈可乐</span><span>📦<b>E</b>空投大题</span></div>
-<div style="font-size:.6em;color:#555">100人大逃杀 · 人机主动攻击 · 击杀=搜集知识点 · 空投=大题装备攻击力</div>
-<button class="start-btn" onclick="startGame()">🪂 跳伞进入战场</button>
-</div>
-<!-- Result -->
-<div class="scr result" id="resultS">
-<div style="font-size:3.5em" id="rIco">🍗</div>
-<div class="rk" id="rRk">#1</div>
-<div id="rTt" style="font-size:1.2em"></div>
-<div class="sts" id="rSts"></div>
-<div style="font-size:.8em;color:#888;margin-top:4px">📋 错题回顾</div>
-<div class="errs" id="rErrs"></div>
-<button class="rbtn" onclick="location.reload()">🔄 再战一局</button>
-</div>
-<!-- Touch -->
-<div class="joy" id="joy"><div class="joy-base"></div><div class="joy-stick" id="joyS"></div></div>
-<div class="act-btns" id="actBtns">
-<div class="act-btn" onclick="tryFight()"><b>🔫</b>攻击</div>
-<div class="act-btn" onclick="tryLoot()"><b>📦</b>拾取</div>
-<div class="act-btn" onclick="tryAD()"><b>📦</b>空投</div>
-<div class="act-btn" onclick="useCola()"><b>🥤</b>可乐</div>
-</div>
-<script src="../shared/pku-core-sdk.js"></script>
-<!-- 天机阁全局军火库挂载点 -->
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  ['101','201','301','408'].forEach(sub => {
-     let vault = localStorage.getItem('Global_Vault_' + sub);
-     if(vault) {
-        try {
-           let parsed = JSON.parse(vault);
-           if(parsed && parsed.length > 0) {
-              if(!window.QUESTION_BANK) window.QUESTION_BANK = {};
-              window.QUESTION_BANK[sub] = parsed;
-              console.log('✅ [天机总控] 成功装载前线情报弹药: ' + sub + ' 共 ' + parsed.length + ' 发');
-           }
-        }catch(e){}
-     }
-  });
-});
-</script>
-<script src="game.js"></script>
-</body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>刺激战场 · 选择题速杀 — 北大考研修仙应用集</title>
+  <meta name="description" content="第一人称吃鸡答题 — 跳伞空降·遭遇假人·答题击杀·毒圈逼近·吃鸡">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ═══ 地图选择 ═══ -->
+    <section id="mapScreen" class="screen">
+      <div class="map-header">
+        <a href="../index.html" class="back-btn">🏠</a>
+        <h1 class="map-title">⚔️ 刺激战场</h1>
+        <div class="map-sub">选择题速杀 · 第一人称吃鸡</div>
+      </div>
+      <div class="map-list" id="mapList">
+        <button class="map-card" data-map="politics" id="mapPolitics">
+          <div class="mc-bg mc-desert"></div>
+          <div class="mc-overlay">
+            <div class="mc-icon">🏜️</div>
+            <div class="mc-name">政治沙漠</div>
+            <div class="mc-badge">101政治 · 16题单选</div>
+            <div class="mc-info">1分/题 · 速战速决 · 毒圈3分钟</div>
+          </div>
+        </button>
+        <button class="map-card" data-map="english" id="mapEnglish">
+          <div class="mc-bg mc-snow"></div>
+          <div class="mc-overlay">
+            <div class="mc-icon">❄️</div>
+            <div class="mc-name">极寒冰原</div>
+            <div class="mc-badge">201英语 · 20题阅读选择</div>
+            <div class="mc-info">2分/题 · 据点夺取 · 毒圈4分钟</div>
+          </div>
+        </button>
+        <button class="map-card" data-map="math" id="mapMath">
+          <div class="mc-bg mc-jungle"></div>
+          <div class="mc-overlay">
+            <div class="mc-icon">🌴</div>
+            <div class="mc-name">数学雨林</div>
+            <div class="mc-badge">301数学 · 10题选择</div>
+            <div class="mc-info">5分/题 · 高风险 · 毒圈5分钟</div>
+          </div>
+        </button>
+        <button class="map-card" data-map="cs" id="mapCS">
+          <div class="mc-bg mc-city"></div>
+          <div class="mc-overlay">
+            <div class="mc-icon">🏙️</div>
+            <div class="mc-name">赛博都市</div>
+            <div class="mc-badge">408计算机 · 40题单选</div>
+            <div class="mc-info">2分/题 · 题量最大 · 毒圈6分钟</div>
+          </div>
+        </button>
+      </div>
+      <button class="start-btn" id="btnJump" disabled>🪂 跳伞开战</button>
+    </section>
+
+    <!-- ═══ 跳伞 ═══ -->
+    <section id="paraScreen" class="screen hidden">
+      <div class="para-bg" id="paraBg"></div>
+      <div class="para-overlay">
+        <div class="para-hud">
+          <span class="para-map-name" id="paraMapName">政治沙漠 · 空降中...</span>
+          <span class="para-count" id="paraCount">剩余 16/16</span>
+        </div>
+        <div class="para-center">
+          <div class="para-chute">🪂</div>
+          <div class="para-instruction">选择降落区域</div>
+        </div>
+        <div class="para-zones">
+          <button class="zone-btn zone-hot" onclick="BG.selectZone('hot')">
+            <span class="zone-icon">🔥</span>
+            <span class="zone-name">热区</span>
+            <span class="zone-desc">假人密集 · 高combo</span>
+          </button>
+          <button class="zone-btn zone-normal" onclick="BG.selectZone('normal')">
+            <span class="zone-icon">⚡</span>
+            <span class="zone-name">普通区</span>
+            <span class="zone-desc">节奏适中 · 稳扎稳打</span>
+          </button>
+          <button class="zone-btn zone-safe" onclick="BG.selectZone('safe')">
+            <span class="zone-icon">🛡️</span>
+            <span class="zone-name">安全区</span>
+            <span class="zone-desc">假人稀疏 · 新手友好</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 战斗主界面 ═══ -->
+    <section id="battleScreen" class="screen hidden">
+      <!-- 战场背景 -->
+      <div class="battle-bg" id="battleBg"></div>
+
+      <!-- 顶部 HUD -->
+      <div class="hud-top">
+        <div class="hud-hp">
+          <span class="hp-icon">❤️</span>
+          <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+          <span class="hp-text" id="hpText">100%</span>
+        </div>
+        <div class="hud-timer" id="hudTimer">⏱ 03:00</div>
+        <div class="hud-score">
+          <span class="score-val" id="scoreVal">0</span>分
+          <span class="kill-count" id="killCount">💀 0/<span id="killTotal">16</span></span>
+        </div>
+      </div>
+
+      <!-- 右上毒圈小地图 -->
+      <div class="minimap-wrap" id="minimapWrap">
+        <canvas id="minimap" width="100" height="100"></canvas>
+        <div class="minimap-label" id="minimapLabel">毒圈 3:00</div>
+      </div>
+
+      <!-- 毒圈警告 -->
+      <div class="poison-warn hidden" id="poisonWarn">⚠️ 毒圈外！持续掉血！</div>
+
+      <!-- 连杀提示 -->
+      <div class="combo-display hidden" id="comboDisplay">
+        <div class="combo-text" id="comboText">🔥 三连杀!</div>
+      </div>
+
+      <!-- 假人敌人 -->
+      <div class="enemy-wrap" id="enemyWrap">
+        <div class="enemy-body" id="enemyBody">
+          <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemyHpFill"></div></div>
+          <div class="enemy-name" id="enemyName">假人兵 · Lv.1</div>
+          <div class="enemy-figure">🤖</div>
+        </div>
+      </div>
+
+      <!-- 题卡 -->
+      <div class="question-card" id="questionCard">
+        <div class="q-stem" id="qStem">加载题目中...</div>
+        <div class="q-options" id="qOptions"></div>
+      </div>
+
+      <!-- 分数飞字 -->
+      <div class="float-score hidden" id="floatScore">+1</div>
+
+      <!-- 底部操作 -->
+      <div class="hud-bottom">
+        <div class="airdrop-notify hidden" id="airdropNotify" onclick="BG.openAirdrop()">
+          📦 <span id="airdropText">空投物资</span>
+        </div>
+        <button class="fire-btn" id="fireBtn" disabled onclick="BG.fire()">🎯 确认击杀</button>
+        <button class="hint-btn" id="hintBtn" onclick="BG.useHint()">💡 提示 <span id="hintCount">3</span></button>
+      </div>
+    </section>
+
+    <!-- ═══ 空投开箱 ═══ -->
+    <section id="airdropScreen" class="screen hidden">
+      <div class="ad-overlay">
+        <div class="ad-crate">📦</div>
+        <h2 class="ad-title">空投物资！</h2>
+        <div class="ad-items" id="adItems"></div>
+        <button class="ad-skip" onclick="BG.closeAirdrop()">继续战斗 →</button>
+      </div>
+    </section>
+
+    <!-- ═══ 结算 ═══ -->
+    <section id="resultScreen" class="screen hidden">
+      <div class="result-card">
+        <div class="result-icon" id="resultIcon">🏆</div>
+        <h1 class="result-title" id="resultTitle">大吉大利！今晚吃鸡！</h1>
+        <div class="result-grid">
+          <div class="rg"><span class="rg-l">击杀</span><span class="rg-v" id="rKills">0/0</span></div>
+          <div class="rg"><span class="rg-l">得分</span><span class="rg-v" id="rScore">0</span></div>
+          <div class="rg"><span class="rg-l">最高连杀</span><span class="rg-v" id="rCombo">0</span></div>
+          <div class="rg"><span class="rg-l">用时</span><span class="rg-v" id="rTime">0:00</span></div>
+          <div class="rg"><span class="rg-l">剩余血量</span><span class="rg-v" id="rHp">0%</span></div>
+          <div class="rg"><span class="rg-l">灵气</span><span class="rg-v" id="rQi">+0</span></div>
+        </div>
+        <div class="result-btns">
+          <button class="fire-btn" onclick="BG.restart()">🔄 再来一局</button>
+          <button class="hint-btn" onclick="BG.backToMap()">🏠 返回</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="bg-data.js"></script>
+  <script src="bg-engine.js"></script>
+  <script src="bg-app.js"></script>
+</body>
+</html>
