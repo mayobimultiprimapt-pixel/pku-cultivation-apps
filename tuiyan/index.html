@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>推演阁 · 梅花六爻排盘 — 北大考研修仙应用集</title>
+<meta name="description" content="梅花易数·六爻纳甲 完整排盘工具 — 考运推演">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;600;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080810; --card:rgba(14,14,28,.94); --gold:#ffd700; --amber:#d4a017;
+  --jade:#2dd4a8; --red:#e74c3c; --crimson:#dc143c;
+  --cyan:#08f7fe; --purple:#9d4edd; --blue:#4a90d9;
+  --text:#e8e6e0; --dim:#666; --sub:#999;
+  --ink:rgba(255,215,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg-pattern{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(255,215,0,.015),transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(157,78,221,.01),transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0v60M0 30h60' stroke='rgba(255,215,0,0.015)' fill='none'/%3E%3C/svg%3E");
+}
+
+/* Header */
+.header{text-align:center;padding:28px 16px 16px;position:relative;z-index:1}
+.header-icon{width:72px;height:72px;margin:0 auto 12px;border:2px solid rgba(255,215,0,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;background:radial-gradient(circle,rgba(255,215,0,.06),transparent);animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 0 15px rgba(255,215,0,.12)}50%{box-shadow:0 0 35px rgba(255,215,0,.25),0 0 60px rgba(255,215,0,.08)}}
+.header h1{font-family:'Ma Shan Zheng','Noto Serif SC',serif;font-size:30px;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.2)}
+.header .en{font-family:'Orbitron',monospace;font-size:9px;color:var(--dim);letter-spacing:5px;margin-top:4px}
+.nav-row{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.nav-row a{padding:5px 14px;border-radius:16px;font-size:10px;font-weight:600;text-decoration:none;color:var(--dim);border:1px solid rgba(255,215,0,.08);transition:.3s}
+.nav-row a:hover{color:var(--gold);border-color:rgba(255,215,0,.3)}
+
+.container{max-width:800px;margin:0 auto;padding:0 12px 60px;position:relative;z-index:1}
+
+/* Input Panel */
+.input-panel{background:var(--card);border:1px solid rgba(255,215,0,.08);border-radius:16px;padding:20px;margin-bottom:16px}
+.input-title{font-family:'Ma Shan Zheng',serif;font-size:18px;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.num-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.num-input{width:80px;padding:12px;border-radius:10px;background:rgba(6,6,14,.7);border:1px solid rgba(255,215,0,.12);color:var(--gold);font-size:20px;font-family:'Orbitron',monospace;text-align:center;outline:none;transition:border-color .3s}
+.num-input:focus{border-color:rgba(255,215,0,.4);box-shadow:0 0 15px rgba(255,215,0,.1)}
+.num-label{font-size:11px;color:var(--dim);text-align:center;margin-top:4px}
+.num-group{display:flex;flex-direction:column;align-items:center}
+.divider-text{color:var(--dim);font-size:14px;padding-top:6px}
+
+.btn{padding:12px 28px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .3s;font-family:inherit}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;box-shadow:0 4px 20px rgba(255,215,0,.2)}
+.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,215,0,.3)}
+.btn-ghost{background:rgba(255,215,0,.04);color:var(--gold);border:1px solid rgba(255,215,0,.15)}
+.btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+
+/* Quick actions */
+.quick-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.quick-btn{padding:6px 12px;border-radius:8px;font-size:10px;cursor:pointer;border:1px solid rgba(255,215,0,.1);background:rgba(255,215,0,.03);color:var(--sub);transition:.3s}
+.quick-btn:hover{color:var(--gold);border-color:rgba(255,215,0,.3)}
+
+/* Result sections */
+.result{display:none}
+.result.show{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:1px solid rgba(255,215,0,.06);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:border-color .3s}
+.card:hover{border-color:rgba(255,215,0,.12)}
+.card-head{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,215,0,.04)}
+.card-icon{font-size:20px}
+.card-title{font-family:'Ma Shan Zheng',serif;font-size:16px;color:var(--gold)}
+.card-badge{font-family:'Orbitron',monospace;font-size:8px;padding:2px 8px;border-radius:8px;letter-spacing:1px}
+.card-body{padding:16px 18px}
+
+/* Trigram display */
+.gua-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.gua-box{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid rgba(255,215,0,.08);background:rgba(255,215,0,.02);min-width:130px;transition:.3s}
+.gua-box:hover{border-color:rgba(255,215,0,.2);transform:translateY(-2px)}
+.gua-label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:6px}
+.gua-symbol{font-size:36px;margin:4px 0}
+.gua-name{font-family:'Ma Shan Zheng',serif;font-size:18px;color:var(--gold)}
+.gua-detail{font-size:10px;color:var(--sub);margin-top:4px}
+
+/* Najia Table */
+.najia-table{width:100%;border-collapse:collapse;font-size:12px}
+.najia-table th{text-align:center;padding:8px 6px;font-size:9px;letter-spacing:1px;color:var(--dim);border-bottom:1px solid rgba(255,215,0,.08);font-family:'Orbitron',monospace}
+.najia-table td{text-align:center;padding:10px 6px;border-bottom:1px solid rgba(255,255,255,.02);vertical-align:middle}
+.najia-table tr:hover{background:rgba(255,215,0,.02)}
+.yao-line{font-size:18px;letter-spacing:2px}
+.yao-yang{color:var(--gold)}
+.yao-yin{color:var(--jade)}
+.yao-dong{animation:dongPulse 1.5s ease-in-out infinite;font-weight:900}
+@keyframes dongPulse{0%,100%{text-shadow:0 0 0}50%{text-shadow:0 0 12px rgba(255,215,0,.5)}}
+.shi-tag{font-size:10px;padding:2px 6px;border-radius:6px;font-weight:700}
+.shi-w{background:rgba(231,76,60,.15);color:var(--red)}
+.shi-y{background:rgba(45,212,168,.15);color:var(--jade)}
+.liuqin{font-weight:700}
+.lq-fm{color:#e67e22} .lq-zs{color:var(--jade)} .lq-gg{color:var(--red)}
+.lq-qc{color:var(--gold)} .lq-xd{color:var(--blue)}
+.beast-tag{font-size:10px;padding:2px 6px;border-radius:6px}
+.b-qinglong{color:#2dd4a8;background:rgba(45,212,168,.1)}
+.b-zhuque{color:#e74c3c;background:rgba(231,76,60,.1)}
+.b-gouchen{color:#d4a017;background:rgba(212,160,23,.1)}
+.b-tengshe{color:#9d4edd;background:rgba(157,78,221,.1)}
+.b-baihu{color:#e8e6e0;background:rgba(232,230,224,.1)}
+.b-xuanwu{color:#4a90d9;background:rgba(74,144,217,.1)}
+
+/* Ti Yong */
+.tiyong-box{display:flex;gap:12px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.ty-item{text-align:center;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700}
+.ty-ti{border:1px solid rgba(45,212,168,.3);color:var(--jade);background:rgba(45,212,168,.05)}
+.ty-yong{border:1px solid rgba(255,215,0,.3);color:var(--gold);background:rgba(255,215,0,.05)}
+.relation-tag{display:inline-block;padding:6px 16px;border-radius:8px;font-size:14px;font-weight:900;margin:8px 0}
+.rel-ji{background:rgba(45,212,168,.12);color:var(--jade);border:1px solid rgba(45,212,168,.3)}
+.rel-xiong{background:rgba(231,76,60,.12);color:var(--red);border:1px solid rgba(231,76,60,.3)}
+.rel-ping{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.2)}
+
+/* Verdict */
+.verdict{padding:16px;border-radius:12px;background:linear-gradient(135deg,rgba(255,215,0,.04),rgba(157,78,221,.04));border:1px solid rgba(255,215,0,.1);margin-top:12px}
+.verdict-title{font-family:'Ma Shan Zheng',serif;font-size:16px;color:var(--gold);margin-bottom:8px}
+.verdict-text{font-size:13px;line-height:1.8;color:var(--sub)}
+
+/* Template output */
+.template-box{background:rgba(0,0,0,.4);border:1px solid rgba(255,215,0,.06);border-radius:10px;padding:14px;margin-top:12px;font-family:'Noto Sans SC',monospace;font-size:11px;line-height:1.8;color:var(--sub);white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto}
+.copy-btn{margin-top:8px}
+
+@media(max-width:500px){
+  .num-input{width:65px;font-size:16px;padding:10px}
+  .gua-box{min-width:100px;padding:10px 14px}
+  .gua-symbol{font-size:28px}
+  .najia-table{font-size:10px}
+  .najia-table th,.najia-table td{padding:6px 3px}
+}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+
+<div class="header">
+  <div class="header-icon">🔮</div>
+  <h1>推演阁 · 梅花六爻</h1>
+  <div class="en">MEIHUA LIUYAO · DIVINATION ENGINE</div>
+  <div class="nav-row">
+    <a href="../index.html">🏠 门户</a>
+    <a href="../tianji/">🏯 天机阁</a>
+    <a href="../terminal/">🧠 终端</a>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Input -->
+  <div class="input-panel" id="inputPanel">
+    <div class="input-title">🎴 起卦 · 三数起卦法</div>
+    <div class="num-row">
+      <div class="num-group">
+        <input type="number" class="num-input" id="n1" min="1" placeholder="上">
+        <div class="num-label">÷8 定上卦</div>
+      </div>
+      <span class="divider-text">·</span>
+      <div class="num-group">
+        <input type="number" class="num-input" id="n2" min="1" placeholder="下">
+        <div class="num-label">÷8 定下卦</div>
+      </div>
+      <span class="divider-text">·</span>
+      <div class="num-group">
+        <input type="number" class="num-input" id="n3" min="1" placeholder="动">
+        <div class="num-label">÷6 定动爻</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="cast()">🔮 起卦排盘</button>
+      <button class="btn btn-ghost" onclick="randomCast()">🎲 随机起卦</button>
+      <button class="btn btn-ghost" onclick="timeCast()">🕐 时间起卦</button>
+    </div>
+    <div class="quick-row">
+      <span class="quick-btn" onclick="setNums(12,34,56)">示例 12·34·56</span>
+      <span class="quick-btn" onclick="setNums(2026,4,6)">年月日</span>
+      <span class="quick-btn" onclick="askExam()">🎓 考运</span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="result" id="resultArea">
+    <!-- 起卦信息 -->
+    <div class="card" id="cardInfo">
+      <div class="card-head"><span class="card-icon">📋</span><span class="card-title">起卦信息</span></div>
+      <div class="card-body" id="infoBody"></div>
+    </div>
+
+    <!-- 本卦/互卦/变卦 -->
+    <div class="card" id="cardGua">
+      <div class="card-head"><span class="card-icon">☯️</span><span class="card-title">本卦 · 互卦 · 变卦</span></div>
+      <div class="card-body"><div class="gua-row" id="guaRow"></div></div>
+    </div>
+
+    <!-- 体用 -->
+    <div class="card" id="cardTiYong">
+      <div class="card-head"><span class="card-icon">⚖️</span><span class="card-title">体用生克</span></div>
+      <div class="card-body" id="tiYongBody"></div>
+    </div>
+
+    <!-- 六爻纳甲 -->
+    <div class="card" id="cardNajia">
+      <div class="card-head"><span class="card-icon">📊</span><span class="card-title">六爻纳甲排盘</span><span class="card-badge" style="background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.15)">FULL</span></div>
+      <div class="card-body"><table class="najia-table" id="najiaTable"></table></div>
+    </div>
+
+    <!-- 断语 -->
+    <div class="card" id="cardVerdict">
+      <div class="card-head"><span class="card-icon">🔮</span><span class="card-title">断卦要点</span></div>
+      <div class="card-body" id="verdictBody"></div>
+    </div>
+
+    <!-- 模板输出 -->
+    <div class="card" id="cardTemplate">
+      <div class="card-head"><span class="card-icon">📝</span><span class="card-title">完整排盘模板</span></div>
+      <div class="card-body">
+        <div class="template-box" id="templateOutput"></div>
+        <button class="btn btn-ghost copy-btn" onclick="copyTemplate()">📋 复制模板</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  推演阁 · 梅花六爻排盘引擎 v1.0
+//  完整实现: 起卦→列卦→纳甲→六亲→世应→六兽→体用→断卦
+// ═══════════════════════════════════════════════════════════
+
+// ── 八卦基础数据 ──
+const TRIGRAMS = {
+  1:{name:'乾',symbol:'☰',nature:'天',wx:'金',yao:[1,1,1]},
+  2:{name:'兑',symbol:'☱',nature:'泽',wx:'金',yao:[0,1,1]},
+  3:{name:'离',symbol:'☲',nature:'火',wx:'火',yao:[1,0,1]},
+  4:{name:'震',symbol:'☳',nature:'雷',wx:'木',yao:[0,0,1]},
+  5:{name:'巽',symbol:'☴',nature:'风',wx:'木',yao:[1,1,0]},
+  6:{name:'坎',symbol:'☵',nature:'水',wx:'水',yao:[0,1,0]},
+  7:{name:'艮',symbol:'☶',nature:'山',wx:'土',yao:[1,0,0]},
+  8:{name:'坤',symbol:'☷',nature:'地',wx:'土',yao:[0,0,0]}
+};
+
+// ── 六十四卦名 ──
+const HEX_NAMES = {
+  11:'乾为天',12:'天泽履',13:'天火同人',14:'天雷无妄',15:'天风姤',16:'天水讼',17:'天山遁',18:'天地否',
+  21:'泽天夬',22:'兑为泽',23:'泽火革',24:'泽雷随',25:'泽风大过',26:'泽水困',27:'泽山咸',28:'泽地萃',
+  31:'火天大有',32:'火泽睽',33:'离为火',34:'火雷噬嗑',35:'火风鼎',36:'火水未济',37:'火山旅',38:'火地晋',
+  41:'雷天大壮',42:'雷泽归妹',43:'雷火丰',44:'震为雷',45:'雷风恒',46:'雷水解',47:'雷山小过',48:'雷地豫',
+  51:'风天小畜',52:'风泽中孚',53:'风火家人',54:'风雷益',55:'巽为风',56:'风水涣',57:'风山渐',58:'风地观',
+  61:'水天需',62:'水泽节',63:'水火既济',64:'水雷屯',65:'水风井',66:'坎为水',67:'水山蹇',68:'水地比',
+  71:'山天大畜',72:'山泽损',73:'山火贲',74:'山雷颐',75:'山风蛊',76:'山水蒙',77:'艮为山',78:'山地剥',
+  81:'地天泰',82:'地泽临',83:'地火明夷',84:'地雷复',85:'地风升',86:'地水师',87:'地山谦',88:'坤为地'
+};
+
+// ── 卦符 Unicode ──
+const HEX_UNICODE = {
+  11:'䷀',12:'䷉',13:'䷌',14:'䷘',15:'䷫',16:'䷅',17:'䷠',18:'䷋',
+  21:'䷪',22:'䷹',23:'䷰',24:'䷐',25:'䷛',26:'䷮',27:'䷞',28:'䷬',
+  31:'䷍',32:'䷥',33:'䷝',34:'䷔',35:'䷱',36:'䷿',37:'䷷',38:'䷢',
+  41:'䷡',42:'䷵',43:'䷶',44:'䷲',45:'䷟',46:'䷧',47:'䷽',48:'䷏',
+  51:'䷈',52:'䷼',53:'䷤',54:'䷩',55:'䷸',56:'䷺',57:'䷴',58:'䷓',
+  61:'䷄',62:'䷻',63:'䷾',64:'䷂',65:'䷯',66:'䷜',67:'䷦',68:'䷇',
+  71:'䷙',72:'䷨',73:'䷕',74:'䷚',75:'䷑',76:'䷃',77:'䷳',78:'䷖',
+  81:'䷊',82:'䷒',83:'䷣',84:'䷗',85:'䷭',86:'䷆',87:'䷎',88:'䷁'
+};
+
+// ── 纳甲地支表 (从初爻到上爻) ──
+const NAJIA_DIZHI = {
+  '乾':['子','寅','辰','午','申','戌'],
+  '震':['子','寅','辰','午','申','戌'],
+  '坎':['寅','辰','午','申','戌','子'],
+  '艮':['辰','午','申','戌','子','寅'],
+  '坤':['未','巳','卯','丑','亥','酉'],
+  '巽':['丑','亥','酉','未','巳','卯'],
+  '离':['卯','丑','亥','酉','未','巳'],
+  '兑':['巳','卯','丑','亥','酉','未']
+};
+
+// ── 地支五行 ──
+const DIZHI_WX = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
+
+// ── 五行生克 ──
+const WX_ORDER = ['木','火','土','金','水'];
+function wxSheng(a,b){return WX_ORDER[(WX_ORDER.indexOf(a)+1)%5]===b;}
+function wxKe(a,b){return WX_ORDER[(WX_ORDER.indexOf(a)+2)%5]===b;}
+function getLiuqin(guaWx, yaoWx){
+  if(guaWx===yaoWx) return {name:'兄弟',cls:'lq-xd'};
+  if(wxSheng(yaoWx,guaWx)) return {name:'父母',cls:'lq-fm'};
+  if(wxSheng(guaWx,yaoWx)) return {name:'子孙',cls:'lq-zs'};
+  if(wxKe(yaoWx,guaWx)) return {name:'官鬼',cls:'lq-gg'};
+  if(wxKe(guaWx,yaoWx)) return {name:'妻财',cls:'lq-qc'};
+  return {name:'—',cls:''};
+}
+
+// ── 六兽 (按天干) ──
+const BEAST_ORDER = ['青龙','朱雀','勾陈','腾蛇','白虎','玄武'];
+const BEAST_CLS = {'青龙':'b-qinglong','朱雀':'b-zhuque','勾陈':'b-gouchen','腾蛇':'b-tengshe','白虎':'b-baihu','玄武':'b-xuanwu'};
+const TIANGAN = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const TIANGAN_START = {'甲':0,'乙':0,'丙':1,'丁':1,'戊':2,'己':3,'庚':4,'辛':4,'壬':5,'癸':5};
+
+function getTodayTiangan(){
+  // 天干以 1900-01-01 为甲子日基准
+  const base = new Date(1900,0,1);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = Math.floor((today - base) / 86400000);
+  return TIANGAN[days % 10];
+}
+function getLiushou(){
+  const tg = getTodayTiangan();
+  const start = TIANGAN_START[tg];
+  return [0,1,2,3,4,5].map(i => BEAST_ORDER[(start+i)%6]);
+}
+
+// ── 八宫归属 ──
+function buildPalaceHexes(){
+  const palaces = {};
+  for(let p=1;p<=8;p++){
+    const py=[...TRIGRAMS[p].yao];
+    const hexes=[];
+    let cur=[...py,...py];
+    hexes.push({yao:[...cur],shi:6});
+    for(let w=0;w<5;w++){cur[w]=1-cur[w];hexes.push({yao:[...cur],shi:w+1});}
+    cur[3]=1-cur[3]; hexes.push({yao:[...cur],shi:4}); // 游魂
+    cur[0]=py[0];cur[1]=py[1];cur[2]=py[2]; hexes.push({yao:[...cur],shi:3}); // 归魂
+    palaces[p]=hexes;
+  }
+  return palaces;
+}
+const PALACE_HEX = buildPalaceHexes();
+
+function findPalace(sixYao){
+  for(let p=1;p<=8;p++){
+    for(let i=0;i<8;i++){
+      const h=PALACE_HEX[p][i];
+      if(h.yao.every((v,j)=>v===sixYao[j])) return {palace:p,idx:i,shi:h.shi};
+    }
+  }
+  return {palace:1,idx:0,shi:6};
+}
+
+function yaoToTriNum(y0,y1,y2){
+  for(let k=1;k<=8;k++){
+    const t=TRIGRAMS[k].yao;
+    if(t[0]===y0&&t[1]===y1&&t[2]===y2) return k;
+  }
+  return 8;
+}
+
+// ═══════════════════════════════════════════════════════
+//  核心: 完整排盘
+// ═══════════════════════════════════════════════════════
+
+function cast(){
+  const n1=parseInt(document.getElementById('n1').value);
+  const n2=parseInt(document.getElementById('n2').value);
+  const n3=parseInt(document.getElementById('n3').value);
+  if(!n1||!n2||!n3||n1<1||n2<1||n3<1){alert('请输入三个正整数');return;}
+  doFullCast(n1,n2,n3);
+}
+
+function randomCast(){
+  const n1=Math.floor(Math.random()*999)+1;
+  const n2=Math.floor(Math.random()*999)+1;
+  const n3=Math.floor(Math.random()*999)+1;
+  setNums(n1,n2,n3); doFullCast(n1,n2,n3);
+}
+
+function timeCast(){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate(),h=now.getHours();
+  const n1=y+m+d, n2=d+h, n3=y+m+d+h;
+  setNums(n1,n2,n3); doFullCast(n1,n2,n3);
+}
+
+function askExam(){
+  const now=new Date();
+  setNums(2026,now.getMonth()+1,now.getDate());
+  doFullCast(2026,now.getMonth()+1,now.getDate());
+}
+
+function setNums(a,b,c){
+  document.getElementById('n1').value=a;
+  document.getElementById('n2').value=b;
+  document.getElementById('n3').value=c;
+}
+
+function doFullCast(n1,n2,n3){
+  // 1. 起卦
+  const upperNum = ((n1-1)%8)+1;
+  const lowerNum = ((n2-1)%8)+1;
+  const dongYao = ((n3-1)%6)+1; // 1-6
+
+  const upper=TRIGRAMS[upperNum], lower=TRIGRAMS[lowerNum];
+  const benYao=[...lower.yao,...upper.yao]; // [初→上]
+  const benKey=upperNum*10+lowerNum;
+  const benName=HEX_NAMES[benKey]||`${upper.name}${lower.name}卦`;
+
+  // 2. 互卦
+  const huLower=yaoToTriNum(benYao[1],benYao[2],benYao[3]);
+  const huUpper=yaoToTriNum(benYao[2],benYao[3],benYao[4]);
+  const huKey=huUpper*10+huLower;
+  const huName=HEX_NAMES[huKey]||'互卦';
+
+  // 3. 变卦
+  const bianYao=[...benYao];
+  bianYao[dongYao-1]=1-bianYao[dongYao-1];
+  const bianLower=yaoToTriNum(bianYao[0],bianYao[1],bianYao[2]);
+  const bianUpper=yaoToTriNum(bianYao[3],bianYao[4],bianYao[5]);
+  const bianKey=bianUpper*10+bianLower;
+  const bianName=HEX_NAMES[bianKey]||'变卦';
+
+  // 4. 纳甲
+  const palaceInfo=findPalace(benYao);
+  const palaceTri=TRIGRAMS[palaceInfo.palace];
+  const guaWx=palaceTri.wx;
+  const shiPos=palaceInfo.shi; // 世爻位置(1-6)
+  const yingPos=((shiPos-1+3)%6)+1; // 应爻 = 世+3
+
+  const lowerDizhi=NAJIA_DIZHI[lower.name];
+  const upperDizhi=NAJIA_DIZHI[upper.name];
+  const allDizhi=[...lowerDizhi.slice(0,3),...upperDizhi.slice(0,3)]; // 初→上
+
+  const liushou=getLiushou();
+
+  // Build yao data
+  const yaoData=[];
+  for(let i=0;i<6;i++){
+    const dz=allDizhi[i];
+    const yaoWx=DIZHI_WX[dz];
+    const lq=getLiuqin(guaWx,yaoWx);
+    const isDong=(i+1===dongYao);
+    const isShi=(i+1===shiPos);
+    const isYing=(i+1===yingPos);
+    yaoData.push({
+      pos:i+1, yaoVal:benYao[i], dizhi:dz, wx:yaoWx,
+      liuqin:lq, dong:isDong, shi:isShi, ying:isYing,
+      beast:liushou[i]
+    });
+  }
+
+  // 5. 体用
+  const tiIsLower=(dongYao<=3)?false:true; // 动爻在下卦→下卦为用卦,上卦为体; 反之亦然
+  const tiTri=tiIsLower?lower:upper;
+  const yongTri=tiIsLower?upper:lower;
+  const tiYongRel=getTiYongRelation(tiTri.wx,yongTri.wx);
+
+  // Render all
+  renderInfo(n1,n2,n3,upperNum,lowerNum,dongYao,upper,lower);
+  renderGua(benKey,benName,huKey,huName,bianKey,bianName,upper,lower);
+  renderTiYong(tiTri,yongTri,tiYongRel,dongYao);
+  renderNajia(yaoData,palaceTri,benName);
+  renderVerdict(benName,bianName,tiTri,yongTri,tiYongRel,dongYao,yaoData);
+  renderTemplate(n1,n2,n3,upperNum,lowerNum,dongYao,upper,lower,benName,huName,bianName,tiTri,yongTri,tiYongRel,yaoData,palaceTri);
+
+  document.getElementById('resultArea').classList.add('show');
+  document.getElementById('resultArea').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function getTiYongRelation(tiWx,yongWx){
+  if(tiWx===yongWx) return {text:'体用比和·大吉',cls:'rel-ji',desc:'体用五行相同，和谐共处，万事顺遂'};
+  if(wxSheng(yongWx,tiWx)) return {text:'用生体·吉',cls:'rel-ji',desc:'用卦生助体卦，外来助力，事半功倍'};
+  if(wxSheng(tiWx,yongWx)) return {text:'体生用·耗',cls:'rel-ping',desc:'体卦生出用卦，精力外泄，需加倍努力'};
+  if(wxKe(tiWx,yongWx)) return {text:'体克用·半吉',cls:'rel-ping',desc:'体卦克制用卦，主导局面但消耗元气'};
+  if(wxKe(yongWx,tiWx)) return {text:'用克体·凶',cls:'rel-xiong',desc:'用卦克制体卦，外部压力大，需谨慎应对'};
+  return {text:'待定',cls:'rel-ping',desc:''};
+}
+
+// ═══ Renderers ═══
+
+function renderInfo(n1,n2,n3,uN,lN,dong,u,l){
+  document.getElementById('infoBody').innerHTML=`
+    <div style="font-size:12px;line-height:2;color:var(--sub)">
+      <div>数字：<strong style="color:var(--gold)">${n1}</strong> · <strong style="color:var(--gold)">${n2}</strong> · <strong style="color:var(--gold)">${n3}</strong></div>
+      <div>上卦：${n1} ÷ 8 余 ${((n1-1)%8)+1} → <strong style="color:var(--gold)">${u.name}${u.symbol}</strong> (${u.nature}·${u.wx})</div>
+      <div>下卦：${n2} ÷ 8 余 ${((n2-1)%8)+1} → <strong style="color:var(--jade)">${l.name}${l.symbol}</strong> (${l.nature}·${l.wx})</div>
+      <div>动爻：${n3} ÷ 6 余 ${((n3-1)%6)+1} → <strong style="color:var(--red)">第 ${dong} 爻动</strong> (从下往上数)</div>
+    </div>`;
+}
+
+function renderGua(bK,bN,hK,hN,vK,vN,u,l){
+  const makeBox=(label,key,name,style='')=>`
+    <div class="gua-box" style="${style}">
+      <div class="gua-label">${label}</div>
+      <div class="gua-symbol">${HEX_UNICODE[key]||'☯'}</div>
+      <div class="gua-name">${name}</div>
+    </div>`;
+  document.getElementById('guaRow').innerHTML=
+    makeBox('本 卦',bK,bN,'border-color:rgba(255,215,0,.2)')+
+    makeBox('互 卦',hK,hN)+
+    makeBox('变 卦',vK,vN,'border-color:rgba(157,78,221,.2)');
+}
+
+function renderTiYong(ti,yong,rel,dong){
+  document.getElementById('tiYongBody').innerHTML=`
+    <div class="tiyong-box">
+      <div class="ty-item ty-ti">${dong<=3?'上':'下'}卦 · 体<br><strong>${ti.name}${ti.symbol}</strong><br><span style="font-size:10px">${ti.wx}</span></div>
+      <div class="ty-item ty-yong">${dong<=3?'下':'上'}卦 · 用<br><strong>${yong.name}${yong.symbol}</strong><br><span style="font-size:10px">${yong.wx}</span></div>
+    </div>
+    <div style="text-align:center"><div class="relation-tag ${rel.cls}">${rel.text}</div>
+    <div style="font-size:11px;color:var(--sub);margin-top:6px">${rel.desc}</div></div>`;
+}
+
+function renderNajia(yaoData,palace,benName){
+  let html=`<thead><tr><th>爻位</th><th>爻象</th><th>地支</th><th>五行</th><th>六亲</th><th>世应</th><th>六兽</th></tr></thead><tbody>`;
+  for(let i=5;i>=0;i--){
+    const y=yaoData[i];
+    const yaoStr=y.yaoVal?'▬▬▬':'▬ ▬';
+    const yaoClass=y.yaoVal?'yao-yang':'yao-yin';
+    const dongMark=y.dong?' ◉':'';
+    const shiTag=y.shi?`<span class="shi-tag shi-w">世</span>`:y.ying?`<span class="shi-tag shi-y">应</span>`:'';
+    html+=`<tr${y.dong?' style="background:rgba(255,215,0,.03)"':''}>
+      <td>${y.pos===6?'上':y.pos===1?'初':['','二','三','四','五'][y.pos-1]}爻</td>
+      <td class="yao-line ${yaoClass}${y.dong?' yao-dong':''}">${yaoStr}${dongMark}</td>
+      <td style="color:var(--gold)">${y.dizhi}</td>
+      <td>${y.wx}</td>
+      <td class="liuqin ${y.liuqin.cls}">${y.liuqin.name}</td>
+      <td>${shiTag}</td>
+      <td><span class="beast-tag ${BEAST_CLS[y.beast]}">${y.beast}</span></td>
+    </tr>`;
+  }
+  html+=`</tbody>`;
+  html+=`<tfoot><tr><td colspan="7" style="font-size:10px;color:var(--dim);padding-top:8px;text-align:left">
+    所属: ${palace.name}宫(${palace.wx}) · 卦名: ${benName} · 今日天干: ${getTodayTiangan()}
+  </td></tr></tfoot>`;
+  document.getElementById('najiaTable').innerHTML=html;
+}
+
+function renderVerdict(ben,bian,ti,yong,rel,dong,yaoData){
+  const dongYaoInfo=yaoData[dong-1];
+  const shiYao=yaoData.find(y=>y.shi);
+  const yingYao=yaoData.find(y=>y.ying);
+  const shiYingRel=shiYao&&yingYao?getShiYingText(shiYao,yingYao):'';
+
+  document.getElementById('verdictBody').innerHTML=`
+    <div class="verdict">
+      <div class="verdict-title">📜 断卦要点</div>
+      <div class="verdict-text">
+<strong>1. 体用关系:</strong> ${ti.name}(${ti.wx}) ${rel.text.split('·')[0]} ${yong.name}(${yong.wx}) — ${rel.desc}
+
+<strong>2. 动爻:</strong> 第${dong}爻动 · ${dongYaoInfo.dizhi}${dongYaoInfo.wx} · ${dongYaoInfo.liuqin.name}爻发动
+${getDongYaoText(dongYaoInfo)}
+
+<strong>3. 世应:</strong> 世爻(${shiYao?shiYao.dizhi+shiYao.wx:''}) ${shiYingRel} 应爻(${yingYao?yingYao.dizhi+yingYao.wx:''})
+
+<strong>4. 六兽:</strong> 动爻临${dongYaoInfo.beast}
+${getBeastText(dongYaoInfo.beast)}
+
+<strong>5. 综合:</strong>
+本卦「${ben}」→ 变卦「${bian}」
+${getOverallText(rel,dongYaoInfo)}
+      </div>
+    </div>`;
+}
+
+function getShiYingText(shi,ying){
+  const s=shi.wx,y=ying.wx;
+  if(s===y) return '比和';
+  if(wxSheng(s,y)) return '世生应(付出)';
+  if(wxSheng(y,s)) return '应生世(得助)';
+  if(wxKe(s,y)) return '世克应(主动)';
+  if(wxKe(y,s)) return '应克世(被动)';
+  return '';
+}
+
+function getDongYaoText(y){
+  const texts={'父母':'学业/考试/文书方面有变动','子孙':'成绩/收获方面有好消息','官鬼':'压力/竞争/权威方面有变化','妻财':'时间/精力分配需调整','兄弟':'同伴/竞争者带来影响'};
+  return `→ ${texts[y.liuqin.name]||'注意此爻所代表的变化'}`;
+}
+
+function getBeastText(beast){
+  const texts={'青龙':'主喜庆·吉祥·有贵人相助','朱雀':'主口舌·文书·考试信息','勾陈':'主迟滞·稳重·踏实备考','腾蛇':'主变化·虚惊·不确定性','白虎':'主压力·果断·需要魄力','玄武':'主隐藏·暗中·注意细节'};
+  return `→ ${texts[beast]||''}`;
+}
+
+function getOverallText(rel,dongYao){
+  if(rel.cls==='rel-ji') return '🟢 整体吉利，保持当前状态，坚持复习节奏即可。';
+  if(rel.cls==='rel-xiong') return '🔴 外部压力较大，建议调整策略，寻求外部辅助，加强薄弱环节。';
+  return '🟡 中性局面，需要根据动爻变化灵活调整备考重心。';
+}
+
+function renderTemplate(n1,n2,n3,uN,lN,dong,u,l,ben,hu,bian,ti,yong,rel,yaoData,palace){
+  const yaoLines=yaoData.slice().reverse().map(y=>{
+    const pos=y.pos===6?'上爻':y.pos===1?'初爻':['','二爻','三爻','四爻','五爻'][y.pos-1];
+    const line=y.yaoVal?'▬▬▬':'▬ ▬';
+    const shiying=y.shi?'世':y.ying?'应':'  ';
+    const dongMark=y.dong?' (动)':'';
+    return `${pos}  ${line}  ${y.dizhi}${y.wx}  ${y.liuqin.name}  ${shiying}  ${y.beast}${dongMark}`;
+  }).join('\n');
+
+  const template=`【起卦信息】
+数字：${n1}，${n2}，${n3}
+上卦：${n1} ÷8 余${uN} → ${u.name}卦${u.symbol}
+下卦：${n2} ÷8 余${lN} → ${l.name}卦${l.symbol}
+动爻：${n3} ÷6 余${dong} → 第${dong}爻动
+
+【本卦】${u.name}上${l.name}下 → ${HEX_UNICODE[uN*10+lN]||'☯'} 卦名：${ben}
+【互卦】${hu}
+【变卦】${bian}
+
+【体用】体卦：${ti.name}(${ti.wx})  用卦：${yong.name}(${yong.wx})  生克：${rel.text}
+
+【所属宫】${palace.name}宫(${palace.wx})
+【今日天干】${getTodayTiangan()}
+
+【六爻纳甲】（从上往下）
+爻位  爻象     地支  六亲  世应 六兽
+${yaoLines}
+
+【断语要点】
+1. 体用关系：${rel.text} — ${rel.desc}
+2. 动爻：第${dong}爻 ${yaoData[dong-1].liuqin.name}爻发动
+3. 世应生克：${getShiYingText(yaoData.find(y=>y.shi),yaoData.find(y=>y.ying))}
+4. 六兽：动爻临${yaoData[dong-1].beast}
+5. 综合：${getOverallText(rel,yaoData[dong-1])}`;
+
+  document.getElementById('templateOutput').textContent=template;
+}
+
+function copyTemplate(){
+  const text=document.getElementById('templateOutput').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='✅ 已复制';
+    setTimeout(()=>btn.textContent='📋 复制模板',2000);
+  }).catch(()=>alert('复制失败，请手动选择'));
+}
+</script>
+</body>
+</html>
