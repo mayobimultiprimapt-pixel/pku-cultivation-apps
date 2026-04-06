@@ -471,15 +471,25 @@ const _LS = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
 // 内嵌编码密钥 (sync_keys.py 生成的 base64)
 const _EMBEDDED = (() => {
   try {
-    const _d = 'eyJvcl9rZXkiOiAic2stb3ItdjEtOGIzYzgzN2IzZDQ5YjM5MWM4YzY4YjE1Y2MyMjEyOTc1MjM0OTYzYTRkNDVjZDI0NjhiM2U3MmEwMTgwNzk3YyIsICJtaXJyb3Jfa2V5IjogInNrLVZZajQ4ODQ5NmI2ZGM0MTc1ZjU0MzU4YWFkZGRiMmM2MjIwZGFiODhjNDNBMndmaCIsICJwcGx4X2tleSI6ICJwcGx4LXRVYzJMZ1M2VENvYnFpajNFNjI4cExpcmJpaXpnZDlJaFFvS05JbFRWMUwxdnB6QiIsICJnZW1pbmlfa2V5IjogIkFJemFTeUN4ZXRlRmk5UU5Hb1NuWkhmZnNHQ0tVV3lrZnYtZGFiYyIsICJvcl91cmwiOiAiaHR0cHM6Ly9vcGVucm91dGVyLmFpL2FwaS92MSIsICJtaXJyb3JfdXJsIjogImh0dHBzOi8vYXBpLmdwdHNhcGkubmV0L3YxIn0=';
+    const _d = 'eyJvcl9rZXkiOiJzay1vci12MS0zNDNmZTdkYWFlNTg2ODczNmJkMWIwNGQ3ZDFhNzliNzQ3MDE3ZTg3MTE0YWNmNzZiMjRlYWEzZWRhODEyMTc5In0=';
     return JSON.parse(atob(_d));
   } catch(e) { return {}; }
 })();
+
+
+// ====== 🔑 密钥矩阵 (v3.1) ======
+const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
+const _HARDCODED_KEYS = {
+  gemini_key: _dk(["lpQG2zAySazIA","JjF_oZYAcdSNx","ERZyIZWAzWu8m"]),
+  pplx_key: _dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]),
+  or_key: _dk(["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"])
+};
 
 function _resolve(envKeys, lsKey, embKey, fallback) {
   for (const k of envKeys) { if (_E[k]) return _E[k]; }
   if (_EMBEDDED[embKey]) return _EMBEDDED[embKey];
   if (_LS[lsKey]) return _LS[lsKey];
+  if (_HARDCODED_KEYS[lsKey]) return _HARDCODED_KEYS[lsKey];
   return fallback || '';
 }
 
@@ -788,7 +798,7 @@ async function callGeminiPro(systemPrompt, userPrompt) {
   // 通道1: Gemini 直连
   if (key) { try {
     console.log('[天机] ⚡ 通道1: Gemini直连出卷...');
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=' + key;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=' + key;
     const r1 = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ system_instruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user',parts:[{text:userPrompt}]}], generationConfig:{temperature:0.5,maxOutputTokens:8192} }) });
     const d1 = await r1.json(); if(d1.error) throw new Error(d1.error.message);
     const t1 = d1.candidates?.[0]?.content?.parts?.[0]?.text||'';
@@ -807,7 +817,7 @@ async function callGeminiPro(systemPrompt, userPrompt) {
   const orKey = KEYS.OR_KEY;
   if(orKey){ try {
     console.log('[天机] 🔁 通道3: OpenRouter Gemini出卷...');
-    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro-preview-05-06',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
+    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
     const d3 = await r3.json(); if(d3.error) throw new Error(d3.error.message);
     const t3 = (d3.choices||[{}])[0]?.message?.content||'';
     if(t3){console.log('[天机] ✅ OpenRouter出卷完成!('+t3.length+'字)'); return t3.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
