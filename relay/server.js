@@ -183,23 +183,25 @@ app.post('/v1/chat/completions', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Gemini 中转
+// Gemini 中转 (支持前端透传 key)
 app.post('/gemini/generate', async (req, res) => {
   try {
     const { model, messages, max_tokens } = req.body;
-    const text = await callGemini(model || BEST_MODELS.forge_primary, messages, max_tokens || 4096);
+    const clientKey = req.headers['x-gemini-key'] || '';
+    const text = await callGemini(model || BEST_MODELS.forge_primary, messages, max_tokens || 4096, clientKey);
     res.json({ choices: [{ message: { role: 'assistant', content: text } }], model });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Perplexity 中转
+// Perplexity 中转 (支持前端透传 key)
 app.post('/perplexity/search', async (req, res) => {
   try {
     const { model, messages, max_tokens } = req.body;
-    if (!KEYS.PERPLEXITY) return res.status(500).json({ error: 'Perplexity key missing' });
+    const pplxKey = req.headers['x-perplexity-key'] || KEYS.PERPLEXITY;
+    if (!pplxKey) return res.status(500).json({ error: 'Perplexity key missing' });
     const r = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${KEYS.PERPLEXITY}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pplxKey}` },
       body: JSON.stringify({ model: model || 'sonar-pro', messages, max_tokens: max_tokens || 4096 })
     });
     const data = await r.json();
@@ -398,9 +400,9 @@ app.post('/hub/collect-intel', async (req, res) => {
 // PART 3: 试卷工厂 — 最强模型生成今日试卷
 // =============================================
 
-async function callGemini(model, messages, maxTokens) {
-  const gKey = KEYS.GEMINI;
-  if (!gKey) throw new Error('Gemini key missing');
+async function callGemini(model, messages, maxTokens, clientKey) {
+  const gKey = clientKey || KEYS.GEMINI;
+  if (!gKey) throw new Error('Gemini key missing — 请在 Render 配置 GEMINI_API_KEY 或前端透传 x-gemini-key');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gKey}`;
   const contents = messages.filter(m => m.role !== 'system').map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }]
