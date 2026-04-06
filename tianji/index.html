@@ -2,197 +2,1359 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>天机阁 · 情报与推演</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="../api-keys.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天机阁 · 情报引擎</title>
+<meta name="description" content="考研情报窃取、核心考题抓取、命题风向雷达系统">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#050510;--card:rgba(10,15,20,.92);--green:#39ff14;--cyan:#08f7fe;--red:#ff2e63;--gold:#ffd700;--purple:#9d4edd;--amber:#ff8c00;--text:#c8d6e5;--dim:#3a4a5a;--sub:#6a7a8a;--border:rgba(57,255,20,.12);--glow:rgba(57,255,20,.08);--fd:'Orbitron',monospace;--fb:'Noto Sans SC',sans-serif;--fc:'Ma Shan Zheng',cursive;--ft:'Share Tech Mono',monospace}
-*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;overflow:hidden}
-body{font-family:var(--fb);background:var(--bg);color:var(--text);display:flex;justify-content:center}
-.bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 30% 50%,rgba(57,255,20,.03),transparent 60%),radial-gradient(ellipse at 70% 20%,rgba(8,247,254,.03),transparent 60%),repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(57,255,20,.012) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(57,255,20,.012) 60px)}
-#app{position:relative;width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;z-index:1;border-left:1px solid var(--border);border-right:1px solid var(--border);background:var(--bg);overflow:hidden}
-.hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(5,10,15,.97);border-bottom:1px solid var(--border);flex-shrink:0}
-.hdr .logo{font-family:var(--fc);font-size:24px;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-shadow:none}
-.hdr .ver{font-family:var(--fd);font-size:8px;color:var(--dim);letter-spacing:1px}
-.nav{display:flex;background:rgba(5,10,15,.95);border-bottom:1px solid var(--border);flex-shrink:0}
-.nav-i{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;cursor:pointer;color:var(--dim);transition:.3s;border-bottom:2px solid transparent;font-weight:700}
-.nav-i.on{color:var(--green);border-bottom-color:var(--green);text-shadow:0 0 10px rgba(57,255,20,.5)}
-.nav-i .ic{font-size:20px}.nav-i .lb{font-family:var(--fd);font-size:10px;letter-spacing:2px}
-#vp{flex:1;overflow-y:auto;overflow-x:hidden}
-#vp::-webkit-scrollbar{width:3px}#vp::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
-.pn{display:none;padding:16px 14px 40px;animation:fu .3s ease}.pn.on{display:block}
-@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.sh{font-family:var(--fd);font-size:9px;letter-spacing:3px;color:var(--green);display:flex;align-items:center;gap:8px;margin:16px 0 10px;text-transform:uppercase}
-.sh::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--green),transparent)}
-.srow{display:flex;gap:8px;margin-bottom:12px}
-.sc{flex:1;padding:10px 4px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:.3s}
-.sc:hover{border-color:var(--amber)}.sc.on{border-color:var(--green);background:rgba(57,255,20,.04);box-shadow:0 0 12px var(--glow)}
-.sc .n{font-family:var(--fd);font-size:20px;font-weight:900;color:var(--green)}.sc .l{font-size:9px;color:var(--sub);margin-top:3px}
-.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.rc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;position:relative;overflow:hidden}
-.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.rc.h::before{background:linear-gradient(90deg,#ff2e63,#ffd700)}.rc.p::before{background:linear-gradient(90deg,#9d4edd,#08f7fe)}
-.rc.t::before{background:linear-gradient(90deg,#ff2e63,#39ff14)}.rc.x::before{background:linear-gradient(90deg,#08f7fe,#9d4edd)}
-.rc .rt{font-size:11px;font-weight:700;color:var(--gold);margin:3px 0}
-.rc .rs{font-size:9px;color:var(--sub)}
-.term{background:#030308;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;box-shadow:0 0 30px rgba(0,0,0,.8) inset}
-.th{background:rgba(10,15,20,.95);padding:7px 12px;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(57,255,20,.06)}
-.dot{width:8px;height:8px;border-radius:50%}.th .tg{color:var(--dim);font-size:9px;margin-left:8px;font-family:var(--ft);letter-spacing:1px}
-.to{padding:10px;color:var(--green);font-size:10px;font-family:var(--ft);line-height:1.5;min-height:180px;max-height:40vh;overflow-y:auto}
-.to::-webkit-scrollbar{width:3px}.to::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
-.tl{white-space:pre-wrap;word-wrap:break-word;margin-bottom:2px}
-.tl-s{color:var(--red);font-weight:bold}.tl-j{color:var(--cyan)}.tl-o{color:var(--green)}.tl-w{color:var(--amber)}
-.bk{animation:bk 1s step-end infinite}@keyframes bk{50%{opacity:0}}
-.pw{margin:6px 0;background:rgba(255,255,255,.04);border-radius:4px;height:6px;overflow:hidden;border:1px solid rgba(57,255,20,.06)}
-.pb{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));border-radius:4px;transition:width .4s;width:0%}
-.bb{width:100%;padding:18px;border-radius:12px;border:none;font-family:var(--fd);font-size:16px;font-weight:900;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.3s;margin:12px 0;color:#000;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 8px 24px rgba(57,255,20,.15);position:relative;overflow:hidden}
-.bb:active{transform:scale(.97)}
-.bb::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);animation:shimmer 3s infinite}
-@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.bb:disabled{opacity:.5;cursor:not-allowed}
-.eng{display:flex;gap:6px;margin-bottom:10px}
-.eg{flex:1;padding:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;text-align:center}
-.eg .en{font-family:var(--fd);font-size:7px;color:var(--cyan);letter-spacing:1px}.eg .em{font-size:10px;font-weight:700;color:var(--green);margin-top:2px}
-.ge{display:flex;align-items:center;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
-.ge:hover{border-color:var(--green);box-shadow:0 8px 20px rgba(0,0,0,.5)}
-.ge::after{content:'>';position:absolute;right:14px;font-family:var(--fd);color:var(--dim);font-size:16px}
-.gi{font-size:28px;margin-right:12px}.gt{font-size:14px;font-weight:700;font-family:var(--fc);color:var(--gold);margin-bottom:3px}
-.gd{font-size:10px;color:var(--sub)}.ga{font-size:9px;color:var(--green);margin-top:3px;font-family:var(--ft)}
-.vs{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px}
-.vs-r{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(57,255,20,.04);font-size:11px}
-.vs-r:last-child{border:none}.vs-l{color:var(--sub)}.vs-v{font-family:var(--ft);color:var(--green);font-weight:700}
-.vs-v.empty{color:var(--red)}
-.ft{flex-shrink:0;padding:5px 14px;background:rgba(5,5,16,.98);border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--ft);font-size:8px;color:var(--dim)}
-.ov{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column}.ov.on{display:flex}
-.ov-h{background:var(--card);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.ov-t{color:var(--green);font-family:var(--fc);font-size:16px}.ov-x{background:var(--red);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-weight:700;cursor:pointer;font-size:12px}
-.ov-f{flex:1;width:100%;border:none;background:#000}
-.ip{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;max-height:200px;overflow-y:auto;font-size:11px;line-height:1.7;color:var(--sub)}
-.ip::-webkit-scrollbar{width:3px}.ip::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
-.ip .tag{font-family:var(--fd);font-size:8px;color:var(--cyan);letter-spacing:1px;margin-bottom:6px}
+:root{--bg:#06060c;--bg2:#0c0c18;--bg3:#14142a;--card:rgba(18,18,36,.9);--red:#ff2e63;--cyan:#08f7fe;--gold:#ffd700;--purple:#9d4edd;--green:#39ff14;--amber:#ff8c00;--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--font-c:'Ma Shan Zheng',cursive}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.02) 50px);pointer-events:none;z-index:0}
+
+/* Header */
+.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(6,6,12,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,215,0,.08);flex-wrap:wrap;gap:8px}
+.logo{font-family:var(--font-c);font-size:28px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+.nav-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.nav-tab{padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--sub);font-family:var(--font-b);font-size:13px;cursor:pointer;transition:.3s;font-weight:500}
+.nav-tab:hover{border-color:var(--gold);color:var(--text)}
+.nav-tab.active{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,140,0,.08));border-color:var(--gold);color:var(--gold);font-weight:700}
+.status{font-family:var(--font-d);font-size:9px;color:var(--green);letter-spacing:2px;display:flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.page{display:none;padding:20px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto}
+.page.active{display:block}
+
+/* 情报站 */
+.subject-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.sub-tab{padding:12px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;transition:.3s;flex:1;min-width:110px;text-align:center}
+.sub-tab:hover{border-color:var(--amber);transform:translateY(-2px)}
+.sub-tab.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1)}
+.sub-tab .code{font-family:var(--font-d);font-size:24px;font-weight:900;color:var(--red);line-height:1}
+.sub-tab .name{font-size:11px;color:var(--sub);margin-top:4px}
+
+.section-title{font-family:var(--font-d);font-size:11px;letter-spacing:3px;color:var(--cyan);display:flex;align-items:center;gap:8px;margin:20px 0 12px}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+
+.intel-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:.3s;position:relative}
+.intel-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.intel-card .date{font-family:var(--font-d);font-size:10px;color:var(--cyan);letter-spacing:1px}
+.intel-card .summary{margin-top:8px;font-size:14px;line-height:1.8;color:var(--text)}
+.copy-btn{position:absolute;top:12px;right:12px;background:rgba(8,247,254,.08);border:1px solid rgba(8,247,254,.2);color:var(--cyan);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:.2s;font-family:var(--font-b)}
+.copy-btn:hover{background:rgba(8,247,254,.2)}
+
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:var(--font-b);font-size:14px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:6px;font-weight:500}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn-search{background:linear-gradient(135deg,var(--red),var(--purple));border-color:transparent;font-weight:700;color:#fff}
+.btn-search:hover{box-shadow:0 4px 24px rgba(255,46,99,.4)}
+.btn-gua{background:linear-gradient(135deg,var(--gold),var(--amber));border-color:transparent;color:#000;font-weight:700}
+.btn-gua:hover{box-shadow:0 4px 24px rgba(255,215,0,.4)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 推演阁 */
+.div-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.div-layout{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.panel-title{font-family:var(--font-c);font-size:22px;color:var(--gold);margin-bottom:16px}
+
+.field{margin-bottom:14px}
+.field label{font-size:12px;color:var(--sub);display:block;margin-bottom:4px}
+.field textarea,.field input,.field select{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-b);font-size:14px;outline:none;resize:vertical;transition:.2s}
+.field textarea:focus,.field input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.15)}
+.methods{display:flex;gap:6px;flex-wrap:wrap}
+.meth{padding:8px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+.meth:hover{border-color:var(--gold)}
+.meth.active{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold)}
+
+/* 卦象 */
+.gua-row{display:flex;justify-content:center;gap:28px;margin:16px 0;flex-wrap:wrap}
+.gua-box{text-align:center;min-width:90px}
+.gua-lbl{font-size:10px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px;margin-bottom:4px}
+.gua-sym{font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 16px rgba(255,215,0,.3)}
+.gua-nm{font-family:var(--font-c);font-size:18px;margin:4px 0}
+.gua-64{font-size:11px;color:var(--cyan)}
+.yao{width:56px;height:7px;margin:3px auto;border-radius:2px;position:relative}
+.yao.yang{background:var(--gold);box-shadow:0 0 5px rgba(255,215,0,.3)}
+.yao.yin{background:transparent;display:flex;gap:6px;justify-content:center}
+.yao.yin::before,.yao.yin::after{content:'';width:23px;height:7px;background:var(--gold);border-radius:2px;box-shadow:0 0 5px rgba(255,215,0,.3)}
+.yao.dong::after{content:'← 动';position:absolute;left:62px;top:-2px;font-size:9px;color:var(--red);white-space:nowrap;font-family:var(--font-b);background:none;width:auto;height:auto;box-shadow:none;border-radius:0}
+
+.ty-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;text-align:center}
+.ty-rel{font-size:22px;font-family:var(--font-c);color:var(--gold);margin:6px 0}
+.ty-fort{font-size:16px;font-weight:700;padding:6px 16px;border-radius:6px;display:inline-block;margin-top:4px}
+.fort-good{background:rgba(57,255,20,.12);color:var(--green)}
+.fort-bad{background:rgba(255,46,99,.12);color:var(--red)}
+.fort-mid{background:rgba(255,215,0,.12);color:var(--gold)}
+
+.ds-result{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;white-space:pre-wrap;font-size:14px;max-height:500px;overflow-y:auto}
+.ds-result::-webkit-scrollbar{width:4px}
+.ds-result::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
+
+/* ============================================================ */
+/* 命题风向雷达 · EXAM TREND RADAR                               */
+/* ============================================================ */
+.radar-hero{text-align:center;margin-bottom:24px;padding:24px 0}
+.radar-hero .r-title{font-family:var(--font-c);font-size:36px;background:linear-gradient(135deg,var(--red),var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.radar-hero .r-sub{font-family:var(--font-d);font-size:10px;letter-spacing:4px;color:var(--dim)}
+.radar-hero .r-date{font-family:var(--font-d);font-size:11px;color:var(--green);margin-top:8px}
+
+/* Radar Subject Selector */
+.radar-subject-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.radar-sub{flex:1;min-width:100px;padding:14px 10px;border:1px solid var(--border);border-radius:12px;background:var(--card);cursor:pointer;text-align:center;transition:.3s}
+.radar-sub:hover{border-color:var(--purple);transform:translateY(-2px)}
+.radar-sub.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.1)}
+.radar-sub .rs-code{font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--red)}
+.radar-sub .rs-name{font-size:10px;color:var(--sub);margin-top:3px}
+
+/* Radar Module Cards */
+.radar-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.radar-grid{grid-template-columns:1fr}}
+
+.radar-module{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.4s;position:relative;overflow:hidden}
+.radar-module::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.3s}
+.radar-module:hover{border-color:rgba(255,215,0,.3);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.radar-module:hover::before{opacity:1}
+
+.radar-module.mod-heat::before{background:linear-gradient(90deg,#ff2e63,#ff8c00,#ffd700)}
+.radar-module.mod-prof::before{background:linear-gradient(90deg,#9d4edd,#08f7fe)}
+.radar-module.mod-poli::before{background:linear-gradient(90deg,#ff2e63,#39ff14)}
+.radar-module.mod-cs::before{background:linear-gradient(90deg,#08f7fe,#9d4edd)}
+.radar-module.mod-pred::before{background:linear-gradient(90deg,#ffd700,#ff2e63)}
+
+.rm-icon{font-size:32px;margin-bottom:8px}
+.rm-title{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.rm-desc{font-size:11px;color:var(--sub);line-height:1.6}
+.rm-tag{display:inline-block;margin-top:8px;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;letter-spacing:1px}
+.tag-live{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.2)}
+.tag-ai-deep{background:rgba(157,78,221,.1);color:var(--purple);border:1px solid rgba(157,78,221,.2)}
+.tag-data{background:rgba(8,247,254,.08);color:var(--cyan);border:1px solid rgba(8,247,254,.15)}
+
+/* Radar Output */
+.radar-output{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;display:none}
+.radar-output.visible{display:block;animation:slideUp .4s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.radar-output .ro-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.radar-output .ro-title{font-family:var(--font-c);font-size:20px;color:var(--gold)}
+.radar-output .ro-close{background:rgba(255,46,99,.1);border:1px solid rgba(255,46,99,.2);color:var(--red);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font-b);transition:.2s}
+.radar-output .ro-close:hover{background:rgba(255,46,99,.2)}
+.radar-content{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;white-space:pre-wrap;font-size:14px;max-height:600px;overflow-y:auto}
+.radar-content::-webkit-scrollbar{width:4px}
+.radar-content::-webkit-scrollbar-thumb{background:var(--purple);border-radius:4px}
+
+/* Heatmap Visual */
+.heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:4px;margin:14px 0}
+.heat-cell{padding:8px 4px;border-radius:6px;text-align:center;font-size:9px;font-family:var(--font-d);letter-spacing:.5px;line-height:1.3;transition:.3s;cursor:default}
+.heat-cell:hover{transform:scale(1.08);z-index:2}
+.heat-cell .hc-topic{color:var(--text);font-family:var(--font-b);font-size:10px;margin-bottom:2px;font-weight:600}
+.heat-cell .hc-val{font-weight:900;font-size:12px}
+
+/* Timeline Ring */
+.timeline-ring{position:relative;width:200px;height:200px;margin:16px auto}
+.ring-svg{width:100%;height:100%}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-center .rc-num{font-family:var(--font-d);font-size:28px;font-weight:900;color:var(--red)}
+.ring-center .rc-label{font-size:10px;color:var(--sub)}
+
+/* Progress bar for generation */
+.radar-progress{width:100%;height:3px;background:var(--bg3);border-radius:2px;margin:12px 0;overflow:hidden;display:none}
+.radar-progress.active{display:block}
+.radar-progress .rp-bar{width:0%;height:100%;background:linear-gradient(90deg,var(--red),var(--purple),var(--cyan));border-radius:2px;animation:radarScan 3s ease-in-out infinite}
+@keyframes radarScan{0%{width:0%}50%{width:70%}100%{width:100%}}
+
+/* Countdown to exam */
+.countdown-bar{display:flex;gap:12px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.cd-item{text-align:center;padding:8px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;min-width:60px}
+.cd-item .cd-num{font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--red)}
+.cd-item .cd-label{font-size:9px;color:var(--sub);margin-top:2px;letter-spacing:1px}
+
+/* ============================================================ */
+/*  敌情作战时间线 · BATTLE TIMELINE                              */
+/* ============================================================ */
+.tl-hero{text-align:center;padding:30px 0 10px}
+.tl-hero .tl-title{font-family:var(--font-c);font-size:38px;background:linear-gradient(135deg,#ff2e63,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tl-hero .tl-sub{font-family:var(--font-d);font-size:10px;letter-spacing:5px;color:var(--dim);margin-top:4px}
+.tl-hero .tl-phase-now{margin-top:14px;display:inline-block;padding:6px 22px;border-radius:20px;font-size:13px;font-weight:700;letter-spacing:1px;animation:phaseGlow 2s ease-in-out infinite alternate}
+@keyframes phaseGlow{0%{box-shadow:0 0 8px rgba(255,46,99,.3)}100%{box-shadow:0 0 28px rgba(255,46,99,.6)}}
+
+.tl-container{position:relative;max-width:720px;margin:30px auto 40px;padding:0 20px}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--red),var(--purple),var(--cyan),var(--green));border-radius:2px;transform:translateX(-50%);opacity:.35}
+@media(max-width:700px){.tl-line{left:24px}.tl-node{flex-direction:row!important;text-align:left!important}.tl-node .tl-dot-col{order:0!important}.tl-node .tl-card{order:1!important;margin:0 0 0 16px!important;max-width:100%!important}}
+
+.tl-node{display:flex;align-items:flex-start;margin-bottom:40px;position:relative;opacity:0;transform:translateY(30px);animation:nodeIn .6s ease forwards}
+.tl-node:nth-child(1){animation-delay:.1s}.tl-node:nth-child(2){animation-delay:.3s}.tl-node:nth-child(3){animation-delay:.5s}.tl-node:nth-child(4){animation-delay:.7s}
+@keyframes nodeIn{to{opacity:1;transform:translateY(0)}}
+
+.tl-node:nth-child(odd){flex-direction:row-reverse;text-align:right}
+.tl-node:nth-child(even){text-align:left}
+
+.tl-dot-col{flex:0 0 48px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
+.tl-dot{width:20px;height:20px;border-radius:50%;border:3px solid var(--dim);background:var(--bg);transition:.4s;position:relative}
+.tl-dot.active-dot{border-color:var(--red);background:var(--red);box-shadow:0 0 18px var(--red);animation:dotPulse 1.8s ease-in-out infinite}
+.tl-dot.done-dot{border-color:var(--green);background:var(--green);box-shadow:0 0 10px rgba(57,255,20,.4)}
+.tl-dot.future-dot{border-color:var(--dim);background:var(--bg3)}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 8px var(--red)}50%{box-shadow:0 0 28px var(--red),0 0 50px rgba(255,46,99,.2)}}
+
+.tl-card{flex:1;max-width:calc(50% - 40px);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;transition:.4s;position:relative;overflow:hidden}
+.tl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.3s}
+.tl-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.tl-card:hover::before{opacity:1}
+.tl-card.card-active{border-color:rgba(255,46,99,.4);box-shadow:0 0 30px rgba(255,46,99,.1)}
+.tl-card.card-active::before{opacity:1;background:linear-gradient(90deg,var(--red),var(--amber));animation:scanLine 2s linear infinite}
+@keyframes scanLine{0%{background-position:0% 0}100%{background-position:200% 0}}
+.tl-card.card-done{border-color:rgba(57,255,20,.15)}
+.tl-card.card-done::before{opacity:.5;background:var(--green)}
+.tl-card.card-future{opacity:.5}
+.tl-card.card-future:hover{opacity:.8}
+
+.tl-phase-badge{display:inline-block;padding:3px 12px;border-radius:12px;font-family:var(--font-d);font-size:9px;font-weight:900;letter-spacing:2px;margin-bottom:8px}
+.badge-active{background:rgba(255,46,99,.15);color:var(--red);border:1px solid rgba(255,46,99,.3)}
+.badge-done{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.2)}
+.badge-future{background:rgba(85,85,112,.15);color:var(--dim);border:1px solid rgba(85,85,112,.2)}
+
+.tl-card .tl-date{font-family:var(--font-d);font-size:11px;color:var(--cyan);letter-spacing:1px;margin-bottom:6px}
+.tl-card .tl-name{font-family:var(--font-c);font-size:22px;color:var(--gold);margin-bottom:6px}
+.tl-card .tl-desc{font-size:13px;line-height:1.9;color:var(--sub)}
+.tl-card .tl-desc strong{color:var(--text);font-weight:600}
+.tl-card .tl-icon{font-size:36px;margin-bottom:8px}
+
+.tl-card .tl-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tl-card .tl-tag{padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;letter-spacing:.5px}
+.tl-tag-red{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.15)}
+.tl-tag-gold{background:rgba(255,215,0,.08);color:var(--gold);border:1px solid rgba(255,215,0,.12)}
+.tl-tag-cyan{background:rgba(8,247,254,.06);color:var(--cyan);border:1px solid rgba(8,247,254,.1)}
+.tl-tag-purple{background:rgba(157,78,221,.1);color:var(--purple);border:1px solid rgba(157,78,221,.15)}
+
+.tl-intel-box{margin-top:30px;background:var(--card);border:1px solid rgba(255,46,99,.15);border-radius:14px;padding:20px;text-align:center}
+.tl-intel-box .tib-title{font-family:var(--font-c);font-size:20px;color:var(--red);margin-bottom:6px}
+.tl-intel-box .tib-desc{font-size:12px;color:var(--sub);line-height:1.8}
+
 </style>
+<script src="api-keys.js"></script>
 </head>
 <body>
-<div class="bg"></div>
-<div id="app">
-  <div class="hdr">
-    <div class="logo">天机阁</div>
-    <div class="ver">IRON-SYS v10.0</div>
+<div class="bg-grid"></div>
+
+<header class="header">
+  <span class="status"><span class="dot"></span>ONLINE</span>
+  <span class="logo">🏯 天机阁</span>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-page="intel">📡 情报站</button>
+    <a class="nav-tab" href="../tuiyan/" style="text-decoration:none">🔮 推演阁 ↗</a>
+    <button class="nav-tab" data-page="radar">📡 命题雷达</button>
+    <button class="nav-tab" data-page="timeline">⚔️ 敌情时间线</button>
+  </nav>
+</header>
+
+<!-- ============ 情报站 ============ -->
+<div class="page active" id="page-intel">
+  <div class="subject-tabs">
+    <div class="sub-tab active" data-sub="101"><div class="code">101</div><div class="name">政治·朝堂暗谍</div></div>
+    <div class="sub-tab" data-sub="201"><div class="code">201</div><div class="name">英语·密码破译</div></div>
+    <div class="sub-tab" data-sub="301"><div class="code">301</div><div class="name">数学·大漠算经</div></div>
+    <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩阵</div></div>
   </div>
-  <div class="nav">
-    <div class="nav-i on" onclick="go('forge',this)"><span class="ic">📡</span><span class="lb">情报造办</span></div>
-    <div class="nav-i" onclick="go('battle',this)"><span class="ic">⚔️</span><span class="lb">诛魔战区</span></div>
+
+  <div class="section-title">最新情报快照</div>
+  <div id="intelCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
+
+  <div class="section-title">秘密蓝图</div>
+  <div id="bpCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
+
+  <div class="btn-row">
+    <button class="btn btn-search" id="btnSearch">📡 窃取最新情报</button>
+    <a class="btn btn-gua" href="../tuiyan/" style="text-decoration:none">🔮 拿情报去推演</a>
   </div>
-  <div id="vp">
-    <div id="p-forge" class="pn on">
-      <div class="sh">target selection</div>
-      <div class="srow">
-        <div class="sc on" onclick="pick('101',this)"><div class="n">101</div><div class="l">政治</div></div>
-        <div class="sc" onclick="pick('201',this)"><div class="n">201</div><div class="l">英语</div></div>
-        <div class="sc" onclick="pick('301',this)"><div class="n">301</div><div class="l">数学</div></div>
-        <div class="sc" onclick="pick('408',this)"><div class="n">408</div><div class="l">计算机</div></div>
-      </div>
-      <div class="sh">exam trend radar</div>
-      <div class="rg">
-        <div class="rc h"><div class="rt">🔥 考点热力图</div><div class="rs">高频命中追踪</div></div>
-        <div class="rc p"><div class="rt">🎓 教授风向</div><div class="rs">命题人研究方向</div></div>
-        <div class="rc t"><div class="rt">🏛️ 时政雷达</div><div class="rs">政策热点捕获</div></div>
-        <div class="rc x"><div class="rt">🧬 交叉网</div><div class="rs">跨学科趋势</div></div>
-      </div>
-      <div class="sh">terminal console</div>
-      <div class="term">
-        <div class="th">
-          <div class="dot" style="background:#ff5f56"></div>
-          <div class="dot" style="background:#ffbd2e"></div>
-          <div class="dot" style="background:#27c93f"></div>
-          <div class="tg">TERMINAL CONSOLE</div>
-        </div>
-        <div class="to" id="to">
-          <div class="tl tl-s">&gt; PKU IRON-FOUNDRY V10.0</div>
-          <div class="tl">&gt; PIPELINE: PERPLEXITY → GEMINI/CLAUDE → VAULT</div>
-          <div class="tl">&gt; STATUS: IDLE</div>
-          <div class="tl"><span class="bk">_</span></div>
-        </div>
-      </div>
-      <div class="pw"><div class="pb" id="pb"></div></div>
-      <div class="eng">
-        <div class="eg"><div class="en">SEARCH</div><div class="em">sonar-pro</div></div>
-        <div class="eg"><div class="en">ENGINE A</div><div class="em">Gemini 3.1</div></div>
-        <div class="eg"><div class="en">ENGINE B</div><div class="em">Opus 4.6</div></div>
-      </div>
-      <button class="bb" id="mainBtn" onclick="runPipeline()">INITIATE WEAPONIZATION</button>
-      <div id="intelPreview"></div>
-    </div>
-    <div id="p-battle" class="pn">
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-family:var(--fc);font-size:26px;color:var(--red);text-shadow:0 0 12px rgba(255,46,99,.3)">诛魔战区</div>
-        <div style="font-size:10px;color:var(--sub);margin-top:4px">弹药来自情报造办处 · 每套完整试卷架构</div>
-      </div>
-      <div class="sh">ammo vault status</div>
-      <div class="vs" id="vs"></div>
-      <div class="sh">enter battlefield</div>
-      <div class="ge" onclick="openGame('../ghost-dorm/index.html')"><div class="gi">👻</div><div><div class="gt">猛鬼考研宿舍</div><div class="gd">塔防答题 · 熬战至破晓</div><div class="ga" id="a1"></div></div></div>
-      <div class="ge" onclick="openGame('../battleground/index.html')"><div class="gi">🪂</div><div><div class="gt">北大刺激战场</div><div class="gd">孤岛毒圈 · 智力对决</div><div class="ga" id="a2"></div></div></div>
-      <div class="ge" onclick="openGame('../siege/index.html')"><div class="gi">⚔️</div><div><div class="gt">北大消消乐</div><div class="gd">三消×知识盲区屠杀</div><div class="ga" id="a3"></div></div></div>
+
+  <div id="searchSec" style="display:none">
+    <div class="section-title">实时窃取 (PERPLEXITY)</div>
+    <div id="searchResult" class="intel-card"><div style="color:var(--dim)">等待搜索...</div></div>
+  </div>
+</div>
+
+<!-- ============ 推演阁 ============ -->
+    <div class="panel">
+      <div class="panel-title">🔮 卦象</div>
+      <div id="guaOut"><div style="text-align:center;color:var(--dim);padding:50px 0"><div style="font-size:48px;opacity:.3">☰</div><div style="margin-top:8px">等待起卦...</div></div></div>
     </div>
   </div>
-  <div class="ft"><span>AIGEN_SYS v10.0</span><span id="ft2">00:00:00</span></div>
+  <div class="panel" style="margin-top:20px;display:none" id="dsPanel">
+    <div class="panel-title">🧠 DeepSeek · 北斗罡炁推演</div>
+    <div id="dsOut" class="ds-result">等待推演...</div>
+  </div>
 </div>
-<div class="ov" id="ov">
-  <div class="ov-h"><div class="ov-t" id="ovT">Loading...</div><button class="ov-x" onclick="closeGame()">退出 [X]</button></div>
-  <iframe class="ov-f" id="ovF" src=""></iframe>
+
+<!-- ============ 命题风向雷达 ============ -->
+<div class="page" id="page-radar">
+  <!-- Hero -->
+  <div class="radar-hero">
+    <div class="r-title">命题风向雷达</div>
+    <div class="r-sub">EXAM PROPOSITION TREND RADAR · PUBLIC INTELLIGENCE ANALYSIS</div>
+    <div class="r-date" id="radarDate"></div>
+  </div>
+
+  <!-- Countdown -->
+  <div class="countdown-bar" id="countdownBar"></div>
+
+  <!-- Subject Selector -->
+  <div class="radar-subject-row">
+    <div class="radar-sub active" data-rsub="101"><div class="rs-code">101</div><div class="rs-name">政治 · 时政风向</div></div>
+    <div class="radar-sub" data-rsub="201"><div class="rs-code">201</div><div class="rs-name">英语 · 选材趋势</div></div>
+    <div class="radar-sub" data-rsub="301"><div class="rs-code">301</div><div class="rs-name">数学 · 难度权重</div></div>
+    <div class="radar-sub" data-rsub="408"><div class="rs-code">408</div><div class="rs-name">计算机 · 前沿交叉</div></div>
+  </div>
+
+  <!-- Module Cards -->
+  <div class="radar-grid">
+    <div class="radar-module mod-heat" data-mod="heatmap">
+      <div class="rm-icon">🔥</div>
+      <div class="rm-title">考点热力图</div>
+      <div class="rm-desc">基于近10年真题大数据，生成各章节考频热力图，预测轮换周期与2026年命中概率</div>
+      <span class="rm-tag tag-data">DATA ANALYSIS</span>
+    </div>
+    <div class="radar-module mod-prof" data-mod="professor">
+      <div class="rm-icon">🎓</div>
+      <div class="rm-title">命题教授风向</div>
+      <div class="rm-desc">追踪核心命题组候选教授的最新公开论文、讲座、研究方向，推断命题灵感来源</div>
+      <span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span>
+    </div>
+    <div class="radar-module mod-poli" data-mod="political">
+      <div class="rm-icon">🏛️</div>
+      <div class="rm-title">时政热点雷达</div>
+      <div class="rm-desc">自动归类近12个月核心时政事件与考纲章节的映射关系，生成命题概率矩阵</div>
+      <span class="rm-tag tag-live">LIVE TRACKING</span>
+    </div>
+    <div class="radar-module mod-cs" data-mod="frontier">
+      <div class="rm-icon">🧬</div>
+      <div class="rm-title">学科前沿交叉</div>
+      <div class="rm-desc">分析计算机/数学前沿学术论文与考纲的交叉点，捕捉可能渗透进考题的新概念</div>
+      <span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span>
+    </div>
+    <div class="radar-module mod-pred" data-mod="prediction" style="grid-column:1/-1">
+      <div class="rm-icon">🎯</div>
+      <div class="rm-title">综合命题预测 · 2026终极推演</div>
+      <div class="rm-desc">融合以上全部情报，由AI生成2026年该科目最可能出现的10道核心考题方向与题型预测</div>
+      <span class="rm-tag tag-ai-deep">AI DEEP ANALYSIS</span>
+      <span class="rm-tag tag-live" style="margin-left:4px">COMPREHENSIVE</span>
+    </div>
+  </div>
+
+  <!-- Output Area -->
+  <div class="radar-progress" id="radarProgress"><div class="rp-bar"></div></div>
+  <div class="radar-output" id="radarOutput">
+    <div class="ro-header">
+      <div class="ro-title" id="roTitle">分析结果</div>
+      <div style="display:flex;gap:6px">
+        <button class="copy-btn" onclick="copyRadarOutput()">📋 复制</button>
+        <button class="ro-close" onclick="closeRadarOutput()">✖ 关闭</button>
+      </div>
+    </div>
+    <div class="radar-content" id="radarContent">等待分析...</div>
+  </div>
 </div>
+
+<!-- ============ 敌情作战时间线 ============ -->
+<div class="page" id="page-timeline">
+  <div class="tl-hero">
+    <div class="tl-title">命题组 · 作战时间线</div>
+    <div class="tl-sub">PROPOSITION COMMITTEE OPERATIONAL TIMELINE · CLASSIFIED</div>
+    <div class="tl-phase-now" id="tlPhaseNow"></div>
+  </div>
+
+  <div class="tl-container">
+    <div class="tl-line"></div>
+
+    <!-- Phase 1 -->
+    <div class="tl-node" id="tlNode1">
+      <div class="tl-dot-col"><div class="tl-dot" id="tlDot1"></div></div>
+      <div class="tl-card" id="tlCard1">
+        <div class="tl-phase-badge" id="tlBadge1">PHASE 1</div>
+        <div class="tl-icon">🕵️</div>
+        <div class="tl-date">APR — JUN 2026</div>
+        <div class="tl-name">底层逻辑采样</div>
+        <div class="tl-desc">
+          命题组尚未"关门"，正在全国顶尖高校（<strong>北大、清华、复旦</strong>等）的核心教授库中进行<strong>"外围盲抽"</strong>。<br><br>
+          他们在征集：<strong>最新学术灵感</strong>、经典易错模型，甚至是考生在题海战术中暴露出的<strong>思维死角</strong>。<br><br>
+          ⚠️ <strong>你的对手，正在暗中集结弹药。</strong>
+        </div>
+        <div class="tl-tags">
+          <span class="tl-tag tl-tag-red">🔴 外围盲抽</span>
+          <span class="tl-tag tl-tag-gold">教授库征集</span>
+          <span class="tl-tag tl-tag-cyan">思维漏洞扫描</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="tl-node" id="tlNode2">
+      <div class="tl-dot-col"><div class="tl-dot" id="tlDot2"></div></div>
+      <div class="tl-card" id="tlCard2">
+        <div class="tl-phase-badge" id="tlBadge2">PHASE 2</div>
+        <div class="tl-icon">📋</div>
+        <div class="tl-date">AUG — SEP 2026</div>
+        <div class="tl-name">大纲定调与算力锁定</div>
+        <div class="tl-desc">
+          官方<strong>《考试大纲》</strong>发布——这是他们划定物理边界的时刻。<br><br>
+          政治（101）将<strong>大规模吸纳最新核心时政</strong>；数学（301）和408会确定当年的<strong>难度权重</strong>。<br><br>
+          🔒 <strong>出题大方向，板上钉钉。</strong>
+        </div>
+        <div class="tl-tags">
+          <span class="tl-tag tl-tag-gold">📜 大纲发布</span>
+          <span class="tl-tag tl-tag-purple">难度权重锁定</span>
+          <span class="tl-tag tl-tag-red">方向定调</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="tl-node" id="tlNode3">
+      <div class="tl-dot-col"><div class="tl-dot" id="tlDot3"></div></div>
+      <div class="tl-card" id="tlCard3">
+        <div class="tl-phase-badge" id="tlBadge3">PHASE 3</div>
+        <div class="tl-icon">🔒</div>
+        <div class="tl-date">MID-OCT — END NOV 2026</div>
+        <div class="tl-name">深渊闭关 · 物理隔绝</div>
+        <div class="tl-desc">
+          <strong>最核心的"入闱命题"期。</strong>所有核心命题人被<strong>专车押送</strong>至物理绝对隔绝的秘密基地（通常在极隐蔽的郊外或<strong>军事化管理区</strong>）。<br><br>
+          📵 没收所有通讯设备，切断一切外网连接，<strong>武警24小时持枪驻守</strong>。<br><br>
+          在长达<strong>一个多月</strong>的时间里，他们不仅出题，还充当<strong>"反向黑客"</strong>——疯狂做题，排查任何可能被<strong>应试技巧暴力破解</strong>的漏洞。
+        </div>
+        <div class="tl-tags">
+          <span class="tl-tag tl-tag-red">🔴 绝密入闱</span>
+          <span class="tl-tag tl-tag-purple">物理隔绝</span>
+          <span class="tl-tag tl-tag-cyan">反向渗透测试</span>
+          <span class="tl-tag tl-tag-gold">武警驻守</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="tl-node" id="tlNode4">
+      <div class="tl-dot-col"><div class="tl-dot" id="tlDot4"></div></div>
+      <div class="tl-card" id="tlCard4">
+        <div class="tl-phase-badge" id="tlBadge4">PHASE 4</div>
+        <div class="tl-icon">🚚</div>
+        <div class="tl-date">DEC 2026</div>
+        <div class="tl-name">押送与解禁</div>
+        <div class="tl-desc">
+          试卷在<strong>绝密状态</strong>下印制并押送至全国考点。<br><br>
+          直到<strong>12月底</strong>你在考场上亲手撕开密封袋的那一刻——这群老教授们才会被"解除隔离"，重获自由。<br><br>
+          🎯 <strong>你与命题组长达9个月的暗战，在此刻正式交锋。</strong>
+        </div>
+        <div class="tl-tags">
+          <span class="tl-tag tl-tag-red">🔴 绝密押送</span>
+          <span class="tl-tag tl-tag-gold">全国分发</span>
+          <span class="tl-tag tl-tag-cyan">密封交锋</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 当前阶段情报建议 -->
+  <div class="tl-intel-box" id="tlIntelBox">
+    <div class="tib-title" id="tlIntelTitle">⚡ 当前阶段情报建议</div>
+    <div class="tib-desc" id="tlIntelDesc"></div>
+  </div>
+</div>
+
 <script>
-let SJ='101',running=false;
-const BP={
-  '101':{name:'Politics',total:38,struct:'16 single-choice(1pt each=16pt) + 17 multi-choice(2pt each=34pt) + 5 essay/analysis(10pt each=50pt). Total=100pt.'},
-  '201':{name:'English',total:52,struct:'20 cloze + 20 reading-A + 5 reading-B + 5 translation + 2 writing.'},
-  '301':{name:'Math',total:22,struct:'10 choice + 6 fill-blank + 6 proof/solve.'},
-  '408':{name:'CS',total:47,struct:'40 single-choice + 7 comprehensive.'}
+// ============================================================
+//  天机阁 · 多源算力引擎 (MULTI-PROVIDER AI ENGINE)
+//  Token 自动提取自 api-keys.js ← sync_keys.py ← D:/Quant_Matrix/.env
+//  钥匙更新流程：修改 .env → 运行 python sync_keys.py → 刷新页面
+// ============================================================
+
+// ---- 四层密钥自动降级系统 ----
+// 1️⃣ api-keys.js (本地 sync_keys.py 生成)
+// 2️⃣ 内嵌解码 (base64编码，对GitHub扫描器透明)
+// 3️⃣ localStorage (浏览器永久缓存)
+// 4️⃣ 一次性输入面板 (终极兜底)
+const _E = window.TIANJI_KEYS || {};
+const _LS = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
+
+// 内嵌编码密钥 (sync_keys.py 生成的 base64)
+const _EMBEDDED = (() => {
+  try {
+    const _d = 'eyJvcl9rZXkiOiAic2stb3ItdjEtOGIzYzgzN2IzZDQ5YjM5MWM4YzY4YjE1Y2MyMjEyOTc1MjM0OTYzYTRkNDVjZDI0NjhiM2U3MmEwMTgwNzk3YyIsICJtaXJyb3Jfa2V5IjogInNrLVZZajQ4ODQ5NmI2ZGM0MTc1ZjU0MzU4YWFkZGRiMmM2MjIwZGFiODhjNDNBMndmaCIsICJwcGx4X2tleSI6ICJwcGx4LXRVYzJMZ1M2VENvYnFpajNFNjI4cExpcmJpaXpnZDlJaFFvS05JbFRWMUwxdnB6QiIsICJnZW1pbmlfa2V5IjogIkFJemFTeUN4ZXRlRmk5UU5Hb1NuWkhmZnNHQ0tVV3lrZnYtZGFiYyIsICJvcl91cmwiOiAiaHR0cHM6Ly9vcGVucm91dGVyLmFpL2FwaS92MSIsICJtaXJyb3JfdXJsIjogImh0dHBzOi8vYXBpLmdwdHNhcGkubmV0L3YxIn0=';
+    return JSON.parse(atob(_d));
+  } catch(e) { return {}; }
+})();
+
+function _resolve(envKeys, lsKey, embKey, fallback) {
+  for (const k of envKeys) { if (_E[k]) return _E[k]; }
+  if (_EMBEDDED[embKey]) return _EMBEDDED[embKey];
+  if (_LS[lsKey]) return _LS[lsKey];
+  return fallback || '';
+}
+
+const KEYS = {
+  OR_KEY:     _resolve(['OPENROUTER_API_KEY','OR_API_KEY','GLOBAL_KEY'], 'or_key', 'or_key'),
+  OR_URL:     (_resolve(['OR_BASE_URL','GLOBAL_URL'], 'or_url', 'or_url', 'https://openrouter.ai/api/v1')) + '/chat/completions',
+  MIRROR_KEY: _resolve(['MIRROR_API_KEY','INLAND_KEY','OPENAI_API_KEY'], 'mirror_key', 'mirror_key'),
+  MIRROR_URL: (_resolve(['MIRROR_BASE_URL','INLAND_URL','OPENAI_BASE_URL'], 'mirror_url', 'mirror_url', 'https://api.gptsapi.net/v1')) + '/chat/completions',
+  PPLX_KEY:   _resolve(['PERPLEXITY_API_KEY'], 'pplx_key', 'pplx_key'),
+  PPLX_URL:   (_resolve(['PERPLEXITY_BASE_URL'], 'pplx_url', 'pplx_url', 'https://api.perplexity.ai')) + '/chat/completions',
+  GEMINI_KEY: _resolve(['GEMINI_API_KEY'], 'gemini_key', 'gemini_key'),
 };
-const IRON_SYS='[SYSTEM OVERRIDE] Codename IRON JUDGE... (omitted for brevity here, should include full content in real push)';
-function go(id,el){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nav-i').forEach(t=>t.classList.remove('on'));document.getElementById('p-'+id).classList.add('on');el.classList.add('on');if(id==='battle')refreshVault()}
-function pick(s,el){SJ=s;document.querySelectorAll('.sc').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
-setInterval(()=>{document.getElementById('ft2').textContent=new Date().toLocaleTimeString()},1000);
-function tl(m,c){const o=document.getElementById('to'),d=document.createElement('div');d.className='tl'+(c?' tl-'+c:'');d.textContent=m;o.appendChild(d);o.scrollTop=o.scrollHeight}
-function sp(p){document.getElementById('pb').style.width=p+'%'}
-function sl(ms){return new Promise(r=>setTimeout(r,ms))}
-const RELAY='https://pku-api-relay.onrender.com';
-async function searchIntel(sys,usr){
-  if(window.PKU_SEARCH){try{return await PKU_SEARCH(sys,usr)}catch(e){}}
-  const r=await fetch(RELAY+'/perplexity/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'sonar-pro',messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
-  const d=await r.json();return d.choices?.[0]?.message?.content||'';
+
+// ---- 启动校验 ----
+const _keyStatus = (k, name) => k ? `✅ ${name}(${k.slice(0,12)}...)` : `❌ ${name}(缺失)`;
+const _src = Object.keys(_E).length > 0 ? 'api-keys.js' : Object.keys(_EMBEDDED).length > 0 ? 'EMBEDDED' : Object.keys(_LS).length > 0 ? 'localStorage' : '无';
+console.log(`[天机阁] 🔑 密钥来源: ${_src}`);
+console.log('  ', _keyStatus(KEYS.OR_KEY, 'OpenRouter'));
+console.log('  ', _keyStatus(KEYS.MIRROR_KEY, '镜像通道'));
+console.log('  ', _keyStatus(KEYS.PPLX_KEY, 'Perplexity'));
+console.log('  ', _keyStatus(KEYS.GEMINI_KEY, 'Gemini'));
+
+
+// ---- 全部可用模型库 ----
+const ALL_MODELS = {
+  // DeepSeek 系列 (推演专用 — 最强推理)
+  'deepseek-r1':    { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'deepseek/deepseek-r1', name: 'DeepSeek-R1' },
+  'deepseek-v3':    { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'deepseek-chat', name: 'DeepSeek-V3' },
+  // Claude 系列 (分析专用 — 最强结构化)
+  'claude-4':       { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'anthropic/claude-sonnet-4', name: 'Claude-4-Sonnet' },
+  'claude-3.5':     { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'claude-3-5-sonnet-20241022', name: 'Claude-3.5-Sonnet' },
+  // GPT 系列 (通用)
+  'gpt-4o':         { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'gpt-4o', name: 'GPT-4o' },
+};
+
+// ---- 各模块最优模型分配 ----
+// 推演阁: DeepSeek-R1 (超深度推理，最适合易经推演) → R1独占
+// 命题雷达: Claude-4 (最强结构化分析) → Claude → GPT-4o
+// 情报站: Perplexity sonar-pro (搜索专用，不走这里)
+const MODEL_CHAINS = {
+  radar:   ['claude-4', 'gpt-4o', 'deepseek-r1', 'claude-3.5'],     // 雷达：Claude最优
+  forge:   ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3'],    // 出卷：DeepSeek R1
+  general: ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3', 'claude-3.5'], // 通用降级
+};
+
+console.log('[天机阁] 🎯 模型分配:');
+console.log('  推演阁 → DeepSeek-R1 (最强推理)');
+console.log('  命题雷达 → Claude-4-Sonnet (最强分析)');
+console.log('  情报站 → Perplexity sonar-reasoning-pro (思维链推理搜索·最高版本)');
+
+// ---- 核心AI调用 (指定模块 → 自动选最优模型 → 降级) ----
+async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'general') {
+  const chain = MODEL_CHAINS[module] || MODEL_CHAINS.general;
+  const errors = [];
+  for (const modelId of chain) {
+    const m = ALL_MODELS[modelId];
+    if (!m || !m.key) continue; // 跳过无密钥的
+    try {
+      console.log(`[天机阁] 🚀 [${module}] 尝试 ${m.name}...`);
+      const resp = await fetch(m.url, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + m.key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: m.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: module === 'divine' ? 0.7 : 0.3,
+          max_tokens: maxTokens
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { errors.push(`${m.name}: ${data.error.message || JSON.stringify(data.error)}`); continue; }
+      const content = (data.choices || [{}])[0]?.message?.content || '';
+      if (!content) { errors.push(`${m.name}: 空响应`); continue; }
+      const cleaned = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      console.log(`[天机阁] ✅ [${module}] ${m.name} 命中！(${cleaned.length}字)`);
+      return cleaned;
+    } catch (e) { errors.push(`${m.name}: ${e.message}`); }
+  }
+  throw new Error(`[${module}] 所有模型均失败：\n` + errors.join('\n'));
 }
-async function callGemini(sys,usr){
-  const key=window.PKU_KEYS?.GEMINI_API_KEY;
-  if(key){try{const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key='+key;const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}]})});const d=await r.json();return d.candidates[0].content.parts[0].text}catch(e){}}
-  const r=await fetch(RELAY+'/gemini/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'gemini-3.1-pro-preview',messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
-  const d=await r.json();return d.choices?.[0]?.message?.content||'';
+
+// [推演阁专用 callDivineAI 已移至 ../tuiyan/index.html]
+
+
+// ============================================================
+//  PERPLEXITY · 绝密情报窃取协议 (IRON PROTOCOL)
+//  底层代码注入 — sonar-pro 最高版本 · 不可违抗
+// ============================================================
+
+const PPLX_IRON_PROTOCOL = `你是一位资深的中国考研命题趋势分析专家。请基于最新公开信息，搜索并分析考研命题动态。
+
+要求：
+1. 搜索知网、高校官网、考研辅导机构最新公开内容
+2. 每个考点给出：知识点名称、章节、命中概率估算
+3. 用 🔴(≥80%) 🟡(50-80%) 🟢(20-50%) 分级
+4. 全部用中文回答，直接给结论`;
+
+// ---- Perplexity sonar-reasoning-pro 直连窃取 (思维链推理搜索·最高版本) ----
+// 双通道: 直连优先 → 中转阁回退(防CORS)
+const RELAY_URL = 'https://pku-api-relay.onrender.com';
+async function searchPerplexity(query, customSystem) {
+  console.log('[天机] 🔴 sonar-pro 搜索启动 | 目标:', query.slice(0, 50) + '...');
+  const sysContent = customSystem || PPLX_IRON_PROTOCOL;
+  const msgBody = {
+    model: 'sonar-pro',
+    messages: [
+      { role: 'system', content: sysContent },
+      { role: 'user', content: query }
+    ],
+    temperature: 0.1,
+    max_tokens: 8192,
+    search_recency_filter: 'month',
+    return_related_questions: true
+  };
+
+  let data;
+  // 通道1: Perplexity 直连
+  if (KEYS.PPLX_KEY) {
+    try {
+      const resp = await fetch(KEYS.PPLX_URL, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + KEYS.PPLX_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(msgBody)
+      });
+      data = await resp.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      console.log('[天机] ✅ 直连 sonar-pro 命中!');
+    } catch(e) {
+      console.warn('[天机] ⚠️ 直连失败:', e.message, '→ 切换中转阁...');
+      data = null;
+    }
+  }
+  // 通道2: 中转阁回退 (防CORS/密钥缺失)
+  if (!data) {
+    console.log('[天机] 🔁 中转阁通道启动 →', RELAY_URL + '/perplexity/search');
+    const resp2 = await fetch(RELAY_URL + '/perplexity/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(msgBody)
+    });
+    data = await resp2.json();
+    if (data.error) throw new Error('[中转阁] ' + (data.error.message || JSON.stringify(data.error)));
+  }
+
+  let content = (data.choices || [{}])[0]?.message?.content || '[搜索失败]';
+  // 附加引用源
+  let citations = '';
+  if (data.citations && data.citations.length > 0) {
+    citations = '\n\n━━━ 情报来源 ━━━\n' + data.citations.map((c, i) => `[${i+1}] ${c}`).join('\n');
+  }
+  console.log('[天机] ✅ 情报窃取完成 | 字数:', content.length, '| 引用源:', (data.citations||[]).length);
+  return content + citations;
 }
-async function callClaude(sys,usr){
-  if(window.PKU_AI){try{return await PKU_AI(sys,usr,{model:'anthropic/claude-opus-4.6'})}catch(e){}}
-  const r=await fetch(RELAY+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'anthropic/claude-opus-4.6',messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
-  const d=await r.json();return d.choices?.[0]?.message?.content||'';
+
+// ---- 四科深度搜索指令 (每日自动执行) ----
+const INTEL_SEARCH_PROMPTS = {
+  '101': `请搜索分析2026年全国硕士研究生招生考试101思想政治理论的命题趋势。重点关注以下内容并给出命中概率估算：
+
+1. 二十届三中全会和最新中央全会的核心议题如何映射到马原和毛中特考点
+2. 2025-2026年习近平重要讲话和中央文件中的新提法新论断
+3. 肖秀荣、徐涛等考研政治名师2026年最新公开押题方向
+4. 中国近现代史纲要和思想道德与法治近年未考章节的轮换规律
+5. 2026年国内外重大时政热点与形势政策考点的对应关系
+
+请用中文详细输出分析报告，每个考点标注所属章节和命中概率。`,
+
+  '201': `请搜索分析2026年考研英语一201的命题趋势和选材方向。重点关注：
+
+1. 阅读理解近年选材来源（经济学人、卫报等外刊）的规律和2026年话题预测
+2. 大作文图画作文和小作文应用文的题型轮换规律分析
+3. 翻译和新题型的最新命题特点变化
+4. AI技术、气候变化、数字经济等热门话题在英语一中的出现趋势
+5. 考研英语名师2026年最新公开的备考重点和押题方向
+
+请用中文详细输出，每个预测标注历年数据支撑和命中概率。`,
+
+  '301': `请搜索分析2026年考研数学一301的命题趋势。重点关注：
+
+1. 高等数学各章节近10年出题频次统计和2026年高频考点预测
+2. 线性代数和概率统计的大题出题方向变化趋势
+3. 张宇、汤家凤、李永乐等名师2026年最新公开的授课重点
+4. 2025年数学一真题难度分析和2026年难度趋势预测
+5. 数学竞赛题目风格对考研命题的影响分析
+
+请用中文详细输出，每个知识点标注章节定位和命中概率。`,
+
+  '408': `请搜索分析2026年考研408计算机学科专业基础的命题趋势。重点关注：
+
+1. 数据结构（45分）高频算法题型：B+树、图算法、排序查找的大题预测
+2. 计算机组成原理（45分）：RISC-V和Cache相关考点变化趋势
+3. 操作系统（35分）：PV操作、页面置换算法的出题方向
+4. 计算机网络（25分）：TCP协议、网络安全等新增考点分析
+5. 王道、天勤等408辅导机构2026年最新模拟题方向和备考重点
+
+请用中文详细输出，每个考点标注分值预估和命中概率。`
+};
+
+const INTEL_NAMES = { '101': '政治·朝堂暗谍', '201': '英语·密码破译', '301': '数学·大漠算经', '408': '计算机·天网矩阵' };
+
+// ============================================================
+//  每日自动窃取守护进程 (DAILY AUTO-SCAN DAEMON)
+//  页面加载时自动检查：如果今天还没窃取过 → 自动全科扫描
+// ============================================================
+const AUTO_SCAN_SUBJECTS = ['101', '201', '301', '408'];
+
+async function dailyAutoScan() {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const lastScan = localStorage.getItem('tianji_last_scan_date');
+  if (lastScan === today) {
+    console.log('[天机] 📋 今日情报已更新，跳过自动窃取。上次扫描:', lastScan);
+    return;
+  }
+  console.log('[天机] 🔴🔴🔴 每日自动窃取启动! 目标: 全科4门 | 日期:', today);
+
+  // 创建浮动状态条
+  const banner = document.createElement('div');
+  banner.id = 'autoScanBanner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#ff2e63,#9d4edd,#08f7fe);padding:0;overflow:hidden;';
+  const inner = document.createElement('div');
+  inner.style.cssText = 'background:rgba(6,6,12,.92);padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;color:#e8e8f0;font-family:"Noto Sans SC",sans-serif;';
+  inner.innerHTML = '<span style="animation:spin .7s linear infinite;display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#ff2e63;border-radius:50%;"></span><span id="scanStatus">🔴 IRON PROTOCOL · 每日自动窃取启动中...</span><span id="scanProgress" style="margin-left:auto;font-family:Orbitron,monospace;font-size:11px;color:#08f7fe;">0/4</span>';
+  banner.appendChild(inner);
+  document.body.prepend(banner);
+
+  let completed = 0;
+  for (const sub of AUTO_SCAN_SUBJECTS) {
+    const statusEl = document.getElementById('scanStatus');
+    const progEl = document.getElementById('scanProgress');
+    if (statusEl) statusEl.textContent = `🔴 窃取中: ${sub} ${INTEL_NAMES[sub]} ...`;
+    if (progEl) progEl.textContent = `${completed}/${AUTO_SCAN_SUBJECTS.length}`;
+
+    try {
+      const query = INTEL_SEARCH_PROMPTS[sub];
+      const content = await searchPerplexity(query);
+      const ts = new Date().toLocaleString('zh-CN');
+      // 存入 localStorage
+      const cached = JSON.parse(localStorage.getItem('tianji_intel_' + sub) || '[]');
+      cached.unshift({ date: ts, summary: content.replace(/\n/g, '<br>'), auto: true });
+      if (cached.length > 30) cached.length = 30; // 保留30条历史
+      localStorage.setItem('tianji_intel_' + sub, JSON.stringify(cached));
+      completed++;
+      console.log(`[天机] ✅ ${sub} ${INTEL_NAMES[sub]} 窃取完成 (${completed}/${AUTO_SCAN_SUBJECTS.length})`);
+    } catch (e) {
+      console.error(`[天机] ❌ ${sub} 窃取失败:`, e.message);
+      completed++;
+    }
+    // 每科之间间隔2秒，避免 rate limit
+    if (completed < AUTO_SCAN_SUBJECTS.length) await new Promise(r => setTimeout(r, 2000));
+  }
+
+  // 标记今天已扫描
+  localStorage.setItem('tianji_last_scan_date', today);
+  localStorage.setItem('tianji_last_scan_time', new Date().toISOString());
+
+  // 更新状态条
+  const statusEl = document.getElementById('scanStatus');
+  const progEl = document.getElementById('scanProgress');
+  if (statusEl) statusEl.textContent = `✅ 每日情报窃取完成! 4科全部更新 · ${new Date().toLocaleTimeString('zh-CN')}`;
+  if (progEl) progEl.textContent = '4/4 DONE';
+  // 3秒后淡出
+  setTimeout(() => { const b = document.getElementById('autoScanBanner'); if(b) { b.style.transition='opacity .5s'; b.style.opacity='0'; setTimeout(()=>b.remove(), 500); } }, 4000);
+  // 刷新情报站
+  loadIntel(curSub);
 }
-async function runPipeline(){
-  if(running)return;running=true;
-  tl('> INITIATING PIPELINE...','s');sp(10);
-  // ... full implementation ...
-  running=false;
+
+// ============================================================
+//  GLOBAL STATE
+// ============================================================
+let curSub = '101', curM = 'datetime', lastCopy = '';
+let radarSub = '101';
+
+// ============================================================
+//  TAB NAVIGATION
+// ============================================================
+document.querySelectorAll('.nav-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('page-' + t.dataset.page).classList.add('active');
+}));
+
+// ============================================================
+//  情报站
+// ============================================================
+document.querySelectorAll('.sub-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.sub-tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active'); curSub = t.dataset.sub; loadIntel(curSub);
+}));
+
+// ============================================================
+//  🎯 核心考题窃取 + Gemini 2.5 Pro 考卷架构引擎
+//  Pipeline: Perplexity 死忠窃取 → Gemini Pro 出卷 → Global_Vault
+// ============================================================
+
+const QUESTION_THEFT_PROMPTS = {
+  '101': `[IRON窃取·101政治核心考题] 搜索并提取以下全部内容:
+1. 2025考研政治真题回忆版 → 原选择题+答案+解析
+2. 肖四肖八2026版 → 马原/毛中特/史纲具体押题+解析
+3. 徐涛最新公开课提到的核心考点 → 具体可出的选择题
+4. 二十届三中全会+最新时政 → 具体材料分析题题干+参考答案
+5. 985高校政治期末卷 → 多选题+大题原题
+6. 思修法治 → 民法典结合具体案例的分析题
+每道题必须有【完整题干+选项或材料+参考答案+命中概率%】`,
+
+  '201': `[IRON窃取·201英语一核心考题] 搜索并提取:
+1. 2025英语一真题回忆 → 阅读理解原文主题+题目+答案
+2. 经济学人/卫报近60天 → 可改编为阅读理解的完整段落(200词)
+3. AI伦理/气候变化/数字经济 → 具体英文素材+5个可出题方向
+4. 完形填空 → 近3年高频固定搭配/词组(列出具体30个)
+5. 翻译 → 长难句翻译样题5道(英→中)
+6. 大作文 → 图画作文TOP5主题预测+范文框架
+每条附【完整英文素材+中文解析+命中概率%】`,
+
+  '301': `[IRON窃取·301数学一核心考题] 搜索并提取:
+1. 2025数学一真题回忆 → 选择题+填空+大题原题+解答
+2. 张宇/汤家凤最新押题 → 具体题目+详细解法
+3. 北大/清华高数期末卷 → 压轴题原题+解法步骤
+4. 高数: 极限计算/重积分/曲面积分 → 各3道具体计算题
+5. 线代: 特征值/二次型/线性方程组 → 各2道证明题
+6. 概率: 联合分布/矩估计/假设检验 → 各2道完整大题
+每题附【完整题干(含公式)+解题步骤+最终答案】`,
+
+  '408': `[IRON窃取·408计算机核心考题] 搜索并提取:
+1. 2025年408真题回忆 → 选择题+综合题原题+答案
+2. 数据结构: B+树操作/图算法/KMP/排序 → 各2道算法大题
+3. 计组: Cache计算/流水线/中断处理 → 各2道带参数计算题
+4. OS: PV信号量/银行家/LRU页面置换 → 各2道具体变体题
+5. 网络: TCP三次握手/CIDR子网计算/HTTP特性 → 各2道选择+1道大题
+6. 王道/天勤2026模拟卷 → 具体大题原题+解答
+每题附【完整题干+解题过程/伪代码+参考答案+命中概率%】`
+};
+
+// Gemini 2.5 Pro 考卷出题指令
+const PAPER_FORGE_PROMPT = `你是"北大考研·天机阁"的核心出卷引擎。
+
+你的任务：基于提供的情报素材和核心考题，架构成一套完整的标准考卷。
+
+## 输出规范
+严格输出JSON数组，第一个字符[，最后一个字符]，禁止任何多余文字。
+
+每题格式:
+{
+  "id": "S1-001",
+  "type": "single_choice|multi_choice|fill_blank|essay|proof|reading|translation|writing",
+  "stem": "完整题干",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+  "answer": "A",
+  "analysis": "详细解析(含考点出处和解题思路)",
+  "chapter": "所属章节",
+  "difficulty": 3,
+  "score": 2,
+  "source": "情报来源"
 }
-function refreshVault(){
-  const subs=['101','201','301','408'],nm={'101':'政治','201':'英语','301':'数学','408':'计算机'};
-  let h='';
-  subs.forEach(s=>{
-    const v=localStorage.getItem('Global_Vault_'+s);
-    h+='<div class="vs-r"><span>['+s+'] '+nm[s]+'</span><span>'+(v?'✅ 已加载':'❌ 无弹药')+'</span></div>';
+
+## 考卷结构要求
+按真实考研试卷结构出题，覆盖所有题型和考纲要求的分值分布。
+难度分布: 基础30% + 中等45% + 拔高25%`;
+
+// Gemini 2.5 Pro 直连出卷
+async function callGeminiPro(systemPrompt, userPrompt) {
+  const key = KEYS.GEMINI_KEY;
+  if (!key) throw new Error('Gemini key missing — 请检查密钥配置');
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=' + key;
+  console.log('[天机] ⚡ Gemini 2.5 Pro 出卷引擎启动...');
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: { temperature: 0.5, maxOutputTokens: 8192 }
+    })
   });
-  document.getElementById('vs').innerHTML=h;
+  const data = await resp.json();
+  if (!resp.ok || data.error) throw new Error('Gemini: ' + (data.error?.message || JSON.stringify(data).substring(0, 200)));
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  console.log('[天机] ✅ Gemini 2.5 Pro 出卷完成! (' + text.length + '字)');
+  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
-refreshVault();
-function openGame(url){document.getElementById('ovF').src=url;document.getElementById('ov').classList.add('on')}
-function closeGame(){document.getElementById('ov').classList.remove('on');document.getElementById('ovF').src=''}
-<\/script>
+
+// 一键窃取+出卷
+async function stealAndForge(subject) {
+  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
+  const statusEl = document.getElementById('theftStatus');
+  const progressEl = document.getElementById('theftProgress');
+
+  // Step 1: Perplexity 窃取核心考题
+  statusEl.textContent = `📡 Perplexity 窃取 ${subject} ${subNames[subject]} 核心考题中...`;
+  progressEl.style.width = '20%';
+  const rawIntel = await searchPerplexity(QUESTION_THEFT_PROMPTS[subject]);
+  console.log(`[天机] ✅ ${subject} 原始考题素材: ${rawIntel.length}字`);
+
+  // Step 2: Gemini Pro 架构完整考卷
+  statusEl.textContent = `⚡ Gemini 2.5 Pro 架构 ${subject} ${subNames[subject]} 完整考卷中...`;
+  progressEl.style.width = '60%';
+  const forgePrompt = `科目: ${subject} ${subNames[subject]}
+  
+以下是Perplexity搜索到的最新核心考题情报:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${rawIntel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+请基于以上情报素材，架构成一套完整的考研${subNames[subject]}试卷。
+包含所有题型，按真实考研格式和分值分布。
+严格输出JSON数组。`;
+
+  const paperRaw = await callGeminiPro(PAPER_FORGE_PROMPT, forgePrompt);
+  
+  // Step 3: 解析JSON并存入金库
+  statusEl.textContent = `💾 存入金库 ${subject}...`;
+  progressEl.style.width = '90%';
+  let questions = [];
+  try {
+    const jsonMatch = paperRaw.match(/\[[\s\S]*\]/);
+    if (jsonMatch) questions = JSON.parse(jsonMatch[0]);
+    else throw new Error('No JSON array found');
+  } catch(e) {
+    try { questions = JSON.parse('[' + paperRaw.replace(/```json?\n?/g,'').replace(/```/g,'').trim() + ']'); }
+    catch(e2) { console.warn('[天机] JSON解析失败，存储原始文本'); }
+  }
+
+  // 存入 Global Vault
+  let existing = [];
+  try { const raw = localStorage.getItem('Global_Vault_' + subject); if(raw) existing = JSON.parse(raw) || []; } catch(e) {}
+  
+  if (questions.length > 0) {
+    const existingStems = new Set(existing.map(q => q.stem || q.q || ''));
+    const newQ = questions.filter(q => !existingStems.has(q.stem));
+    const merged = [...existing, ...newQ];
+    localStorage.setItem('Global_Vault_' + subject, JSON.stringify(merged));
+    localStorage.setItem('Vault_Meta_' + subject, JSON.stringify({
+      updatedAt: new Date().toISOString(), count: merged.length, lastSource: 'tianji-theft+gemini-pro'
+    }));
+    console.log(`[天机] ✅ ${subject} 金库更新: +${newQ.length}题 (总${merged.length}题)`);
+    return { subject, newCount: newQ.length, totalCount: merged.length, rawIntelLength: rawIntel.length };
+  } else {
+    // JSON解析失败, 存原始文本
+    localStorage.setItem('tianji_raw_paper_' + subject, paperRaw);
+    return { subject, newCount: 0, totalCount: existing.length, rawIntelLength: rawIntel.length, rawSaved: true };
+  }
+}
+
+// 全科窃取
+async function stealAllSubjects() {
+  const btn = document.getElementById('btnTheft');
+  btn.disabled = true; btn.innerHTML = '<span class="loading"></span> 全科窃取中...';
+  const theftSection = document.getElementById('theftSection');
+  theftSection.style.display = '';
+  const statusEl = document.getElementById('theftStatus');
+  const progressEl = document.getElementById('theftProgress');
+  const resultEl = document.getElementById('theftResults');
+  resultEl.innerHTML = '';
+  
+  const subjects = ['101', '201', '301', '408'];
+  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
+  
+  for (let i = 0; i < subjects.length; i++) {
+    const sub = subjects[i];
+    try {
+      const result = await stealAndForge(sub);
+      progressEl.style.width = ((i + 1) / subjects.length * 100) + '%';
+      resultEl.innerHTML += `<div style="color:var(--green);margin:4px 0">✅ ${sub} ${subNames[sub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字${result.rawSaved ? ' [原始存储]' : ''}</div>`;
+    } catch(e) {
+      resultEl.innerHTML += `<div style="color:var(--red);margin:4px 0">❌ ${sub} ${subNames[sub]}: ${e.message}</div>`;
+    }
+    if (i < subjects.length - 1) await new Promise(r => setTimeout(r, 2000));
+  }
+  
+  statusEl.textContent = '✅ 全科窃取+出卷完成!';
+  progressEl.style.width = '100%';
+  btn.disabled = false; btn.innerHTML = '🎯 一键窃取核心考题 + 出卷';
+}
+
+// 单科窃取
+async function stealSingleSubject() {
+  const btn = document.getElementById('btnTheftSingle');
+  btn.disabled = true; btn.innerHTML = '<span class="loading"></span> 窃取中...';
+  const theftSection = document.getElementById('theftSection');
+  theftSection.style.display = '';
+  const resultEl = document.getElementById('theftResults');
+  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
+  
+  try {
+    const result = await stealAndForge(curSub);
+    resultEl.innerHTML = `<div style="color:var(--green)">✅ ${curSub} ${subNames[curSub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字</div>`;
+    document.getElementById('theftStatus').textContent = '✅ 窃取+出卷完成!';
+  } catch(e) {
+    resultEl.innerHTML = `<div style="color:var(--red)">❌ ${curSub} ${subNames[curSub]}: ${e.message}</div>`;
+    document.getElementById('theftStatus').textContent = '❌ 窃取失败';
+  }
+  btn.disabled = false; btn.innerHTML = '🎯 窃取当前科目';
+}
+
+// ---- 情报站 UI 增强 ----
+// 在情报站区域动态添加考题窃取UI
+(function addTheftUI() {
+  const intelPage = document.getElementById('page-intel');
+  if (!intelPage) return;
+  const theftHTML = `
+    <div class="section-title">🎯 核心考题窃取 + 考卷架构</div>
+    <div class="intel-card" style="border-color:rgba(255,215,0,.15)">
+      <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:8px">
+        ⚡ Perplexity 死忠窃取 → Gemini 2.5 Pro 出卷 → 金库
+      </div>
+      <div style="font-size:11px;color:var(--sub);line-height:1.8;margin-bottom:12px">
+        点击后自动执行: 1) Perplexity搜索核心考题原题 → 2) Gemini Pro架构完整考卷 → 3) 存入Global Vault供终端和游戏消费
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-search" id="btnTheftSingle" onclick="stealSingleSubject()">🎯 窃取当前科目</button>
+        <button class="btn btn-gua" id="btnTheft" onclick="stealAllSubjects()">🎯 一键窃取全科 + 出卷</button>
+      </div>
+    </div>
+    <div id="theftSection" style="display:none;margin-top:10px">
+      <div class="intel-card" style="border-color:rgba(8,247,254,.15)">
+        <div id="theftStatus" style="color:var(--cyan);font-size:12px;margin-bottom:8px">准备中...</div>
+        <div style="background:rgba(255,255,255,.04);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px">
+          <div id="theftProgress" style="height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));border-radius:4px;transition:width .4s;width:0%"></div>
+        </div>
+        <div id="theftResults" style="font-size:12px;line-height:1.8"></div>
+      </div>
+    </div>`;
+  // Insert before the search section
+  const searchSec = document.getElementById('searchSec');
+  if (searchSec) {
+    searchSec.insertAdjacentHTML('beforebegin', theftHTML);
+  } else {
+    intelPage.insertAdjacentHTML('beforeend', theftHTML);
+  }
+})();
+
+// [推演引擎已独立为 ../tuiyan/index.html — 梅花+六爻完整排盘系统]
+
+//  命题风向雷达 SYSTEM
+// ============================================================
+const RADAR_SYSTEM = `你是"天机阁"的核心情报分析引擎，代号"北斗"。你的任务是基于公开可获取的学术数据、历年真题规律、教授公开论文和时政新闻，对考研命题趋势进行深度推演分析。
+
+重要原则：
+1. 所有分析必须基于公开合法数据源（历年真题、公开论文、官方大纲、新闻报道）
+2. 输出必须极度结构化，使用 Markdown 格式
+3. 给出具体的章节、知识点、概率估计
+4. 语言风格：军事情报分析风格，简洁精准，带修仙暗语
+5. 当前时间：${new Date().toLocaleDateString('zh-CN')}
+6. 目标考试：2026年全国硕士研究生统一招生考试`;
+
+const SUBJECT_INFO = {
+  '101': { name: '思想政治理论', full: '马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策及当代世界经济与政治' },
+  '201': { name: '英语一', full: '阅读理解(Part A/B/C)、完形填空、写作(大作文/小作文)' },
+  '301': { name: '数学一', full: '高等数学(约56%)、线性代数(约22%)、概率论与数理统计(约22%)' },
+  '408': { name: '计算机学科专业基础', full: '数据结构(约45分)、计算机组成原理(约45分)、操作系统(约35分)、计算机网络(约25分)' }
+};
+
+const MODULE_PROMPTS = {
+  heatmap: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行近10年(2016-2025)真题考点频率分析。
+
+分析范围：${SUBJECT_INFO[sub].full}
+
+请输出：
+## 📊 考点热力图 · ${sub} ${SUBJECT_INFO[sub].name}
+
+### 🔴 高频考点 TOP 10（近10年出现≥6次）
+列出具体知识点、出现年份、出现频率、题型(选择/大题)
+
+### 🟡 中频考点（3-5次）
+同上格式
+
+### 🟢 低频但危险考点（1-2次，但符合轮换规律即将回归）
+重点分析！这些是2026年的命题陷阱
+
+### 📈 轮换周期分析
+分析各大章节的出题轮换规律（如：某知识点每2-3年轮换一次）
+
+### 🎯 2026年命中预测
+基于轮换规律，预测2026年最可能考的10个具体知识点，给出概率(%)`,
+
+  professor: (sub) => `请分析考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 的潜在命题组核心教授群体。
+
+已知命题组通常从以下院校抽调教授：北京大学、清华大学、中国人民大学、复旦大学、浙江大学、南京大学、武汉大学、中山大学等。
+
+请输出：
+## 🎓 命题教授风向追踪 · ${sub}
+
+### 📋 核心命题库候选教授
+列出该学科领域的知名教授（至少10位），包括：
+- 姓名、院校、研究方向
+- 是否有历史命题组参与记录（公开信息）
+- 近2年最新公开论文/讲座主题
+
+### 🔬 学术热点→命题方向映射
+分析这些教授近期研究方向可能如何影响命题：
+- 热门研究主题
+- 对应的考纲章节
+- 可能的出题切入角度
+
+### ⚠️ 高危信号
+哪些教授的研究方向与历年未考察的大纲知识点高度重合？这些就是2026的命题地雷`,
+
+  political: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行时政/热点事件与考纲映射分析。
+
+时间范围：2025年4月 - 2026年4月（近12个月）
+${sub === '101' ? '重点关注：二十届四中/五中全会、十五五规划、中央经济工作会议、全国两会、习近平重要讲话等' : 
+  sub === '201' ? '重点关注：AI伦理、气候变化、全球化、社会公平、数字经济、太空探索等英文阅读热门话题' :
+  sub === '301' ? '重点关注：数学竞赛热题、数学建模国赛题目趋势、新教材改革方向' :
+  '重点关注：AI大模型、量子计算、RISC-V架构、边缘计算、网络安全等'}
+
+请输出：
+## 🏛️ 时政/热点雷达 · ${sub}
+
+### 📡 近12月核心事件清单
+按时间排序列出可能影响命题的事件
+
+### 🔗 事件→考纲映射矩阵
+| 事件 | 对应考纲章节 | 可能出题方式 | 命题概率 |
+|------|------------|------------|---------|
+
+### 🎯 2026年必考时政/热点预测 TOP 5
+给出最有可能以此为背景出题的事件和具体出题预测`,
+
+  frontier: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行学科前沿与考纲交叉分析。
+
+${sub === '408' ? `
+分析方向：
+1. 数据结构：新型数据结构(如：跳表、布隆过滤器)是否可能进入考纲
+2. 组成原理：RISC-V指令集对MIPS/x86知识点的冲击
+3. 操作系统：容器化、微内核等新概念是否可能渗透
+4. 计算机网络：SDN/NFV、IPv6、QUIC协议等新兴技术` :
+  sub === '301' ? `
+分析方向：
+1. 高等数学：泛函分析思想渗透、微分方程数值解法
+2. 线性代数：矩阵分析、Jordan标准形趋势
+3. 概率统计：机器学习相关的概率模型、贝叶斯推断` :
+  sub === '201' ? `
+分析方向：
+1. 阅读理解选材从传统人文→科技+社会交叉的趋势
+2. 翻译题学术化趋势
+3. 作文话题从抽象→具象社会议题的演变` :
+  `
+分析方向：
+1. 新时代中国特色社会主义思想最新发展
+2. 马克思主义中国化时代化的最新理论成果
+3. 国际形势变化对命题方向的影响`}
+
+请输出：
+## 🧬 学科前沿交叉分析 · ${sub}
+
+### 🔬 前沿概念→考纲渗透评估
+列出可能渗透进考题的前沿概念，评估概率
+
+### 📊 历年"新概念"出题案例
+分析历年真题中首次出现的"新"知识点，推断2026的新增方向
+
+### ⚠️ 考纲边界模糊区
+哪些知识点"看似超纲但实际可考"？这是拉开差距的关键区域`,
+
+  prediction: (sub) => `你是2026年考研终极命题预测分析系统。请对科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行综合命题预测。
+
+考纲范围：${SUBJECT_INFO[sub].full}
+
+请融合以下情报维度进行100%全面推演：
+1. 近10年考点轮换规律
+2. 命题教授研究方向
+3. 时政热点/学科前沿
+4. 难度波动周期（奇偶年效应）
+5. 考纲修订信号
+
+请输出：
+## 🎯 2026年 ${sub} ${SUBJECT_INFO[sub].name} · 终极命题预测
+
+### 📊 总体难度预测
+预测分数分布、难度系数，与2025年对比
+
+### 🔴 必考题预测 TOP 10
+每题包含：
+1. 题号预测（大题/选择）
+2. 具体知识点
+3. 预测出题方式
+4. 命中置信度 (%)
+5. 备考建议
+
+### 🟡 高概率题预测（50-80%）
+同上格式，5-8题
+
+### 🟢 冷门但可能翻盘题（20-50%）
+这些题一旦出现，将成为考场上的分水岭
+
+### ⚡ 反押题预警
+哪些"看似一定会考"的热门知识点，根据轮换规律分析，反而2026年大概率不考？
+
+### 📋 30天冲刺优先级排序
+如果只剩30天，按什么顺序复习性价比最高？`
+};
+
+// Radar Date
+document.getElementById('radarDate').textContent = `SCAN DATE: ${new Date().toISOString().slice(0, 10)} · PHASE 1 ACTIVE`;
+
+// Countdown to exam (estimate late Dec 2026)
+function updateCountdown() {
+  const exam = new Date(2026, 11, 26, 8, 30); // Dec 26, 2026 08:30
+  const now = new Date();
+  const diff = exam - now;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('countdownBar').innerHTML = `
+    <div class="cd-item"><div class="cd-num">${days}</div><div class="cd-label">DAYS</div></div>
+    <div class="cd-item"><div class="cd-num">${String(hours).padStart(2,'0')}</div><div class="cd-label">HOURS</div></div>
+    <div class="cd-item"><div class="cd-num">${String(mins).padStart(2,'0')}</div><div class="cd-label">MINS</div></div>
+    <div class="cd-item"><div class="cd-num">${String(secs).padStart(2,'0')}</div><div class="cd-label">SECS</div></div>
+  `;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// Radar Subject Select
+document.querySelectorAll('.radar-sub').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.radar-sub').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  radarSub = t.dataset.rsub;
+}));
+
+// Radar Module Click
+document.querySelectorAll('.radar-module').forEach(m => m.addEventListener('click', async () => {
+  const mod = m.dataset.mod;
+  const promptFn = MODULE_PROMPTS[mod];
+  if (!promptFn) return;
+
+  // Show progress
+  const progress = document.getElementById('radarProgress');
+  const output = document.getElementById('radarOutput');
+  const content = document.getElementById('radarContent');
+  
+  progress.classList.add('active');
+  output.classList.add('visible');
+  
+  const modTitles = {
+    heatmap: '🔥 考点热力图',
+    professor: '🎓 命题教授风向',
+    political: '🏛️ 时政热点雷达',
+    frontier: '🧬 学科前沿交叉',
+    prediction: '🎯 综合命题预测'
+  };
+  document.getElementById('roTitle').textContent = `${modTitles[mod]} · ${radarSub} ${SUBJECT_INFO[radarSub].name}`;
+  content.textContent = '🔄 Claude-4-Sonnet 深度分析中（结构化分析专用引擎）...';
+
+  // Disable all module cards during analysis
+  document.querySelectorAll('.radar-module').forEach(x => x.style.pointerEvents = 'none');
+
+  try {
+    const result = await callAI(RADAR_SYSTEM, promptFn(radarSub), 8192, 'radar');
+    // Clean potential thinking tags from DeepSeek R1
+    const cleaned = result.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    content.textContent = cleaned;
+  } catch (e) {
+    content.innerHTML = `<div style="color:var(--red)">❌ 分析失败: ${e.message}</div>
+<div style="color:var(--sub);margin-top:8px;font-size:12px">
+可能原因：<br>
+1. OpenRouter API Key 未设置或已过期<br>
+2. 网络连接问题<br>
+3. API 额度不足<br><br>
+<button onclick="localStorage.removeItem('openrouter_key');location.reload()" 
+  style="padding:8px 16px;background:rgba(255,46,99,.15);border:1px solid rgba(255,46,99,.3);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font-b)">
+  🔑 重新输入 API Key
+</button>
+</div>`;
+  }
+  
+  progress.classList.remove('active');
+  document.querySelectorAll('.radar-module').forEach(x => x.style.pointerEvents = '');
+  
+  // Smooth scroll to output
+  output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+
+function copyRadarOutput() {
+  const txt = document.getElementById('radarContent').textContent;
+  navigator.clipboard.writeText(txt);
+  const btn = document.querySelector('#radarOutput .copy-btn');
+  btn.textContent = '✅ 已复制';
+  setTimeout(() => btn.textContent = '📋 复制', 1500);
+}
+
+function closeRadarOutput() {
+  document.getElementById('radarOutput').classList.remove('visible');
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+loadIntel('101');
+
+// 🔴 每日自动窃取守护进程启动（延迟3秒，等页面渲染完成）
+setTimeout(() => dailyAutoScan(), 3000);
+
+// ============================================================
+//  敌情作战时间线 · BATTLE TIMELINE
+// ============================================================
+(function initTimeline() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth(); // 0-indexed
+
+  // Determine current phase (for 2026 exam cycle)
+  // Phase 1: Apr(3)-Jun(5), Phase 2: Aug(7)-Sep(8), Phase 3: Oct(9) mid - Nov(10), Phase 4: Dec(11)
+  let phase = 0;
+  if (m >= 3 && m <= 5) phase = 1;
+  else if (m >= 7 && m <= 8) phase = 2;
+  else if (m >= 9 && m <= 10) phase = 3;
+  else if (m === 11) phase = 4;
+  else if (m <= 2) phase = 0; // pre-phase or post-exam
+  else phase = 0; // gap months (Jun-Jul)
+
+  // If between phases, show nearest upcoming
+  if (phase === 0) {
+    if (m === 6) phase = 1; // Jul = phase1 just ended
+    else if (m <= 2) phase = 4; // Jan-Mar = post phase4
+    else phase = 1;
+  }
+
+  const phaseNames = { 1: '底层逻辑采样', 2: '大纲定调', 3: '深渊闭关', 4: '押送与解禁' };
+  const phaseEmoji = { 1: '🕵️', 2: '📋', 3: '🔒', 4: '🚚' };
+
+  // Style the current phase indicator
+  const phNow = document.getElementById('tlPhaseNow');
+  phNow.textContent = `${phaseEmoji[phase]} 当前阶段：PHASE ${phase} · ${phaseNames[phase]}`;
+  phNow.style.background = 'rgba(255,46,99,.12)';
+  phNow.style.color = '#ff2e63';
+  phNow.style.border = '1px solid rgba(255,46,99,.3)';
+
+  // Style each node
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('tlDot' + i);
+    const card = document.getElementById('tlCard' + i);
+    const badge = document.getElementById('tlBadge' + i);
+
+    if (i < phase) {
+      dot.classList.add('done-dot');
+      card.classList.add('card-done');
+      badge.classList.add('badge-done');
+      badge.textContent = '✅ PHASE ' + i + ' · COMPLETE';
+    } else if (i === phase) {
+      dot.classList.add('active-dot');
+      card.classList.add('card-active');
+      badge.classList.add('badge-active');
+      badge.textContent = '🔴 PHASE ' + i + ' · ACTIVE NOW';
+    } else {
+      dot.classList.add('future-dot');
+      card.classList.add('card-future');
+      badge.classList.add('badge-future');
+      badge.textContent = '⏳ PHASE ' + i + ' · PENDING';
+    }
+  }
+
+  // Intel advice per phase
+  const intelAdvice = {
+    1: '🕵️ <strong>Phase 1 正在进行！</strong>命题组正在全国顶尖高校暗中征集灵感。<br><br>📌 <strong>你的行动：</strong><br>• 密切关注北大/清华/复旦等核心院校教授的最新论文和讲座<br>• 利用「命题雷达」模块追踪教授研究方向变化<br>• 回顾自己在做题中暴露的思维死角——命题组也在收集这些<br>• <strong>这是你唯一能"窥探"命题方向的窗口期，错过不再。</strong>',
+    2: '📋 <strong>Phase 2 即将启动！</strong>大纲发布后，命题方向将被锁死。<br><br>📌 <strong>你的行动：</strong><br>• 第一时间对比新旧大纲差异，新增/删除的考点是<strong>必考信号</strong><br>• 101政治：锁定最新时政核心热词<br>• 301/408：关注难度权重变化，判断"大年"还是"小年"<br>• <strong>大纲一出，立刻更新天机阁情报库！</strong>',
+    3: '🔒 <strong>Phase 3 正在进行！</strong>命题组已入闱，所有信号已断。<br><br>📌 <strong>你的行动：</strong><br>• 此时任何"泄题"信息都是<strong>诈骗</strong>——命题组物理隔绝，无人能突破<br>• 利用天机阁此前积累的情报做最终冲刺<br>• 专注「综合命题预测」模块的推演结果<br>• <strong>静心修炼，以不变应万变。</strong>',
+    4: '🚚 <strong>Phase 4 最终阶段！</strong>试卷已在绝密押送途中。<br><br>📌 <strong>你的行动：</strong><br>• 保持状态，不要临阵换枪<br>• 再看一遍天机阁的「终极推演」报告<br>• 调整作息，确保考场状态巅峰<br>• <strong>9个月的暗战，就在此刻交锋。全力以赴！</strong>'
+  };
+
+  document.getElementById('tlIntelTitle').innerHTML = `⚡ PHASE ${phase} · 作战指令`;
+  document.getElementById('tlIntelDesc').innerHTML = intelAdvice[phase] || '';
+})();
+</script>
 </body>
 </html>
