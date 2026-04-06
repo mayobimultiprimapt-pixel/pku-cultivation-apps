@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -277,17 +277,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   </div>
 </div>
 
-<!-- ============ 推演阁 ============ -->
-    <div class="panel">
-      <div class="panel-title">🔮 卦象</div>
-      <div id="guaOut"><div style="text-align:center;color:var(--dim);padding:50px 0"><div style="font-size:48px;opacity:.3">☰</div><div style="margin-top:8px">等待起卦...</div></div></div>
-    </div>
-  </div>
-  <div class="panel" style="margin-top:20px;display:none" id="dsPanel">
-    <div class="panel-title">🧠 DeepSeek · 北斗罡炁推演</div>
-    <div id="dsOut" class="ds-result">等待推演...</div>
-  </div>
-</div>
+<!-- 推演阁已独立为 ../tuiyan/index.html -->
+
 
 <!-- ============ 命题风向雷达 ============ -->
 <div class="page" id="page-radar">
@@ -850,26 +841,38 @@ const PAPER_FORGE_PROMPT = `你是"北大考研·天机阁"的核心出卷引擎
 按真实考研试卷结构出题，覆盖所有题型和考纲要求的分值分布。
 难度分布: 基础30% + 中等45% + 拔高25%`;
 
-// Gemini 2.5 Pro 直连出卷
+// Gemini 2.5 Pro 出卷 (三通道降级: 直连 → 中转阁 → OpenRouter)
 async function callGeminiPro(systemPrompt, userPrompt) {
+  const errors = [];
   const key = KEYS.GEMINI_KEY;
-  if (!key) throw new Error('Gemini key missing — 请检查密钥配置');
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=' + key;
-  console.log('[天机] ⚡ Gemini 2.5 Pro 出卷引擎启动...');
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      generationConfig: { temperature: 0.5, maxOutputTokens: 8192 }
-    })
-  });
-  const data = await resp.json();
-  if (!resp.ok || data.error) throw new Error('Gemini: ' + (data.error?.message || JSON.stringify(data).substring(0, 200)));
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  console.log('[天机] ✅ Gemini 2.5 Pro 出卷完成! (' + text.length + '字)');
-  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  // 通道1: Gemini 直连
+  if (key) { try {
+    console.log('[天机] ⚡ 通道1: Gemini直连出卷...');
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=' + key;
+    const r1 = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ system_instruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user',parts:[{text:userPrompt}]}], generationConfig:{temperature:0.5,maxOutputTokens:8192} }) });
+    const d1 = await r1.json(); if(d1.error) throw new Error(d1.error.message);
+    const t1 = d1.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    if(t1){console.log('[天机] ✅ Gemini直连完成!('+t1.length+'字)'); return t1.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
+  } catch(e){errors.push('直连:'+e.message); console.warn('[天机] ⚠️ 直连失败:',e.message);} }
+  // 通道2: 中转阁 Relay + key透传
+  try {
+    console.log('[天机] 🔁 通道2: 中转阁Gemini出卷...');
+    const h2 = {'Content-Type':'application/json'}; if(key) h2['x-gemini-key']=key;
+    const r2 = await fetch(RELAY_URL+'/gemini/chat', { method:'POST', headers:h2, body:JSON.stringify({model:'gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
+    const d2 = await r2.json(); if(d2.error) throw new Error(d2.error.message||JSON.stringify(d2.error));
+    const t2 = (d2.choices||[{}])[0]?.message?.content || d2.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if(t2){console.log('[天机] ✅ 中转阁出卷完成!('+t2.length+'字)'); return t2.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
+  } catch(e){errors.push('中转阁:'+e.message); console.warn('[天机] ⚠️ 中转阁失败:',e.message);}
+  // 通道3: OpenRouter Gemini
+  const orKey = KEYS.OR_KEY;
+  if(orKey){ try {
+    console.log('[天机] 🔁 通道3: OpenRouter Gemini出卷...');
+    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro-preview-05-06',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
+    const d3 = await r3.json(); if(d3.error) throw new Error(d3.error.message);
+    const t3 = (d3.choices||[{}])[0]?.message?.content||'';
+    if(t3){console.log('[天机] ✅ OpenRouter出卷完成!('+t3.length+'字)'); return t3.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
+  } catch(e){errors.push('OpenRouter:'+e.message);} }
+  throw new Error('所有出卷通道失败:\n'+errors.join('\n'));
 }
 
 // 一键窃取+出卷
