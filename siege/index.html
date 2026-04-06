@@ -1,871 +1,102 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>北大消消�?· 考研三消大作�?/title>
-<meta name="description" content="消除方块触发考研真题，四�?01/201/301/408全覆�?>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#08080f;--bg2:#10101c;--bg3:#181830;--card:rgba(20,20,42,.92);--text:#e8e8f0;--dim:#555570;--sub:#8888a8;--border:rgba(255,255,255,.06);--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--accent:#ff2e63;--accent2:#ffd700}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-.bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,46,99,.02) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,46,99,.02) 50px);pointer-events:none;z-index:0;animation:scanBg 10s linear infinite}
-@keyframes scanBg{0%{background-position:0 0}100%{background-position:50px 50px}}
-.subject-101{--sc:#ff2e63;--sc2:#ff6b8a;--sc3:rgba(255,46,99,.12)}
-.subject-201{--sc:#3b82f6;--sc2:#60a5fa;--sc3:rgba(59,130,246,.12)}
-.subject-301{--sc:#ffd700;--sc2:#ffe44d;--sc3:rgba(255,215,0,.12)}
-.subject-408{--sc:#39ff14;--sc2:#6fff4d;--sc3:rgba(57,255,20,.12)}
-
-/* Screens */
-.screen{display:none;padding:16px;max-width:520px;margin:0 auto;min-height:100vh}
-.screen.active{display:block}
-
-/* Subject Select */
-.hero{text-align:center;padding:30px 0 20px}
-.hero h1{font-family:var(--font-d);font-size:22px;font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:12px;color:var(--dim);margin-top:6px;font-family:var(--font-d);letter-spacing:3px}
-.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-.sub-card{background:rgba(20,20,42,0.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px 16px;text-align:center;cursor:pointer;transition:.4s;position:relative;overflow:hidden}
-.sub-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.3s}
-.sub-card:hover{transform:translateY(-8px);box-shadow:0 12px 40px rgba(0,0,0,.6);background:rgba(30,30,60,0.8);border-color:rgba(255,255,255,0.2)}
-.sub-card:hover::before{opacity:1;box-shadow:0 0 10px currentColor}
-.sub-card .sc-code{font-family:var(--font-d);font-size:36px;font-weight:900}
-.sub-card .sc-name{font-size:14px;margin-top:6px;font-weight:600}
-.sub-card .sc-desc{font-size:11px;color:var(--sub);margin-top:4px}
-.sub-card.s101{color:#ff2e63}.sub-card.s101::before{background:linear-gradient(90deg,#ff2e63,#ff6b8a)}
-.sub-card.s201{color:#3b82f6}.sub-card.s201::before{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
-.sub-card.s301{color:#ffd700}.sub-card.s301::before{background:linear-gradient(90deg,#ffd700,#ffe44d)}
-.sub-card.s408{color:#39ff14}.sub-card.s408::before{background:linear-gradient(90deg,#39ff14,#6fff4d)}
-
-/* Mode Select */
-.mode-cards{display:grid;gap:12px;margin-top:16px}
-.mode-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:14px}
-.mode-card:hover{border-color:var(--sc);transform:translateY(-2px)}
-.mode-card .mc-icon{font-size:32px;flex-shrink:0}
-.mode-card .mc-title{font-size:16px;font-weight:700}
-.mode-card .mc-desc{font-size:11px;color:var(--sub);margin-top:2px}
-
-/* Game HUD */
-.hud{display:flex;justify-content:space-between;align-items:center;padding:8px 4px;margin-bottom:8px;flex-wrap:wrap;gap:4px}
-.hud-item{text-align:center;min-width:50px}
-.hud-label{font-family:var(--font-d);font-size:8px;letter-spacing:1px;color:var(--dim)}
-.hud-val{font-family:var(--font-d);font-size:18px;font-weight:900;color:var(--sc,var(--accent))}
-.hud-combo{color:var(--accent2)!important;animation:comboFlash .5s ease}
-@keyframes comboFlash{0%{transform:scale(1.5)}100%{transform:scale(1)}}
-.btn-back{background:none;border:1px solid var(--border);color:var(--sub);font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:var(--font-b)}
-
-/* Grid */
-.grid-wrap{position:relative;aspect-ratio:1;width:100%;max-width:480px;margin:0 auto;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%;padding:4px;gap:2px}
-.cell{border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4vw,28px);cursor:pointer;transition:transform .15s,opacity .15s,background .2s;user-select:none;-webkit-user-select:none;position:relative}
-.cell:active{transform:scale(.9)}
-.cell.selected{outline:3px solid var(--sc,#fff);outline-offset:-2px;animation:selPulse .8s ease infinite}
-@keyframes selPulse{0%,100%{outline-color:var(--sc,#fff)}50%{outline-color:transparent}}
-.cell.matched{animation:matchPop .4s ease forwards}
-@keyframes matchPop{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
-.cell.falling{animation:fallIn .3s ease}
-@keyframes fallIn{from{transform:translateY(-60px);opacity:0}to{transform:translateY(0);opacity:1}}
-.cell.hint{animation:hintGlow 1s ease infinite}
-@keyframes hintGlow{0%,100%{box-shadow:0 0 0 rgba(255,215,0,0)}50%{box-shadow:0 0 16px rgba(255,215,0,.6)}}
-
-/* Question Modal */
-.q-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
-.q-overlay.show{display:flex}
-.q-modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:24px;animation:modalIn .3s ease}
-@keyframes modalIn{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.q-modal::-webkit-scrollbar{width:3px}
-.q-modal::-webkit-scrollbar-thumb{background:var(--sc,var(--accent));border-radius:3px}
-.q-badge{font-family:var(--font-d);font-size:9px;letter-spacing:2px;padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:12px;background:var(--sc3,rgba(255,46,99,.1));color:var(--sc,var(--accent));border:1px solid currentColor}
-.q-stem{font-size:15px;line-height:1.9;margin-bottom:16px;white-space:pre-wrap}
-.q-opts{display:grid;gap:8px}
-.q-opt{padding:12px 16px;border:1px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;line-height:1.6;transition:.2s;text-align:left;background:var(--card)}
-.q-opt:hover{border-color:var(--sc,var(--accent));background:var(--sc3,rgba(255,46,99,.06))}
-.q-opt.correct{border-color:#39ff14!important;background:rgba(57,255,20,.12)!important;color:#39ff14}
-.q-opt.wrong{border-color:#ff2e63!important;background:rgba(255,46,99,.12)!important;color:#ff2e63}
-.q-opt.reveal{border-color:#39ff14!important;background:rgba(57,255,20,.06)!important}
-.q-analysis{display:none;margin-top:16px;padding:14px;background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.15);border-radius:12px;font-size:13px;line-height:1.8;color:var(--sub)}
-.q-analysis.show{display:block}
-.q-analysis strong{color:var(--accent2)}
-.q-next{display:none;width:100%;padding:12px;margin-top:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--sc,var(--accent)),var(--accent2));color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-b)}
-.q-next.show{display:block}
-.q-timer{font-family:var(--font-d);font-size:11px;color:var(--accent);float:right}
-
-/* Results */
-.result-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:12px;text-align:center}
-.result-card h2{font-family:var(--font-d);font-size:14px;letter-spacing:2px;color:var(--sc,var(--accent));margin-bottom:16px}
-.r-score{font-family:var(--font-d);font-size:52px;font-weight:900;background:linear-gradient(135deg,var(--sc,var(--accent)),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.r-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
-.r-stat{padding:10px;background:var(--bg3);border-radius:10px}
-.r-stat .rs-val{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--text)}
-.r-stat .rs-lbl{font-size:10px;color:var(--dim);margin-top:2px}
-.btn-primary{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--sc,var(--accent)),var(--accent2));color:#000;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;font-family:var(--font-b);transition:.2s}
-.btn-primary:active{transform:scale(.97)}
-.btn-secondary{width:100%;padding:12px;border:1px solid var(--border);border-radius:14px;background:transparent;color:var(--text);font-size:14px;cursor:pointer;margin-top:8px;font-family:var(--font-b)}
-
-/* Error Book */
-.err-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px}
-.err-item .ei-q{font-size:13px;line-height:1.7}
-.err-item .ei-a{font-size:12px;color:#39ff14;margin-top:6px}
-.err-item .ei-w{font-size:12px;color:#ff2e63;margin-top:2px}
-.err-empty{text-align:center;color:var(--dim);padding:40px 0;font-size:14px}
-
-/* Exam Mode */
-.exam-progress{width:100%;height:4px;background:var(--bg3);border-radius:2px;margin:12px 0;overflow:hidden}
-.exam-bar{height:100%;background:linear-gradient(90deg,var(--sc,var(--accent)),var(--accent2));border-radius:2px;transition:width .3s}
-.exam-q-num{font-family:var(--font-d);font-size:11px;color:var(--dim);margin-bottom:8px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>词汇消消乐 · 完形填空三消 — 北大考研修仙应用集</title>
+  <meta name="description" content="Candy Crush式三消 x 英语完形填空 — 消除正确词汇填入空格">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="crush-style.css">
 </head>
 <body>
-<div class="bg-grid"></div>
-
-<!-- Screen 1: Subject Select -->
-<div class="screen active" id="scrSubject">
-  <div class="hero">
-    <h1>北大消消�?/h1>
-    <p>POSTGRAD MATCH-3 EXAM BATTLE</p>
-  </div>
-  <div class="sub-grid">
-    <div class="sub-card s101" onclick="selectSubject('101')">
-      <div class="sc-code">101</div>
-      <div class="sc-name">政治 · 红色风暴</div>
-      <div class="sc-desc">马原/毛中�?史纲/思修</div>
-    </div>
-    <div class="sub-card s201" onclick="selectSubject('201')">
-      <div class="sc-code">201</div>
-      <div class="sc-name">英语 · 密码矩阵</div>
-      <div class="sc-desc">阅读/完形/翻译/写作</div>
-    </div>
-    <div class="sub-card s301" onclick="selectSubject('301')">
-      <div class="sc-code">301</div>
-      <div class="sc-name">数学 · 算经迷阵</div>
-      <div class="sc-desc">高数/线代/概率</div>
-    </div>
-    <div class="sub-card s408" onclick="selectSubject('408')">
-      <div class="sc-code">408</div>
-      <div class="sc-name">计算�?· 天网格斗</div>
-      <div class="sc-desc">数据结构/组成/OS/网络</div>
-    </div>
-  </div>
-  <div style="margin-top:20px;display:grid;gap:8px">
-    <button class="btn-secondary" onclick="showScreen('scrErrors')">📕 错题�?/button>
-    <button class="btn-secondary" onclick="showAIPanel()" style="border-color:var(--accent2);color:var(--accent2)">🤖 AI出题引擎 · 顶尖模型实时生成</button>
-  </div>
-  <div style="text-align:center;margin-top:16px;font-family:var(--font-d);font-size:9px;color:var(--dim);letter-spacing:2px">
-    <span id="totalStats">总答�? 0 | 正确�? 0%</span>
-  </div>
-</div>
-
-<!-- Screen 2: Mode Select -->
-<div class="screen" id="scrMode">
-  <div class="hero"><h1 id="modeTitle">选择模式</h1></div>
-  <div class="mode-cards">
-    <div class="mode-card" onclick="startGame()">
-      <div class="mc-icon">🎮</div>
-      <div><div class="mc-title">三消闯关</div><div class="mc-desc">消除方块触发真题，答对加�?答错扣血</div></div>
-    </div>
-    <div class="mode-card" onclick="startExam()">
-      <div class="mc-icon">📝</div>
-      <div><div class="mc-title">模考模�?/div><div class="mc-desc">完整试卷模拟，还原考场体验</div></div>
-    </div>
-    <div class="mode-card" onclick="startQuickDrill()">
-      <div class="mc-icon">�?/div>
-      <div><div class="mc-title">快速刷�?/div><div class="mc-desc">随机抽题连刷，专攻薄弱环�?/div></div>
-    </div>
-  </div>
-  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:16px">�?返回</button>
-</div>
-
-<!-- Screen 3: Game -->
-<div class="screen" id="scrGame">
-  <div class="hud">
-    <button class="btn-back" onclick="endGame()">�?退�?/button>
-    <div class="hud-item"><div class="hud-label">SCORE</div><div class="hud-val" id="hudScore">0</div></div>
-    <div class="hud-item"><div class="hud-label">COMBO</div><div class="hud-val hud-combo" id="hudCombo">x1</div></div>
-    <div class="hud-item"><div class="hud-label">LIVES</div><div class="hud-val" id="hudLives">❤️❤️❤️</div></div>
-    <div class="hud-item"><div class="hud-label">CORRECT</div><div class="hud-val" id="hudCorrect">0/0</div></div>
-  </div>
-  <div class="grid-wrap"><div class="grid" id="gameGrid"></div></div>
-</div>
-
-<!-- Screen 4: Exam Mode -->
-<div class="screen" id="scrExam">
-  <div class="hud">
-    <button class="btn-back" onclick="endGame()">�?退�?/button>
-    <div class="hud-item"><div class="hud-label">PROGRESS</div><div class="hud-val" id="examProg">1/50</div></div>
-    <div class="hud-item"><div class="hud-label">CORRECT</div><div class="hud-val" id="examCorrect">0</div></div>
-    <div class="hud-item"><div class="hud-label">TIME</div><div class="hud-val" id="examTime">00:00</div></div>
-  </div>
-  <div class="exam-progress"><div class="exam-bar" id="examBar" style="width:0%"></div></div>
-  <div id="examContent"></div>
-</div>
-
-<!-- Screen 5: Results -->
-<div class="screen" id="scrResult">
-  <div class="result-card">
-    <h2>BATTLE REPORT</h2>
-    <div class="r-score" id="resScore">0</div>
-    <div style="font-size:12px;color:var(--dim);margin-top:4px" id="resGrade">评级</div>
-    <div class="r-stats">
-      <div class="r-stat"><div class="rs-val" id="resTotal">0</div><div class="rs-lbl">总题�?/div></div>
-      <div class="r-stat"><div class="rs-val" id="resRight">0</div><div class="rs-lbl">正确</div></div>
-      <div class="r-stat"><div class="rs-val" id="resRate">0%</div><div class="rs-lbl">正确�?/div></div>
-    </div>
-  </div>
-  <button class="btn-primary" onclick="showScreen('scrMode')">再来一局</button>
-  <button class="btn-secondary" onclick="showScreen('scrErrors')">查看错题</button>
-  <button class="btn-secondary" onclick="showScreen('scrSubject')">返回首页</button>
-</div>
-
-<!-- Screen 6: Error Book -->
-<div class="screen" id="scrErrors">
-  <div class="hero"><h1>📕 错题�?/h1></div>
-  <div id="errorList"></div>
-  <button class="btn-secondary" onclick="showScreen('scrSubject')" style="margin-top:12px">�?返回</button>
-</div>
-
-<!-- Question Overlay -->
-<div class="q-overlay" id="qOverlay">
-  <div class="q-modal">
-    <div class="q-badge" id="qBadge">SINGLE CHOICE</div>
-    <span class="q-timer" id="qTimer"></span>
-    <div class="q-stem" id="qStem"></div>
-    <div class="q-opts" id="qOpts"></div>
-    <div class="q-analysis" id="qAnalysis"></div>
-    <button class="q-next" id="qNext" onclick="closeQuestion()">继续游戏 �?/button>
-  </div>
-</div>
-
-<!-- Keys handled by relay server --><script src="../shared/relay-loader.js"></script>
-<script src="questions.js"></script>
-<script src="ai-engine.js"></script>
-<!-- 天机阁全局军火库挂载点 -->
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  ['101','201','301','408'].forEach(sub => {
-     let vault = localStorage.getItem('Global_Vault_' + sub);
-     if(vault) {
-        try {
-           let parsed = JSON.parse(vault);
-           if(parsed && parsed.length > 0) {
-              if(!window.QUESTION_BANK) window.QUESTION_BANK = {};
-              window.QUESTION_BANK[sub] = parsed;
-              console.log('�?[天机总控] 成功装载前线情报弹药: ' + sub + ' �?' + parsed.length + ' �?);
-           }
-        }catch(e){}
-     }
-  });
-});
-</script>
-<script>
-// ============================================================
-//  北大消消�?· 考研三消大作�?�?游戏引擎
-// ============================================================
-
-const GRID_SIZE = 8;
-const PIECE_TYPES = {
-  '101': ['🔴','�?,'📕','🏛�?,'⚖️','🔥'],
-  '201': ['🔵','📘','✏️','🌍','📖','🎯'],
-  '301': ['🟡','📐','🔢','📊','💡','�?],
-  '408': ['🟢','💻','🖥�?,'📡','🔧','🌐']
-};
-const SUB_CLASSES = {'101':'subject-101','201':'subject-201','301':'subject-301','408':'subject-408'};
-
-// State
-let currentSubject = '101';
-let board = [];
-let selected = null;
-let isProcessing = false;
-let score = 0, combo = 1, lives = 3, answered = 0, correct = 0;
-let gameActive = false;
-let currentQuestion = null;
-let questionCallback = null;
-let examQuestions = [], examIndex = 0, examStartTime = 0, examTimerId = 0;
-
-// ---- Screen Management ----
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (id === 'scrErrors') renderErrorBook();
-  if (id === 'scrSubject') updateTotalStats();
-}
-
-function selectSubject(sub) {
-  currentSubject = sub;
-  document.body.className = SUB_CLASSES[sub] || '';
-  document.getElementById('modeTitle').textContent = {
-    '101':'101 政治 · 红色风暴','201':'201 英语 · 密码矩阵',
-    '301':'301 数学 · 算经迷阵','408':'408 计算�?· 天网格斗'
-  }[sub];
-  showScreen('scrMode');
-}
-
-// ---- Match-3 Engine ----
-function initBoard() {
-  const types = PIECE_TYPES[currentSubject];
-  board = [];
-  for (let r = 0; r < GRID_SIZE; r++) {
-    board[r] = [];
-    for (let c = 0; c < GRID_SIZE; c++) {
-      let t;
-      do { t = types[Math.floor(Math.random() * types.length)]; }
-      while ((c >= 2 && board[r][c-1] === t && board[r][c-2] === t) ||
-             (r >= 2 && board[r-1][c] === t && board[r-2][c] === t));
-      board[r][c] = t;
-    }
-  }
-}
-
-function renderBoard() {
-  const grid = document.getElementById('gameGrid');
-  grid.innerHTML = '';
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.textContent = board[r][c];
-      cell.dataset.r = r;
-      cell.dataset.c = c;
-      cell.style.background = `rgba(255,255,255,.03)`;
-      cell.addEventListener('click', () => onCellClick(r, c));
-      grid.appendChild(cell);
-    }
-  }
-}
-
-function getCellEl(r, c) {
-  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-}
-
-function onCellClick(r, c) {
-  if (isProcessing || !gameActive) return;
-  if (!selected) {
-    selected = {r, c};
-    getCellEl(r, c)?.classList.add('selected');
-    return;
-  }
-  getCellEl(selected.r, selected.c)?.classList.remove('selected');
-  const dr = Math.abs(selected.r - r), dc = Math.abs(selected.c - c);
-  if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
-    trySwap(selected.r, selected.c, r, c);
-  }
-  selected = null;
-}
-
-async function trySwap(r1, c1, r2, c2) {
-  isProcessing = true;
-  // Swap
-  [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
-  renderBoard();
-  const matches = findAllMatches();
-  if (matches.length === 0) {
-    // Swap back
-    await sleep(200);
-    [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
-    renderBoard();
-    isProcessing = false;
-    return;
-  }
-  await processMatches(matches);
-  isProcessing = false;
-}
-
-function findAllMatches() {
-  const matched = new Set();
-  // Horizontal
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c <= GRID_SIZE - 3; c++) {
-      if (board[r][c] && board[r][c] === board[r][c+1] && board[r][c] === board[r][c+2]) {
-        let end = c + 2;
-        while (end + 1 < GRID_SIZE && board[r][end+1] === board[r][c]) end++;
-        for (let i = c; i <= end; i++) matched.add(`${r},${i}`);
-      }
-    }
-  }
-  // Vertical
-  for (let c = 0; c < GRID_SIZE; c++) {
-    for (let r = 0; r <= GRID_SIZE - 3; r++) {
-      if (board[r][c] && board[r][c] === board[r+1][c] && board[r][c] === board[r+2][c]) {
-        let end = r + 2;
-        while (end + 1 < GRID_SIZE && board[end+1][c] === board[r][c]) end++;
-        for (let i = r; i <= end; i++) matched.add(`${i},${c}`);
-      }
-    }
-  }
-  return [...matched].map(s => { const [r,c] = s.split(',').map(Number); return {r,c}; });
-}
-
-async function processMatches(matches) {
-  // Determine match type by count
-  const count = matches.length;
-  const qType = count >= 7 ? 'material' : count >= 5 ? 'judge' : count >= 4 ? 'multi' : 'single';
-  
-  // Animate matched cells
-  matches.forEach(({r,c}) => getCellEl(r,c)?.classList.add('matched'));
-  await sleep(400);
-
-  // Show question
-  const q = getQuestion(currentSubject, qType);
-  if (q) {
-    const isCorrect = await showQuestion(q, qType);
-    answered++;
-    if (isCorrect) {
-      correct++;
-      const points = {single:1,multi:3,judge:5,material:10}[qType] * combo;
-      score += points;
-      combo++;
-    } else {
-      lives--;
-      combo = 1;
-      saveError(q);
-      if (lives <= 0) { endGame(); return; }
-    }
-    updateHUD();
-  }
-
-  // Remove matched & fill
-  matches.forEach(({r,c}) => board[r][c] = null);
-  await dropPieces();
-  renderBoard();
-  
-  // Chain check
-  await sleep(200);
-  const newMatches = findAllMatches();
-  if (newMatches.length > 0) {
-    await processMatches(newMatches);
-  }
-}
-
-async function dropPieces() {
-  const types = PIECE_TYPES[currentSubject];
-  for (let c = 0; c < GRID_SIZE; c++) {
-    let writePos = GRID_SIZE - 1;
-    for (let r = GRID_SIZE - 1; r >= 0; r--) {
-      if (board[r][c] !== null) {
-        board[writePos][c] = board[r][c];
-        if (writePos !== r) board[r][c] = null;
-        writePos--;
-      }
-    }
-    for (let r = writePos; r >= 0; r--) {
-      board[r][c] = types[Math.floor(Math.random() * types.length)];
-    }
-  }
-}
-
-// ---- Question System ----
-function getQuestion(subject, type) {
-  // 优先从中转站拉取
-  if (window.PKU_RELAY?.ready) {
-    const q = PKU_RELAY.getQuestion(subject, type);
-    if (q) return q;
-  }
-  // Fallback到本地题�?  if (typeof QUESTION_BANK === 'undefined') return null;
-  const bank = QUESTION_BANK[subject];
-  if (!bank) return null;
-  const pool = bank.filter(q => {
-    if (type === 'single') return q.type === 'single';
-    if (type === 'multi') return q.type === 'multi';
-    if (type === 'judge') return q.type === 'judge';
-    return q.type === 'material' || q.type === 'fill';
-  });
-  if (pool.length === 0) return bank[Math.floor(Math.random() * bank.length)];
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function showQuestion(q, matchType) {
-  return new Promise(resolve => {
-    const overlay = document.getElementById('qOverlay');
-    const badge = document.getElementById('qBadge');
-    const stem = document.getElementById('qStem');
-    const opts = document.getElementById('qOpts');
-    const analysis = document.getElementById('qAnalysis');
-    const next = document.getElementById('qNext');
-    const timerEl = document.getElementById('qTimer');
-
-    const typeNames = {single:'单选题',multi:'多选题',judge:'判断�?,fill:'填空�?,material:'材料分析'};
-    const points = {single:1,multi:3,judge:5,material:10,fill:5};
-    badge.textContent = `${typeNames[q.type]||'选择�?} · ${points[matchType]||1}分`;
-    stem.textContent = q.stem;
-    opts.innerHTML = '';
-    analysis.classList.remove('show');
-    next.classList.remove('show');
-
-    // Timer
-    let timeLeft = q.timeLimit || (q.type === 'material' ? 180 : 60);
-    timerEl.textContent = timeLeft + 's';
-    const timer = setInterval(() => {
-      timeLeft--;
-      timerEl.textContent = timeLeft + 's';
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        finishQuestion(false);
-      }
-    }, 1000);
-
-    let answered = false;
-    function finishQuestion(isCorrect) {
-      if (answered) return;
-      answered = true;
-      clearInterval(timer);
-      // Show analysis
-      analysis.innerHTML = `<strong>答案�?{q.answer}</strong><br>${q.analysis || ''}`;
-      analysis.classList.add('show');
-      next.classList.add('show');
-      questionCallback = () => {
-        overlay.classList.remove('show');
-        resolve(isCorrect);
-      };
-    }
-
-    // Render options
-    if (q.options) {
-      q.options.forEach((opt, i) => {
-        const btn = document.createElement('div');
-        btn.className = 'q-opt';
-        btn.textContent = opt;
-        btn.addEventListener('click', () => {
-          if (answered) return;
-          const optLetter = opt.charAt(0);
-          const isCorrect = q.type === 'multi'
-            ? opt.charAt(0) === q.answer // simplified multi
-            : optLetter === q.answer || opt === q.answer;
-          
-          // For single choice
-          if (q.type === 'single' || q.type === 'judge') {
-            const correct = optLetter === q.answer;
-            btn.classList.add(correct ? 'correct' : 'wrong');
-            if (!correct) {
-              opts.querySelectorAll('.q-opt').forEach(o => {
-                if (o.textContent.charAt(0) === q.answer) o.classList.add('reveal');
-              });
-            }
-            finishQuestion(correct);
-          } else if (q.type === 'multi') {
-            btn.classList.toggle('correct');
-          }
-        });
-        opts.appendChild(btn);
-      });
-      
-      // Multi-choice submit
-      if (q.type === 'multi') {
-        const submitBtn = document.createElement('div');
-        submitBtn.className = 'q-opt';
-        submitBtn.style.cssText = 'text-align:center;background:linear-gradient(135deg,var(--sc,#ff2e63),var(--accent2));color:#000;font-weight:700;';
-        submitBtn.textContent = '�?提交答案';
-        submitBtn.addEventListener('click', () => {
-          if (answered) return;
-          const selected = [...opts.querySelectorAll('.q-opt.correct')].map(o => o.textContent.charAt(0)).sort().join('');
-          const correctAns = q.answer.split('').sort().join('');
-          finishQuestion(selected === correctAns);
-        });
-        opts.appendChild(submitBtn);
-      }
-    }
-
-    overlay.classList.add('show');
-  });
-}
-
-function closeQuestion() {
-  if (questionCallback) questionCallback();
-  questionCallback = null;
-}
-
-// ---- Game Flow ----
-function startGame() {
-  score = 0; combo = 1; lives = 3; answered = 0; correct = 0;
-  gameActive = true;
-  initBoard();
-  renderBoard();
-  updateHUD();
-  showScreen('scrGame');
-}
-
-function endGame() {
-  gameActive = false;
-  clearInterval(examTimerId);
-  if (answered > 0) {
-    document.getElementById('resScore').textContent = score;
-    document.getElementById('resTotal').textContent = answered;
-    document.getElementById('resRight').textContent = correct;
-    const rate = Math.round(correct / answered * 100);
-    document.getElementById('resRate').textContent = rate + '%';
-    document.getElementById('resGrade').textContent = 
-      rate >= 90 ? '🏆 S�?· 北大稳了' : rate >= 75 ? '🥇 A�?· 实力强劲' :
-      rate >= 60 ? '🥈 B�?· 继续努力' : '🥉 C�?· 需要加�?;
-    saveProgress();
-    showScreen('scrResult');
-  } else {
-    showScreen('scrSubject');
-  }
-}
-
-function updateHUD() {
-  document.getElementById('hudScore').textContent = score;
-  document.getElementById('hudCombo').textContent = 'x' + combo;
-  document.getElementById('hudLives').textContent = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
-  document.getElementById('hudCorrect').textContent = correct + '/' + answered;
-}
-
-// ---- Exam Mode ----
-function startExam() {
-  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加�?); return; }
-  const bank = QUESTION_BANK[currentSubject] || [];
-  examQuestions = [...bank].sort(() => Math.random() - 0.5).slice(0, Math.min(50, bank.length));
-  examIndex = 0; correct = 0; answered = 0; score = 0;
-  examStartTime = Date.now();
-  gameActive = true;
-  showScreen('scrExam');
-  examTimerId = setInterval(updateExamTimer, 1000);
-  showExamQuestion();
-}
-
-function showExamQuestion() {
-  if (examIndex >= examQuestions.length) { endGame(); return; }
-  const q = examQuestions[examIndex];
-  document.getElementById('examProg').textContent = `${examIndex+1}/${examQuestions.length}`;
-  document.getElementById('examBar').style.width = ((examIndex+1)/examQuestions.length*100)+'%';
-  document.getElementById('examCorrect').textContent = correct;
-  
-  const content = document.getElementById('examContent');
-  content.innerHTML = '';
-  
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;';
-  
-  const numEl = document.createElement('div');
-  numEl.className = 'exam-q-num';
-  numEl.textContent = `�?${examIndex+1} �?/ �?${examQuestions.length} �?· ${({single:'单�?,multi:'多�?,judge:'判断',fill:'填空',material:'材料'})[q.type]||'选择'}`;
-  wrap.appendChild(numEl);
-  
-  const stemEl = document.createElement('div');
-  stemEl.className = 'q-stem';
-  stemEl.textContent = q.stem;
-  wrap.appendChild(stemEl);
-  
-  const optsEl = document.createElement('div');
-  optsEl.className = 'q-opts';
-  
-  if (q.options) {
-    q.options.forEach(opt => {
-      const btn = document.createElement('div');
-      btn.className = 'q-opt';
-      btn.textContent = opt;
-      btn.addEventListener('click', () => {
-        const optLetter = opt.charAt(0);
-        const isCorrect = optLetter === q.answer;
-        answered++;
-        if (isCorrect) { correct++; score += 2; }
-        else saveError(q);
-        
-        btn.classList.add(isCorrect ? 'correct' : 'wrong');
-        if (!isCorrect) {
-          optsEl.querySelectorAll('.q-opt').forEach(o => {
-            if (o.textContent.charAt(0) === q.answer) o.classList.add('reveal');
-          });
-        }
-        
-        const analysisEl = document.createElement('div');
-        analysisEl.className = 'q-analysis show';
-        analysisEl.innerHTML = `<strong>答案�?{q.answer}</strong><br>${q.analysis||''}`;
-        wrap.appendChild(analysisEl);
-        
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'btn-primary';
-        nextBtn.textContent = examIndex < examQuestions.length - 1 ? '下一�?�? : '查看成绩';
-        nextBtn.addEventListener('click', () => { examIndex++; showExamQuestion(); });
-        wrap.appendChild(nextBtn);
-        
-        document.getElementById('examCorrect').textContent = correct;
-      });
-      optsEl.appendChild(btn);
-    });
-  }
-  wrap.appendChild(optsEl);
-  content.appendChild(wrap);
-}
-
-function updateExamTimer() {
-  const elapsed = Math.floor((Date.now() - examStartTime) / 1000);
-  const m = String(Math.floor(elapsed/60)).padStart(2,'0');
-  const s = String(elapsed%60).padStart(2,'0');
-  document.getElementById('examTime').textContent = m+':'+s;
-}
-
-// ---- Quick Drill ----
-function startQuickDrill() {
-  if (typeof QUESTION_BANK === 'undefined') { alert('题库未加�?); return; }
-  score = 0; answered = 0; correct = 0; lives = 3; combo = 1;
-  gameActive = true;
-  // 异步从中转阁补充题库（不阻塞游戏开始）
-  if (window.RelayQuestions) {
-    RelayQuestions.loadSmart(currentSubject, QUESTION_BANK[currentSubject] || []).then(result => {
-      if (result.fromRelay && result.questions.length > 0) {
-        QUESTION_BANK[currentSubject] = result.questions;
-        console.log('[中转阁] �?消消乐题库已增强:', result.questions.length + '�?);
-      }
-    }).catch(() => {});
-  }
-  drillNext();
-}
-
-function drillNext() {
-  if (lives <= 0 || !gameActive) { endGame(); return; }
-  const bank = QUESTION_BANK[currentSubject] || [];
-  const q = bank[Math.floor(Math.random() * bank.length)];
-  showQuestion(q, q.type).then(isCorrect => {
-    answered++;
-    if (isCorrect) { correct++; score += 2 * combo; combo++; }
-    else { lives--; combo = 1; saveError(q); }
-    if (lives > 0 && gameActive) setTimeout(drillNext, 300);
-    else endGame();
-  });
-}
-
-// ---- Error Book ----
-function saveError(q) {
-  const errors = JSON.parse(localStorage.getItem('siege_errors_'+currentSubject) || '[]');
-  if (!errors.find(e => e.id === q.id)) {
-    errors.push({id:q.id, stem:q.stem, answer:q.answer, analysis:q.analysis, ts:Date.now()});
-    if (errors.length > 200) errors.shift();
-    localStorage.setItem('siege_errors_'+currentSubject, JSON.stringify(errors));
-  }
-}
-
-function renderErrorBook() {
-  const list = document.getElementById('errorList');
-  let allErrors = [];
-  ['101','201','301','408'].forEach(sub => {
-    const e = JSON.parse(localStorage.getItem('siege_errors_'+sub) || '[]');
-    e.forEach(x => { x.subject = sub; allErrors.push(x); });
-  });
-  allErrors.sort((a,b) => b.ts - a.ts);
-  
-  if (allErrors.length === 0) {
-    list.innerHTML = '<div class="err-empty">🎉 暂无错题，继续保持！</div>';
-    return;
-  }
-  list.innerHTML = allErrors.slice(0, 50).map(e => `
-    <div class="err-item">
-      <div style="font-family:var(--font-d);font-size:9px;color:var(--dim)">${e.subject} · ${new Date(e.ts).toLocaleDateString('zh-CN')}</div>
-      <div class="ei-q">${esc(e.stem.slice(0,120))}</div>
-      <div class="ei-a">�?正确答案�?{e.answer}</div>
-      ${e.analysis ? '<div style="font-size:11px;color:var(--sub);margin-top:4px">'+esc(e.analysis.slice(0,150))+'</div>' : ''}
-    </div>
-  `).join('');
-}
-
-// ---- Progress ----
-function saveProgress() {
-  const key = 'siege_progress_' + currentSubject;
-  const p = JSON.parse(localStorage.getItem(key) || '{"total":0,"correct":0,"games":0}');
-  p.total += answered;
-  p.correct += correct;
-  p.games++;
-  p.lastScore = score;
-  p.bestScore = Math.max(p.bestScore || 0, score);
-  localStorage.setItem(key, JSON.stringify(p));
-}
-
-function updateTotalStats() {
-  let total = 0, cor = 0;
-  ['101','201','301','408'].forEach(sub => {
-    const p = JSON.parse(localStorage.getItem('siege_progress_'+sub) || '{"total":0,"correct":0}');
-    total += p.total; cor += p.correct;
-  });
-  document.getElementById('totalStats').textContent = 
-    `总答�? ${total} | 正确�? ${total > 0 ? Math.round(cor/total*100) : 0}%`;
-}
-
-// ---- Utils ----
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-function esc(t) { return t ? t.replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
-
-// ---- AI Panel ----
-function showAIPanel() {
-  const stats = typeof AI_QUESTION_ENGINE !== 'undefined' ? AI_QUESTION_ENGINE.getStats() : {};
-  const overlay = document.getElementById('qOverlay');
-  const modal = overlay.querySelector('.q-modal');
-  
-  modal.innerHTML = `
-    <div class="q-badge" style="background:rgba(255,215,0,.1);color:var(--accent2);border-color:var(--accent2)">🤖 AI 出题引擎</div>
-    <div class="q-stem" style="font-size:13px;line-height:1.8">
-      调用顶尖大模型实时生成考研真题，注入游戏题库�?br>
-      支持 DeepSeek-R1 / Claude-4 / GPT-4o 多模型轮换出题�?    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0">
-      ${['101','201','301','408'].map(sub => {
-        const s = stats[sub] || {total:0};
-        const names = {'101':'政治','201':'英语','301':'数学','408':'计算�?};
-        return `<div style="padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;text-align:center">
-          <div style="font-family:var(--font-d);font-size:16px;font-weight:700">${sub}</div>
-          <div style="font-size:11px;color:var(--sub)">${names[sub]}</div>
-          <div style="font-family:var(--font-d);font-size:20px;color:var(--accent2);margin-top:4px">${s.total}</div>
-          <div style="font-size:9px;color:var(--dim)">AI�?/div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="margin:12px 0">
-      <select id="aiSubject" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
-        <option value="101">101 政治</option>
-        <option value="201">201 英语</option>
-        <option value="301">301 数学</option>
-        <option value="408">408 计算�?/option>
-      </select>
-    </div>
-    <div style="margin:8px 0">
-      <select id="aiCount" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
-        <option value="10">生成 10 题（快速）</option>
-        <option value="30">生成 30 题（标准�?/option>
-        <option value="50" selected>生成 50 题（完整�?/option>
-        <option value="100">生成 100 题（大量�?/option>
-      </select>
-    </div>
-    <div id="aiProgress" style="display:none;margin:12px 0">
-      <div style="font-size:12px;color:var(--sub);margin-bottom:6px" id="aiProgressText">准备�?..</div>
-      <div style="width:100%;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden">
-        <div id="aiProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s"></div>
+  <div id="app">
+    <!-- Level Select -->
+    <section id="levelScreen" class="screen">
+      <div class="lv-bg"></div>
+      <header class="lv-header">
+        <a href="../index.html" class="back-btn" title="返回门户">🏠</a>
+        <h1 class="lv-title">🧩 词汇消消乐</h1>
+        <div class="lv-stars" id="lvTotalStars">⭐ 0/60</div>
+      </header>
+      <div class="lv-tabs">
+        <button class="lv-tab active" data-mode="english" id="tabEng">201 英语完形</button>
+        <button class="lv-tab" data-mode="math" id="tabMath">301 数学填空</button>
       </div>
-    </div>
-    <button class="btn-primary" onclick="startAIGenerate()" id="aiStartBtn">�?开始生�?/button>
-    <button class="btn-secondary" onclick="document.getElementById('qOverlay').classList.remove('show')" style="margin-top:8px">�?返回</button>
-  `;
-  overlay.classList.add('show');
-}
+      <div class="lv-map" id="lvMap"></div>
+      <div class="lv-popup hidden" id="lvPopup">
+        <div class="lv-popup-card">
+          <div class="lv-popup-close" onclick="CrushApp.closePopup()">x</div>
+          <div class="lv-popup-level" id="popLevel">Level 1</div>
+          <div class="lv-popup-sentence" id="popSentence">Loading...</div>
+          <div class="lv-popup-meta">
+            <span>🎯 消除正确词汇 x3</span>
+            <span id="popMoves">📦 25步</span>
+          </div>
+          <button class="btn-gold" onclick="CrushApp.startLevel()">开始挑战</button>
+        </div>
+      </div>
+    </section>
 
-async function startAIGenerate() {
-  if (typeof AI_QUESTION_ENGINE === 'undefined') { alert('AI引擎未加�?); return; }
-  const subject = document.getElementById('aiSubject').value;
-  const count = parseInt(document.getElementById('aiCount').value);
-  const btn = document.getElementById('aiStartBtn');
-  const progress = document.getElementById('aiProgress');
-  const progText = document.getElementById('aiProgressText');
-  const progBar = document.getElementById('aiProgressBar');
-  
-  btn.disabled = true;
-  btn.textContent = '�?生成�?..';
-  progress.style.display = 'block';
-  
-  try {
-    const results = await AI_QUESTION_ENGINE.batchGenerate(subject, count, (msg, pct) => {
-      progText.textContent = msg;
-      progBar.style.width = Math.round(pct * 100) + '%';
-    });
-    progBar.style.width = '100%';
-    progText.textContent = `�?成功生成 ${results.length} 道新题！已注入游戏题库`;
-    btn.textContent = '🎉 完成�?;
-    setTimeout(() => showAIPanel(), 2000); // 刷新统计
-  } catch(e) {
-    progText.textContent = '�?' + e.message;
-    btn.textContent = '重试';
-    btn.disabled = false;
-  }
-}
+    <!-- Game -->
+    <section id="gameScreen" class="screen hidden">
+      <div class="game-bg"></div>
+      <div class="game-hud">
+        <div class="hud-left">
+          <button class="hud-back" onclick="CrushApp.backToLevels()">←</button>
+          <span class="hud-level" id="gameLevel">Lv.1</span>
+        </div>
+        <div class="hud-center">
+          <span class="hud-score" id="gameScore">0</span>
+        </div>
+        <div class="hud-right">
+          <span class="hud-moves" id="gameMoves">25</span>
+          <small>步</small>
+        </div>
+      </div>
+      <div class="game-sentence" id="gameSentence">
+        <div class="sentence-text" id="sentenceText">Loading...</div>
+        <div class="sentence-hint" id="sentenceHint"></div>
+      </div>
+      <div class="game-progress">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        <span class="progress-text" id="progressText">0/20</span>
+      </div>
+      <div class="game-grid-wrap">
+        <div class="game-grid" id="gameGrid"></div>
+      </div>
+      <div class="combo-display hidden" id="comboDisplay">
+        <span class="combo-text" id="comboText">COMBO x3!</span>
+      </div>
+      <div class="float-score hidden" id="floatScore">+100</div>
+    </section>
 
-updateTotalStats();
-</script>
-<script src="../shared/relay-questions.js"></script>
-<script src="questions.js"></script>
+    <!-- Result -->
+    <section id="resultScreen" class="screen hidden">
+      <div class="result-bg"></div>
+      <div class="result-card">
+        <div class="result-stars" id="resultStars">⭐⭐⭐</div>
+        <h2 class="result-title" id="resultTitle">通关!</h2>
+        <div class="result-sentence" id="resultSentence"></div>
+        <div class="result-grid">
+          <div class="rg"><span class="rg-l">得分</span><span class="rg-v" id="rScore">0</span></div>
+          <div class="rg"><span class="rg-l">步数</span><span class="rg-v" id="rMoves">0/25</span></div>
+          <div class="rg"><span class="rg-l">最高连消</span><span class="rg-v" id="rCombo">0</span></div>
+          <div class="rg"><span class="rg-l">词汇</span><span class="rg-v" id="rWords">0</span></div>
+          <div class="rg"><span class="rg-l">用时</span><span class="rg-v" id="rTime">0:00</span></div>
+          <div class="rg"><span class="rg-l">灵气</span><span class="rg-v" id="rQi">+0</span></div>
+        </div>
+        <div class="result-learn" id="resultLearn"></div>
+        <div class="result-btns">
+          <button class="btn-gold" onclick="CrushApp.nextLevel()">下一关</button>
+          <button class="btn-ghost" onclick="CrushApp.backToLevels()">返回</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="crush-data.js"></script>
+  <script src="crush-engine.js"></script>
+  <script src="crush-app.js"></script>
 </body>
 </html>
