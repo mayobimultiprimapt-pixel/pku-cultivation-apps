@@ -1,7 +1,0 @@
-{
-  "appId": "com.shenxiao.kaoyan",
-  "appName": "考研神谕",
-  "webDir": "www",
-  "server": {"androidScheme": "https"},
-  "android": {"allowMixedContent": true}
-}
