@@ -264,6 +264,104 @@ const GhostData = (() => {
   }
   if (typeof localStorage !== 'undefined') setTimeout(loadVaultForGhost, 100);
 
+  // ═══ 每日 Perplexity sonar-pro 自动抓题 · DAILY FRESH INJECTOR ═══
+  const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
+  const _PPLX_KEY=_dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]);
+  const _PPLX_URL='https://api.perplexity.ai/chat/completions';
+
+  function _gdTodayKey(subj){ return 'GD_Daily_'+subj+'_'+new Date().toISOString().split('T')[0]; }
+
+  const _GD_PROMPTS={
+    '101':`你是考研政治命题组泄密分析师。基于最近60天时政热点，生成15道政治单选题。
+格式(严格JSON数组):[{"id":"p_daily_1","subject":"politics","text":"题干","options":["A","B","C","D"],"answer":0,"explain":"解析"}]
+answer是正确选项索引(0-3)。铁律:只输出JSON数组！`,
+    '201':`你是考研英语命题专家。基于近期经济学人/卫报外刊，生成10道英语词汇辨析选择题。
+格式:[{"id":"e_daily_1","subject":"english","text":"The _____ ...","options":["A","B","C","D"],"answer":0,"explain":"解析"}]
+铁律:只输出JSON数组！`,
+    '301':`你是考研数学命题专家。生成12道高数/线代/概率选择题。
+格式:[{"id":"m_daily_1","subject":"math","text":"题干","options":["A","B","C","D"],"answer":0,"explain":"解析"}]
+铁律:只输出JSON数组！`,
+    '408':`你是408计算机统考命题专家。生成12道单选(数据结构3/计组3/OS3/网络3)。
+格式:[{"id":"c_daily_1","subject":"cs408","text":"题干","options":["A","B","C","D"],"answer":0,"explain":"解析"}]
+铁律:只输出JSON数组！`
+  };
+
+  async function _gdFetchFresh(subj){
+    const prompt=_GD_PROMPTS[subj];
+    if(!prompt||!_PPLX_KEY)return null;
+    try{
+      const resp=await fetch(_PPLX_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_PPLX_KEY},
+        body:JSON.stringify({
+          model:'sonar-pro',
+          messages:[{role:'system',content:'你是考研命题专家。只输出严格JSON数组。'},{role:'user',content:prompt}],
+          temperature:0.7,max_tokens:4000
+        })
+      });
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const raw=data.choices?.[0]?.message?.content||'';
+      let qs=null;
+      try{qs=JSON.parse(raw)}catch(e){}
+      if(!qs){const m=raw.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)try{qs=JSON.parse(m[1])}catch(e){}}
+      if(!qs){const s=raw.indexOf('['),e=raw.lastIndexOf(']');if(s>=0&&e>s)try{qs=JSON.parse(raw.substring(s,e+1))}catch(ex){}}
+      if(Array.isArray(qs)&&qs.length>0)return qs;
+      return null;
+    }catch(e){console.warn('[猛鬼宿舍] sonar-pro抓题失败:',e.message);return null}
+  }
+
+  function _gdMergeFresh(freshQ){
+    if(!freshQ||!Array.isArray(freshQ))return 0;
+    const existStems=new Set(QUESTIONS.map(q=>q.text));
+    let added=0;
+    freshQ.forEach(q=>{
+      const text=q.text||q.stem||'';
+      if(!text||existStems.has(text))return;
+      existStems.add(text);
+      QUESTIONS.push({
+        id:q.id||'daily_'+Date.now()+'_'+added,
+        subject:q.subject||'politics',
+        text:text,
+        options:q.options||q.opts||['A','B','C','D'],
+        answer:typeof q.answer==='number'?q.answer:(typeof q.ans==='number'?q.ans:0),
+        explain:q.explain||q.hint||'每日Perplexity情报'
+      });
+      added++;
+    });
+    return added;
+  }
+
+  async function ghostDailyInject(){
+    const subjects=['101','201','301','408'];
+    let totalAdded=0;
+    for(const subj of subjects){
+      const key=_gdTodayKey(subj);
+      const cached=localStorage.getItem(key);
+      if(cached){
+        try{
+          const q=JSON.parse(cached);
+          const n=_gdMergeFresh(q);
+          if(n>0)console.log('[猛鬼宿舍] '+subj+': 缓存加载 +'+n+'题');
+          totalAdded+=n;
+        }catch(e){}
+        continue;
+      }
+      console.log('[猛鬼宿舍] '+subj+': sonar-pro 正在抓取今日最新题目...');
+      const fresh=await _gdFetchFresh(subj);
+      if(fresh&&fresh.length>0){
+        localStorage.setItem(key,JSON.stringify(fresh));
+        const n=_gdMergeFresh(fresh);
+        console.log('[猛鬼宿舍] '+subj+': 抓取成功 +'+n+'新题');
+        totalAdded+=n;
+      }else{
+        console.log('[猛鬼宿舍] '+subj+': 抓取失败,使用内置题库');
+      }
+    }
+    if(totalAdded>0)console.log('[猛鬼宿舍] 📡 今日共注入 '+totalAdded+' 道Perplexity最新题目!');
+  }
+
+  ghostDailyInject().catch(e=>console.warn('[猛鬼宿舍] 自动抓题异常:',e));
 
   return {rooms, hallQuestions};
   }

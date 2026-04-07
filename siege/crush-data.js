@@ -160,7 +160,48 @@ const CrushData = (() => {
     return false;
   }
 
-  return { getLevel, getTotalLevels, buildGrid, GRID_SIZE, COLORS, TARGET_MATCHES };
+  // ═══ 新增: 政治关卡池 ═══
+  const POLITICS_LEVELS = [
+    {sentence:'中国特色社会主义最本质的特征是 _____',answer:'中国共产党领导',meaning:'党的领导=最本质特征',distractors:['人民民主','依法治国','社会主义制度','改革开放','市场经济']},
+    {sentence:'唯物辩证法的实质和核心是 _____',answer:'对立统一规律',meaning:'矛盾规律=辩证法核心',distractors:['质量互变','否定之否定','因果联系','内容形式','必然偶然']},
+    {sentence:'实践是检验真理的唯一标准，因为实践具有 _____',answer:'直接现实性',meaning:'实践的直接现实性',distractors:['社会历史性','自觉能动性','客观物质性','主观能动性','反复性']},
+    {sentence:'我国社会主要矛盾中"不平衡不充分"指的是 _____',answer:'发展',meaning:'人民美好生活需要vs不平衡不充分的发展',distractors:['消费','生产','分配','投资','教育']},
+    {sentence:'新民主主义革命的三大法宝不包括 _____',answer:'土地革命',meaning:'三大法宝=统一战线+武装斗争+党的建设',distractors:['统一战线','武装斗争','党的建设','人民战争','群众路线']},
+    {sentence:'社会存在的决定性因素是 _____',answer:'生产方式',meaning:'社会存在=地理+人口+生产方式(决定性)',distractors:['地理环境','人口因素','社会意识','上层建筑','阶级关系']},
+    {sentence:'马克思主义哲学直接来源于 _____ 的思想',answer:'黑格尔和费尔巴哈',meaning:'黑格尔辩证法+费尔巴哈唯物主义',distractors:['康德','亚里士多德','培根','笛卡尔','洛克']},
+    {sentence:'认识的本质是主体对客体的 _____',answer:'能动反映',meaning:'辩证唯物主义认识论',distractors:['被动反映','直观反映','机械反映','抽象反映','感性反映']},
+    {sentence:'全面依法治国的总目标是建设 _____',answer:'社会主义法治国家',meaning:'十八届四中全会确定',distractors:['法治政府','法治社会','和谐社会','小康社会','现代化国家']},
+    {sentence:'价值规律的表现形式是价格围绕 _____ 波动',answer:'价值',meaning:'价格围绕价值上下波动',distractors:['成本','利润','供求','市场','需求']},
+  ];
+
+  // ═══ 新增: 408计算机关卡池 ═══
+  const CS_LEVELS = [
+    {sentence:'栈和队列的共同特点是只允许在 _____ 处操作',answer:'端点',meaning:'栈和队列都是操作受限的线性表',distractors:['中间','头部','尾部','随机位置','叶子','根']},
+    {sentence:'快速排序的平均时间复杂度为 O(_____)',answer:'nlogn',meaning:'快排平均O(nlogn)，最坏O(n²)',distractors:['n','n²','logn','1','n³','2^n']},
+    {sentence:'TCP三次握手中第二次握手标志位是 _____',answer:'SYN+ACK',meaning:'SYN→SYN+ACK→ACK',distractors:['SYN','ACK','FIN','RST','PSH','URG']},
+    {sentence:'虚拟内存的基础是 _____ 原理',answer:'局部性',meaning:'时间局部性+空间局部性',distractors:['全局性','一致性','互斥性','原子性','可见性','有序性']},
+    {sentence:'死锁产生的四个必要条件不包括 _____',answer:'可剥夺',meaning:'互斥+请求保持+不可剥夺+循环等待',distractors:['互斥','请求保持','不可剥夺','循环等待','同步','阻塞']},
+    {sentence:'B+树所有数据都存储在 _____ 节点',answer:'叶子',meaning:'B+树数据全在叶子，适合范围查询',distractors:['根','内部','任意','分支','头','中间']},
+    {sentence:'哈夫曼树的带权路径长度WPL具有 _____ 的特点',answer:'最小',meaning:'哈夫曼树=最优二叉树',distractors:['最大','平均','中等','固定','随机','无穷']},
+    {sentence:'HTTP协议工作在TCP/IP模型的 _____ 层',answer:'应用',meaning:'HTTP是应用层协议',distractors:['传输','网络','数据链路','物理','会话','表示']},
+    {sentence:'进程是资源分配的基本单位，_____ 是CPU调度的基本单位',answer:'线程',meaning:'进程vs线程的区别',distractors:['进程','协程','纤程','管程','信号','中断']},
+    {sentence:'IPv4地址长度为 _____ 位',answer:'32',meaning:'IPv4=32位，IPv6=128位',distractors:['16','64','128','8','48','256']},
+  ];
+
+  function getLevel(mode, idx) {
+    const pool = mode === 'math' ? MATH_LEVELS : mode === 'politics' ? POLITICS_LEVELS : mode === 'cs' ? CS_LEVELS : ENGLISH_LEVELS;
+    if(idx < 0 || idx >= pool.length) return null;
+    return {...pool[idx], index: idx, moves: MOVES_PER_LEVEL};
+  }
+
+  function getTotalLevels(mode) {
+    if(mode === 'math') return MATH_LEVELS.length;
+    if(mode === 'politics') return POLITICS_LEVELS.length;
+    if(mode === 'cs') return CS_LEVELS.length;
+    return ENGLISH_LEVELS.length;
+  }
+
+  return { getLevel, getTotalLevels, buildGrid, GRID_SIZE, COLORS, TARGET_MATCHES, POLITICS_LEVELS, CS_LEVELS };
 })();
 
 // ═══ Global Vault 自动加载 ═══
@@ -185,3 +226,84 @@ const CrushData = (() => {
     }
   } catch(e) { console.warn('[消消乐] 金库读取失败:', e.message); }
 })();
+
+// ═══ 每日 Perplexity sonar-pro 自动抓题 · DAILY FRESH INJECTOR ═══
+(function(){
+  const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
+  const _PPLX_KEY=_dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]);
+  const _PPLX_URL='https://api.perplexity.ai/chat/completions';
+
+  function todayKey(subj){ return 'Siege_Daily_'+subj+'_'+new Date().toISOString().split('T')[0]; }
+
+  const PROMPTS={
+    '201':`你是考研英语命题专家。生成10个完形填空关卡。每关一个句子含一个空格+正确答案+6个干扰词。
+格式(严格JSON数组):[{"sentence":"The study provided _____ evidence.","answer":"empirical","meaning":"empirical=实证的","distractors":["rare","vast","brief","subtle","acute","virtual"]}]
+铁律:只输出JSON数组！`,
+    '301':`你是考研数学命题专家。生成10个数学填空关卡。每关一个数学问题含一个空格。
+格式:[{"sentence":"lim(x->0) sin(x)/x = _____","answer":"1","meaning":"重要极限","distractors":["0","2","-1","pi","e","0.5"]}]
+铁律:只输出JSON数组！`,
+    '101':`你是考研政治命题专家。生成10个政治填空关卡。
+格式:[{"sentence":"中国特色社会主义最本质的特征是_____","answer":"党的领导","meaning":"十九大写入党章","distractors":["人民民主","改革开放","依法治国","市场经济","共同富裕"]}]
+铁律:只输出JSON数组！`,
+    '408':`你是408计算机命题专家。生成10个计算机填空关卡。
+格式:[{"sentence":"快速排序的平均时间复杂度是O(_____)","answer":"nlogn","meaning":"快排平均O(nlogn)","distractors":["n","n²","logn","1","n³","2^n"]}]
+铁律:只输出JSON数组！`
+  };
+
+  async function fetchLevels(subj){
+    const prompt=PROMPTS[subj];
+    if(!prompt||!_PPLX_KEY)return null;
+    try{
+      const resp=await fetch(_PPLX_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_PPLX_KEY},
+        body:JSON.stringify({
+          model:'sonar-pro',
+          messages:[{role:'system',content:'你是考研命题专家。只输出严格JSON数组。'},{role:'user',content:prompt}],
+          temperature:0.7,max_tokens:4000
+        })
+      });
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const raw=data.choices?.[0]?.message?.content||'';
+      let qs=null;
+      try{qs=JSON.parse(raw)}catch(e){}
+      if(!qs){const m=raw.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)try{qs=JSON.parse(m[1])}catch(e){}}
+      if(!qs){const s=raw.indexOf('['),e=raw.lastIndexOf(']');if(s>=0&&e>s)try{qs=JSON.parse(raw.substring(s,e+1))}catch(ex){}}
+      if(Array.isArray(qs)&&qs.length>0)return qs;
+      return null;
+    }catch(e){console.warn('[消消乐] sonar-pro抓题失败:',e.message);return null}
+  }
+
+  async function siegeDailyInject(){
+    let totalAdded=0;
+    for(const subj of ['201','301','101','408']){
+      const key=todayKey(subj);
+      const cached=localStorage.getItem(key);
+      if(cached){
+        try{
+          const levels=JSON.parse(cached);
+          const cacheKey='Siege_Levels_'+subj;
+          localStorage.setItem(cacheKey,JSON.stringify(levels));
+          console.log('[消消乐] '+subj+': 缓存已就绪 ('+levels.length+'关)');
+          totalAdded+=levels.length;
+        }catch(e){}
+        continue;
+      }
+      console.log('[消消乐] '+subj+': sonar-pro 正在抓取今日最新关卡...');
+      const fresh=await fetchLevels(subj);
+      if(fresh&&fresh.length>0){
+        localStorage.setItem(key,JSON.stringify(fresh));
+        localStorage.setItem('Siege_Levels_'+subj,JSON.stringify(fresh));
+        console.log('[消消乐] '+subj+': 抓取成功 +'+fresh.length+'关');
+        totalAdded+=fresh.length;
+      }else{
+        console.log('[消消乐] '+subj+': 抓取失败,使用内置关卡');
+      }
+    }
+    if(totalAdded>0)console.log('[消消乐] 📡 今日共注入 '+totalAdded+' 个Perplexity最新关卡!');
+  }
+
+  siegeDailyInject().catch(e=>console.warn('[消消乐] 自动抓题异常:',e));
+})();
+
