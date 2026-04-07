@@ -1,641 +1,1948 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>猛鬼宿舍 · 塔防答题 — 北大考研修仙应用集</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<title>猛鬼考研宿舍 · 北大真题密卷</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
+/* ═══════ CSS RESET & VARS ═══════ */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0a12;--card:#12121f;--border:#1e1e35;
-  --red:#ff2e63;--green:#39ff14;--gold:#ffd700;--cyan:#08f7fe;--purple:#9d4edd;
-  --text:#e8e8f0;--sub:#666;--dim:#444;
-  --font-d:'Orbitron',monospace;--font-c:'Noto Sans SC',sans-serif;
+  --bg:#0a0c12;--bg2:#14161e;--card:#1a1d28;--card2:#222538;
+  --blood:#8b0000;--blood2:#cc3030;--ghost:#4ade80;--gold:#fbbf24;
+  --elec:#38bdf8;--honey:#f59e0b;--text:#e8e6e3;--text2:#9ca3af;
+  --fury:#ff4444;--stun:#aa44ff;--stealth:rgba(255,255,255,0.15);
+  --rare:#c084fc;--radius:12px;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font-c);overflow:hidden;height:100vh;width:100vw}
-button{font-family:var(--font-c);cursor:pointer;border:none;outline:none}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;user-select:none;-webkit-user-select:none}
 
-/* ═══ 开始界面 ═══ */
-#startScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:20px;animation:fadeIn .6s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.game-logo{font-size:48px;margin-bottom:8px}
-.game-title{font-family:var(--font-d);font-size:28px;color:var(--red);text-shadow:0 0 20px rgba(255,46,99,.4);margin-bottom:4px}
-.game-sub{font-size:12px;color:var(--sub);letter-spacing:3px;margin-bottom:30px}
-.subject-pick{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
-.subject-btn{padding:18px 24px;background:var(--card);border:2px solid var(--border);border-radius:14px;color:var(--text);font-size:14px;font-weight:700;min-width:140px;transition:.3s}
-.subject-btn:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 8px 25px rgba(157,78,221,.2)}
-.subject-btn.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.15)}
-.subject-btn .sb-code{font-family:var(--font-d);font-size:22px;color:var(--red);margin-bottom:4px}
-.subject-btn .sb-name{font-size:11px;color:var(--sub)}
-.subject-btn .sb-info{font-size:10px;color:var(--dim);margin-top:6px}
-.start-btn{padding:16px 60px;background:linear-gradient(135deg,var(--red),var(--purple));color:#fff;font-size:18px;font-weight:900;border-radius:50px;letter-spacing:4px;transition:.3s;box-shadow:0 4px 20px rgba(255,46,99,.3)}
-.start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,46,99,.5)}
-.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.back-link{margin-top:20px;color:var(--sub);font-size:12px;text-decoration:none}
-.back-link:hover{color:var(--text)}
+/* ═══════ SCREENS ═══════ */
+.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.scr.on{display:flex}
 
-/* ═══ 游戏界面 ═══ */
-#gameScreen{display:none;height:100vh;flex-direction:column}
+/* ═══════ MAIN MENU ═══════ */
+.menu-bg{position:absolute;inset:0;background:linear-gradient(180deg,#0a0c14 0%,#1a0a0a 50%,#0a0c14 100%);overflow:hidden}
+.menu-rain{position:absolute;inset:0;pointer-events:none}
+.menu-rain i{position:absolute;width:1px;background:linear-gradient(transparent,rgba(100,140,200,.3));animation:rain-fall linear infinite}
+@keyframes rain-fall{0%{transform:translateY(-100vh)}100%{transform:translateY(100vh)}}
+.menu-building{position:relative;z-index:2;text-align:center;padding:20px}
+.building-facade{width:280px;margin:0 auto;background:linear-gradient(180deg,#2a2d3a,#1e2030);border-radius:8px 8px 0 0;padding:16px;position:relative;box-shadow:0 0 40px rgba(139,0,0,.3)}
+.windows{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.win{background:#111;border-radius:4px;padding:12px 8px;font-size:1.4em;position:relative;overflow:hidden}
+.win.lit{background:linear-gradient(135deg,#2a3a1a,#1a2a0a);box-shadow:inset 0 0 12px rgba(74,222,128,.15)}
+.win.lit::after{content:'';position:absolute;inset:0;background:radial-gradient(circle,rgba(74,222,128,.08),transparent);animation:flicker 3s infinite}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.6}}
+.entrance{padding:12px;background:linear-gradient(180deg,#1a1d28,#111);border-radius:0 0 8px 8px;position:relative}
+.entrance-light{width:40px;height:40px;margin:0 auto 8px;background:radial-gradient(circle,rgba(255,200,50,.4),transparent);border-radius:50%;animation:pulse-light 2s infinite}
+@keyframes pulse-light{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.2);opacity:1}}
+.menu-char{font-size:2em;animation:float-char 2s ease-in-out infinite}
+@keyframes float-char{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.menu-title{font-size:1.6em;font-weight:900;color:var(--blood2);text-shadow:0 0 20px rgba(200,0,0,.5);margin:16px 0 4px;letter-spacing:2px}
+.menu-sub{font-size:.75em;color:var(--text2);margin-bottom:20px}
+.menu-hud{display:flex;gap:16px;justify-content:center;margin-bottom:16px}
+.hud-coin{background:var(--card);padding:6px 14px;border-radius:20px;font-size:.85em;display:flex;align-items:center;gap:4px}
+.start-btn{width:220px;padding:14px;font-size:1.1em;font-weight:900;color:#fff;background:linear-gradient(135deg,var(--blood),#a01010);border:2px solid rgba(200,0,0,.5);border-radius:var(--radius);cursor:pointer;text-shadow:0 2px 4px rgba(0,0,0,.5);transition:all .2s;position:relative;overflow:hidden}
+.start-btn:hover{transform:scale(1.04);box-shadow:0 0 30px rgba(200,0,0,.4)}
+.start-btn::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(transparent,rgba(255,255,255,.05),transparent);transform:rotate(30deg);animation:btn-shine 3s infinite}
+@keyframes btn-shine{0%{transform:translateX(-100%) rotate(30deg)}100%{transform:translateX(100%) rotate(30deg)}}
+.menu-btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+.mb{padding:8px 14px;font-size:.75em;background:var(--card);border:1px solid rgba(255,255,255,.08);color:var(--text2);border-radius:8px;cursor:pointer;transition:all .2s}
+.mb:hover{background:var(--card2);color:var(--text)}
 
-/* 顶部状态栏 */
-.top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(10,10,18,.95);border-bottom:1px solid var(--border);flex-shrink:0}
-.stat{display:flex;align-items:center;gap:4px;font-family:var(--font-d);font-size:13px}
-.stat-gold{color:var(--gold)}
-.stat-wave{color:var(--red)}
-.stat-score{color:var(--cyan)}
+/* ═══════ MODE SELECT ═══════ */
+.mode-wrap{width:100%;max-width:420px;padding:20px}
+.mode-title{text-align:center;font-size:1.2em;color:var(--blood2);margin-bottom:16px}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px 12px;text-align:center;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.mode-card:hover{transform:translateY(-4px);border-color:var(--blood2);box-shadow:0 8px 20px rgba(200,0,0,.2)}
+.mode-card.hunter{border-color:rgba(170,68,255,.3);background:linear-gradient(135deg,#1a1028,#221538)}
+.mode-card.hunter:hover{border-color:var(--stun);box-shadow:0 8px 20px rgba(170,68,255,.3)}
+.mc-icon{font-size:2em;margin-bottom:6px}
+.mc-name{font-weight:900;font-size:.95em;margin-bottom:4px}
+.mc-desc{font-size:.65em;color:var(--text2)}
+.mc-sub{font-size:.6em;color:var(--ghost);margin-top:4px}
+.mc-sub.hunter-sub{color:var(--stun)}
 
-/* 宿舍视图 */
-.dorm-view{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#0d0d1a 0%,#151528 100%)}
-.dorm-grid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:8px}
-.room{background:rgba(18,18,31,.8);border:1px solid var(--border);border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;transition:.3s}
-.room.has-bed{background:rgba(255,215,0,.03);border-color:rgba(255,215,0,.15)}
-.room.has-turret{background:rgba(8,247,254,.03);border-color:rgba(8,247,254,.15)}
-.room-icon{font-size:28px;opacity:.7}
-.room-level{position:absolute;top:4px;right:6px;font-family:var(--font-d);font-size:9px;color:var(--gold);background:rgba(0,0,0,.5);padding:1px 5px;border-radius:4px}
-.room-label{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:9px;color:var(--sub)}
+/* ═══════ SUBJECT SELECT ═══════ */
+.subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.subj-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+.subj-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.subj-card .si{font-size:1.6em;margin-bottom:4px}
+.subj-card .sn{font-weight:700;font-size:.85em}
+.subj-card .sd{font-size:.6em;color:var(--text2);margin-top:2px}
 
-/* 走廊(中间) */
-.corridor{grid-column:2;grid-row:1/-1;background:rgba(18,18,31,.4);border:1px solid var(--border);border-radius:8px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px}
-.door-area{width:80%;padding:8px;background:rgba(255,46,99,.05);border:2px solid var(--red);border-radius:8px;text-align:center}
-.door-hp-bar{width:100%;height:8px;background:var(--bg);border-radius:4px;margin-top:4px;overflow:hidden}
-.door-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--green));border-radius:4px;transition:width .3s}
-.door-label{font-size:10px;color:var(--sub);margin-top:2px}
+/* ═══════ DIFFICULTY ═══════ */
+.diff-wrap{width:100%;max-width:380px;padding:20px}
+.diff-list{display:flex;flex-direction:column;gap:8px}
+.diff-btn{padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);color:var(--text);font-size:.9em;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:left}
+.diff-btn:hover{transform:translateX(6px);border-color:var(--blood2)}
+.diff-btn small{display:block;font-size:.7em;color:var(--text2);margin-top:2px}
 
-/* 猛鬼 */
-.ghost{font-size:40px;transition:transform .5s,opacity .5s;animation:ghostFloat 2s ease-in-out infinite}
-.ghost.attacking{animation:ghostAttack .3s ease infinite}
-.ghost.hidden{opacity:0;transform:scale(0)}
-@keyframes ghostFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes ghostAttack{0%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}100%{transform:translateX(0)}}
+/* ═══════ MATCH ═══════ */
+.match-wrap{text-align:center;padding:20px}
+.match-timer{font-size:2em;font-weight:900;color:var(--blood2);margin:12px 0}
+.match-ghost{margin:8px 0}
+.mg-box{font-size:3em;animation:float-char 1.5s ease-in-out infinite}
+.match-vs{font-size:1.5em;font-weight:900;color:var(--blood2);margin:8px 0}
+.match-players{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mp-slot{background:var(--card);padding:8px 12px;border-radius:8px;text-align:center;min-width:60px}
+.mp-slot.you{border:1px solid var(--ghost)}
+.mp-avatar{font-size:1.4em}
+.mp-name{font-size:.65em;color:var(--text2);margin-top:2px}
+.ready-btn{margin-top:16px;padding:12px 40px;font-size:1em;font-weight:700;background:var(--ghost);color:#000;border:none;border-radius:var(--radius);cursor:pointer}
 
-/* 警报效果 */
-.dorm-view.alert{animation:alertFlash .5s ease}
-@keyframes alertFlash{0%,100%{box-shadow:inset 0 0 0 transparent}50%{box-shadow:inset 0 0 60px rgba(255,46,99,.2)}}
+/* ═══════ GAME HUD ═══════ */
+.game-hud{position:fixed;top:0;left:0;right:0;height:50px;background:linear-gradient(180deg,rgba(10,12,18,.95),rgba(10,12,18,.7));display:flex;align-items:center;padding:0 10px;gap:8px;z-index:10;backdrop-filter:blur(8px)}
+.back-arrow{background:none;border:none;color:var(--text);font-size:1.2em;cursor:pointer;padding:4px 8px}
+.res{display:flex;align-items:center;gap:3px;font-size:.8em;font-weight:700;padding:3px 8px;border-radius:12px;background:rgba(255,255,255,.06)}
+.res.gold{color:var(--gold)}.res.elec{color:var(--elec)}
+.wave-badge{margin-left:auto;font-size:.7em;color:var(--blood2);font-weight:700}
+.player-row{display:flex;gap:2px;margin-left:auto}
+.pr-icon{font-size:.9em;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border-radius:50%}
 
-/* 建造菜单 */
-.build-menu{display:flex;gap:6px;padding:8px 12px;background:rgba(10,10,18,.95);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
-.build-btn{flex:1;padding:8px 4px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:10px;text-align:center;transition:.2s;min-width:70px}
-.build-btn:hover:not(:disabled){border-color:var(--gold);background:rgba(255,215,0,.05)}
-.build-btn:disabled{opacity:.3;cursor:not-allowed}
-.build-btn .bb-icon{font-size:18px;display:block;margin-bottom:2px}
-.build-btn .bb-name{font-weight:700;font-size:11px}
-.build-btn .bb-cost{color:var(--gold);font-family:var(--font-d);font-size:10px;margin-top:2px}
+/* ═══════ GAME CANVAS ═══════ */
+#gameCanvas{position:fixed;inset:0;z-index:1}
+.game-task{position:fixed;top:52px;left:10px;right:10px;background:rgba(26,29,40,.9);padding:6px 12px;border-radius:8px;font-size:.7em;display:flex;justify-content:space-between;align-items:center;z-index:10;border:1px solid rgba(255,255,255,.06)}
 
-/* 答题区 */
-.question-area{flex-shrink:0;padding:12px;background:var(--card);border-top:1px solid var(--border)}
-.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.q-progress{font-size:11px;color:var(--sub)}
-.q-timer{font-family:var(--font-d);font-size:13px;color:var(--red)}
-.q-stem{font-size:14px;line-height:1.8;margin-bottom:10px;min-height:40px}
-.q-stem .blank{display:inline-block;min-width:60px;border-bottom:2px solid var(--cyan);color:var(--cyan);text-align:center;padding:0 4px;margin:0 2px}
-.q-input-row{display:flex;gap:8px}
-.q-input{flex:1;padding:10px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-c);outline:none;transition:.2s}
-.q-input:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(8,247,254,.15)}
-.q-submit{padding:10px 20px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;font-weight:900;border-radius:10px;font-size:14px;transition:.2s}
-.q-submit:hover{transform:scale(1.05)}
-/* 选项式(完形) */
-.q-options{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.q-opt{padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;text-align:left;transition:.2s}
-.q-opt:hover{border-color:var(--cyan);background:rgba(8,247,254,.05)}
-.q-opt.correct{border-color:var(--green);background:rgba(57,255,20,.1);color:var(--green)}
-.q-opt.wrong{border-color:var(--red);background:rgba(255,46,99,.1);color:var(--red)}
+/* ═══════ BUILD MENU ═══════ */
+.build-menu{position:fixed;bottom:-400px;left:0;right:0;max-height:55vh;background:var(--bg2);border-radius:16px 16px 0 0;z-index:20;transition:bottom .3s;overflow-y:auto;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.build-menu.open{bottom:0}
+.bm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.bm-title{font-weight:700;font-size:.9em}
+.bm-close{background:none;border:none;color:var(--text2);font-size:1.2em;cursor:pointer}
+.bm-tabs{display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px}
+.bm-tab{padding:5px 10px;font-size:.7em;background:var(--card);border:1px solid transparent;border-radius:8px;color:var(--text2);cursor:pointer;white-space:nowrap}
+.bm-tab.active{border-color:var(--ghost);color:var(--ghost)}
+.bm-list{display:flex;flex-direction:column;gap:6px}
+.bm-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border-radius:8px;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.bm-item:hover{border-color:var(--ghost)}
+.bm-item.locked{opacity:.4;pointer-events:none}
+.bi-icon{font-size:1.5em;width:36px;text-align:center}
+.bi-info{flex:1}
+.bi-name{font-weight:700;font-size:.8em}
+.bi-desc{font-size:.65em;color:var(--text2)}
+.bi-limit{font-size:.6em;color:var(--rare);margin-top:2px}
+.bi-req{font-size:.6em;color:var(--fury);margin-top:2px}
+.bi-cost{font-size:.75em;font-weight:700;white-space:nowrap}
+.gold-cost{color:var(--gold)}.elec-cost{color:var(--elec)}
 
-/* 反馈 */
-.feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-d);font-size:36px;font-weight:900;pointer-events:none;animation:fbPop .8s ease-out forwards;z-index:100}
-@keyframes fbPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
-.fb-correct{color:var(--green);text-shadow:0 0 20px rgba(57,255,20,.5)}
-.fb-wrong{color:var(--red);text-shadow:0 0 20px rgba(255,46,99,.5)}
+/* ═══════ UPGRADE MENU ═══════ */
+.upgrade-menu{position:fixed;bottom:-300px;left:0;right:0;background:var(--bg2);border-radius:16px 16px 0 0;z-index:20;transition:bottom .3s;padding:16px;border-top:1px solid rgba(255,255,255,.08)}
+.upgrade-menu.open{bottom:0}
+.um-title{font-weight:700;margin-bottom:8px;font-size:.9em}
+.um-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text2);font-size:1.2em;cursor:pointer}
+.um-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .2s}
+.um-row:hover{border-color:var(--ghost)}
+.um-row.locked{opacity:.4;pointer-events:none}
+.um-icon{font-size:1.5em}
+.um-info{flex:1}
+.um-name{font-weight:700;font-size:.8em}
+.um-stat{font-size:.65em;color:var(--text2)}
 
-/* 波次提示 */
-.wave-banner{position:fixed;top:0;left:0;right:0;padding:30px;text-align:center;background:linear-gradient(180deg,rgba(255,46,99,.15),transparent);font-family:var(--font-d);font-size:24px;color:var(--red);text-shadow:0 0 30px rgba(255,46,99,.5);animation:waveIn 2s ease-out forwards;z-index:99;pointer-events:none}
-@keyframes waveIn{0%{opacity:0;transform:translateY(-30px)}20%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+/* ═══════ QUIZ OVERLAY ═══════ */
+.quiz-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.quiz-overlay.open{display:flex}
+.quiz-box{background:var(--bg2);border-radius:16px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;border:1px solid rgba(200,0,0,.2);box-shadow:0 0 60px rgba(200,0,0,.15)}
+.qz-header{text-align:center;margin-bottom:12px}
+.qz-header h3{color:var(--blood2);font-size:1.1em}
+.qz-header p{font-size:.7em;color:var(--text2)}
+.qz-meta{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.qz-tag{padding:2px 8px;border-radius:10px;font-size:.65em;font-weight:700}
+.t-single{background:rgba(74,222,128,.15);color:var(--ghost)}
+.t-multi{background:rgba(56,189,248,.15);color:var(--elec)}
+.t-judge{background:rgba(251,191,36,.15);color:var(--gold)}
+.t-essay{background:rgba(192,132,252,.15);color:var(--rare)}
+.t-kp{background:rgba(255,255,255,.06);color:var(--text2)}
+.qz-q{font-size:.85em;line-height:1.6;margin-bottom:12px;padding:10px;background:rgba(255,255,255,.03);border-radius:8px}
+.qz-opts{display:flex;flex-direction:column;gap:6px}
+.qz-opt{padding:10px 12px;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);font-size:.8em;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s}
+.qz-opt:hover{border-color:var(--ghost);background:rgba(74,222,128,.05)}
+.qz-opt.selected{border-color:var(--elec);background:rgba(56,189,248,.1)}
+.qz-opt.correct{border-color:var(--ghost)!important;background:rgba(74,222,128,.15)!important}
+.qz-opt.wrong{border-color:var(--fury)!important;background:rgba(255,68,68,.15)!important}
+.qz-opt.disabled{pointer-events:none;opacity:.7}
+.om{width:22px;height:22px;background:rgba(255,255,255,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:700;flex-shrink:0}
+.judge-row{display:flex;gap:10px}
+.judge-btn{flex:1;padding:14px;font-size:1em;font-weight:700;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);cursor:pointer;transition:all .15s}
+.judge-btn:hover{border-color:var(--ghost)}
+.judge-btn.correct{border-color:var(--ghost)!important;background:rgba(74,222,128,.15)!important}
+.judge-btn.wrong{border-color:var(--fury)!important;background:rgba(255,68,68,.15)!important}
+.essay-ta{width:100%;min-height:100px;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);padding:10px;font-size:.8em;resize:vertical;font-family:inherit}
+.essay-sub{width:100%;margin-top:8px;padding:12px;font-size:.9em;font-weight:700;background:linear-gradient(135deg,var(--blood),#a01010);border:none;border-radius:8px;color:#fff;cursor:pointer}
+.qz-result{margin-top:10px;padding:10px;border-radius:8px;font-size:.8em;font-weight:700;text-align:center}
+.qz-result.ok{background:rgba(74,222,128,.1);color:var(--ghost)}
+.qz-result.fail{background:rgba(255,68,68,.1);color:var(--fury)}
+.qz-knowledge{margin-top:8px;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;font-size:.7em;color:var(--text2);line-height:1.5}
 
-/* 结算 */
-#resultScreen{display:none;position:fixed;inset:0;background:rgba(10,10,18,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.result-icon{font-size:64px;margin-bottom:12px}
-.result-title{font-family:var(--font-d);font-size:28px;margin-bottom:8px}
-.result-sub{color:var(--sub);font-size:14px;margin-bottom:20px}
-.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;width:100%;max-width:300px}
-.rs-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
-.rs-val{font-family:var(--font-d);font-size:20px;color:var(--gold)}
-.rs-label{font-size:11px;color:var(--sub);margin-top:4px}
-.retry-btn{padding:14px 50px;background:linear-gradient(135deg,var(--red),var(--purple));color:#fff;font-size:16px;font-weight:900;border-radius:50px;letter-spacing:3px}
+/* ═══════ ESSAY MODE PANEL ═══════ */
+.essay-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:55;display:none;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;backdrop-filter:blur(10px)}
+.essay-overlay.open{display:flex}
+.essay-panel{max-width:500px;width:100%;background:var(--bg2);border-radius:16px;padding:20px;border:1px solid rgba(192,132,252,.2);box-shadow:0 0 60px rgba(192,132,252,.15)}
+.ep-badge{display:inline-block;padding:3px 10px;background:rgba(192,132,252,.15);color:var(--rare);border-radius:10px;font-size:.7em;font-weight:700;margin-bottom:8px}
+.ep-title{font-size:1em;font-weight:900;color:var(--rare);margin-bottom:12px}
+.ep-abstract{background:rgba(255,255,255,.03);padding:12px;border-radius:8px;font-size:.78em;line-height:1.8;margin-bottom:12px;border-left:3px solid var(--rare);max-height:200px;overflow-y:auto}
+.ep-prompt{font-size:.75em;color:var(--text2);margin-bottom:8px}
+.ep-textarea{width:100%;min-height:120px;background:var(--card);border:1px solid rgba(192,132,252,.2);border-radius:8px;color:var(--text);padding:10px;font-size:.8em;resize:vertical;font-family:inherit}
+.ep-submit{width:100%;margin-top:10px;padding:12px;font-size:.9em;font-weight:700;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:8px;color:#fff;cursor:pointer}
+.ep-result{margin-top:10px;padding:10px;border-radius:8px;font-size:.8em;text-align:center}
+.ep-reward{margin-top:8px;padding:10px;background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.2);border-radius:8px;text-align:center;font-size:.85em}
 
-@media(max-width:500px){
-  .dorm-grid{grid-template-columns:1fr 1.5fr 1fr}
-  .game-title{font-size:22px}
-  .game-logo{font-size:36px}
-}
+/* ═══════ WAVE NUM ═══════ */
+.wave-num{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:2em;font-weight:900;color:var(--blood2);text-shadow:0 0 20px rgba(200,0,0,.6);z-index:15;pointer-events:none;transition:transform .3s,opacity .3s;opacity:0}
+.wave-num.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+.boss-warn{position:fixed;inset:0;z-index:16;display:none;align-items:center;justify-content:center;background:rgba(200,0,0,.15);animation:boss-flash .3s 3}
+@keyframes boss-flash{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ═══════ RESULT ═══════ */
+.result-wrap{text-align:center;padding:24px;max-width:380px}
+.result-wrap h2{font-size:1.4em;margin-bottom:8px}
+.result-ghost{font-size:3em;margin:8px 0;animation:float-char 1.5s infinite}
+.r-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.r-cell{background:var(--card);padding:10px;border-radius:8px}
+.rv{font-size:1.2em;font-weight:900}.rl{font-size:.65em;color:var(--text2);margin-top:2px}
+.r-rewards{margin:12px 0;padding:12px;background:var(--card);border-radius:var(--radius)}
+.result-btns{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.ob{padding:10px 20px;font-size:.85em;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);cursor:pointer;transition:all .2s}
+.ob:hover{background:var(--card2)}
+.ob.danger{border-color:var(--blood2);color:var(--blood2)}
+
+/* ═══════ OVERLAY ═══════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:40;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.on{display:flex}
+.ovl-box{background:var(--bg2);padding:24px;border-radius:16px;text-align:center;max-width:320px}
+.ovl-btns{display:flex;gap:8px;justify-content:center;margin-top:16px}
+
+/* ═══════ SHOP/NOTICE/PROGRESS ═══════ */
+.shop-wrap,.notice-wrap,.progress-wrap{width:100%;max-width:420px;padding:20px;max-height:90vh;overflow-y:auto}
+.back-btn{background:none;border:none;color:var(--text2);font-size:.85em;cursor:pointer;margin-bottom:12px}
+.shop-header{text-align:center;margin-bottom:12px}
+.shop-mascot{font-size:2em}
+.shop-bal{font-size:1em;color:var(--honey);font-weight:700;margin-top:4px}
+.s-tab{padding:5px 10px;font-size:.7em;background:var(--card);border:1px solid transparent;border-radius:8px;color:var(--text2);cursor:pointer;margin:0 2px}
+.s-tab.active{border-color:var(--honey);color:var(--honey)}
+.si{display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border-radius:8px;margin-top:6px}
+.si-icon{font-size:1.4em}.si-info{flex:1}.si-name{font-weight:700;font-size:.8em}
+.si-desc{font-size:.65em;color:var(--text2)}.si-own{font-size:.6em;color:var(--ghost);margin-top:2px}
+.si-buy{padding:6px 12px;font-size:.75em;font-weight:700;background:linear-gradient(135deg,#b45309,#d97706);border:none;border-radius:8px;color:#fff;cursor:pointer}
+.notice-paper{background:var(--card);padding:16px;border-radius:var(--radius);font-size:.8em;line-height:1.8}
+.notice-paper h3{color:var(--blood2);margin-bottom:8px}
+.notice-paper ol{padding-left:20px}
+.notice-paper li{margin-bottom:6px}
+.prog-card{background:var(--card);padding:10px 14px;border-radius:8px;font-size:.8em;margin-bottom:6px}
+
+/* ═══════ HUNTER MODE HUD ═══════ */
+.hunter-controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:12;display:none;gap:8px;align-items:center}
+.hunter-controls.on{display:flex}
+.hc-btn{width:50px;height:50px;border-radius:50%;border:2px solid rgba(170,68,255,.4);background:rgba(26,16,40,.9);color:var(--stun);font-size:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;position:relative}
+.hc-btn:hover{border-color:var(--stun);transform:scale(1.1)}
+.hc-btn.cd{opacity:.4;pointer-events:none}
+.hc-btn .cd-fill{position:absolute;inset:2px;border-radius:50%;background:conic-gradient(transparent var(--cd),rgba(170,68,255,.3) var(--cd));pointer-events:none}
+.hc-move{display:grid;grid-template-columns:50px 50px 50px;grid-template-rows:50px 50px 50px;gap:4px}
+.hc-move button{width:50px;height:50px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(20,22,30,.9);color:var(--text);font-size:1.2em;cursor:pointer}
+.hc-move button:active{background:rgba(170,68,255,.2)}
+
+/* ═══════ SCROLLBAR ═══════ */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+
+/* ═══════ GHOST SKILL INDICATOR ═══════ */
+.ghost-info{position:fixed;top:52px;right:10px;z-index:11;background:rgba(26,29,40,.9);padding:8px 12px;border-radius:8px;border:1px solid rgba(200,0,0,.2);font-size:.7em;display:none}
+.ghost-info.on{display:block}
+.gi-row{display:flex;align-items:center;gap:6px;margin:2px 0}
+.gi-hp{width:60px;height:6px;background:#333;border-radius:3px;overflow:hidden}
+.gi-hp-fill{height:100%;background:var(--ghost);transition:width .3s}
+.gi-skills{display:flex;gap:4px;margin-top:4px}
+.gi-skill{width:20px;height:20px;border-radius:4px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:.7em;border:1px solid rgba(255,255,255,.08)}
+.gi-skill.ready{border-color:var(--fury);animation:skill-ready .8s infinite}
+@keyframes skill-ready{0%,100%{box-shadow:0 0 4px var(--fury)}50%{box-shadow:0 0 12px var(--fury)}}
 </style>
 </head>
 <body>
 
-<!-- ═══ 开始界面 ═══ -->
-<div id="startScreen">
-  <div class="game-logo">👻</div>
-  <div class="game-title">猛鬼宿舍</div>
-  <div class="game-sub">HAUNTED DORM · TOWER DEFENSE</div>
-
-  <div class="subject-pick">
-    <button class="subject-btn active" data-sub="201" onclick="selectSub(this)">
-      <div class="sb-code">201</div>
-      <div class="sb-name">英语 · 完形填空</div>
-      <div class="sb-info">20空 / 每空4选项</div>
-    </button>
-    <button class="subject-btn" data-sub="301" onclick="selectSub(this)">
-      <div class="sb-code">301</div>
-      <div class="sb-name">数学 · 填空题</div>
-      <div class="sb-info">6题 / 精确填答案</div>
-    </button>
+<!-- MAIN MENU -->
+<div id="menuScr" class="scr on">
+  <div class="menu-bg">
+    <div class="menu-rain" id="menuRain"></div>
   </div>
-
-  <button class="start-btn" onclick="startGame()">准 备</button>
-  <a href="../" class="back-link">← 返回门户</a>
-</div>
-
-<!-- ═══ 游戏界面 ═══ -->
-<div id="gameScreen">
-  <div class="top-bar">
-    <div class="stat stat-gold">💰 <span id="goldVal">0</span></div>
-    <div class="stat stat-wave">👻 WAVE <span id="waveVal">0</span>/5</div>
-    <div class="stat stat-score">📊 <span id="scoreVal">0</span>分</div>
-  </div>
-
-  <div class="dorm-view" id="dormView">
-    <div class="dorm-grid">
-      <!-- 左房间 -->
-      <div class="room has-bed" id="room-bed" onclick="upgradeBed()">
-        <div class="room-icon">🛏️</div>
-        <div class="room-level" id="bedLv">Lv.1</div>
-        <div class="room-label">床铺</div>
+  <div class="menu-building">
+    <div class="building-facade">
+      <div class="windows">
+        <div class="win"><span>👻</span></div><div class="win lit"><span>🛏️</span></div><div class="win"><span>📕</span></div>
+        <div class="win lit"><span>📗</span></div><div class="win"><span>🧟</span></div><div class="win lit"><span>📘</span></div>
       </div>
-      <div class="corridor" id="corridor">
-        <div class="door-area" id="doorArea" onclick="upgradeDoor()">
-          <div style="font-size:12px;color:var(--red)">🚪 大门 <span id="doorLv">Lv.1</span></div>
-          <div class="door-hp-bar"><div class="door-hp-fill" id="doorHP" style="width:100%"></div></div>
-          <div class="door-label"><span id="doorHPText">100</span> / <span id="doorMaxText">100</span></div>
-        </div>
-        <div class="ghost hidden" id="ghost">👻</div>
-      </div>
-      <div class="room has-turret" id="room-turret1" onclick="buildTurret(1)">
-        <div class="room-icon" id="turret1Icon">🔧</div>
-        <div class="room-level" id="turret1Lv" style="display:none">Lv.1</div>
-        <div class="room-label">炮位 1</div>
-      </div>
-      <!-- 下排 -->
-      <div class="room" id="room-elec" onclick="buildElec()">
-        <div class="room-icon" id="elecIcon">🔌</div>
-        <div class="room-level" id="elecLv" style="display:none">Lv.1</div>
-        <div class="room-label">电力室</div>
-      </div>
-      <div class="room" style="grid-column:2;background:transparent;border:none">
-        <!-- 留空 -->
-      </div>
-      <div class="room has-turret" id="room-turret2" onclick="buildTurret(2)">
-        <div class="room-icon" id="turret2Icon">🔧</div>
-        <div class="room-level" id="turret2Lv" style="display:none">Lv.1</div>
-        <div class="room-label">炮位 2</div>
+      <div class="entrance">
+        <div class="entrance-light"></div>
+        <div class="menu-char">🧑‍🎓</div>
       </div>
     </div>
-  </div>
-
-  <div class="build-menu">
-    <button class="build-btn" onclick="upgradeBed()" id="btnBed">
-      <span class="bb-icon">🛏️</span>
-      <span class="bb-name">升级床</span>
-      <span class="bb-cost" id="bedCost">30💰</span>
-    </button>
-    <button class="build-btn" onclick="upgradeDoor()" id="btnDoor">
-      <span class="bb-icon">🚪</span>
-      <span class="bb-name">加固门</span>
-      <span class="bb-cost" id="doorCost">40💰</span>
-    </button>
-    <button class="build-btn" onclick="buildTurret(1)" id="btnTurret1">
-      <span class="bb-icon">🔫</span>
-      <span class="bb-name">炮塔1</span>
-      <span class="bb-cost" id="turret1Cost">60💰</span>
-    </button>
-    <button class="build-btn" onclick="buildTurret(2)" id="btnTurret2">
-      <span class="bb-icon">🔫</span>
-      <span class="bb-name">炮塔2</span>
-      <span class="bb-cost" id="turret2Cost">60💰</span>
-    </button>
-    <button class="build-btn" onclick="buildElec()" id="btnElec">
-      <span class="bb-icon">⚡</span>
-      <span class="bb-name">电力室</span>
-      <span class="bb-cost" id="elecCost">80💰</span>
-    </button>
-  </div>
-
-  <div class="question-area" id="questionArea">
-    <div class="q-header">
-      <span class="q-progress" id="qProgress">题目 1/20</span>
-      <span class="q-timer" id="qTimer">⏱ 15s</span>
+    <h1 class="menu-title">猛鬼考研宿舍</h1>
+    <div class="menu-sub">北大真题密卷 · 答题塔防RPG</div>
+    <div class="menu-hud">
+      <div class="hud-coin"><span>🍯</span><span id="menuHoney">0</span></div>
     </div>
-    <div class="q-stem" id="qStem">加载题目中...</div>
-    <div class="q-options" id="qOptions"></div>
-    <div class="q-input-row" id="qInputRow" style="display:none">
-      <input class="q-input" id="qInput" placeholder="输入答案..." autocomplete="off">
-      <button class="q-submit" onclick="submitFill()">确认</button>
+    <button class="start-btn" onclick="showModeSelect()">▸ 开始游戏 ◂</button>
+    <div class="menu-btns">
+      <button class="mb" onclick="showShop()">🍯 蜜罐商店</button>
+      <button class="mb" onclick="showNotice()">📋 楼内公告</button>
+      <button class="mb" onclick="showProgress()">📊 考研进度</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ 结算界面 ═══ -->
-<div id="resultScreen">
-  <div class="result-icon" id="resultIcon">🏆</div>
-  <div class="result-title" id="resultTitle" style="color:var(--gold)">通关成功!</div>
-  <div class="result-sub" id="resultSub">你成功挺过了猛鬼的5波进攻</div>
-  <div class="result-stats">
-    <div class="rs-item"><div class="rs-val" id="rsCorrect">0</div><div class="rs-label">答对</div></div>
-    <div class="rs-item"><div class="rs-val" id="rsWrong">0</div><div class="rs-label">答错</div></div>
-    <div class="rs-item"><div class="rs-val" id="rsGold">0</div><div class="rs-label">总金币</div></div>
-    <div class="rs-item"><div class="rs-val" id="rsWave">0</div><div class="rs-label">存活波数</div></div>
+<!-- MODE SELECT -->
+<div id="modeScr" class="scr">
+  <div class="mode-wrap">
+    <button class="back-btn" onclick="goMenu()">← 返回</button>
+    <h2 class="mode-title">选择模式</h2>
+    <div class="mode-cards">
+      <div class="mode-card" onclick="showSubjSelect('sleeper')">
+        <div class="mc-icon">🛏️</div>
+        <div class="mc-name">睡梦者模式</div>
+        <div class="mc-desc">守住宿舍 · 答题建造</div>
+        <div class="mc-sub">塔防策略 · 答题驱鬼</div>
+      </div>
+      <div class="mode-card hunter" onclick="showSubjSelect('hunter')">
+        <div class="mc-icon">👻</div>
+        <div class="mc-name">猎梦者模式</div>
+        <div class="mc-desc">你是鬼! · 攻破宿舍</div>
+        <div class="mc-sub hunter-sub">答题升级 · 技能破门</div>
+      </div>
+    </div>
   </div>
-  <button class="retry-btn" onclick="location.reload()">再来一局</button>
-  <a href="../" class="back-link" style="margin-top:16px">← 返回门户</a>
+</div>
+
+<!-- SUBJECT SELECT -->
+<div id="subjScr" class="scr">
+  <div class="mode-wrap">
+    <button class="back-btn" onclick="showModeSelect()">← 返回</button>
+    <h2 class="mode-title" id="subjTitle">选择科目</h2>
+    <div class="subj-grid">
+      <div class="subj-card" onclick="showDiffSelect(101)"><div class="si">📕</div><div class="sn">101 政治</div><div class="sd">马原·毛概·史纲·思修</div></div>
+      <div class="subj-card" onclick="showDiffSelect(201)"><div class="si">📗</div><div class="sn">201 英语</div><div class="sd">阅读·完型·翻译·写作</div></div>
+      <div class="subj-card" onclick="showDiffSelect(301)"><div class="si">📘</div><div class="sn">301 数学</div><div class="sd">高数·线代·概率论</div></div>
+      <div class="subj-card" onclick="showDiffSelect(408)"><div class="si">📙</div><div class="sn">408 计算机</div><div class="sd">数据结构·OS·网络·组成</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIFFICULTY SELECT -->
+<div id="diffScr" class="scr">
+  <div class="diff-wrap">
+    <button class="back-btn" onclick="switchScreen('subjScr')">← 返回</button>
+    <h2 id="diffTitle" class="mode-title">选择难度</h2>
+    <div class="diff-list">
+      <button class="diff-btn" onclick="startMatch('easy')"><span>🟢</span> 简单<small>鬼Lv.1-3 · 1-2★题 · 10波</small></button>
+      <button class="diff-btn" onclick="startMatch('normal')"><span>🟡</span> 普通<small>鬼Lv.3-6 · 2-4★题 · 15波</small></button>
+      <button class="diff-btn" onclick="startMatch('hard')"><span>🔴</span> 困难<small>鬼Lv.5-10 · 3-5★题 · 20波</small></button>
+      <button class="diff-btn" onclick="startMatch('nightmare')"><span>💀</span> 噩梦<small>鬼Lv.8-15 · 4-5★题 · 30波</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH SCREEN -->
+<div id="matchScr" class="scr">
+  <div class="match-wrap">
+    <h2 class="match-mode" id="matchMode">普通模式</h2>
+    <div class="match-timer">匹配中 <span id="matchTimer">3</span>s</div>
+    <div class="match-ghost"><div class="mg-box">❓</div></div>
+    <div class="match-vs">VS</div>
+    <div class="match-players" id="matchPlayers"></div>
+    <button class="ready-btn" id="readyBtn" onclick="readyUp()">准 备</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScr" class="scr">
+  <div class="game-hud" id="gameHud">
+    <button class="back-arrow" onclick="confirmQuit()">◂</button>
+    <div class="res gold"><span>G</span><span id="hudGold">0</span></div>
+    <div class="res elec"><span>⚡</span><span id="hudElec">0</span></div>
+    <div class="wave-badge" id="waveBadge">波次 0/0</div>
+    <div class="player-row" id="playerRow"></div>
+  </div>
+  <div class="game-task" id="gameTask"></div>
+  <canvas id="gameCanvas"></canvas>
+  <div class="build-menu" id="buildMenu">
+    <div class="bm-header"><span class="bm-title">建筑</span><button class="bm-close" onclick="closeBuildMenu()">✕</button></div>
+    <div class="bm-tabs" id="bmTabs"></div>
+    <div class="bm-list" id="bmList"></div>
+  </div>
+  <div class="upgrade-menu" id="upgradeMenu">
+    <div class="um-title">升级</div>
+    <div class="um-content" id="umContent"></div>
+  </div>
+  <div class="quiz-overlay" id="quizOverlay"><div class="quiz-box" id="quizBox"></div></div>
+  <div class="essay-overlay" id="essayOverlay"><div class="essay-panel" id="essayPanel"></div></div>
+  <div class="wave-num" id="waveNum"></div>
+  <div class="ghost-info" id="ghostInfo"></div>
+  <!-- Hunter mode controls -->
+  <div class="hunter-controls" id="hunterCtrl">
+    <div class="hc-move">
+      <div></div><button onclick="moveHunter(0,-1)">↑</button><div></div>
+      <button onclick="moveHunter(-1,0)">←</button><button onclick="hunterAttack()">💀</button><button onclick="moveHunter(1,0)">→</button>
+      <div></div><button onclick="moveHunter(0,1)">↓</button><div></div>
+    </div>
+    <button class="hc-btn" id="skillFury" onclick="useHunterSkill('fury')" title="狂暴">🔥<div class="cd-fill" style="--cd:0%"></div></button>
+    <button class="hc-btn" id="skillStun" onclick="useHunterSkill('stun')" title="震撼">💥<div class="cd-fill" style="--cd:0%"></div></button>
+    <button class="hc-btn" id="skillStealth" onclick="useHunterSkill('stealth')" title="隐身">👁️<div class="cd-fill" style="--cd:0%"></div></button>
+    <button class="hc-btn" id="skillHeal" onclick="useHunterSkill('heal')" title="回血">💚<div class="cd-fill" style="--cd:0%"></div></button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="resultScr" class="scr"><div class="result-wrap" id="resultWrap"></div></div>
+
+<!-- SHOP -->
+<div id="shopScr" class="scr">
+  <div class="shop-wrap">
+    <button class="back-btn" onclick="goMenu()">← 返回</button>
+    <div class="shop-header"><div class="shop-mascot">🦡</div><h2>蜜罐商店</h2><div class="shop-bal">🍯 <span id="shopBal">0</span></div></div>
+    <div id="shopTabs"></div>
+    <div id="shopList"></div>
+  </div>
+</div>
+
+<!-- NOTICE -->
+<div id="noticeScr" class="scr">
+  <div class="notice-wrap">
+    <button class="back-btn" onclick="goMenu()">← 返回</button>
+    <div class="notice-paper" id="noticePaper"></div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="progressScr" class="scr">
+  <div class="progress-wrap">
+    <button class="back-btn" onclick="goMenu()">← 返回</button>
+    <h2>📊 考研进度</h2>
+    <div id="progressBody"></div>
+  </div>
+</div>
+
+<!-- CONFIRM QUIT -->
+<div class="overlay" id="quitOvl">
+  <div class="ovl-box">
+    <p>确定要离开宿舍吗？<br><small>当前进度将丢失</small></p>
+    <div class="ovl-btns"><button class="ob" onclick="closeQuit()">继续</button><button class="ob danger" onclick="doQuit()">离开</button></div>
+  </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// 猛鬼宿舍 · 塔防答题引擎 v4.0
-// ═══════════════════════════════════════════
+/* ══════════════════════════════════════════════
+   猛鬼考研宿舍 · 终极版 · 全代码
+   All-in-one: 题库 + 引擎 + AI + 答题 + 猎梦者
+══════════════════════════════════════════════ */
 
-// ---- 游戏状态 ----
-var G = {
-  subject: '201',
-  gold: 0, score: 0,
-  bedLv: 1, doorLv: 1,
-  doorHP: 100, doorMax: 100,
-  turrets: [0, 0], // 0=未建, 1/2/3=等级
-  elecLv: 0, elecGen: 0,
-  wave: 0, maxWave: 5,
-  ghostHP: 0, ghostMax: 0, ghostAtk: 0,
-  ghostActive: false,
-  questions: [], currentQ: 0,
-  correct: 0, wrong: 0, totalGold: 0,
-  timer: null, qTimer: 15, qInterval: null,
-  gameOver: false,
-  ghostInterval: null, turretInterval: null
+/* ── 科目定义 ── */
+const SUBJECTS=[
+  {id:101,name:'101政治',icon:'📕'},
+  {id:201,name:'201英语',icon:'📗'},
+  {id:301,name:'301数学',icon:'📘'},
+  {id:408,name:'408计算机',icon:'📙'}
+];
+
+/* ── 题库 (每科50题 × 4科 = 200题初版，后续通过getRandomQuestion循环复用) ── */
+const QBANK={
+101:{single:[
+{q:'马克思主义哲学的直接理论来源是？',opts:['黑格尔辩证法和费尔巴哈唯物主义','英国古典政治经济学','法国空想社会主义','古希腊朴素唯物主义'],ans:0,kp:'马原·哲学来源',tip:'马哲两大来源：黑格尔辩证法+费尔巴哈唯物主义',star:1},
+{q:'物质的唯一特性是？',opts:['运动性','客观实在性','可知性','永恒性'],ans:1,kp:'马原·物质观',tip:'客观实在性是物质的唯一特性，区别于意识',star:1},
+{q:'认识的本质是？',opts:['主体对客体的能动反映','主体的自由创造','客体对主体的印记','先验的理性直觉'],ans:0,kp:'马原·认识论',tip:'辩证唯物主义认识论的核心',star:2},
+{q:'对立统一规律揭示了事物发展的？',opts:['方向和道路','形式和状态','源泉和动力','趋势和过程'],ans:2,kp:'马原·唯物辩证法',tip:'矛盾是事物发展的根本动力',star:2},
+{q:'社会存在决定社会意识，这是？',opts:['历史唯心主义的观点','历史唯物主义的观点','机械唯物主义的观点','辩证唯心主义的观点'],ans:1,kp:'马原·历史唯物主义',tip:'社会存在与社会意识的辩证关系',star:1},
+{q:'中国共产党的根本组织原则是？',opts:['集体领导','民主集中制','个人分工负责','群众路线'],ans:1,kp:'毛概·党的建设',tip:'民主集中制是党的根本组织原则',star:1},
+{q:'新民主主义革命的三大法宝是？',opts:['统一战线、武装斗争、党的建设','土地革命、武装斗争、根据地建设','理论联系实际、密切联系群众、批评与自我批评','实事求是、群众路线、独立自主'],ans:0,kp:'毛概·新民主主义',tip:'统一战线、武装斗争、党的建设',star:2},
+{q:'社会主义初级阶段的基本路线核心内容是？',opts:['一个中心，两个基本点','改革开放','科教兴国','可持续发展'],ans:0,kp:'毛概·社会主义初级阶段',tip:'以经济建设为中心，四项基本原则，改革开放',star:1},
+{q:'实践是检验真理的唯一标准，因为？',opts:['实践是认识的目的','实践是认识的来源','实践具有直接现实性','实践是认识发展的动力'],ans:2,kp:'马原·真理观',tip:'实践的直接现实性使其能检验认识',star:3},
+{q:'生产力中最活跃的因素是？',opts:['劳动对象','劳动资料','劳动者','科学技术'],ans:2,kp:'马原·唯物史观',tip:'劳动者是生产力中最活跃最革命的因素',star:2},
+{q:'上层建筑的核心是？',opts:['政治法律制度','国家政权','社会意识形态','政治法律思想'],ans:1,kp:'马原·上层建筑',tip:'国家政权是上层建筑的核心',star:2},
+{q:'社会主义核心价值观在国家层面的要求是？',opts:['爱国、敬业、诚信、友善','自由、平等、公正、法治','富强、民主、文明、和谐','创新、协调、绿色、开放、共享'],ans:2,kp:'思修·核心价值观',tip:'国家-社会-个人三个层面',star:1},
+{q:'辩证否定的实质是？',opts:['联系的环节','发展的环节','扬弃','全盘否定'],ans:2,kp:'马原·否定之否定',tip:'辩证否定=扬弃，既克服又保留',star:3},
+{q:'量变和质变的辩证关系是？',opts:['量变是质变的必然结果','质变为新的量变开辟道路','量变和质变没有必然联系','质变比量变更重要'],ans:1,kp:'马原·质量互变',tip:'量变→质变→新的量变→新的质变',star:2},
+{q:'毛泽东思想活的灵魂的三个方面是？',opts:['实事求是、群众路线、独立自主','武装斗争、统一战线、党的建设','理论联系实际、密切联系群众、批评与自我批评','解放思想、实事求是、与时俱进'],ans:0,kp:'毛概·毛泽东思想',tip:'三个方面：实事求是、群众路线、独立自主',star:2},
+{q:'新发展理念中，引领发展第一动力是？',opts:['协调','绿色','开放','创新'],ans:3,kp:'毛概·新发展理念',tip:'创新是引领发展的第一动力',star:1},
+{q:'共产主义社会的基本特征不包括？',opts:['物质财富极大丰富','精神境界极大提高','实行按需分配','消灭一切差别'],ans:3,kp:'马原·共产主义',tip:'共产主义消灭的是阶级差别，不是一切差别',star:3},
+{q:'中国特色社会主义最本质的特征是？',opts:['人民当家做主','中国共产党领导','依法治国','社会主义市场经济'],ans:1,kp:'毛概·中特理论',tip:'党的领导是中国特色社会主义最本质的特征',star:1},
+{q:'我国的根本政治制度是？',opts:['多党合作和政治协商制度','人民代表大会制度','民族区域自治制度','基层群众自治制度'],ans:1,kp:'毛概·政治制度',tip:'人民代表大会制度是根本政治制度',star:1},
+{q:'社会主义法律的本质特征是？',opts:['阶级性','国家意志性','人民性','规范性'],ans:2,kp:'思修·法律基础',tip:'社会主义法律反映最广大人民的根本利益',star:2}
+],multi:[
+{q:'毛泽东思想的科学内涵包括？（多选）',opts:['马克思列宁主义在中国的运用和发展','被实践证明了的正确理论原则和经验总结','中国共产党集体智慧的结晶','毛泽东个人的全部思想'],ans:[0,1,2],kp:'毛概·毛泽东思想',tip:'注意排除D，毛泽东思想≠毛泽东个人思想',star:2},
+{q:'新发展理念包括？（多选）',opts:['创新','协调','绿色','开放','共享'],ans:[0,1,2,3,4],kp:'毛概·新发展理念',tip:'创新协调绿色开放共享，五大理念全选',star:1},
+{q:'实践的基本形式包括？（多选）',opts:['物质生产实践','社会政治实践','科学文化实践','日常生活实践'],ans:[0,1,2],kp:'马原·实践',tip:'三大基本形式，日常生活不算',star:2},
+{q:'唯物辩证法的三大规律是？（多选）',opts:['对立统一规律','质量互变规律','否定之否定规律','因果联系规律'],ans:[0,1,2],kp:'马原·辩证法',tip:'三大规律，因果联系是范畴不是规律',star:2},
+{q:'中国特色社会主义事业的战略布局是？（多选）',opts:['全面建设社会主义现代化国家','全面深化改革','全面依法治国','全面从严治党'],ans:[0,1,2,3],kp:'毛概·四个全面',tip:'四个全面战略布局全选',star:1}
+],judge:[
+{q:'社会意识对社会存在具有能动的反作用？',ans:true,kp:'马原·社会意识',tip:'社会意识具有相对独立性',star:1},
+{q:'生产关系必须适合生产力状况是人类社会发展的基本规律？',ans:true,kp:'马原·历史唯物主义',tip:'这是社会基本矛盾运动规律',star:2},
+{q:'矛盾的斗争性是绝对的，矛盾的同一性是相对的？',ans:true,kp:'马原·矛盾',tip:'斗争性绝对，同一性相对',star:2},
+{q:'社会主义初级阶段是一个很长的历史阶段？',ans:true,kp:'毛概·初级阶段',tip:'至少一百年',star:1},
+{q:'意识是人脑的分泌物，如同肝脏分泌胆汁一样？',ans:false,kp:'马原·意识',tip:'这是庸俗唯物主义观点',star:2}
+],essay:[
+{q:'请论述马克思主义基本原理中"实践是认识的基础"的含义及其在考研备考中的启示。',keywords:['实践','认识','来源','动力','目的','检验标准','理论联系实际','学以致用'],kp:'马原·认识论',tip:'要从实践对认识的四个方面作用展开',star:3},
+{q:'分析"科学技术是第一生产力"命题的理论依据和现实意义。',keywords:['生产力','科学技术','创新','生产工具','劳动对象','经济发展','转型升级','知识经济'],kp:'马原·生产力',tip:'注意结合当前科技创新战略',star:4},
+{q:'请论述中国特色社会主义制度的优势及其在抗疫中的体现。',keywords:['集中力量','党的领导','制度优势','人民','治理','动员','效率','团结'],kp:'毛概·中特制度',tip:'结合抗疫实践论述制度优势',star:3}
+]},
+201:{single:[
+{q:'The word "advocate" most closely means?',opts:['support','abandon','criticize','ignore'],ans:0,kp:'词汇·核心动词',tip:'advocate=提倡,支持',star:1},
+{q:'Which sentence is grammatically correct?',opts:['He suggested that she goes home.','He suggested that she go home.','He suggested that she went home.','He suggested that she going home.'],ans:1,kp:'语法·虚拟语气',tip:'suggest后面用(should)+动词原形',star:2},
+{q:'"In light of" means?',opts:['considering','despite','regardless of','in addition to'],ans:0,kp:'词汇·介词短语',tip:'in light of=考虑到,鉴于',star:1},
+{q:'The word "ubiquitous" means?',opts:['rare','present everywhere','beautiful','dangerous'],ans:1,kp:'词汇·高频形容词',tip:'ubiquitous=无处不在的',star:2},
+{q:'Which is the correct passive voice of "They are building the bridge"?',opts:['The bridge is being built.','The bridge is built.','The bridge was being built.','The bridge has been built.'],ans:0,kp:'语法·被动语态',tip:'现在进行时被动: is/are being done',star:1},
+{q:'"Notwithstanding" is closest in meaning to?',opts:['because of','in spite of','in accordance with','on behalf of'],ans:1,kp:'词汇·连接词',tip:'notwithstanding=尽管,虽然',star:3},
+{q:'The prefix "mis-" in "mislead" indicates?',opts:['again','wrong','before','after'],ans:1,kp:'词汇·前缀',tip:'mis-表示"错误地"',star:1},
+{q:'"Had I known earlier, I would have helped." This sentence uses?',opts:['Past perfect tense','Present perfect','Third conditional (inverted)','Second conditional'],ans:2,kp:'语法·虚拟倒装',tip:'if省略倒装：Had I known = If I had known',star:3},
+{q:'Choose the best translation: "入乡随俗"',opts:['When in Rome, do as the Romans do.','A bird in the hand is worth two in the bush.','Actions speak louder than words.','Practice makes perfect.'],ans:0,kp:'翻译·习语对应',tip:'英语对应谚语：入乡随俗',star:1},
+{q:'"Feasible" most closely means?',opts:['impossible','practical','theoretical','risky'],ans:1,kp:'词汇·学术词汇',tip:'feasible=可行的,切实可行的',star:2},
+{q:'In academic writing, "furthermore" is used to?',opts:['contrast ideas','add information','show cause','conclude'],ans:1,kp:'写作·逻辑连接',tip:'furthermore=此外，用于补充信息',star:1},
+{q:'The root "bene-" in "beneficial" means?',opts:['bad','good','big','small'],ans:1,kp:'词汇·词根',tip:'bene-=好的,如benefit, benevolent',star:1},
+{q:'"The professor, along with his students, ___ conducting research."',opts:['are','is','were','have been'],ans:1,kp:'语法·主谓一致',tip:'along with不影响主语数，主语是professor单数',star:2},
+{q:'Which word best completes: "The results are ___ with previous findings."',opts:['consistent','consisted','consisting','consistency'],ans:0,kp:'词汇·搭配',tip:'be consistent with 与…一致',star:2},
+{q:'"Ameliorate" most closely means?',opts:['worsen','improve','maintain','destroy'],ans:1,kp:'词汇·高级词汇',tip:'ameliorate=改善,改良',star:3},
+{q:'"By the time she arrives, we ___ the meeting."',opts:['will finish','will have finished','have finished','finished'],ans:1,kp:'语法·将来完成时',tip:'by the time+一般现在时，主句用将来完成时',star:2},
+{q:'In the phrase "a far cry from", the meaning is?',opts:['very similar to','very different from','close to','relevant to'],ans:1,kp:'词汇·固定短语',tip:'a far cry from=与…相去甚远',star:2},
+{q:'"Albeit" is synonymous with?',opts:['therefore','although','because','moreover'],ans:1,kp:'词汇·连接词',tip:'albeit=虽然(较正式)',star:3},
+{q:'Which rhetorical device is "The pen is mightier than the sword"?',opts:['Simile','Metaphor','Metonymy','Personification'],ans:2,kp:'修辞·转喻',tip:'pen代指文字，sword代指武力，是转喻',star:3},
+{q:'"Empirical" research refers to research based on?',opts:['theory','observation and experience','logic','authority'],ans:1,kp:'学术阅读',tip:'empirical=实证的,基于观察和经验的',star:2}
+],multi:[
+{q:'Which of the following are linking words showing contrast? (Multi)',opts:['however','furthermore','nevertheless','in addition','on the contrary'],ans:[0,2,4],kp:'写作·逻辑词',tip:'表转折的：however, nevertheless, on the contrary',star:2},
+{q:'Which are correct collocations with "make"? (Multi)',opts:['make a decision','make a research','make progress','make an effort','make a study'],ans:[0,2,3],kp:'词汇·搭配',tip:'make+名词搭配：decision, progress, effort',star:2},
+{q:'Which sentences use subjunctive mood correctly? (Multi)',opts:['I wish I were taller.','It is essential that he be present.','I suggest he goes now.','If I were you, I would accept.'],ans:[0,1,3],kp:'语法·虚拟语气',tip:'C错误，suggest后应为he go',star:3}
+],judge:[
+{q:'"Affect" is a noun and "effect" is a verb?',ans:false,kp:'词汇·近义词辨析',tip:'affect通常是动词，effect通常是名词',star:1},
+{q:'In English, the present perfect tense can be used with specific past time expressions like "yesterday"?',ans:false,kp:'语法·时态',tip:'现在完成时不能与具体过去时间连用',star:1},
+{q:'"Data" can be used as both singular and plural in modern English?',ans:true,kp:'语法·可数名词',tip:'现代英语中data可作单数或复数',star:2}
+],essay:[
+{q:'Read the abstract and analyze: "The study examines the impact of social media on academic performance among college students. Results indicate a negative correlation between daily social media usage (>3 hours) and GPA scores (r=-0.42, p<0.01)."',keywords:['social media','academic performance','negative correlation','GPA','usage','impact','students','hours','significant'],kp:'阅读理解·学术摘要',tip:'注意数据解读：相关系数和显著性',star:3},
+{q:'Translate and analyze: "可持续发展既能满足当代人的需求，又不损害后代人满足需要的能力。" Discuss its implications.',keywords:['sustainable','development','generation','needs','future','environment','balance','responsibility','resources'],kp:'翻译与分析',tip:'注意专业术语翻译和深层含义分析',star:4}
+]},
+301:{single:[
+{q:'函数 f(x)=x² 在 x=0 处的导数为？',opts:['0','1','2','不存在'],ans:0,kp:'高数·导数定义',tip:'f\'(x)=2x, f\'(0)=0',star:1},
+{q:'∫₀¹ x dx = ?',opts:['0','1/2','1','2'],ans:1,kp:'高数·定积分',tip:'∫x dx = x²/2, 代入上下限: 1/2-0=1/2',star:1},
+{q:'矩阵A的行列式|A|=0，则A？',opts:['可逆','不可逆','正定','正交'],ans:1,kp:'线代·行列式',tip:'行列式为0等价于矩阵不可逆(奇异矩阵)',star:1},
+{q:'已知P(A)=0.3, P(B)=0.4, P(AB)=0.12, 则A,B？',opts:['互斥','独立','既互斥又独立','相关'],ans:1,kp:'概率·独立性',tip:'P(AB)=P(A)P(B)=0.12 → 独立',star:2},
+{q:'lim(x→0) sin(x)/x = ?',opts:['0','1','∞','不存在'],ans:1,kp:'高数·重要极限',tip:'第一个重要极限: sinx/x → 1',star:1},
+{q:'n阶方阵A有n个线性无关的特征向量的充要条件是？',opts:['A可对角化','A正定','|A|≠0','A对称'],ans:0,kp:'线代·对角化',tip:'有n个线性无关特征向量⟺可对角化',star:3},
+{q:'泊松分布X~P(λ)的期望E(X)=？',opts:['λ','λ²','1/λ','√λ'],ans:0,kp:'概率·泊松分布',tip:'泊松分布的期望和方差都等于λ',star:2},
+{q:'下列级数中收敛的是？',opts:['∑1/n','∑1/n²','∑(-1)ⁿ','∑n'],ans:1,kp:'高数·级数收敛',tip:'p级数p=2>1，收敛；p=1发散(调和级数)',star:2},
+{q:'二重积分∬_D 1 dA 的几何意义是？',opts:['D的面积','D的体积','D的周长','D上的平均值'],ans:0,kp:'高数·二重积分',tip:'被积函数为1时，二重积分=区域面积',star:2},
+{q:'设A是m×n矩阵，r(A)=r，则齐次方程组Ax=0的解空间维数为？',opts:['r','n-r','m-r','n'],ans:1,kp:'线代·解空间',tip:'基础解系含n-r个向量',star:2},
+{q:'连续函数在闭区间上一定？',opts:['有最大值和最小值','有导数','单调','有原函数'],ans:0,kp:'高数·连续函数性质',tip:'连续函数在闭区间上的最值定理',star:1},
+{q:'正态分布N(μ,σ²)中，P(μ-σ<X<μ+σ)约等于？',opts:['68.3%','95.4%','99.7%','50%'],ans:0,kp:'概率·正态分布',tip:'一个标准差内约68.3%(3σ规则)',star:1},
+{q:'函数f(x,y)=x²+y²的极值点是？',opts:['(0,0)是极小值点','(0,0)是极大值点','(0,0)是鞍点','没有极值'],ans:0,kp:'高数·多元极值',tip:'f_xx=2>0, f_xx·f_yy-f_xy²=4>0',star:2},
+{q:'向量组α₁,α₂,α₃线性相关的充要条件是？',opts:['|α₁ α₂ α₃|=0','其中至少一个向量可表示为其余向量的线性组合','它们共面','以上都对'],ans:3,kp:'线代·线性相关',tip:'三个条件等价',star:3},
+{q:'设随机变量X的分布函数F(x)连续，则F(X)服从？',opts:['正态分布','均匀分布U(0,1)','指数分布','与X相同的分布'],ans:1,kp:'概率·概率积分变换',tip:'F(X)~U(0,1)是概率积分变换定理',star:4},
+{q:'微分方程 y\'+2y=0 的通解为？',opts:['y=Ce^(-2x)','y=Ce^(2x)','y=C/(x+2)','y=Cx²'],ans:0,kp:'高数·常微分方程',tip:'一阶线性齐次方程，通解y=Ce^(-∫2dx)',star:2},
+{q:'矩阵的秩等于其最高阶非零子式的阶数，这是？',opts:['秩的定义','行列式性质','特征值性质','正交性质'],ans:0,kp:'线代·矩阵的秩',tip:'这就是矩阵秩的定义',star:1},
+{q:'中心极限定理说明了什么？',opts:['大量独立同分布随机变量之和近似正态分布','大数定律','切比雪夫不等式','贝叶斯定理'],ans:0,kp:'概率·中心极限定理',tip:'n→∞时，独立同分布变量和趋于正态分布',star:2},
+{q:'格林公式将什么联系起来？',opts:['曲线积分与二重积分','面积分与体积分','级数与积分','导数与积分'],ans:0,kp:'高数·格林公式',tip:'格林公式：曲线积分⟺二重积分',star:3},
+{q:'条件概率P(A|B)的计算公式为？',opts:['P(AB)/P(B)','P(A)P(B)','P(A)+P(B)','P(AB)/P(A)'],ans:0,kp:'概率·条件概率',tip:'条件概率=联合概率/条件事件概率',star:1}
+],multi:[
+{q:'下列哪些是广义积分发散的？（多选）',opts:['∫₁^∞ 1/x dx','∫₁^∞ 1/x² dx','∫₀¹ 1/√x dx','∫₁^∞ 1/√x dx'],ans:[0,3],kp:'高数·广义积分',tip:'p≤1时1/x^p的广义积分发散',star:3},
+{q:'矩阵可对角化的充分条件包括？（多选）',opts:['实对称矩阵','有n个不同特征值','所有特征值相同','是单位矩阵'],ans:[0,1,3],kp:'线代·对角化',tip:'实对称矩阵必可对角化；n个不同特征值也可',star:3},
+{q:'概率密度函数f(x)满足的条件包括？（多选）',opts:['f(x)≥0','∫f(x)dx=1','f(x)≤1','f(x)连续'],ans:[0,1],kp:'概率·概率密度',tip:'两个基本条件：非负性和归一性',star:2}
+],judge:[
+{q:'可导函数一定连续？',ans:true,kp:'高数·可导与连续',tip:'可导→连续，但连续不一定可导',star:1},
+{q:'实对称矩阵的特征值一定是实数？',ans:true,kp:'线代·特征值',tip:'实对称矩阵特征值为实数',star:1},
+{q:'两个事件互斥则一定独立？',ans:false,kp:'概率·互斥与独立',tip:'互斥≠独立，除非某事件概率为0',star:2},
+{q:'连续函数一定可导？',ans:false,kp:'高数·连续与可导',tip:'反例：f(x)=|x|在x=0处连续但不可导',star:1}
+],essay:[
+{q:'请证明：若f(x)在[a,b]上连续，在(a,b)上可导，且f(a)=f(b)，则存在ξ∈(a,b)使得f\'(ξ)=0。并讨论其应用。',keywords:['罗尔定理','连续','可导','端点','相等','导数为零','零点','中值定理','存在性'],kp:'高数·罗尔定理',tip:'这是罗尔定理的陈述和证明',star:3},
+{q:'讨论矩阵的秩与线性方程组解的关系，并举例说明。',keywords:['秩','增广矩阵','系数矩阵','有解','无解','唯一解','无穷多解','自由变量','n-r'],kp:'线代·线性方程组',tip:'r(A)=r(A̅)有解，r(A)=n唯一解',star:3}
+]},
+408:{single:[
+{q:'栈的特点是？',opts:['先进先出','先进后出','随机访问','顺序访问'],ans:1,kp:'数据结构·栈',tip:'栈: LIFO(Last In First Out)',star:1},
+{q:'二叉树的第i层最多有多少个节点？',opts:['2^i','2^(i-1)','i','2i'],ans:1,kp:'数据结构·二叉树',tip:'第i层最多2^(i-1)个节点(根为第1层)',star:1},
+{q:'快速排序的平均时间复杂度是？',opts:['O(n)','O(nlogn)','O(n²)','O(logn)'],ans:1,kp:'数据结构·排序',tip:'快排平均O(nlogn)，最坏O(n²)',star:1},
+{q:'操作系统中，死锁产生的四个必要条件不包括？',opts:['互斥','请求与保持','不可抢占','先来先服务'],ans:3,kp:'OS·死锁',tip:'四个必要条件：互斥、请求保持、不可抢占、循环等待',star:2},
+{q:'TCP三次握手中第二次握手发送的是？',opts:['SYN','SYN+ACK','ACK','FIN'],ans:1,kp:'网络·TCP',tip:'三次握手：SYN→SYN+ACK→ACK',star:1},
+{q:'虚拟内存的基础是？',opts:['局部性原理','并行性','共享性','互斥性'],ans:0,kp:'OS·虚拟内存',tip:'时间局部性和空间局部性',star:2},
+{q:'在哈希表中，解决冲突的方法不包括？',opts:['开放定址法','链地址法','再哈希法','直接淘汰法'],ans:3,kp:'数据结构·哈希表',tip:'常见方法：开放定址、链地址、再哈希',star:2},
+{q:'IPv4地址长度为？',opts:['16位','32位','64位','128位'],ans:1,kp:'网络·IP地址',tip:'IPv4=32位，IPv6=128位',star:1},
+{q:'进程和线程的主要区别是？',opts:['线程是处理器调度的基本单位','进程是处理器调度的基本单位','线程拥有独立的地址空间','进程不能包含线程'],ans:0,kp:'OS·进程与线程',tip:'线程是处理器调度基本单位，进程是资源分配基本单位',star:2},
+{q:'图的深度优先搜索(DFS)使用的数据结构是？',opts:['队列','栈','堆','哈希表'],ans:1,kp:'数据结构·图',tip:'DFS用栈(递归本身就是栈)，BFS用队列',star:1},
+{q:'CPU中控制器的主要功能是？',opts:['数据运算','指令控制','数据存储','I/O管理'],ans:1,kp:'组成·CPU',tip:'控制器负责指令的解释和执行控制',star:1},
+{q:'页面置换算法LRU的含义是？',opts:['最近最久未使用','最不经常使用','先进先出','随机置换'],ans:0,kp:'OS·页面置换',tip:'LRU=Least Recently Used',star:1},
+{q:'HTTP协议工作在OSI模型的哪一层？',opts:['传输层','网络层','应用层','数据链路层'],ans:2,kp:'网络·OSI模型',tip:'HTTP是应用层协议',star:1},
+{q:'B+树与B树的主要区别是？',opts:['B+树所有数据存储在叶子节点','B树更适合范围查询','B+树的深度更大','B+树不支持索引'],ans:0,kp:'数据结构·B+树',tip:'B+树所有关键字都在叶子节点，且叶子节点有链表相连',star:2},
+{q:'MIPS指令集属于？',opts:['CISC','RISC','VLIW','向量处理器'],ans:1,kp:'组成·指令集',tip:'MIPS是精简指令集(RISC)的代表',star:2},
+{q:'TCP与UDP的区别不包括？',opts:['TCP面向连接，UDP无连接','TCP可靠传输，UDP不可靠','TCP有流量控制，UDP没有','TCP比UDP传输速度快'],ans:3,kp:'网络·TCP/UDP',tip:'UDP在某些场景下比TCP更快',star:2},
+{q:'AVL树是一种？',opts:['自平衡二叉搜索树','红黑树','B树','哈夫曼树'],ans:0,kp:'数据结构·平衡树',tip:'AVL树是高度平衡的BST，左右子树高差≤1',star:2},
+{q:'Cache的工作原理利用了？',opts:['程序的局部性原理','虚拟内存技术','流水线技术','中断机制'],ans:0,kp:'组成·Cache',tip:'Cache利用时间局部性和空间局部性',star:1},
+{q:'操作系统的I/O管理中，DMA的优点是？',opts:['CPU不参与数据传送','不需要总线','传送速度最快','不占用内存'],ans:0,kp:'OS·I/O管理',tip:'DMA(直接存储器访问)使CPU在数据传输时可做其他事',star:2},
+{q:'子网掩码255.255.255.192对应的CIDR标记是？',opts:['/24','/25','/26','/27'],ans:2,kp:'网络·子网划分',tip:'192=11000000，共26个1，即/26',star:3}
+],multi:[
+{q:'以下哪些排序算法是稳定的？（多选）',opts:['冒泡排序','快速排序','归并排序','插入排序','堆排序'],ans:[0,2,3],kp:'数据结构·排序稳定性',tip:'快排和堆排不稳定',star:2},
+{q:'TCP可靠传输的机制包括？（多选）',opts:['序号和确认号','超时重传','流量控制','拥塞控制','三次握手'],ans:[0,1,2,3],kp:'网络·TCP可靠性',tip:'四大机制保证TCP可靠性',star:2},
+{q:'下列哪些是进程通信方式？（多选）',opts:['共享内存','消息传递','管道','信号量','socket'],ans:[0,1,2,4],kp:'OS·进程通信',tip:'信号量主要用于同步，不算通信方式',star:3}
+],judge:[
+{q:'单链表的插入和删除时间复杂度为O(1)？',ans:false,kp:'数据结构·链表',tip:'需要先定位，定位O(n)，仅操作本身O(1)',star:1},
+{q:'所有NP问题都是不可解的？',ans:false,kp:'数据结构·复杂度',tip:'NP问题可以在多项式时间内验证，P⊂NP',star:3},
+{q:'操作系统的内核态和用户态切换需要中断？',ans:true,kp:'OS·内核态',tip:'用户态→内核态需要通过中断或系统调用',star:2},
+{q:'路由器工作在网络层？',ans:true,kp:'网络·设备',tip:'路由器=网络层，交换机=数据链路层，集线器=物理层',star:1}
+],essay:[
+{q:'比较分析堆排序、快速排序、归并排序的时间复杂度、空间复杂度、稳定性，并讨论各自适用场景。',keywords:['时间复杂度','空间复杂度','稳定性','quicksort','heapsort','mergesort','nlogn','原地','递归','分治','最坏情况'],kp:'数据结构·排序比较',tip:'注意快排最坏O(n²)，归并稳定但需O(n)空间',star:3},
+{q:'请描述TCP三次握手和四次挥手的过程，并解释为什么握手需要三次而挥手需要四次。',keywords:['SYN','ACK','FIN','三次握手','四次挥手','半连接','全双工','TIME_WAIT','序号','确认','连接','关闭'],kp:'网络·TCP连接管理',tip:'挥手四次因为全双工需要双向关闭',star:3}
+]}
 };
 
-// ---- 内置题库(保底) ----
-var BUILTIN_201 = [
-  {stem:'The weather was ___ cold that we stayed indoors.', options:['A. so','B. such','C. very','D. too'], answer:'A'},
-  {stem:'She has been working here ___ 2020.', options:['A. for','B. since','C. from','D. at'], answer:'B'},
-  {stem:'Neither Tom nor his friends ___ interested in football.', options:['A. is','B. was','C. are','D. has been'], answer:'C'},
-  {stem:'The manager insisted that the report ___ finished by Friday.', options:['A. be','B. is','C. was','D. will be'], answer:'A'},
-  {stem:'It was not until midnight ___ he finished the work.', options:['A. when','B. that','C. which','D. as'], answer:'B'},
-  {stem:'The number of students ___ increased this year.', options:['A. have','B. has','C. are','D. were'], answer:'B'},
-  {stem:'He would rather ___ at home than go out in the rain.', options:['A. stay','B. stays','C. stayed','D. to stay'], answer:'A'},
-  {stem:'The book is well worth ___.', options:['A. read','B. reading','C. to read','D. being read'], answer:'B'},
-  {stem:'___ hard he tried, he could not solve the problem.', options:['A. Whatever','B. Although','C. However','D. No matter'], answer:'C'},
-  {stem:'Tom, together with his classmates, ___ going to the museum.', options:['A. are','B. is','C. were','D. have been'], answer:'B'},
-  {stem:'By the time she arrives, we ___ dinner.', options:['A. finish','B. finished','C. will have finished','D. have finished'], answer:'C'},
-  {stem:'The reason ___ he was late was that he missed the bus.', options:['A. which','B. that','C. why','D. for'], answer:'C'},
-  {stem:'I wish I ___ a bird.', options:['A. am','B. was','C. were','D. be'], answer:'C'},
-  {stem:'He ran fast ___ he could catch the bus.', options:['A. in order to','B. so that','C. as to','D. for'], answer:'B'},
-  {stem:'Not only ___ hard, but also he is very honest.', options:['A. he works','B. does he work','C. he does work','D. works he'], answer:'B'},
-  {stem:'The problem is ___ difficult for me to solve.', options:['A. so','B. very','C. too','D. quite'], answer:'C'},
-  {stem:'She ___ in Beijing for ten years by next year.', options:['A. will live','B. has lived','C. will have lived','D. lived'], answer:'C'},
-  {stem:'This is the factory ___ we visited last week.', options:['A. where','B. which','C. in which','D. what'], answer:'B'},
-  {stem:'___ from the hill, the city looks beautiful.', options:['A. Seeing','B. Seen','C. To see','D. Having seen'], answer:'B'},
-  {stem:'Had I known the truth, I ___ you earlier.', options:['A. told','B. would tell','C. would have told','D. will tell'], answer:'C'},
+/* ── 申论模式论文摘要 ── */
+const ESSAY_PAPERS=[
+{subj:101,title:'命题组密卷·政治理论',abstract:'在全面建设社会主义现代化国家的新征程中，坚持和完善中国特色社会主义制度是我们的根本方向。新时代的制度建设需要把握系统性、整体性、协同性的改革方法论，推进国家治理体系和治理能力现代化。改革开放以来的实践证明，制度自信来源于制度的稳定性与适应性的统一。面对百年未有之大变局，我们需要以高度的政治自觉和理论自觉，不断推进制度创新与制度执行的有机统一。',prompt:'请分析上述论述中"制度自信"的理论基础和实践依据，不少于100字。',keywords:['制度','自信','改革','实践','社会主义','现代化','治理','创新','适应性','稳定性','中国特色','方法论']},
+{subj:201,title:'命题组密卷·英语读写',abstract:'Recent meta-analyses have shown that bilingual individuals demonstrate significant advantages in executive function tasks, particularly in inhibitory control and cognitive flexibility. However, the "bilingual advantage" hypothesis has been challenged by several large-scale replication studies that failed to find consistent effects. The debate centers on methodological issues, including sample selection, task sensitivity, and the operationalization of bilingualism as a continuous rather than categorical variable.',prompt:'Analyze the key arguments for and against the "bilingual advantage" hypothesis presented in the abstract. Write at least 100 words in Chinese or English.',keywords:['bilingual','advantage','executive function','cognitive','flexibility','inhibitory','replication','methodology','sample','effect','debate','evidence','control']},
+{subj:301,title:'命题组密卷·数学分析',abstract:'在现代数值分析中，牛顿迭代法(Newton-Raphson method)通过利用函数的一阶导数信息实现二次收敛。设f(x)是实数域上的二次可微函数，初值x₀充分接近根x*时，迭代格式xₙ₊₁=xₙ-f(xₙ)/f\'(xₙ)具有局部二次收敛性。收敛速度取决于f\'(x*)≠0以及|f\'\'(x*)/f\'(x*)|的大小。该方法的计算效率在工程应用中远超二分法和不动点迭代。',prompt:'请论述牛顿迭代法的收敛条件、收敛速度及其与二分法的比较，不少于100字。',keywords:['牛顿迭代','收敛','二次收敛','导数','初值','二分法','效率','迭代','精度','条件','局部','全局']},
+{subj:408,title:'命题组密卷·系统架构',abstract:'在分布式系统设计中，CAP定理指出一致性(Consistency)、可用性(Availability)和分区容错性(Partition tolerance)三者不可能同时满足。实际系统设计需要在CA、CP、AP之间做出权衡。例如，传统关系数据库倾向CA模型，而NoSQL系统如Cassandra采用AP模型。微服务架构下的最终一致性(Eventual Consistency)提供了一种折中方案，通过异步复制和冲突解决机制在可接受的延迟内达到一致。',prompt:'请分析CAP定理在实际分布式系统设计中的应用，讨论不同系统的取舍策略，不少于100字。',keywords:['CAP','一致性','可用性','分区','分布式','NoSQL','权衡','最终一致','微服务','数据库','复制','同步','异步','设计']}
 ];
 
-var BUILTIN_301 = [
-  {stem:'求极限 lim(x→0) sin(3x)/x = ?', answer:'3'},
-  {stem:'求导数 d/dx [x²·eˣ] 在x=0处的值 = ?', answer:'0'},
-  {stem:'定积分 ∫₀¹ 2x dx = ?', answer:'1'},
-  {stem:'矩阵 A=[1,2;3,4] 的行列式 |A| = ?', answer:'-2'},
-  {stem:'P(A)=0.3, P(B)=0.4, A与B独立, 则P(AB) = ?', answer:'0.12'},
-  {stem:'函数 f(x)=x³-3x 在x=1处的极值为?', answer:'-2'},
+/* ── 题库工具函数 ── */
+function getRandomQuestion(subjectId,starRange){
+  const bank=QBANK[subjectId];if(!bank)return null;
+  const types=['single','multi','judge','essay'];
+  const weights=[50,20,20,10]; // percentage weights
+  let roll=Math.random()*100,typeIdx=0,cum=0;
+  for(let i=0;i<weights.length;i++){cum+=weights[i];if(roll<cum){typeIdx=i;break}}
+  const type=types[typeIdx];
+  let pool=bank[type]||[];
+  if(starRange&&pool[0]?.star){
+    const filtered=pool.filter(q=>q.star>=starRange[0]&&q.star<=starRange[1]);
+    if(filtered.length>0)pool=filtered;
+  }
+  if(pool.length===0)pool=bank.single;
+  const q={...pool[Math.floor(Math.random()*pool.length)],type};
+  return q;
+}
+function getEssayPaper(subjectId){
+  const papers=ESSAY_PAPERS.filter(p=>p.subj===subjectId);
+  if(papers.length===0)return ESSAY_PAPERS[Math.floor(Math.random()*ESSAY_PAPERS.length)];
+  return papers[Math.floor(Math.random()*papers.length)];
+}
+</script>
+<script>
+/* ═══ 核心引擎：状态/初始化/循环/渲染 ═══ */
+let G=null,screenShake=0,selectedGameMode='sleeper',selectedSubject=101,selectedDiff='normal',rainDrops=[];
+for(let i=0;i<80;i++)rainDrops.push({x:Math.random()*600,y:Math.random()*1000,s:2+Math.random()*3,v:180+Math.random()*250});
+const TILE=40,RC=3,RR=2,CORR_H=36,HUD_TOP=54;
+
+/* ── 存档 ── */
+function loadSave(){try{return JSON.parse(localStorage.getItem('mgks2'))||defSave()}catch(e){return defSave()}}
+function defSave(){return{honey:0,items:{},totalGhosts:0,totalCorrect:0,totalAnswered:0,clears:{easy:0,normal:0,hard:0,nightmare:0},subjectStats:{101:{c:0,t:0},201:{c:0,t:0},301:{c:0,t:0},408:{c:0,t:0}}}}
+function saveSave(s){localStorage.setItem('mgks2',JSON.stringify(s))}
+let SAVE=loadSave();
+
+/* ── 建筑定义 ── */
+const BUILDINGS={
+bed:{cat:'基础',icon:'🛏️',name:'床',levels:[
+  {cost:0,desc:'1金/3s',prod:1,interval:3000},
+  {cost:50,desc:'2金/2s',prod:2,interval:2000,req:'door:2'},
+  {cost:150,desc:'4金/s',prod:4,interval:1000,req:'door:3'},
+  {cost:400,desc:'8金/s',prod:8,interval:1000,req:'door:4'},
+  {cost:1000,desc:'16金/0.5s',prod:16,interval:500,req:'door:5'}]},
+door:{cat:'基础',icon:'🚪',name:'门',levels:[
+  {cost:0,desc:'50HP',hp:50},{cost:16,desc:'70HP',hp:70},
+  {cost:50,desc:'150HP',hp:150},{cost:150,desc:'400HP',hp:400},
+  {cost:500,desc:'1000HP',hp:1000}]},
+turret:{cat:'基础',icon:'🔫',name:'炮台',cost:8,
+  levels:[{dmg:4,range:3.5,speed:2200},{dmg:10,range:4,speed:1800},{dmg:20,range:4.5,speed:1500},{dmg:40,range:5,speed:1200},{dmg:80,range:6,speed:900}],
+  upgradeCosts:[8,25,60,150,400]},
+console:{cat:'基础',icon:'🕹️',name:'游戏机',cost:200,
+  levels:[{prod:1,interval:2200},{prod:2,interval:1800},{prod:4,interval:1400},{prod:8,interval:1000}],
+  upgradeCosts:[200,500,1200,3000]},
+toad:{cat:'赚钱',icon:'🐸',name:'金蟾蜍',cost:100,levels:[{prod:5,interval:1000},{prod:12,interval:800},{prod:25,interval:600}],upgradeCosts:[100,300,800]},
+mirror:{cat:'赚钱',icon:'🪞',name:'梅花镜',cost:150,levels:[{prod:3,interval:1500,dmg:2},{prod:6,interval:1200,dmg:5},{prod:10,interval:1000,dmg:10}],upgradeCosts:[150,400,1000]},
+dgun:{cat:'防御',icon:'💎',name:'钻石枪',costType:'elec',cost:512,levels:[{dmg:15,range:5,speed:800},{dmg:30,range:5.5,speed:600},{dmg:60,range:6,speed:400}],upgradeCosts:[512,1024,2048]},
+lavender:{cat:'防御',icon:'🌿',name:'薰衣草',costType:'elec',cost:256,maxBuild:1,desc:'强制拉鬼到门前单挑'},
+repair:{cat:'高科技',icon:'🔧',name:'维修台',costType:'elec',cost:64,maxBuild:4,desc:'每秒恢复门2%HP'},
+charm:{cat:'高科技',icon:'📿',name:'符咒弹射器',costType:'elec',cost:64,maxBuild:1,desc:'鬼放技能时30%控制3s'},
+shield:{cat:'高科技',icon:'🛡️',name:'能量罩',costType:'elec',cost:64,maxBuild:1,desc:'门<30%HP时3s无敌'},
+atm:{cat:'高科技',icon:'🏧',name:'取款机',costType:'elec',cost:32,maxBuild:1,desc:'击杀获金币'},
+fridge:{cat:'高科技',icon:'❄️',name:'冰箱',costType:'elec',cost:256,maxBuild:1,desc:'减鬼20%攻速'},
+trap:{cat:'黑科技',icon:'🪤',name:'诱捕',costType:'elec',cost:256,maxBuild:1,desc:'网住逃跑鬼2s'},
+spike:{cat:'黑科技',icon:'🗡️',name:'倒刺',costType:'elec',cost:512,maxBuild:1,desc:'鬼攻门反伤'},
+guillotine:{cat:'黑科技',icon:'⚔️',name:'断头台',costType:'elec',cost:2048,maxBuild:1,desc:'鬼<30%HP斩杀'}
+};
+const DOOR_GATES={1:1,2:2,3:3,4:4,5:5}; // doorLv -> max building level
+
+/* ── 蜜罐商店 ── */
+const SHOP_ITEMS=[
+  {id:'repair',cat:'高科技',icon:'🔧',name:'维修台',desc:'自动修门',price:10},
+  {id:'charm',cat:'高科技',icon:'📿',name:'符咒弹射器',desc:'控制鬼技能',price:20},
+  {id:'shield',cat:'高科技',icon:'🛡️',name:'能量罩',desc:'低血无敌',price:50},
+  {id:'fridge',cat:'高科技',icon:'❄️',name:'冰箱',desc:'减鬼攻速',price:30},
+  {id:'atm',cat:'高科技',icon:'🏧',name:'取款机',desc:'击杀掉金',price:10},
+  {id:'trap',cat:'黑科技',icon:'🪤',name:'诱捕',desc:'网鬼',price:50},
+  {id:'spike',cat:'黑科技',icon:'🗡️',name:'倒刺',desc:'反伤',price:50},
+  {id:'guillotine',cat:'黑科技',icon:'⚔️',name:'断头台',desc:'斩杀',price:80}
 ];
 
-// ---- 科目选择 ----
-function selectSub(btn) {
-  document.querySelectorAll('.subject-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  G.subject = btn.dataset.sub;
-}
+/* ── 难度 ── */
+const DIFF={
+  easy:{label:'简单',ghostInterval:12000,ghostHpMul:.7,goldMul:1.5,starRange:[1,2],waves:10,honeyReward:5},
+  normal:{label:'普通',ghostInterval:9000,ghostHpMul:1,goldMul:1,starRange:[2,4],waves:15,honeyReward:12},
+  hard:{label:'困难',ghostInterval:6000,ghostHpMul:1.5,goldMul:.8,starRange:[3,5],waves:20,honeyReward:25},
+  nightmare:{label:'噩梦',ghostInterval:4000,ghostHpMul:2.2,goldMul:.5,starRange:[4,5],waves:30,honeyReward:50}
+};
 
-// ---- 开始游戏 ----
-function startGame() {
-  G.questions = G.subject === '201' ? BUILTIN_201.slice() : BUILTIN_301.slice();
-  // 打乱题序
-  for (var i = G.questions.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = G.questions[i]; G.questions[i] = G.questions[j]; G.questions[j] = t;
-  }
-  G.currentQ = 0; G.correct = 0; G.wrong = 0;
-  G.gold = 0; G.score = 0; G.totalGold = 0;
-  G.bedLv = 1; G.doorLv = 1;
-  G.doorHP = 100; G.doorMax = 100;
-  G.turrets = [0, 0]; G.elecLv = 0;
-  G.wave = 0; G.ghostActive = false; G.gameOver = false;
+/* ── AI玩家 ── */
+const AI_PLAYERS=[
+  {name:'郑炳',icon:'🧑',acc:.7},{name:'Alice',icon:'👩',acc:.85},
+  {name:'小王',icon:'🧒',acc:.6},{name:'学霸李',icon:'🧑‍🎓',acc:.95},
+  {name:'摸鱼王',icon:'🤷',acc:.4},{name:'卷王',icon:'💪',acc:.9}
+];
 
-  document.getElementById('startScreen').style.display = 'none';
-  document.getElementById('gameScreen').style.display = 'flex';
-  updateUI();
-  showQuestion();
-  startWaveTimer();
-}
+/* ── 鬼物技能定义 ── */
+const GHOST_SKILLS={
+  fury:{name:'狂暴',icon:'🔥',desc:'攻速×2,伤害×1.5,持续5s',lvReq:4,cd:20000,dur:5000},
+  stun:{name:'震撼',icon:'💥',desc:'一击30%门血',lvReq:7,cd:25000,dur:0},
+  stealth:{name:'隐身',icon:'👁️',desc:'3s无法被攻击',lvReq:10,cd:30000,dur:3000},
+  summon:{name:'召唤',icon:'👻',desc:'召唤2只小鬼',lvReq:13,cd:40000,dur:0}
+};
 
-// ---- 显示题目 ----
-function showQuestion() {
-  if (G.currentQ >= G.questions.length) {
-    // 题目做完了 → 循环
-    G.currentQ = 0;
-    for (var i = G.questions.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = G.questions[i]; G.questions[i] = G.questions[j]; G.questions[j] = t;
-    }
-  }
-  var q = G.questions[G.currentQ];
-  var total = G.questions.length;
-  document.getElementById('qProgress').textContent = '题目 ' + (G.currentQ + 1) + '/' + total;
+/* ── 画面切换 ── */
+function switchScreen(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+function goMenu(){switchScreen('menuScr');updateMenuHUD()}
+function updateMenuHUD(){document.getElementById('menuHoney').textContent=SAVE.honey}
+function showModeSelect(){switchScreen('modeScr')}
+function showSubjSelect(mode){selectedGameMode=mode;document.getElementById('subjTitle').textContent=mode==='hunter'?'猎梦者 · 选择科目':'睡梦者 · 选择科目';switchScreen('subjScr')}
+function showDiffSelect(subj){selectedSubject=subj;const s=SUBJECTS.find(x=>x.id===subj);document.getElementById('diffTitle').textContent=s.name+' · 选择难度';switchScreen('diffScr')}
 
-  if (G.subject === '201') {
-    // 完形: 显示选项
-    document.getElementById('qStem').innerHTML = q.stem.replace(/_+/g, '<span class="blank">____</span>');
-    document.getElementById('qOptions').style.display = 'grid';
-    document.getElementById('qInputRow').style.display = 'none';
-    var optHtml = '';
-    for (var i = 0; i < q.options.length; i++) {
-      optHtml += '<button class="q-opt" onclick="selectOption(this,' + i + ')" data-idx="' + i + '">' + q.options[i] + '</button>';
-    }
-    document.getElementById('qOptions').innerHTML = optHtml;
-  } else {
-    // 填空: 显示输入框
-    document.getElementById('qStem').textContent = q.stem;
-    document.getElementById('qOptions').style.display = 'none';
-    document.getElementById('qInputRow').style.display = 'flex';
-    document.getElementById('qInput').value = '';
-    document.getElementById('qInput').focus();
-  }
-
-  // 倒计时
-  G.qTimer = G.subject === '201' ? 12 : 20;
-  document.getElementById('qTimer').textContent = '⏱ ' + G.qTimer + 's';
-  clearInterval(G.qInterval);
-  G.qInterval = setInterval(function() {
-    G.qTimer--;
-    document.getElementById('qTimer').textContent = '⏱ ' + G.qTimer + 's';
-    if (G.qTimer <= 0) {
-      clearInterval(G.qInterval);
-      handleAnswer(false);
-    }
-  }, 1000);
-}
-
-// ---- 选项点击(完形) ----
-function selectOption(btn, idx) {
-  var q = G.questions[G.currentQ];
-  var correctIdx = 'ABCD'.indexOf(q.answer.trim().charAt(0).toUpperCase());
-  var isCorrect = idx === correctIdx;
-
-  // 高亮
-  var btns = document.querySelectorAll('.q-opt');
-  btns.forEach(function(b, i) {
-    b.disabled = true;
-    if (i === correctIdx) b.classList.add('correct');
-    if (i === idx && !isCorrect) b.classList.add('wrong');
+/* ── 匹配 ── */
+let matchInterval;
+function startMatch(diff){
+  selectedDiff=diff;
+  switchScreen('matchScr');const cfg=DIFF[diff];
+  document.getElementById('matchMode').textContent=cfg.label+(selectedGameMode==='hunter'?' · 猎梦者':' · 睡梦者');
+  const ais=AI_PLAYERS.sort(()=>Math.random()-.5).slice(0,5);
+  const ph=document.getElementById('matchPlayers');ph.innerHTML='';
+  [{name:'你',icon:selectedGameMode==='hunter'?'👻':'🧑‍🎓',isYou:true},...ais].forEach(p=>{
+    const d=document.createElement('div');d.className='mp-slot'+(p.isYou?' you':'');
+    d.innerHTML=`<div class="mp-avatar">${p.icon}</div><div class="mp-name">${p.name}</div>`;ph.appendChild(d);
   });
-
-  clearInterval(G.qInterval);
-  setTimeout(function() { handleAnswer(isCorrect); }, 600);
+  let t=3;document.getElementById('matchTimer').textContent=t;
+  clearInterval(matchInterval);
+  matchInterval=setInterval(()=>{t--;document.getElementById('matchTimer').textContent=t;if(t<=0){clearInterval(matchInterval);initGame(diff,ais)}},1000);
 }
+function readyUp(){clearInterval(matchInterval);setTimeout(()=>{initGame(selectedDiff,AI_PLAYERS.slice(0,5))},400)}
 
-// ---- 填空提交 ----
-function submitFill() {
-  var q = G.questions[G.currentQ];
-  var input = document.getElementById('qInput').value.trim();
-  var isCorrect = input === q.answer || input === q.answer.replace(/\s/g,'');
-  clearInterval(G.qInterval);
-  handleAnswer(isCorrect);
-}
-
-// 回车提交
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.getElementById('qInputRow').style.display !== 'none') {
-    submitFill();
+/* ── 初始化游戏 ── */
+function initGame(diff,ais){
+  const cfg=DIFF[diff]||DIFF.normal;
+  const canvas=document.getElementById('gameCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const W=canvas.width,H=canvas.height;
+  const roomW=RC*TILE,roomH=RR*TILE,gap=8;
+  const totalW=3*(roomW+gap)-gap;
+  const startX=Math.floor((W-totalW)/2);
+  const corrY=Math.floor(H/2-CORR_H/2);
+  const rooms=[];
+  for(let row=0;row<2;row++){for(let ri=0;ri<3;ri++){
+    const rx=startX+ri*(roomW+gap);
+    const ry=row===0?corrY-roomH-4:corrY+CORR_H+4;
+    rooms.push({side:row,idx:ri,x:rx,y:ry,grid:Array.from({length:RR},()=>Array(RC).fill(null)),
+      door:{level:0,hp:50,maxHp:50},bed:{level:0,lastProd:0},
+      isPlayer:false,light:false,atkFlash:0,occupant:null,sleeping:false});
+  }}
+  const isHunter=selectedGameMode==='hunter';
+  G={mode:selectedGameMode,subj:SUBJECTS.find(s=>s.id===selectedSubject),diff,cfg,canvas,ctx,
+    W,H,corrY,startX,totalW,rooms,
+    playerRoom:null, /* assigned during prep */
+    gold:isHunter?0:0,elec:0,ghosts:[],bullets:[],floats:[],
+    wave:0,maxWaves:cfg.waves,ghostTimer:0,ghostInterval:cfg.ghostInterval,
+    gameOver:false,won:false,paused:false,quizActive:false,currentQuiz:null,
+    buildMenuOpen:false,selectedTile:null,
+    totalDmg:0,totalCorrect:0,totalAnswered:0,essayWaves:0,
+    shieldActive:false,shieldTimer:0,specials:{},
+    ais:ais||[],aiRooms:[],
+    startTime:Date.now(),lastFrame:0,frameCount:0,dangerPulse:0,
+    itemUses:{...SAVE.items},ghostSpeedBoost:0,
+    // Hunter mode state
+    hunter:isHunter?{x:W+30,y:corrY+CORR_H/2,level:1,hp:200,maxHp:200,
+      exp:0,expNext:50,atk:8,atkInterval:1500,lastAtk:0,speed:60,
+      skills:{fury:{cd:0,active:false,end:0},stun:{cd:0},stealth:{cd:0,active:false,end:0},summon:{cd:0}},
+      scratchFrame:0,scratchTimer:0,targetRoom:null,furyActive:false,stealthActive:false}:null,
+    /* ═══ PREP PHASE ═══ */
+    prep:{active:true,timer:15000,playerChosen:false,
+      sprites:[],prepGhost:null,ghostSmashTimer:3000,
+      tipIdx:0,tipTimer:0,quizUsed:0,maxQuiz:3}
+  };
+  // Create prep sprites: player + AIs all start at left side of corridor
+  const aiList=(ais||[]).slice(0,5);
+  const allSprites=[];
+  // Player sprite
+  allSprites.push({name:'你',icon:isHunter?'👻':'🧑‍🎓',isPlayer:true,
+    x:startX-60,y:corrY+CORR_H/2,targetRoom:null,state:'running',
+    speed:80+Math.random()*20,bob:0,dir:1});
+  // AI sprites
+  aiList.forEach((ai,i)=>{
+    allSprites.push({name:ai.name,icon:ai.icon,isPlayer:false,
+      x:startX-100-i*40,y:corrY+CORR_H/2+(Math.random()*16-8),
+      targetRoom:null,state:'running',speed:50+Math.random()*60,bob:Math.random()*6,dir:1,
+      pickDelay:1500+Math.random()*4000,pickTimer:0,acc:ai.acc||.5});
+  });
+  G.prep.sprites=allSprites;
+  // Pre-occupy 1-2 rooms with sleeping NPCs (已经有人躺着)
+  const preOccupy=Math.floor(Math.random()*2)+1;
+  const shuffledRooms=[...rooms].sort(()=>Math.random()-.5);
+  const sleepEmojis=['😴','💤','🛌','😪'];
+  for(let i=0;i<preOccupy&&i<shuffledRooms.length;i++){
+    const rm=shuffledRooms[i];
+    rm.occupant={name:['老李','小张','胖虎','阿黄'][i]||'路人',icon:sleepEmojis[i%4]};
+    rm.sleeping=true;rm.light=true;
   }
-});
-
-// ---- 答题结果处理 ----
-function handleAnswer(isCorrect) {
-  if (G.gameOver) return;
-  if (isCorrect) {
-    G.correct++;
-    var earnings = 5 + G.bedLv * 5 + (G.elecLv > 0 ? G.elecLv * 3 : 0);
-    G.gold += earnings;
-    G.totalGold += earnings;
-    G.score += G.subject === '201' ? 1 : 5;
-    showFeedback(true, '+' + earnings + '💰');
-  } else {
-    G.wrong++;
-    showFeedback(false, '答错了');
-  }
-  G.currentQ++;
-  updateUI();
-  setTimeout(showQuestion, 500);
+  // Create prep ghost (will smash random doors)
+  G.prep.prepGhost={x:W+40,y:corrY+CORR_H/2,targetRoom:null,
+    state:'roaming',speed:70,bob:0,scratchFrame:0,smashCount:0};
+  // HUD
+  const pr=document.getElementById('playerRow');pr.innerHTML='';
+  switchScreen('gameScr');
+  document.getElementById('hunterCtrl').classList.remove('on');
+  document.getElementById('gameTask').innerHTML='<span>⏰ 选一间宿舍住下！点击房间入住 (答题可升级门/床)</span>';
+  updateHUD();G.lastFrame=performance.now();requestAnimationFrame(gameLoop);
+  canvas.onclick=handleCanvasClick;
 }
 
-// ---- 反馈动画 ----
-function showFeedback(correct, text) {
-  var el = document.createElement('div');
-  el.className = 'feedback ' + (correct ? 'fb-correct' : 'fb-wrong');
-  el.textContent = text;
-  document.body.appendChild(el);
-  setTimeout(function() { el.remove(); }, 900);
+/* ── 游戏循环 ── */
+function gameLoop(ts){
+  if(!G||G.gameOver)return;
+  const dt=Math.min(ts-G.lastFrame,100);G.lastFrame=ts;G.frameCount++;
+  if(G.quizActive){requestAnimationFrame(gameLoop);render();return}
+
+  // ═══ PREP PHASE ═══
+  if(G.prep&&G.prep.active){updatePrep(ts,dt);render();updateHUD();requestAnimationFrame(gameLoop);return}
+
+  if(G.mode==='hunter')updateHunter(ts,dt);
+  else updateSleeper(ts,dt);
+
+  // Bullets
+  G.bullets=G.bullets.filter(b=>{
+    const dx=b.tx-b.x,dy=b.ty-b.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<8){
+      if(b.target&&!b.target.dead){b.target.hp-=b.dmg;G.totalDmg+=b.dmg;addFloat(b.target.x,b.target.y-10,`-${b.dmg}`,'#ef4444');
+        if(G.specials.guillotine&&b.target.hp<b.target.maxHp*.3)b.target.hp-=b.target.maxHp*.1;
+        if(b.target.hp<=0){b.target.dead=true;if(G.specials.atm)G.gold+=Math.floor(b.target.maxHp/5);checkWin()}}
+      return false;
+    }
+    const s=300*(dt/1000)*3;b.x+=dx/d*s;b.y+=dy/d*s;return true;
+  });
+  G.floats=G.floats.filter(f=>ts-f.t<900);
+  render();updateHUD();requestAnimationFrame(gameLoop);
 }
 
-// ---- 波次系统 ----
-function startWaveTimer() {
-  // 第一波30秒后来
-  setTimeout(function() { startWave(); }, 15000);
-}
+/* ── 准备阶段更新 ── */
+function updatePrep(ts,dt){
+  const p=G.prep;
+  p.timer-=dt;
+  // Update prep timer display
+  const sec=Math.max(0,Math.ceil(p.timer/1000));
+  document.getElementById('waveBadge').textContent=`准备 ${sec}s`;
+  // Tip rotation
+  const tips=['⏰ 快选房间！点击空房入住','💡 已有人睡的房间不能选','📝 点床/门答题升级','👻 小心！鬼在砸门！','🏃 15秒后开始驱鬼！'];
+  p.tipTimer+=dt;if(p.tipTimer>2500){p.tipTimer=0;p.tipIdx=(p.tipIdx+1)%tips.length;
+    if(!p.playerChosen)document.getElementById('gameTask').innerHTML=`<span>${tips[p.tipIdx]}</span>`}
 
-function startWave() {
-  if (G.gameOver) return;
-  G.wave++;
-  if (G.wave > G.maxWave) {
-    endGame(true);
-    return;
-  }
-  document.getElementById('waveVal').textContent = G.wave;
-
-  // 波次横幅
-  var banner = document.createElement('div');
-  banner.className = 'wave-banner';
-  banner.textContent = '⚠️ WAVE ' + G.wave + ' · 猛鬼来袭!';
-  document.body.appendChild(banner);
-  setTimeout(function() { banner.remove(); }, 2500);
-
-  // 猛鬼参数(每波更强)
-  G.ghostMax = 30 + G.wave * 25;
-  G.ghostHP = G.ghostMax;
-  G.ghostAtk = 8 + G.wave * 5;
-  G.ghostActive = true;
-
-  var ghostEl = document.getElementById('ghost');
-  ghostEl.classList.remove('hidden');
-  ghostEl.classList.add('attacking');
-  document.getElementById('dormView').classList.add('alert');
-
-  // 猛鬼攻击循环
-  clearInterval(G.ghostInterval);
-  G.ghostInterval = setInterval(function() {
-    if (G.gameOver || !G.ghostActive) return;
-    // 鬼攻击门
-    G.doorHP -= G.ghostAtk;
-    if (G.doorHP <= 0) { G.doorHP = 0; endGame(false); }
-    updateDoorUI();
-    document.getElementById('dormView').classList.remove('alert');
-    setTimeout(function() { document.getElementById('dormView').classList.add('alert'); }, 50);
-  }, 2000);
-
-  // 炮塔反击循环
-  clearInterval(G.turretInterval);
-  G.turretInterval = setInterval(function() {
-    if (G.gameOver || !G.ghostActive) return;
-    var dmg = 0;
-    if (G.turrets[0] > 0) dmg += G.turrets[0] * 8;
-    if (G.turrets[1] > 0) dmg += G.turrets[1] * 8;
-    if (dmg > 0) {
-      G.ghostHP -= dmg;
-      if (G.ghostHP <= 0) {
-        // 鬼被击退
-        G.ghostHP = 0;
-        G.ghostActive = false;
-        var ghostEl = document.getElementById('ghost');
-        ghostEl.classList.remove('attacking');
-        ghostEl.classList.add('hidden');
-        clearInterval(G.ghostInterval);
-        clearInterval(G.turretInterval);
-        G.gold += 20 * G.wave;
-        G.totalGold += 20 * G.wave;
-        showFeedback(true, '击退! +' + (20*G.wave) + '💰');
-        updateUI();
-        // 下一波
-        setTimeout(function() { startWave(); }, 10000 + Math.random() * 5000);
+  // Move all sprites along corridor
+  p.sprites.forEach(sp=>{
+    sp.bob+=.06;
+    if(sp.state==='running'){
+      sp.x+=sp.speed*sp.dir*(dt/1000);
+      // Bounce at corridor edges
+      if(sp.x>G.startX+G.totalW+30)sp.dir=-1;
+      if(sp.x<G.startX-30)sp.dir=1;
+      // AI: pick a room after delay
+      if(!sp.isPlayer){
+        sp.pickTimer+=dt;
+        if(sp.pickTimer>=sp.pickDelay&&!sp.targetRoom){
+          const free=G.rooms.filter(r=>!r.occupant&&!r.isPlayer);
+          if(free.length>0){
+            const pick=free[Math.floor(Math.random()*free.length)];
+            sp.targetRoom=pick;sp.state='entering';
+          }
+        }
       }
     }
-  }, 1500);
+    if(sp.state==='entering'&&sp.targetRoom){
+      const rm=sp.targetRoom;
+      const tx=rm.x+RC*TILE/2,ty=rm.side===0?rm.y+RR*TILE+4:rm.y-4;
+      const dx=tx-sp.x,dy=ty-sp.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d>5){sp.x+=dx/d*sp.speed*1.5*(dt/1000);sp.y+=dy/d*sp.speed*1.5*(dt/1000)}
+      else{
+        sp.state='sleeping';rm.occupant={name:sp.name,icon:sp.icon};
+        rm.light=true;rm.sleeping=true;
+        // AI auto-upgrade: maybe upgrade door
+        if(!sp.isPlayer&&Math.random()<sp.acc&&rm.door.level<2){
+          rm.door.level++;const dl=BUILDINGS.door.levels[rm.door.level];
+          rm.door.hp=dl.hp;rm.door.maxHp=dl.hp;
+          addFloat(rm.x+RC*TILE/2,rm.y-10,'🚪⬆','#4ade80');
+        }
+      }
+    }
+  });
+
+  // Prep ghost: roam and smash random doors
+  const pg=p.prepGhost;
+  if(pg){
+    pg.bob+=.08;
+    p.ghostSmashTimer-=dt;
+    if(pg.state==='roaming'){
+      // Move toward a random door
+      if(!pg.targetRoom||p.ghostSmashTimer<=0){
+        const targets=G.rooms.filter(r=>r.door.hp>0);
+        if(targets.length>0)pg.targetRoom=targets[Math.floor(Math.random()*targets.length)];
+        p.ghostSmashTimer=3000+Math.random()*3000;
+      }
+      if(pg.targetRoom){
+        const rm=pg.targetRoom;
+        const tx=rm.x+RC*TILE/2,ty=G.corrY+CORR_H/2;
+        const dx=tx-pg.x,dy=ty-pg.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d>15){pg.x+=dx/d*pg.speed*(dt/1000);pg.y+=dy/d*pg.speed*(dt/1000);pg.scratchFrame=0}
+        else{
+          // Smash the door!
+          pg.scratchFrame=(pg.scratchFrame+dt*.005)%3;
+          if(pg.smashCount<8){
+            const dmg=5+Math.floor(Math.random()*10);
+            rm.door.hp=Math.max(0,rm.door.hp-dmg*(dt/1000));
+            rm.atkFlash=Math.max(rm.atkFlash,3);
+            if(rm.door.hp<=0){pg.targetRoom=null;pg.smashCount++;screenShake=4;
+              addFloat(rm.x+RC*TILE/2,rm.y,'💥门被砸烂!','#ff4444')}
+          }
+        }
+      }
+    }
+  }
+
+  // Timer up: force end prep
+  if(p.timer<=0)endPrep();
 }
 
-// ---- 建造系统 ----
-var COSTS = {
-  bed: [30, 60, 120, 200],
-  door: [40, 80, 150, 250],
-  turret: [60, 120, 200],
-  elec: [80, 150, 250]
-};
-
-function upgradeBed() {
-  if (G.bedLv >= 5) return;
-  var cost = COSTS.bed[G.bedLv - 1] || 999;
-  if (G.gold < cost) return;
-  G.gold -= cost;
-  G.bedLv++;
-  document.getElementById('bedLv').textContent = 'Lv.' + G.bedLv;
-  showFeedback(true, '🛏️ Lv.' + G.bedLv);
-  updateUI();
+/* ── 准备阶段点击处理 ── */
+function handlePrepClick(x,y){
+  const p=G.prep;if(!p||!p.active)return false;
+  // Click on a room to select it
+  for(const rm of G.rooms){
+    const rw=RC*TILE,rh=RR*TILE;
+    if(x>=rm.x-5&&x<=rm.x+rw+5&&y>=rm.y-5&&y<=rm.y+rh+5){
+      if(rm.occupant&&!rm.isPlayer){
+        addFloat(rm.x+rw/2,rm.y+rh/2,'❌ 已有人住!','#ff4444');
+        return true;
+      }
+      if(rm.door.hp<=0){
+        addFloat(rm.x+rw/2,rm.y+rh/2,'❌ 门被砸烂!','#ff4444');
+        return true;
+      }
+      if(!p.playerChosen){
+        // Player picks this room!
+        p.playerChosen=true;rm.isPlayer=true;rm.light=true;
+        rm.occupant={name:'你',icon:G.mode==='hunter'?'👻':'🧑‍🎓'};
+        G.playerRoom=rm;
+        // Move player sprite into room
+        const ps=p.sprites.find(s=>s.isPlayer);
+        if(ps){ps.targetRoom=rm;ps.state='entering'}
+        addFloat(rm.x+RC*TILE/2,rm.y-15,'🏠 入住成功!','#4ade80');
+        document.getElementById('gameTask').innerHTML='<span>📝 点击床🛏️或门🚪答题升级！准备迎战！</span>';
+        return true;
+      }
+      if(p.playerChosen&&rm.isPlayer){
+        // Already chosen, click bed or door to quiz-upgrade
+        // Check if clicking bed area
+        const bx=rm.x+(RC-1)*TILE;
+        if(x>=bx&&x<=bx+TILE&&y>=rm.y&&y<=rm.y+TILE&&p.quizUsed<p.maxQuiz){
+          triggerPrepQuiz('bed');return true}
+        // Check if clicking door area
+        const dw=RC*TILE*.5,dh=6;
+        const ddx=rm.x+RC*TILE/2-dw/2,ddy=rm.side===0?rm.y+RR*TILE:rm.y-dh;
+        if(x>=ddx-5&&x<=ddx+dw+5&&y>=ddy-10&&y<=ddy+dh+10&&p.quizUsed<p.maxQuiz){
+          triggerPrepQuiz('door');return true}
+      }
+      return true;
+    }
+  }
+  return false;
 }
 
-function upgradeDoor() {
-  if (G.doorLv >= 5) return;
-  var cost = COSTS.door[G.doorLv - 1] || 999;
-  if (G.gold < cost) return;
-  G.gold -= cost;
-  G.doorLv++;
-  G.doorMax = 100 * G.doorLv;
-  G.doorHP = G.doorMax; // 满血恢复
-  document.getElementById('doorLv').textContent = 'Lv.' + G.doorLv;
-  showFeedback(true, '🚪 Lv.' + G.doorLv);
-  updateDoorUI();
-  updateUI();
+/* ── 准备阶段答题 ── */
+function triggerPrepQuiz(target){
+  if(G.quizActive||!G.playerRoom)return;
+  G.quizActive=true;G.prep.quizUsed++;
+  const q=getRandomQuestion(G.subj.id,[1,2]);
+  if(!q){G.quizActive=false;return}
+  G.currentQuiz={question:q,actionType:'prep_'+target,startTime:Date.now()};
+  renderQuiz(q);
+}
+function executePrepUpgrade(target){
+  if(!G.playerRoom)return;
+  const rm=G.playerRoom;
+  if(target==='bed'){
+    if(rm.bed.level<BUILDINGS.bed.levels.length-1){
+      rm.bed.level++;addFloat(rm.x+RC*TILE-20,rm.y+10,'🛏️⬆Lv'+(rm.bed.level+1),'#fbbf24');
+    }
+  }else if(target==='door'){
+    if(rm.door.level<BUILDINGS.door.levels.length-1){
+      rm.door.level++;const dl=BUILDINGS.door.levels[rm.door.level];
+      rm.door.hp=dl.hp;rm.door.maxHp=dl.hp;
+      addFloat(rm.x+RC*TILE/2,rm.y-10,'🚪⬆Lv'+(rm.door.level+1),'#4ade80');
+    }
+  }
 }
 
-function buildTurret(slot) {
-  var idx = slot - 1;
-  if (G.turrets[idx] >= 3) return;
-  var cost = COSTS.turret[G.turrets[idx]] || 999;
-  if (G.gold < cost) return;
-  G.gold -= cost;
-  G.turrets[idx]++;
-  var lv = G.turrets[idx];
-  document.getElementById('turret' + slot + 'Icon').textContent = lv >= 2 ? '🔫' : '🔧';
-  document.getElementById('turret' + slot + 'Lv').style.display = 'block';
-  document.getElementById('turret' + slot + 'Lv').textContent = 'Lv.' + lv;
-  if (lv >= 1) document.getElementById('turret' + slot + 'Icon').textContent = '🔫';
-  showFeedback(true, '🔫 炮塔' + slot + ' Lv.' + lv);
-  updateUI();
+/* ── 结束准备阶段 ── */
+function endPrep(){
+  const p=G.prep;p.active=false;
+  // If player didn't choose, auto-assign a free room
+  if(!p.playerChosen){
+    const free=G.rooms.filter(r=>!r.occupant&&r.door.hp>0);
+    const pick=free.length>0?free[Math.floor(Math.random()*free.length)]:G.rooms[1];
+    pick.isPlayer=true;pick.light=true;
+    pick.occupant={name:'你',icon:G.mode==='hunter'?'👻':'🧑‍🎓'};
+    G.playerRoom=pick;
+    addFloat(pick.x+RC*TILE/2,pick.y-15,'🏠 自动分配!','#fbbf24');
+  }
+  // Set up AI rooms = all non-player rooms
+  G.aiRooms=G.rooms.filter(r=>!r.isPlayer);
+  // Give AI rooms some buildings
+  G.aiRooms.forEach(r=>{
+    if(!r.occupant)r.light=false;
+    if(r.occupant&&Math.random()>.3){
+      const c={type:'turret',level:Math.floor(Math.random()*3),lastShot:0};
+      const lv=BUILDINGS.turret.levels[c.level];c.dmg=lv.dmg;c.range=lv.range;c.speed=lv.speed;
+      c.px=r.x+TILE/2;c.py=r.y+TILE/2;r.grid[0][0]=c;
+    }
+    if(r.door.level===0&&r.door.hp>=50){
+      r.door.level=Math.floor(Math.random()*2);
+      const dl=BUILDINGS.door.levels[r.door.level];r.door.hp=dl.hp;r.door.maxHp=dl.hp;
+    }
+  });
+  // Transition to main game
+  const isHunter=G.mode==='hunter';
+  if(isHunter){document.getElementById('hunterCtrl').classList.add('on');document.getElementById('gameTask').innerHTML='<span>👻 你是猎梦者！攻破所有宿舍！</span>';}
+  else{document.getElementById('gameTask').innerHTML='<span>📋 鬼来了！升级建筑驱鬼！</span>';}
+  showWaveNum('准备完毕！');
+  G.startTime=Date.now();
 }
 
-function buildElec() {
-  if (G.elecLv >= 3) return;
-  var cost = COSTS.elec[G.elecLv] || 999;
-  if (G.gold < cost) return;
-  G.gold -= cost;
-  G.elecLv++;
-  document.getElementById('elecIcon').textContent = '⚡';
-  document.getElementById('elecLv').style.display = 'block';
-  document.getElementById('elecLv').textContent = 'Lv.' + G.elecLv;
-  showFeedback(true, '⚡ 电力 Lv.' + G.elecLv);
-  updateUI();
+/* ── 睡梦者更新 ── */
+function updateSleeper(ts,dt){
+  // Bed gold production
+  const bedLv=Math.min(G.playerRoom.bed.level,BUILDINGS.bed.levels.length-1);
+  const bedCfg=BUILDINGS.bed.levels[bedLv];
+  if(ts-G.playerRoom.bed.lastProd>=bedCfg.interval){
+    G.gold+=bedCfg.prod;addFloat(G.playerRoom.x+RC*TILE-20,G.playerRoom.y+RR*TILE-20,`+${bedCfg.prod}`,'#fbbf24');
+    G.playerRoom.bed.lastProd=ts;
+  }
+  // Grid buildings produce
+  G.playerRoom.grid.flat().forEach(cell=>{
+    if(!cell)return;
+    if(cell.type==='console'&&ts-cell.lastProd>=(cell.interval||2000)){G.elec+=(cell.prod||1);cell.lastProd=ts;}
+    if(['toad','mirror'].includes(cell.type)&&cell.prod&&ts-cell.lastProd>=(cell.interval||1000)){G.gold+=cell.prod;cell.lastProd=ts;addFloat(cell.px,cell.py,`+${cell.prod}`,'#fbbf24');}
+  });
+  // Repair
+  const repC=G.playerRoom.grid.flat().filter(c=>c&&c.type==='repair').length;
+  if(repC>0&&G.playerRoom.door.hp<G.playerRoom.door.maxHp)G.playerRoom.door.hp=Math.min(G.playerRoom.door.maxHp,G.playerRoom.door.hp+G.playerRoom.door.maxHp*.02*repC*(dt/1000));
+  // Shield
+  if(G.specials.shield&&G.playerRoom.door.hp<G.playerRoom.door.maxHp*.3&&!G.shieldActive){G.shieldActive=true;G.shieldTimer=ts+3000;}
+  if(G.shieldActive&&ts>G.shieldTimer)G.shieldActive=false;
+  // Danger
+  if(G.playerRoom.door.hp<G.playerRoom.door.maxHp*.3)G.dangerPulse=(G.dangerPulse+.05)%6.28;
+  // Spawn ghosts
+  G.ghostTimer+=dt;
+  if(G.ghostTimer>=G.ghostInterval&&G.wave<G.maxWaves){
+    G.wave++;spawnGhost();G.ghostTimer=0;showWaveNum(G.wave);
+    G.ghostInterval=Math.max(2000,G.ghostInterval-150);
+    // Essay mode every 3 waves
+    if(G.wave%3===0&&G.wave>0)G.essayWaves++;
+    if(G.essayWaves>0&&G.wave%3===0)triggerEssayMode();
+  }
+  // Ghost movement & attack
+  const pr=G.playerRoom,doorX=pr.x+RC*TILE/2,doorY=G.corrY+CORR_H/2;
+  G.ghosts.forEach(ghost=>{
+    if(ghost.dead)return;
+    if(ghost.stunned){if(ts>ghost.stunEnd)ghost.stunned=false;return}
+    // Skill usage
+    updateGhostSkills(ghost,ts);
+    const dx=doorX-ghost.x,dy=doorY-ghost.y,dist=Math.sqrt(dx*dx+dy*dy);
+    const spdMul=G.specials.fridge?.8:1;
+    const boostMul=1+G.ghostSpeedBoost;
+    if(dist>20){
+      const spd=ghost.speed*spdMul*boostMul*(dt/1000);
+      ghost.x+=dx/dist*spd;ghost.y+=dy/dist*spd;
+    }else{
+      ghost.scratching=true;ghost.scratchFrame=(ghost.scratchFrame||0)+dt*.005;
+      if(ts-ghost.lastAtk>=ghost.atkInterval*(G.specials.fridge?1.2:1)){
+        ghost.lastAtk=ts;pr.atkFlash=8;screenShake=6;
+        if(!G.shieldActive)triggerQuiz(ghost);
+      }
+    }
+  });
+  // Turret shooting
+  const allTurrets=[];
+  G.playerRoom.grid.flat().forEach(cell=>{if(cell&&(cell.type==='turret'||cell.type==='dgun'||cell.type==='mirror'))allTurrets.push(cell)});
+  allTurrets.forEach(cell=>{
+    if(ts-cell.lastShot<(cell.speed||2000))return;
+    if(!cell.dmg)return;
+    const range=(cell.range||3)*TILE;let target=null,minD=Infinity;
+    G.ghosts.forEach(ghost=>{
+      if(ghost.dead||(ghost.stealthActive))return;
+      const dx=ghost.x-cell.px,dy=ghost.y-cell.py,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<range&&d<minD){minD=d;target=ghost}
+    });
+    if(target){cell.lastShot=ts;G.bullets.push({x:cell.px,y:cell.py,tx:target.x,ty:target.y,dmg:cell.dmg,target,speed:300})}
+  });
+  // Ghost speed boost decay
+  if(G.ghostSpeedBoost>0)G.ghostSpeedBoost=Math.max(0,G.ghostSpeedBoost-.001*dt);
 }
 
-// ---- UI 更新 ----
-function updateUI() {
-  document.getElementById('goldVal').textContent = G.gold;
-  document.getElementById('scoreVal').textContent = G.score;
-  document.getElementById('waveVal').textContent = G.wave;
-
-  // 建造按钮cost + 可用状态
-  var bc = COSTS.bed[G.bedLv - 1]; document.getElementById('bedCost').textContent = bc ? bc + '💰' : 'MAX';
-  var dc = COSTS.door[G.doorLv - 1]; document.getElementById('doorCost').textContent = dc ? dc + '💰' : 'MAX';
-  var t1c = COSTS.turret[G.turrets[0]]; document.getElementById('turret1Cost').textContent = t1c ? t1c + '💰' : 'MAX';
-  var t2c = COSTS.turret[G.turrets[1]]; document.getElementById('turret2Cost').textContent = t2c ? t2c + '💰' : 'MAX';
-  var ec = COSTS.elec[G.elecLv]; document.getElementById('elecCost').textContent = ec ? ec + '💰' : 'MAX';
-
-  document.getElementById('btnBed').disabled = !bc || G.gold < bc;
-  document.getElementById('btnDoor').disabled = !dc || G.gold < dc;
-  document.getElementById('btnTurret1').disabled = !t1c || G.gold < t1c;
-  document.getElementById('btnTurret2').disabled = !t2c || G.gold < t2c;
-  document.getElementById('btnElec').disabled = !ec || G.gold < ec;
+/* ── 鬼物生成 ── */
+function spawnGhost(){
+  const hp=Math.floor((30+G.wave*18)*G.cfg.ghostHpMul);
+  const isBoss=G.wave%5===0;
+  const ghost={x:G.W+20,y:G.corrY+CORR_H/2+(Math.random()*10-5),
+    hp:isBoss?hp*2:hp,maxHp:isBoss?hp*2:hp,
+    atk:3+G.wave*2,speed:35+Math.random()*15,atkInterval:2000,
+    lastAtk:0,dead:false,stunned:false,stunEnd:0,scratching:false,scratchFrame:0,
+    type:isBoss?'boss':'normal',level:Math.min(15,G.wave),isBoss,
+    bob:Math.random()*Math.PI*2,glow:0,
+    // Ghost skills
+    skills:{fury:{cd:0,active:false,end:0},stun:{cd:0},stealth:{cd:0,active:false,end:0}},
+    furyActive:false,stealthActive:false,exp:0,expNext:20+G.wave*10
+  };
+  G.ghosts.push(ghost);
 }
 
-function updateDoorUI() {
-  var pct = Math.max(0, G.doorHP / G.doorMax * 100);
-  document.getElementById('doorHP').style.width = pct + '%';
-  document.getElementById('doorHPText').textContent = Math.max(0, Math.round(G.doorHP));
-  document.getElementById('doorMaxText').textContent = G.doorMax;
-  // 颜色变化
-  var fill = document.getElementById('doorHP');
-  if (pct < 30) fill.style.background = 'var(--red)';
-  else if (pct < 60) fill.style.background = 'linear-gradient(90deg,var(--red),var(--gold))';
-  else fill.style.background = 'linear-gradient(90deg,var(--green),var(--cyan))';
+/* ── 鬼物技能AI ── */
+function updateGhostSkills(ghost,ts){
+  const lv=ghost.level;
+  // Auto-upgrade from scratching
+  if(ghost.scratching){
+    ghost.exp+=(G.playerRoom.door.level+1)*.02;
+    if(ghost.exp>=ghost.expNext&&ghost.level<15){ghost.level++;ghost.maxHp*=1.15;ghost.hp=Math.min(ghost.hp+ghost.maxHp*.1,ghost.maxHp);ghost.atk*=1.1;ghost.exp=0;ghost.expNext*=1.3;addFloat(ghost.x,ghost.y-20,'⬆Level UP','#c084fc')}
+  }
+  // Fury
+  if(lv>=4&&!ghost.furyActive&&ghost.skills.fury.cd<=ts&&ghost.hp<ghost.maxHp*.6){
+    ghost.furyActive=true;ghost.skills.fury.active=true;ghost.skills.fury.end=ts+5000;
+    ghost.atkInterval=1000;ghost.atk*=1.5;ghost.skills.fury.cd=ts+20000;
+    addFloat(ghost.x,ghost.y-25,'🔥狂暴!','#ff4444');
+  }
+  if(ghost.furyActive&&ts>ghost.skills.fury.end){ghost.furyActive=false;ghost.skills.fury.active=false;ghost.atkInterval=2000;ghost.atk/=1.5;}
+  // Stun (震撼)
+  if(lv>=7&&ghost.skills.stun.cd<=ts&&ghost.scratching&&Math.random()<.01){
+    const dmg=Math.floor(G.playerRoom.door.maxHp*.3);
+    if(!G.shieldActive){G.playerRoom.door.hp-=dmg;screenShake=12;addFloat(ghost.x,ghost.y-25,'💥震撼!','#aa44ff');
+      if(G.playerRoom.door.hp<=0){G.playerRoom.door.hp=0;gameOver(false)}}
+    ghost.skills.stun.cd=ts+25000;
+    // Charm counter
+    if(G.specials.charm&&Math.random()<.3){ghost.stunned=true;ghost.stunEnd=ts+3000;addFloat(ghost.x,ghost.y-30,'📿封印!','#38bdf8')}
+  }
+  // Stealth
+  if(lv>=10&&!ghost.stealthActive&&ghost.skills.stealth.cd<=ts&&ghost.hp<ghost.maxHp*.4){
+    ghost.stealthActive=true;ghost.skills.stealth.active=true;ghost.skills.stealth.end=ts+3000;ghost.skills.stealth.cd=ts+30000;
+    addFloat(ghost.x,ghost.y-25,'👁️隐身!','rgba(255,255,255,.5)');
+  }
+  if(ghost.stealthActive&&ts>ghost.skills.stealth.end){ghost.stealthActive=false;ghost.skills.stealth.active=false}
 }
 
-// ---- 结算 ----
-function endGame(won) {
-  G.gameOver = true;
-  clearInterval(G.qInterval);
-  clearInterval(G.ghostInterval);
-  clearInterval(G.turretInterval);
-
-  document.getElementById('resultScreen').style.display = 'flex';
-  document.getElementById('resultIcon').textContent = won ? '🏆' : '💀';
-  document.getElementById('resultTitle').textContent = won ? '通关成功!' : '宿舍沦陷...';
-  document.getElementById('resultTitle').style.color = won ? 'var(--gold)' : 'var(--red)';
-  document.getElementById('resultSub').textContent = won ? '你成功挺过了猛鬼的' + G.maxWave + '波进攻!' : '大门被猛鬼攻破了...WAVE ' + G.wave;
-  document.getElementById('rsCorrect').textContent = G.correct;
-  document.getElementById('rsWrong').textContent = G.wrong;
-  document.getElementById('rsGold').textContent = G.totalGold;
-  document.getElementById('rsWave').textContent = G.wave;
+/* ── 猎梦者模式更新 ── */
+function updateHunter(ts,dt){
+  const h=G.hunter;if(!h)return;
+  // Find weakest room to target
+  if(!h.targetRoom||h.targetRoom.door.hp<=0){
+    const alive=G.aiRooms.filter(r=>r.door.hp>0);
+    if(alive.length===0){gameOver(true);return}
+    h.targetRoom=alive.reduce((a,b)=>a.door.hp<b.door.hp?a:b);
+  }
+  // Auto-move toward target door
+  const tr=h.targetRoom;
+  const targetX=tr.x+RC*TILE/2,targetY=G.corrY+CORR_H/2;
+  const dx=targetX-h.x,dy=targetY-h.y,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist>25){
+    const spd=h.speed*(h.furyActive?1.5:1)*(dt/1000);
+    h.x+=dx/dist*spd;h.y+=dy/dist*spd;h.scratchFrame=0;
+  }else{
+    // Scratching door!
+    h.scratchTimer+=dt;h.scratchFrame=(h.scratchFrame+dt*.005)%3;
+    if(ts-h.lastAtk>=h.atkInterval){
+      h.lastAtk=ts;
+      // Must answer question to attack
+      triggerHunterQuiz();
+    }
+  }
+  // AI turrets shoot at hunter
+  if(!h.stealthActive){
+    G.aiRooms.forEach(r=>{
+      r.grid.flat().forEach(cell=>{
+        if(!cell||cell.type!=='turret')return;
+        if(ts-(cell.lastShot||0)<cell.speed)return;
+        const cdx=h.x-cell.px,cdy=h.y-cell.py,cd=Math.sqrt(cdx*cdx+cdy*cdy);
+        if(cd<(cell.range||3)*TILE){
+          cell.lastShot=ts;h.hp-=cell.dmg;addFloat(h.x,h.y-10,`-${cell.dmg}`,'#ef4444');
+          if(h.hp<=0)gameOver(false);
+        }
+      });
+    });
+  }
+  // Skill cooldown UI
+  updateHunterSkillUI(ts);
 }
+
+function moveHunter(dx,dy){if(!G||!G.hunter)return;G.hunter.x+=dx*30;G.hunter.y+=dy*30}
+function hunterAttack(){if(!G||!G.hunter)return;triggerHunterQuiz()}
+
+function useHunterSkill(skill){
+  if(!G||!G.hunter)return;const h=G.hunter,ts=performance.now();
+  if(skill==='fury'&&h.level>=4&&h.skills.fury.cd<=ts){
+    h.furyActive=true;h.skills.fury.end=ts+5000;h.skills.fury.cd=ts+20000;h.atkInterval=750;h.atk*=1.5;
+    addFloat(h.x,h.y-25,'🔥狂暴!','#ff4444');
+    setTimeout(()=>{h.furyActive=false;h.atkInterval=1500;h.atk/=1.5},5000);
+  }
+  if(skill==='stun'&&h.level>=7&&h.skills.stun.cd<=ts){
+    if(h.targetRoom){const dmg=Math.floor(h.targetRoom.door.maxHp*.3);h.targetRoom.door.hp-=dmg;screenShake=12;
+      addFloat(h.x,h.y-25,'💥震撼!','#aa44ff');h.skills.stun.cd=ts+25000;
+      if(h.targetRoom.door.hp<=0){h.targetRoom.door.hp=0;h.targetRoom=null}}
+  }
+  if(skill==='stealth'&&h.level>=10&&h.skills.stealth.cd<=ts){
+    h.stealthActive=true;h.skills.stealth.end=ts+3000;h.skills.stealth.cd=ts+30000;
+    addFloat(h.x,h.y-25,'👁️隐身!','rgba(255,255,255,.5)');
+    setTimeout(()=>{h.stealthActive=false},3000);
+  }
+  if(skill==='heal'&&h.skills.summon&&h.skills.summon.cd<=ts){
+    h.hp=Math.min(h.maxHp,h.hp+h.maxHp*.5);h.skills.summon.cd=ts+30000;
+    addFloat(h.x,h.y-25,'💚回复!','#4ade80');
+  }
+}
+function updateHunterSkillUI(ts){
+  const h=G.hunter;
+  ['fury','stun','stealth'].forEach(s=>{
+    const el=document.getElementById('skill'+s.charAt(0).toUpperCase()+s.slice(1));
+    if(!el)return;
+    const cdLeft=Math.max(0,h.skills[s].cd-ts);
+    const cdMax=GHOST_SKILLS[s]?.cd||20000;
+    el.style.setProperty('--cd',(cdLeft/cdMax*100)+'%');
+    el.classList.toggle('cd',cdLeft>0||h.level<(GHOST_SKILLS[s]?.lvReq||99));
+  });
+}
+
+/* ── 浮动文字 ── */
+function addFloat(x,y,text,color){if(G)G.floats.push({x,y,text,color:color||'#cc0000',t:performance.now()})}
+function showWaveNum(n){const el=document.getElementById('waveNum');el.textContent=`第${n}波`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500)}
+function updateHUD(){
+  if(!G)return;
+  document.getElementById('hudGold').textContent=Math.floor(G.gold);
+  document.getElementById('hudElec').textContent=Math.floor(G.elec);
+  document.getElementById('waveBadge').textContent=`波次 ${G.wave}/${G.maxWaves}`;
+}
+
+/* ── 胜负 ── */
+function checkWin(){
+  if(G.mode==='hunter'){const alive=G.aiRooms.filter(r=>r.door.hp>0);if(alive.length===0)gameOver(true)}
+  else{const alive=G.ghosts.filter(g=>!g.dead);if(alive.length===0&&G.wave>=G.maxWaves)gameOver(true)}
+}
+function gameOver(won){
+  G.gameOver=true;G.won=won;
+  const elapsed=Math.floor((Date.now()-G.startTime)/1000);
+  const honeyEarned=won?G.cfg.honeyReward+Math.floor(G.totalCorrect*2):Math.floor(G.cfg.honeyReward*.2);
+  SAVE.honey+=honeyEarned;SAVE.totalGhosts+=G.ghosts.filter(g=>g.dead).length;
+  SAVE.totalCorrect+=G.totalCorrect;SAVE.totalAnswered+=G.totalAnswered;
+  if(won)SAVE.clears[G.diff]=(SAVE.clears[G.diff]||0)+1;saveSave(SAVE);
+  const wrap=document.getElementById('resultWrap');
+  wrap.innerHTML=`<h2>${won?(G.mode==='hunter'?'👻 宿舍全灭!':'🎉 驱鬼成功!'):'💀 '+(G.mode==='hunter'?'被炮台击杀...':'宿舍沦陷...')}</h2>
+    <div class="result-ghost">${won?'✨':'💀'}</div>
+    <div class="r-grid">
+      <div class="r-cell"><div class="rv" style="color:var(--blood2)">${G.wave}/${G.maxWaves}</div><div class="rl">波次</div></div>
+      <div class="r-cell"><div class="rv" style="color:var(--gold)">${G.totalCorrect}/${G.totalAnswered}</div><div class="rl">答题正确率</div></div>
+    </div>
+    <div class="r-rewards"><div style="color:var(--honey);font-size:1.2rem;font-weight:900">🍯 +${honeyEarned} 蜜罐币</div>
+    <div style="font-size:.7rem;color:var(--text2);margin-top:4px">用时${Math.floor(elapsed/60)}分${elapsed%60}秒 · ${G.subj.name}</div></div>
+    <div class="result-btns"><button class="ob" onclick="goMenu()">返回大厅</button><button class="ob" style="border-color:rgba(74,222,128,.3);color:var(--ghost)" onclick="initGame('${G.diff}',G.ais)">再来一局</button></div>`;
+  switchScreen('resultScr');document.getElementById('hunterCtrl').classList.remove('on');
+}
+function confirmQuit(){document.getElementById('quitOvl').classList.add('on')}
+function closeQuit(){document.getElementById('quitOvl').classList.remove('on')}
+function doQuit(){closeQuit();G.gameOver=true;document.getElementById('hunterCtrl').classList.remove('on');goMenu()}
+
+/* ═══ 渲染 + 答题 + 建筑 + 商店 ═══ */
+
+/* ── 渲染 ── */
+const FL_A='#5a8a8a',FL_B='#4d7a7a',CO_C='#c8c3b4',CO_D='#b0ab9c';
+function render(){
+  const c=G.ctx,W=G.W,H=G.H;G.frameCount++;c.clearRect(0,0,W,H);
+  c.save();
+  if(screenShake>0){c.translate(Math.random()*screenShake-screenShake/2,Math.random()*screenShake-screenShake/2);screenShake*=.85;if(screenShake<.5)screenShake=0}
+  c.fillStyle='#0e1018';c.fillRect(0,0,W,H);
+  // Rain
+  c.strokeStyle='rgba(100,140,180,.1)';c.lineWidth=1;
+  rainDrops.forEach(d=>{d.y+=d.v*.016;if(d.y>H){d.y=-10;d.x=Math.random()*W}c.beginPath();c.moveTo(d.x,d.y);c.lineTo(d.x,d.y+d.s);c.stroke()});
+  // Corridor
+  const cy=G.corrY;
+  for(let tx=0;tx<W;tx+=TILE/2){c.fillStyle=Math.floor(tx/(TILE/2))%2?CO_C:CO_D;c.fillRect(tx,cy,TILE/2,CORR_H)}
+  c.fillStyle='#3a3d4a';c.fillRect(0,cy-2,W,2);c.fillRect(0,cy+CORR_H,W,2);
+  if(G.wave>0){c.fillStyle='rgba(180,0,0,.1)';c.font='bold 18px sans-serif';c.textAlign='center';c.fillText(`Wave ${G.wave}/${G.maxWaves}`,W/2,cy+CORR_H/2+5)}
+  // Danger overlay
+  if(G.mode!=='hunter'&&G.playerRoom&&G.playerRoom.door.hp<G.playerRoom.door.maxHp*.3){const a=.06+Math.sin(G.dangerPulse)*.04;c.fillStyle=`rgba(200,0,0,${a})`;c.fillRect(0,0,W,H)}
+  // Rooms
+  G.rooms.forEach(rm=>drawRoom(c,rm));
+  // ═══ PREP PHASE RENDERING ═══
+  if(G.prep&&G.prep.active){
+    // Draw running sprites in corridor
+    G.prep.sprites.forEach(sp=>{
+      if(sp.state==='sleeping')return;
+      const by=Math.sin(sp.bob)*3;
+      c.save();
+      // Shadow
+      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(sp.x,sp.y+12,8,3,0,0,Math.PI*2);c.fill();
+      // Body
+      c.font='18px sans-serif';c.textAlign='center';c.textBaseline='middle';
+      c.fillText(sp.icon,sp.x,sp.y+by);
+      // Name tag
+      c.fillStyle=sp.isPlayer?'#4ade80':'#aaa';c.font='bold 8px sans-serif';
+      c.fillText(sp.name,sp.x,sp.y-14+by);
+      // Running legs animation
+      if(sp.state==='running'){const lf=Math.floor(performance.now()/150)%2;
+        c.strokeStyle=sp.isPlayer?'#4ade80':'#888';c.lineWidth=1.5;
+        c.beginPath();c.moveTo(sp.x-3,sp.y+10);c.lineTo(sp.x-3+(lf?-3:3),sp.y+17);c.stroke();
+        c.beginPath();c.moveTo(sp.x+3,sp.y+10);c.lineTo(sp.x+3+(lf?3:-3),sp.y+17);c.stroke()}
+      c.restore();
+    });
+    // Draw prep ghost
+    const pg=G.prep.prepGhost;
+    if(pg){
+      const by=Math.sin(pg.bob)*3,gx=pg.x,gy=pg.y+by;
+      c.save();c.shadowColor='rgba(255,50,50,.6)';c.shadowBlur=14;
+      c.fillStyle='#ff4444';
+      c.beginPath();c.arc(gx,gy-8,12,Math.PI,0);c.rect(gx-12,gy-8,24,12);c.fill();
+      c.fillStyle='#ff0';c.fillRect(gx-5,gy-10,3,4);c.fillRect(gx+2,gy-10,3,4);
+      for(let i=0;i<3;i++){c.fillStyle='#ff4444';c.fillRect(gx-12+i*8,gy+4,7,4+Math.sin(pg.bob+i)*2)}
+      // Scratch effect
+      if(pg.scratchFrame>0){const sf=Math.floor(pg.scratchFrame)%3;
+        c.strokeStyle='#ff6666';c.lineWidth=2;
+        for(let i=0;i<3;i++){c.beginPath();c.moveTo(gx-8+i*5+(sf-1)*3,gy-14);c.lineTo(gx-8+i*5+(sf-1)*3+2,gy-4);c.stroke()}}
+      c.fillStyle='#ff4444';c.font='bold 8px sans-serif';c.textAlign='center';c.fillText('👹猛鬼',gx,gy-22);
+      c.restore();
+    }
+    // Prep countdown big circle
+    const sec=Math.max(0,Math.ceil(G.prep.timer/1000));
+    c.save();c.globalAlpha=.15;c.fillStyle='#c8c3b4';c.font='bold 120px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(sec,W/2,H*.2);c.globalAlpha=1;c.restore();
+    // "Click room" hint arrows on empty rooms
+    if(!G.prep.playerChosen){
+      G.rooms.forEach(rm=>{
+        if(rm.occupant||rm.door.hp<=0)return;
+        const px=rm.x+RC*TILE/2,py=rm.y+RR*TILE/2;
+        const pulse=Math.sin(performance.now()*.004)*4;
+        c.strokeStyle='rgba(74,222,128,.5)';c.lineWidth=2;c.setLineDash([4,3]);
+        c.strokeRect(rm.x-3,rm.y-3,RC*TILE+6,RR*TILE+6);c.setLineDash([]);
+        c.fillStyle='#4ade80';c.font='bold 9px sans-serif';c.textAlign='center';
+        c.fillText('👆点击入住',px,py+pulse);
+      });
+    }
+    // Quiz remaining indicator
+    if(G.prep.playerChosen){const left=G.prep.maxQuiz-G.prep.quizUsed;
+      c.fillStyle='#fbbf24';c.font='bold 10px sans-serif';c.textAlign='left';
+      c.fillText(`📝 剩余答题机会: ${left}/${G.prep.maxQuiz}`,10,H-12)}
+  }
+  // Ghosts (sleeper mode)
+  if(G.mode!=='hunter'&&(!G.prep||!G.prep.active)){
+    G.ghosts.forEach(ghost=>{if(ghost.dead)return;drawGhost(c,ghost)});
+  }
+  // Hunter player ghost
+  if(G.mode==='hunter'&&G.hunter&&(!G.prep||!G.prep.active)){drawHunterGhost(c,G.hunter)}
+  // Bullets
+  G.bullets.forEach(b=>{c.save();c.shadowColor='#fbbf24';c.shadowBlur=6;c.fillStyle='#fbbf24';c.beginPath();c.arc(b.x,b.y,3,0,Math.PI*2);c.fill();c.restore()});
+  // Floats
+  const now=performance.now();
+  G.floats.forEach(f=>{const a=(now-f.t)/900;c.globalAlpha=1-a;c.fillStyle=f.color;c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(f.text,f.x,f.y-a*28);c.globalAlpha=1});
+  c.restore();
+}
+
+function drawRoom(c,rm){
+  const rw=RC*TILE,rh=RR*TILE,rx=rm.x,ry=rm.y,isP=rm.isPlayer;
+  if(rm.atkFlash>0){rm.atkFlash--;c.fillStyle=`rgba(200,0,0,${rm.atkFlash*.04})`;c.fillRect(rx-6,ry-6,rw+12,rh+12)}
+  c.fillStyle='#2a2d3a';c.fillRect(rx-3,ry-3,rw+6,rh+6);
+  if(!rm.light||rm.door.hp<=0){c.fillStyle='rgba(0,0,0,.7)';c.fillRect(rx,ry,rw,rh);
+    if(rm.door.hp<=0){c.fillStyle='rgba(200,0,0,.15)';c.font='bold 14px sans-serif';c.textAlign='center';c.fillText('💀 已陷落',rx+rw/2,ry+rh/2)}
+    else if(G.prep&&G.prep.active&&!rm.occupant){c.fillStyle='rgba(255,255,255,.08)';c.font='bold 11px sans-serif';c.textAlign='center';c.fillText('🏚️ 空房',rx+rw/2,ry+rh/2)}
+    return}
+  // Floor tiles
+  for(let r=0;r<RR;r++){for(let col=0;col<RC;col++){
+    const tx=rx+col*TILE,ty=ry+r*TILE;const cell=rm.grid[r][col];
+    c.fillStyle=cell?(isP?'#2a4a5e':'#2a3a4e'):((r+col)%2?FL_A:FL_B);
+    c.fillRect(tx,ty,TILE-1,TILE-1);
+    c.strokeStyle='rgba(0,0,0,.1)';c.lineWidth=1;c.strokeRect(tx,ty,TILE-1,TILE-1);
+    if(cell){const bd=BUILDINGS[cell.type];c.font='1.1em sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(bd?bd.icon:'?',tx+TILE/2,ty+TILE/2);
+      if(cell.level>0){c.fillStyle='#fbbf24';c.font='bold 7px sans-serif';c.fillText('Lv'+(cell.level+1),tx+TILE/2,ty+TILE-3)}}
+    else if(isP&&G.mode!=='hunter'&&(!G.prep||!G.prep.active)){c.fillStyle='rgba(255,255,255,.06)';c.font='12px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('+',tx+TILE/2,ty+TILE/2)}
+  }}
+  // Bed
+  c.font='1.1em sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('🛏️',rx+(RC-1)*TILE+TILE/2,ry+TILE/2);
+  if(isP){c.fillStyle='#fbbf24';c.font='bold 7px sans-serif';c.fillText('Lv'+(rm.bed.level+1),rx+(RC-1)*TILE+TILE/2,ry+TILE-3)}
+  // Sleeping occupant during prep
+  if(rm.sleeping&&rm.occupant){c.save();const bx=rx+(RC-1)*TILE+TILE/2,by=ry+TILE/2;
+    c.font='12px sans-serif';c.textAlign='center';c.fillText(rm.occupant.icon,bx,by-8);
+    // Zzz animation
+    const zt=performance.now()*.002;c.globalAlpha=.6+Math.sin(zt)*.3;
+    c.fillStyle='#8b9dc3';c.font='bold 8px sans-serif';c.fillText('💤',bx+12,by-14+Math.sin(zt)*3);
+    c.globalAlpha=1;c.restore();
+    // Name under bed
+    c.fillStyle=rm.isPlayer?'#4ade80':'#9ca3af';c.font='bold 7px sans-serif';c.textAlign='center';
+    c.fillText(rm.occupant.name,bx,by+14);
+  }
+  // Door
+  const dw=rw*.5,dh=6;let dx=rx+rw/2-dw/2,dy=rm.side===0?ry+rh:ry-dh;
+  const pct=rm.door.hp/rm.door.maxHp;
+  c.fillStyle=pct>.5?'#5a6a7e':pct>.2?'#8b6830':'#cc3030';c.fillRect(dx,dy,dw,dh);
+  c.fillStyle='#222';c.fillRect(dx,dy+(rm.side===0?dh:-4),dw,3);
+  c.fillStyle=pct>.5?'#4ade80':pct>.2?'#fbbf24':'#ef4444';c.fillRect(dx,dy+(rm.side===0?dh:-4),dw*Math.max(0,pct),3);
+  if(isP&&G.shieldActive){c.strokeStyle='#38bdf8';c.lineWidth=2;c.strokeRect(dx-2,dy-2,dw+4,dh+4)}
+  // Door level label
+  if(rm.door.level>0){c.fillStyle='#aaa';c.font='bold 6px sans-serif';c.textAlign='center';c.fillText('🚪Lv'+(rm.door.level+1),rx+rw/2,dy+(rm.side===0?dh+9:-8))}
+  // Label
+  if(isP&&G.mode!=='hunter'){c.strokeStyle='rgba(74,222,128,.3)';c.lineWidth=2;c.strokeRect(rx-5,ry-5,rw+10,rh+10);
+    c.fillStyle='#4ade80';c.font='bold 8px sans-serif';c.textAlign='center';c.fillText('👤 你',rx+rw/2,rm.side===0?ry-7:ry+rh+11)}
+  else if(!G.prep||!G.prep.active){const ai=G.ais[(rm.side*3+rm.idx)%G.ais.length];if(ai){c.fillStyle='#777';c.font='7px sans-serif';c.textAlign='center';c.fillText(`${ai.icon}${ai.name}`,rx+rw/2,rm.side===0?ry-5:ry+rh+9)}}
+}
+
+function drawGhost(c,ghost){
+  ghost.bob+=.08;ghost.glow=(ghost.glow+.05)%6.28;
+  const bY=Math.sin(ghost.bob)*2,gx=ghost.x,gy=ghost.y+bY;
+  const sz=ghost.isBoss?24:16;
+  c.save();
+  if(ghost.stealthActive)c.globalAlpha=.2;
+  c.shadowColor=ghost.furyActive?'rgba(255,0,0,.8)':ghost.isBoss?'rgba(200,0,0,.5)':'rgba(100,255,100,.3)';
+  c.shadowBlur=ghost.furyActive?16:8+Math.sin(ghost.glow)*3;
+  c.fillStyle=ghost.furyActive?'#ff2222':ghost.isBoss?'#cc3333':'#e0e0e0';
+  c.beginPath();c.arc(gx,gy-sz/3,sz/2,Math.PI,0);c.rect(gx-sz/2,gy-sz/3,sz,sz/2);c.fill();
+  c.fillStyle='#111';c.fillRect(gx-5,gy-sz/3-1,3,4);c.fillRect(gx+2,gy-sz/3-1,3,4);
+  // Scratch animation
+  if(ghost.scratching){
+    const sf=Math.floor(ghost.scratchFrame)%3;
+    const offsets=[[-8,-4],[0,-8],[8,-4]];
+    c.strokeStyle=ghost.furyActive?'#ff4444':'#aaa';c.lineWidth=2;
+    for(let i=0;i<3;i++){c.beginPath();c.moveTo(gx+offsets[sf][0]+i*3,gy-sz/2);c.lineTo(gx+offsets[sf][0]+i*3+2,gy-sz/2+8);c.stroke()}
+  }
+  // Wiggly bottom
+  for(let i=0;i<3;i++){c.fillStyle=ghost.furyActive?'#ff2222':ghost.isBoss?'#cc3333':'#e0e0e0';c.fillRect(gx-sz/2+i*(sz/3),gy+sz/6,sz/3-1,4+Math.sin(ghost.bob+i)*2)}
+  c.restore();
+  // HP bar
+  const bw=ghost.isBoss?36:26;
+  c.fillStyle='#222';c.fillRect(gx-bw/2,gy-sz-6,bw,4);
+  const hp=ghost.hp/ghost.maxHp;c.fillStyle=hp>.5?'#4ade80':hp>.2?'#fbbf24':'#ef4444';
+  c.fillRect(gx-bw/2+1,gy-sz-5,(bw-2)*Math.max(0,hp),2);
+  c.fillStyle='#aaa';c.font='bold 7px sans-serif';c.textAlign='center';c.fillText(`Lv${ghost.level}`,gx,gy-sz-9);
+  // Skill icons
+  if(ghost.furyActive){c.fillStyle='#ff4444';c.font='8px sans-serif';c.fillText('🔥',gx+bw/2+5,gy-sz-4)}
+  if(ghost.stealthActive){c.fillStyle='#fff';c.font='8px sans-serif';c.fillText('👁️',gx-bw/2-8,gy-sz-4)}
+}
+
+function drawHunterGhost(c,h){
+  const sz=28,gx=h.x,gy=h.y;
+  c.save();
+  if(h.stealthActive)c.globalAlpha=.3;
+  c.shadowColor=h.furyActive?'rgba(255,0,0,.9)':'rgba(170,68,255,.6)';c.shadowBlur=h.furyActive?20:12;
+  c.fillStyle=h.furyActive?'#ff2222':'#9966ff';
+  c.beginPath();c.arc(gx,gy-sz/3,sz/2,Math.PI,0);c.rect(gx-sz/2,gy-sz/3,sz,sz/2);c.fill();
+  c.fillStyle='#ff0';c.fillRect(gx-6,gy-sz/3-2,4,5);c.fillRect(gx+2,gy-sz/3-2,4,5);
+  for(let i=0;i<3;i++){c.fillStyle=h.furyActive?'#ff2222':'#9966ff';c.fillRect(gx-sz/2+i*(sz/3),gy+sz/6,sz/3-1,5+Math.sin(performance.now()*.003+i)*2)}
+  // Scratch animation
+  if(h.scratchFrame>0){const sf=Math.floor(h.scratchFrame)%3;c.strokeStyle='#ff4444';c.lineWidth=3;
+    for(let i=0;i<3;i++){c.beginPath();c.moveTo(gx-10+i*6+(sf-1)*3,gy-sz/2);c.lineTo(gx-10+i*6+(sf-1)*3+3,gy-sz/2+12);c.stroke()}}
+  c.restore();
+  // HP & Level
+  c.fillStyle='#222';c.fillRect(gx-20,gy-sz-8,40,5);
+  c.fillStyle='#c084fc';c.fillRect(gx-19,gy-sz-7,38*(h.hp/h.maxHp),3);
+  c.fillStyle='#c084fc';c.font='bold 8px sans-serif';c.textAlign='center';c.fillText(`👻 Lv${h.level}`,gx,gy-sz-12);
+  c.fillStyle='#999';c.font='6px sans-serif';c.fillText(`HP:${Math.floor(h.hp)}/${h.maxHp}`,gx,gy+sz/2+10);
+}
+
+/* ── 点击处理 ── */
+function handleCanvasClick(e){
+  if(!G||G.gameOver||G.quizActive)return;
+  const rect=G.canvas.getBoundingClientRect();const x=e.clientX-rect.left,y=e.clientY-rect.top;
+  // PREP PHASE: delegate to prep click handler
+  if(G.prep&&G.prep.active){handlePrepClick(x,y);return}
+  if(G.mode==='hunter')return; // Hunter uses buttons
+  if(!G.playerRoom)return;
+  const rm=G.playerRoom,rw=RC*TILE,rh=RR*TILE;
+  // Bed
+  const bx=rm.x+(RC-1)*TILE;
+  if(x>=bx&&x<=bx+TILE&&y>=rm.y&&y<=rm.y+TILE){showBedUpgrade();return}
+  // Door
+  const dw=rw*.5,dh=6;let ddx=rm.x+rw/2-dw/2,ddy=rm.side===0?rm.y+rh:rm.y-dh;
+  if(x>=ddx-5&&x<=ddx+dw+5&&y>=ddy-10&&y<=ddy+dh+10){showDoorUpgrade();return}
+  // Ghost click
+  for(const ghost of G.ghosts){if(ghost.dead)continue;if(Math.abs(x-ghost.x)<20&&Math.abs(y-ghost.y)<20){triggerQuiz(ghost);return}}
+  // Grid
+  for(let r=0;r<RR;r++){for(let col=0;col<RC;col++){
+    const gx=rm.x+col*TILE,gy=rm.y+r*TILE;
+    if(x>=gx&&x<=gx+TILE&&y>=gy&&y<=gy+TILE){
+      if(col===RC-1&&r===0)return; // bed slot
+      G.selectedTile={r,col};
+      if(rm.grid[r][col])showBuildingUpgrade(r,col);else openBuildMenu();
+      return;
+    }
+  }}
+}
+
+/* ── 建筑菜单 ── */
+const BUILD_CATS=['基础','赚钱','防御','高科技','黑科技'];
+function openBuildMenu(){
+  G.buildMenuOpen=true;document.getElementById('buildMenu').classList.add('open');renderBuildTabs(0);
+}
+function closeBuildMenu(){G.buildMenuOpen=false;document.getElementById('buildMenu').classList.remove('open')}
+function renderBuildTabs(idx){
+  document.getElementById('bmTabs').innerHTML=BUILD_CATS.map((c,i)=>`<button class="bm-tab${i===idx?' active':''}" onclick="renderBuildList(${i})">${c}</button>`).join('');
+  renderBuildList(idx);
+}
+function renderBuildList(catIdx){
+  document.querySelectorAll('.bm-tab').forEach((t,i)=>t.classList.toggle('active',i===catIdx));
+  const cat=BUILD_CATS[catIdx];const list=document.getElementById('bmList');
+  const items=Object.entries(BUILDINGS).filter(([k,v])=>(v.cat||'')==cat&&k!=='bed'&&k!=='door');
+  const doorLv=G.playerRoom.door.level+1;
+  list.innerHTML=items.map(([key,b])=>{
+    const ct=b.costType||'gold';const cost=b.cost||0;
+    const count=G.playerRoom.grid.flat().filter(c=>c&&c.type===key).length;
+    const maxB=b.maxBuild||99;const full=count>=maxB;
+    const canAfford=ct==='gold'?G.gold>=cost:G.elec>=cost;
+    const needsItem=['repair','charm','shield','atm','fridge','trap','spike','guillotine'].includes(key);
+    const hasItem=needsItem?(G.itemUses[key]||0)>0:true;
+    const locked=full||!canAfford||(!hasItem&&needsItem);
+    return `<div class="bm-item${locked?' locked':''}" onclick="buildWithQuiz('${key}')">
+      <div class="bi-icon">${b.icon}</div><div class="bi-info">
+        <div class="bi-name">${b.name}${b.maxBuild?` (${count}/${maxB})`:''}</div>
+        <div class="bi-desc">${b.desc||b.levels?.[0]?.desc||''}</div>
+        ${needsItem?`<div class="bi-limit">拥有${G.itemUses[key]||0}次</div>`:''}
+      </div><div class="bi-cost ${ct}-cost">${ct==='gold'?'G':'⚡'} ${cost}</div></div>`;
+  }).join('');
+}
+
+/* ── 答题建造 ── */
+function buildWithQuiz(key){
+  const b=BUILDINGS[key];if(!b)return;
+  const ct=b.costType||'gold';const cost=b.cost||0;
+  if(ct==='gold'&&G.gold<cost)return;if(ct==='elec'&&G.elec<cost)return;
+  closeBuildMenu();
+  // Trigger quiz, on correct -> build
+  G.pendingBuild={key,cost,costType:ct};
+  const q=getRandomQuestion(G.subj.id,G.cfg.starRange);
+  if(!q){executeBuild();return}
+  showQuizForAction(q,'build');
+}
+
+function executeBuild(){
+  const pb=G.pendingBuild;if(!pb)return;
+  const key=pb.key,b=BUILDINGS[key];
+  if(pb.costType==='gold')G.gold-=pb.cost;else G.elec-=pb.cost;
+  const needsItem=['repair','charm','shield','atm','fridge','trap','spike','guillotine'].includes(key);
+  if(needsItem&&G.itemUses[key])G.itemUses[key]--;
+  const{r,col}=G.selectedTile;
+  const rm=G.playerRoom;
+  const cell={type:key,level:0,lastProd:performance.now(),lastShot:0,
+    px:rm.x+col*TILE+TILE/2,py:rm.y+r*TILE+TILE/2};
+  if(b.levels){const lv=b.levels[0];if(lv.dmg)cell.dmg=lv.dmg;if(lv.range)cell.range=lv.range;if(lv.speed)cell.speed=lv.speed;if(lv.prod)cell.prod=lv.prod;if(lv.interval)cell.interval=lv.interval}
+  if(b.prod){cell.prod=b.prod;cell.interval=b.interval||1000}
+  rm.grid[r][col]=cell;
+  if(['charm','shield','atm','fridge','trap','spike','guillotine'].includes(key))G.specials[key]=true;
+  G.pendingBuild=null;
+}
+
+/* ── 升级界面 ── */
+function showBedUpgrade(){
+  const m=document.getElementById('upgradeMenu'),c=document.getElementById('umContent');
+  const nextLv=G.playerRoom.bed.level+1;
+  if(nextLv>=BUILDINGS.bed.levels.length){c.innerHTML='<button class="um-close" onclick="closeUpgrade()">✕</button><p style="color:#999">已达最高级!</p>';m.classList.add('open');return}
+  const next=BUILDINGS.bed.levels[nextLv];
+  const req=next.req;let blocked=false;
+  if(req){const[t,lv]=req.split(':');if(t==='door'&&G.playerRoom.door.level<parseInt(lv)-1)blocked=true}
+  c.innerHTML=`<button class="um-close" onclick="closeUpgrade()">✕</button>
+    <div class="um-row${blocked?' locked':''}" onclick="${blocked?'':'upgradeWithQuiz(\"bed\")'}"">
+      <div class="um-icon">🛏️</div><div class="um-info">
+        <div class="um-name">床 Lv.${nextLv+1} → ${next.desc}</div>
+        <div class="um-stat">${blocked?'🔒 需要门Lv'+req.split(':')[1]:'答题升级'}</div>
+      </div><div class="bi-cost gold-cost">G ${next.cost}</div></div>`;
+  m.classList.add('open');
+}
+function showDoorUpgrade(){
+  const m=document.getElementById('upgradeMenu'),c=document.getElementById('umContent');
+  const nextLv=G.playerRoom.door.level+1;
+  if(nextLv>=BUILDINGS.door.levels.length){c.innerHTML='<button class="um-close" onclick="closeUpgrade()">✕</button><p style="color:#999">已达最高级!</p>';m.classList.add('open');return}
+  const next=BUILDINGS.door.levels[nextLv];
+  c.innerHTML=`<button class="um-close" onclick="closeUpgrade()">✕</button>
+    <div class="um-row" onclick="upgradeWithQuiz('door')">
+      <div class="um-icon">🚪</div><div class="um-info">
+        <div class="um-name">门 → ${next.desc}</div><div class="um-stat">答题升级 · 升级后满血</div>
+      </div><div class="bi-cost gold-cost">G ${next.cost}</div></div>`;
+  m.classList.add('open');
+}
+function showBuildingUpgrade(r,col){
+  const cell=G.playerRoom.grid[r][col];if(!cell)return;
+  const b=BUILDINGS[cell.type];if(!b||!b.levels)return;
+  const m=document.getElementById('upgradeMenu'),c=document.getElementById('umContent');
+  const nextLv=cell.level+1;
+  if(nextLv>=b.levels.length){c.innerHTML=`<button class="um-close" onclick="closeUpgrade()">✕</button><p style="color:#999">${b.name} 已满级!</p>`;m.classList.add('open');return}
+  const cost=b.upgradeCosts?b.upgradeCosts[nextLv]:50;
+  c.innerHTML=`<button class="um-close" onclick="closeUpgrade()">✕</button>
+    <div class="um-row" onclick="upgradeWithQuiz('building',${r},${col})">
+      <div class="um-icon">${b.icon}</div><div class="um-info">
+        <div class="um-name">${b.name} Lv.${nextLv+1}</div>
+      </div><div class="bi-cost gold-cost">G ${cost}</div></div>`;
+  m.classList.add('open');
+}
+function closeUpgrade(){document.getElementById('upgradeMenu').classList.remove('open')}
+
+function upgradeWithQuiz(type,r,col){
+  closeUpgrade();G.pendingUpgrade={type,r,col};
+  const q=getRandomQuestion(G.subj.id,G.cfg.starRange);
+  if(!q){executeUpgrade();return}
+  showQuizForAction(q,'upgrade');
+}
+function executeUpgrade(){
+  const pu=G.pendingUpgrade;if(!pu)return;
+  if(pu.type==='bed'){
+    const nextLv=G.playerRoom.bed.level+1;if(nextLv>=BUILDINGS.bed.levels.length)return;
+    const cost=BUILDINGS.bed.levels[nextLv].cost;if(G.gold<cost)return;
+    G.gold-=cost;G.playerRoom.bed.level=nextLv;
+  }else if(pu.type==='door'){
+    const nextLv=G.playerRoom.door.level+1;if(nextLv>=BUILDINGS.door.levels.length)return;
+    const cost=BUILDINGS.door.levels[nextLv].cost;if(G.gold<cost)return;
+    const next=BUILDINGS.door.levels[nextLv];G.gold-=cost;G.playerRoom.door.level=nextLv;G.playerRoom.door.maxHp=next.hp;G.playerRoom.door.hp=next.hp;
+  }else if(pu.type==='building'){
+    const cell=G.playerRoom.grid[pu.r][pu.col];if(!cell)return;
+    const b=BUILDINGS[cell.type];if(!b||!b.levels)return;
+    const nextLv=cell.level+1;if(nextLv>=b.levels.length)return;
+    const cost=b.upgradeCosts?b.upgradeCosts[nextLv]:50;if(G.gold<cost)return;
+    G.gold-=cost;cell.level=nextLv;const lv=b.levels[nextLv];
+    if(lv.dmg)cell.dmg=lv.dmg;if(lv.range)cell.range=lv.range;if(lv.speed)cell.speed=lv.speed;if(lv.prod)cell.prod=lv.prod;if(lv.interval)cell.interval=lv.interval;
+  }
+  G.pendingUpgrade=null;
+}
+
+/* ── 答题系统（统一） ── */
+let multiSel=[];
+function showQuizForAction(q,actionType){
+  G.quizActive=true;G.currentQuiz={question:q,actionType,startTime:Date.now()};
+  renderQuiz(q);
+}
+function triggerQuiz(ghost){
+  if(G.quizActive)return;G.quizActive=true;
+  const q=getRandomQuestion(G.subj.id,G.cfg.starRange);
+  if(!q){G.quizActive=false;return}
+  G.currentQuiz={question:q,ghost,actionType:'combat',startTime:Date.now()};
+  renderQuiz(q);
+}
+function triggerHunterQuiz(){
+  if(G.quizActive)return;G.quizActive=true;
+  const q=getRandomQuestion(G.subj.id,G.cfg.starRange);
+  if(!q){G.quizActive=false;return}
+  G.currentQuiz={question:q,actionType:'hunterAttack',startTime:Date.now()};
+  renderQuiz(q);
+}
+
+function renderQuiz(q){
+  const box=document.getElementById('quizBox');const ov=document.getElementById('quizOverlay');
+  const tn={single:'单选题',multi:'多选题',judge:'判断题',essay:'分析题'};
+  const tc={single:'t-single',multi:'t-multi',judge:'t-judge',essay:'t-essay'};
+  let h=`<div class="qz-header"><h3>⚔️ 答题${G.mode==='hunter'?'升级':'驱鬼'}</h3><p>${G.currentQuiz.actionType==='combat'?'答对=伤害鬼 · 答错=鬼加速':'答对=执行操作 · 答错=失败'}</p></div>`;
+  h+=`<div class="qz-meta"><span class="qz-tag ${tc[q.type]}">${tn[q.type]}</span><span class="qz-tag t-kp">${q.kp}</span></div>`;
+  h+=`<div class="qz-q">${q.q}</div>`;
+  if(q.type==='single')h+=`<div class="qz-opts">${q.opts.map((o,i)=>`<button class="qz-opt" onclick="ansSingle(${i})"><span class="om">${'ABCD'[i]}</span>${o}</button>`).join('')}</div>`;
+  else if(q.type==='multi'){h+=`<div class="qz-opts" id="multiOpts">${q.opts.map((o,i)=>`<button class="qz-opt" onclick="togMulti(${i},this)"><span class="om">${'ABCDE'[i]}</span>${o}</button>`).join('')}</div>`;h+=`<button class="essay-sub" onclick="subMulti()">确认提交</button>`}
+  else if(q.type==='judge')h+=`<div class="judge-row"><button class="judge-btn" onclick="ansJudge(true)">✓ 正确</button><button class="judge-btn" onclick="ansJudge(false)">✗ 错误</button></div>`;
+  else if(q.type==='essay'){h+=`<textarea class="essay-ta" id="essayInput" placeholder="请输入你的分析(100字以上)..."></textarea>`;h+=`<button class="essay-sub" onclick="subEssay()">提交分析</button>`}
+  box.innerHTML=h;ov.classList.add('open');multiSel=[];
+}
+function ansSingle(i){const q=G.currentQuiz.question;resolveQuiz(i===q.ans,i===q.ans?2:0,q);
+  document.querySelectorAll('.qz-opt').forEach((el,idx)=>{el.classList.add('disabled');if(idx===q.ans)el.classList.add('correct');if(idx===i&&i!==q.ans)el.classList.add('wrong')})}
+function togMulti(i,el){if(multiSel.includes(i)){multiSel=multiSel.filter(x=>x!==i);el.classList.remove('selected')}else{multiSel.push(i);el.classList.add('selected')}}
+function subMulti(){if(!multiSel.length)return;const q=G.currentQuiz.question;
+  const correct=JSON.stringify(multiSel.sort())===JSON.stringify(q.ans.sort());
+  const partial=!correct&&multiSel.every(i=>q.ans.includes(i))&&multiSel.length>0;
+  resolveQuiz(correct||partial,correct?3:partial?1:0,q);multiSel=[]}
+function ansJudge(v){const q=G.currentQuiz.question;resolveQuiz(v===q.ans,v===q.ans?2:0,q);
+  document.querySelectorAll('.judge-btn').forEach((el,idx)=>{const bv=idx===0;if(bv===q.ans)el.classList.add('correct');if(bv===v&&v!==q.ans)el.classList.add('wrong')})}
+function subEssay(){const input=document.getElementById('essayInput').value.trim();if(!input)return;
+  const q=G.currentQuiz.question;const hits=q.keywords.filter(k=>input.toLowerCase().includes(k.toLowerCase()));
+  const logicWords=['因此','所以','然而','综上','therefore','however','thus','hence'];
+  const logicCount=logicWords.filter(w=>input.includes(w)).length;
+  let score=Math.min(5,Math.floor(hits.length/q.keywords.length*5));
+  if(input.length>200)score=Math.min(5,score+1);score=Math.min(5,score+Math.min(2,logicCount));
+  resolveQuiz(score>=3,score,q)}
+
+function resolveQuiz(correct,score,q){
+  G.totalAnswered++;if(correct)G.totalCorrect++;
+  const box=document.getElementById('quizBox');const at=G.currentQuiz.actionType;
+  const sid=G.subj.id;SAVE.subjectStats[sid].t++;if(correct)SAVE.subjectStats[sid].c++;
+
+  if(at==='combat'){
+    const ghost=G.currentQuiz.ghost;
+    if(correct){const dmg=Math.floor(ghost.maxHp*.3)+score*5;ghost.hp-=dmg;G.gold+=Math.floor(10*G.cfg.goldMul);
+      addFloat(ghost.x,ghost.y-10,`-${dmg}`,'#4ade80');if(ghost.hp<=0){ghost.dead=true;checkWin()}
+      box.innerHTML+=`<div class="qz-result ok">✅ 正确! 伤害${dmg} +${Math.floor(10*G.cfg.goldMul)}G</div>`}
+    else{G.ghostSpeedBoost+=.1;box.innerHTML+=`<div class="qz-result fail">❌ 错误! 鬼加速10%</div>`}
+  }else if(at==='build'){
+    if(correct){executeBuild();box.innerHTML+=`<div class="qz-result ok">✅ 建造成功!</div>`}
+    else{G.pendingBuild=null;G.ghostSpeedBoost+=.1;box.innerHTML+=`<div class="qz-result fail">❌ 建造失败! 鬼加速10%</div>`}
+  }else if(at==='upgrade'){
+    if(correct){executeUpgrade();box.innerHTML+=`<div class="qz-result ok">✅ 升级成功!</div>`}
+    else{G.pendingUpgrade=null;G.ghostSpeedBoost+=.1;box.innerHTML+=`<div class="qz-result fail">❌ 升级失败! 鬼加速10%</div>`}
+  }else if(at==='hunterAttack'){
+    if(correct){const h=G.hunter,tr=h.targetRoom;if(tr){const dmg=Math.floor(h.atk*(h.furyActive?1.5:1));tr.door.hp-=dmg;tr.atkFlash=8;screenShake=6;
+      addFloat(h.x,h.y-15,`-${dmg}`,'#c084fc');h.exp+=5;if(h.exp>=h.expNext){h.level++;h.maxHp+=30;h.hp=h.maxHp;h.atk+=3;h.exp=0;h.expNext*=1.4;addFloat(h.x,h.y-30,'⬆LvUP!','#c084fc')}
+      if(tr.door.hp<=0){tr.door.hp=0;checkWin()}}
+      box.innerHTML+=`<div class="qz-result ok">✅ 攻击成功!</div>`}
+    else{box.innerHTML+=`<div class="qz-result fail">❌ 攻击失败!</div>`}
+  }else if(at==='prep_bed'){
+    if(correct){executePrepUpgrade('bed');box.innerHTML+=`<div class="qz-result ok">✅ 床升级成功!</div>`}
+    else{box.innerHTML+=`<div class="qz-result fail">❌ 升级失败!</div>`}
+  }else if(at==='prep_door'){
+    if(correct){executePrepUpgrade('door');box.innerHTML+=`<div class="qz-result ok">✅ 门升级成功!</div>`}
+    else{box.innerHTML+=`<div class="qz-result fail">❌ 升级失败!</div>`}
+  }
+  box.innerHTML+=`<div class="qz-knowledge">📖 ${q.kp}<br>💡 ${q.tip||''}</div>`;
+  setTimeout(()=>{document.getElementById('quizOverlay').classList.remove('open');G.quizActive=false},1600);
+}
+
+/* ── 申论模式 ── */
+function triggerEssayMode(){
+  const paper=getEssayPaper(G.subj.id);
+  const panel=document.getElementById('essayPanel');
+  const ov=document.getElementById('essayOverlay');
+  G.quizActive=true;
+  panel.innerHTML=`<span class="ep-badge">🏆 命题组密卷</span>
+    <div class="ep-title">${paper.title}</div>
+    <div class="ep-abstract">${paper.abstract}</div>
+    <div class="ep-prompt">${paper.prompt}</div>
+    <textarea class="ep-textarea" id="essayModeInput" placeholder="请写出你的分析(100字以上)..."></textarea>
+    <button class="ep-submit" onclick="submitEssayMode()">提交分析</button>`;
+  ov.classList.add('open');G.currentEssayPaper=paper;
+}
+function submitEssayMode(){
+  const input=document.getElementById('essayModeInput').value.trim();
+  if(input.length<20)return;
+  const paper=G.currentEssayPaper;
+  const hits=paper.keywords.filter(k=>input.toLowerCase().includes(k.toLowerCase()));
+  const logicWords=['因此','所以','然而','综上','therefore','however','thus'];
+  const logicCount=logicWords.filter(w=>input.includes(w)).length;
+  let score=Math.floor(hits.length/paper.keywords.length*100);
+  if(input.length>200)score+=10;score+=logicCount*5;score=Math.min(100,score);
+  const pass=score>=60;
+  const panel=document.getElementById('essayPanel');
+  const rewards=['🏆 圣水炸弹 — 全体鬼-50%HP','🏆 时间冻结 — 冻鬼10s','🏆 门修复水晶 — 满血','🏆 双倍产出30s','🏆 猎杀令 — 秒杀下只鬼'];
+  const reward=rewards[Math.floor(Math.random()*rewards.length)];
+  if(pass){
+    panel.innerHTML+=`<div class="ep-result" style="color:var(--ghost)">✅ 得分: ${score}/100 — 通过!</div><div class="ep-reward">${reward}</div>`;
+    // Apply reward
+    if(reward.includes('圣水'))G.ghosts.forEach(g=>{if(!g.dead)g.hp*=.5});
+    if(reward.includes('冻结'))G.ghosts.forEach(g=>{if(!g.dead){g.stunned=true;g.stunEnd=performance.now()+10000}});
+    if(reward.includes('修复')){const d=G.playerRoom.door;d.hp=d.maxHp}
+    if(reward.includes('双倍'))G.gold+=500;
+    if(reward.includes('猎杀')){const alive=G.ghosts.find(g=>!g.dead);if(alive){alive.dead=true;checkWin()}}
+  }else{
+    panel.innerHTML+=`<div class="ep-result" style="color:var(--fury)">❌ 得分: ${score}/100 — 未通过</div>`;
+    G.ghostSpeedBoost+=.15;
+  }
+  G.totalAnswered++;if(pass)G.totalCorrect++;
+  setTimeout(()=>{document.getElementById('essayOverlay').classList.remove('open');G.quizActive=false},2500);
+}
+
+/* ── 蜜罐商店 ── */
+function showShop(){switchScreen('shopScr');document.getElementById('shopBal').textContent=SAVE.honey;renderShopTabs(0)}
+const SHOP_CATS=['高科技','黑科技'];
+function renderShopTabs(idx){
+  document.getElementById('shopTabs').innerHTML=SHOP_CATS.map((c,i)=>`<button class="s-tab${i===idx?' active':''}" onclick="renderShopList(${i})">${c}</button>`).join('');
+  renderShopList(idx);
+}
+function renderShopList(idx){
+  document.querySelectorAll('.s-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  const cat=SHOP_CATS[idx];const list=document.getElementById('shopList');
+  list.innerHTML=SHOP_ITEMS.filter(i=>i.cat===cat).map(item=>`<div class="si">
+    <div class="si-icon">${item.icon}</div><div class="si-info"><div class="si-name">${item.name}</div><div class="si-desc">${item.desc}</div><div class="si-own">拥有: ${SAVE.items[item.id]||0}</div></div>
+    <button class="si-buy" onclick="buyItem('${item.id}',${item.price})">🍯 ${item.price}</button></div>`).join('');
+}
+function buyItem(id,price){if(SAVE.honey<price)return;SAVE.honey-=price;SAVE.items[id]=(SAVE.items[id]||0)+1;saveSave(SAVE);
+  document.getElementById('shopBal').textContent=SAVE.honey;renderShopList([...document.querySelectorAll('.s-tab')].findIndex(t=>t.classList.contains('active')))}
+
+/* ── 公告 ── */
+function showNotice(){switchScreen('noticeScr');document.getElementById('noticePaper').innerHTML=`<h3>楼内公告</h3><ol>
+  <li>如出现红色倒计时请马上离开走廊。</li><li>进宿舍后直接上床，通过睡觉涨金币。</li>
+  <li>如有人破坏门，用炮台和答题驱鬼。</li><li>蜜罐商店的道具需在游戏中建造使用。</li>
+  <li>答错题会让鬼物加速10%！请认真作答。</li><li>每3波触发命题组密卷，写申论获稀有道具。</li>
+  <li>门的等级决定其他建筑的升级上限。</li><li>猎梦者模式：你是鬼，答题攻破所有宿舍！</li></ol>`}
+
+/* ── 进度 ── */
+function showProgress(){switchScreen('progressScr');const b=document.getElementById('progressBody');
+  const acc=SAVE.totalAnswered?Math.floor(SAVE.totalCorrect/SAVE.totalAnswered*100):0;
+  b.innerHTML=`<div class="prog-card"><b>🍯 蜜罐币:</b> ${SAVE.honey}</div>
+    <div class="prog-card"><b>👻 累计驱鬼:</b> ${SAVE.totalGhosts}</div>
+    <div class="prog-card"><b>📝 正确率:</b> ${acc}% (${SAVE.totalCorrect}/${SAVE.totalAnswered})</div>
+    <div class="prog-card"><b>🏆 通关:</b> 简单${SAVE.clears.easy||0}/普通${SAVE.clears.normal||0}/困难${SAVE.clears.hard||0}/噩梦${SAVE.clears.nightmare||0}</div>
+    <h3 style="margin:16px 0 8px;color:var(--blood2)">各科掌握度</h3>
+    ${SUBJECTS.map(s=>{const st=SAVE.subjectStats[s.id];const pct=st.t?Math.floor(st.c/st.t*100):0;
+      return `<div class="prog-card"><b>${s.icon} ${s.name}:</b> ${pct}% (${st.c}/${st.t})</div>`}).join('')}`}
+
+/* ── 菜单雨滴 ── */
+(function(){const r=document.getElementById('menuRain');for(let i=0;i<40;i++){const d=document.createElement('i');d.style.left=Math.random()*100+'%';d.style.height=(10+Math.random()*20)+'px';d.style.animationDuration=(.5+Math.random()*1)+'s';d.style.animationDelay=Math.random()*2+'s';r.appendChild(d)}})();
+
+/* ── 初始化 ── */
+updateMenuHUD();
+
+/* ═══════════════════════════════════════════════════
+   每日自动抓题系统 · DAILY FRESH QUESTION INJECTOR
+   在匹配倒计时期间后台抓取最新题目，合并进QBANK
+═══════════════════════════════════════════════════ */
+(function(){
+  // ── 密钥 (与天机阁同源) ──
+  const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
+  const PPLX_KEY=_dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]);
+  const PPLX_URL='https://api.perplexity.ai/chat/completions';
+
+  // ── 今日日期Key ──
+  function todayKey(subj){ return 'GhostDorm_Daily_'+subj+'_'+new Date().toISOString().split('T')[0]; }
+
+  // ── 每科抓题Prompt ──
+  const PROMPTS={
+    101:`你是考研政治命题组泄密分析师。基于最近60天时政热点(全会/讲话/国际事件/肖秀荣最新押题)，生成15道单选题+5道多选题。
+格式要求(严格JSON数组):
+[{"q":"题干","opts":["A选项","B选项","C选项","D选项"],"ans":0,"kp":"知识点","tip":"解析","star":2,"type":"single"},
+ {"q":"多选题干","opts":["A","B","C","D","E"],"ans":[0,1,2],"kp":"知识点","tip":"解析","star":3,"type":"multi"}]
+ans对单选是正确选项索引(0-3)，对多选是正确索引数组。star是难度1-5。
+铁律:只输出JSON数组,禁止任何其他文字。`,
+    201:`你是考研英语命题专家。基于近期经济学人/卫报/自然英文外刊文章，生成15道英语选择题+5道完形填空选择题。
+题目涵盖:词汇辨析5题、语法5题、阅读理解5题、完形填空5题。
+格式(严格JSON数组):
+[{"q":"The word 'xxx' most closely means?","opts":["A","B","C","D"],"ans":0,"kp":"词汇·xxx","tip":"解析","star":2,"type":"single"}]
+铁律:只输出JSON数组。`,
+    301:`你是考研数学命题专家。生成10道单选题+5道判断题。
+涵盖:高数极限/积分3题、线性代数4题、概率统计3题、判断5题。
+格式(严格JSON数组):
+单选:[{"q":"题干","opts":["A","B","C","D"],"ans":0,"kp":"高数·极限","tip":"解析","star":2,"type":"single"}]
+判断:[{"q":"命题","ans":true,"kp":"知识点","tip":"解析","star":2,"type":"judge"}]
+铁律:只输出JSON数组。`,
+    408:`你是408计算机统考命题专家。生成20道单选题。
+分布:数据结构5题、计算机组成5题、操作系统5题、计算机网络5题。
+格式(严格JSON数组):
+[{"q":"题干","opts":["A","B","C","D"],"ans":0,"kp":"数据结构·xxx","tip":"解析","star":2,"type":"single"}]
+铁律:只输出JSON数组。`
+  };
+
+  // ── 调用Perplexity ──
+  async function fetchFreshQuestions(subjId){
+    const prompt=PROMPTS[subjId];
+    if(!prompt||!PPLX_KEY)return null;
+    try{
+      const resp=await fetch(PPLX_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+PPLX_KEY},
+        body:JSON.stringify({
+          model:'sonar-pro',
+          messages:[{role:'system',content:'你是考研命题专家。只输出严格JSON数组，禁止任何多余文字。'},{role:'user',content:prompt}],
+          temperature:0.7,max_tokens:4000
+        })
+      });
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const raw=data.choices?.[0]?.message?.content||'';
+      // 多策略提取JSON
+      let questions=null;
+      // 策略1: 直接parse
+      try{questions=JSON.parse(raw)}catch(e){}
+      // 策略2: 提取```json块
+      if(!questions){const m=raw.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)try{questions=JSON.parse(m[1])}catch(e){}}
+      // 策略3: 找第一个[ 到最后一个]
+      if(!questions){const s=raw.indexOf('['),e=raw.lastIndexOf(']');if(s>=0&&e>s)try{questions=JSON.parse(raw.substring(s,e+1))}catch(ex){}}
+      if(Array.isArray(questions)&&questions.length>0)return questions;
+      return null;
+    }catch(e){console.warn('[猛鬼宿舍] 抓题失败:',e.message);return null}
+  }
+
+  // ── 合并到QBANK ──
+  function mergeIntoQBank(subjId,freshQ){
+    if(!freshQ||!Array.isArray(freshQ))return 0;
+    const bank=QBANK[subjId];if(!bank)return 0;
+    let added=0;
+    const existStems=new Set([
+      ...(bank.single||[]).map(q=>q.q),
+      ...(bank.multi||[]).map(q=>q.q),
+      ...(bank.judge||[]).map(q=>q.q)
+    ]);
+    freshQ.forEach(q=>{
+      if(!q.q||existStems.has(q.q))return;
+      existStems.add(q.q);
+      const type=q.type||(Array.isArray(q.ans)&&typeof q.ans[0]==='number'?'multi':typeof q.ans==='boolean'?'judge':'single');
+      if(type==='multi'){
+        if(!bank.multi)bank.multi=[];
+        bank.multi.push({q:q.q,opts:q.opts||[],ans:q.ans||[0],kp:q.kp||'每日情报',tip:q.tip||'',star:q.star||2});
+      }else if(type==='judge'){
+        if(!bank.judge)bank.judge=[];
+        bank.judge.push({q:q.q,ans:!!q.ans,kp:q.kp||'每日情报',tip:q.tip||'',star:q.star||2});
+      }else{
+        if(!bank.single)bank.single=[];
+        bank.single.push({q:q.q,opts:q.opts||[],ans:typeof q.ans==='number'?q.ans:0,kp:q.kp||'每日情报',tip:q.tip||'',star:q.star||2});
+      }
+      added++;
+    });
+    return added;
+  }
+
+  // ── 主流程: 页面加载时检查缓存+抓取 ──
+  async function dailyInject(){
+    const subjects=[101,201,301,408];
+    let totalAdded=0;
+    for(const subj of subjects){
+      const key=todayKey(subj);
+      const cached=localStorage.getItem(key);
+      if(cached){
+        // 今日已有缓存,直接合并
+        try{
+          const q=JSON.parse(cached);
+          const n=mergeIntoQBank(subj,q);
+          if(n>0)console.log('[猛鬼宿舍] '+subj+': 从缓存加载 +'+n+' 题');
+          totalAdded+=n;
+        }catch(e){}
+        continue;
+      }
+      // 没缓存→后台抓
+      console.log('[猛鬼宿舍] '+subj+': 正在抓取今日最新题目...');
+      const fresh=await fetchFreshQuestions(subj);
+      if(fresh&&fresh.length>0){
+        localStorage.setItem(key,JSON.stringify(fresh));
+        const n=mergeIntoQBank(subj,fresh);
+        console.log('[猛鬼宿舍] '+subj+': 抓取成功 +'+n+' 新题');
+        totalAdded+=n;
+      }else{
+        console.log('[猛鬼宿舍] '+subj+': 抓取失败,使用内置题库');
+      }
+    }
+    if(totalAdded>0){
+      console.log('[猛鬼宿舍] 📡 今日共注入 '+totalAdded+' 道最新题目!');
+    }
+  }
+
+  // ── 也从Global_Vault读取(天机阁金库的题目) ──
+  function loadFromVault(){
+    const VAULT_MAP={101:'101',201:'201',301:'301',408:'408'};
+    let total=0;
+    for(const [subj,code] of Object.entries(VAULT_MAP)){
+      try{
+        const raw=localStorage.getItem('Global_Vault_'+code);
+        if(!raw)continue;
+        const vaultQ=JSON.parse(raw);
+        if(!Array.isArray(vaultQ)||vaultQ.length===0)continue;
+        const converted=vaultQ.map(v=>({
+          q:v.stem||v.q||'',
+          opts:(v.options||[]).map(o=>typeof o==='string'?o:String(o)),
+          ans:typeof v.answer==='string'?'ABCDE'.indexOf(v.answer.charAt(0).toUpperCase()):0,
+          kp:'天机阁金库',tip:v.analysis?v.analysis.substring(0,60):'金库题',star:3,type:'single'
+        })).filter(q=>q.q.length>5&&q.opts.length>=2);
+        if(converted.length>0){
+          const n=mergeIntoQBank(parseInt(subj),converted);
+          if(n>0)console.log('[猛鬼宿舍] 金库'+code+': +'+n+'题');
+          total+=n;
+        }
+      }catch(e){}
+    }
+    return total;
+  }
+
+  // ── 启动 ──
+  loadFromVault();
+  dailyInject().catch(e=>console.warn('[猛鬼宿舍] 自动抓题异常:',e));
+})();
+
 </script>
 </body>
 </html>
