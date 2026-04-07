@@ -1,19 +1,20 @@
 /**
- * Vocabulary Crush - Main Controller
- * Level map -> Game grid -> Result
+ * Vocabulary Crush — Main Controller v2.0
+ * 金库对接 + 4科主题背景 + 特殊方块反馈 + 粒子庆祝
  */
 const CrushApp = (() => {
   let mode = 'english';
   let currentLevel = 0;
-  let selected = null; // {r,c}
+  let selected = null;
   let processing = false;
-  let progress = {}; // {english:{0:{stars:3},...}, math:{...}}
+  let progress = {};
 
   function init() {
-    // Load progress
     try { progress = JSON.parse(localStorage.getItem('crush_progress')||'{}'); } catch(e){}
     if(!progress.english) progress.english = {};
     if(!progress.math) progress.math = {};
+    if(!progress.politics) progress.politics = {};
+    if(!progress.cs) progress.cs = {};
 
     // Tab switching
     document.querySelectorAll('.lv-tab').forEach(tab => {
@@ -21,11 +22,82 @@ const CrushApp = (() => {
         document.querySelectorAll('.lv-tab').forEach(t=>t.classList.remove('active'));
         tab.classList.add('active');
         mode = tab.dataset.mode;
+        updateTheme();
         renderLevelMap();
       });
     });
 
+    updateTheme();
     renderLevelMap();
+
+    // 背景粒子
+    initParticles();
+  }
+
+  // ═══ 科目主题切换 ═══
+  function updateTheme() {
+    document.body.dataset.mode = mode;
+  }
+
+  // ═══ 背景粒子系统 ═══
+  function initParticles() {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'particleCanvas';
+    canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4';
+    document.body.prepend(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const particles = [];
+    const PARTICLE_COUNT = 30;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const modeColors = {
+      english:'rgba(59,130,246,',
+      math:'rgba(255,215,0,',
+      politics:'rgba(239,68,68,',
+      cs:'rgba(168,85,247,'
+    };
+
+    for(let i=0; i<PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        vx: (Math.random()-0.5)*0.3,
+        vy: -Math.random()*0.5 - 0.1,
+        size: Math.random()*2.5+0.5,
+        alpha: Math.random()*0.5+0.2,
+        pulse: Math.random()*Math.PI*2
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const colorBase = modeColors[mode] || modeColors.english;
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.pulse += 0.02;
+        const pAlpha = p.alpha * (0.5 + 0.5*Math.sin(p.pulse));
+
+        if(p.y < -10) { p.y = canvas.height+10; p.x = Math.random()*canvas.width; }
+        if(p.x < -10) p.x = canvas.width+10;
+        if(p.x > canvas.width+10) p.x = -10;
+
+        ctx.fillStyle = colorBase + pAlpha + ')';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
   }
 
   // ═══ LEVEL MAP ═══
@@ -34,7 +106,6 @@ const CrushApp = (() => {
     const total = CrushData.getTotalLevels(mode);
     const prog = progress[mode] || {};
 
-    // Find highest completed
     let highest = -1;
     for(let i=0;i<total;i++){
       if(prog[i] && prog[i].stars > 0) highest = i;
@@ -63,6 +134,22 @@ const CrushApp = (() => {
       map.appendChild(node);
     }
 
+    // 特殊标记: 金库关卡 / Perplexity关卡
+    const builtinCount = {english:20, math:10, politics:10, cs:10};
+    const bc = builtinCount[mode] || 10;
+    const nodes = map.querySelectorAll('.lv-node');
+    nodes.forEach((n, i) => {
+      if(i >= bc) {
+        n.classList.add('dynamic-level');
+        // 添加金库/AI标记
+        const badge = document.createElement('span');
+        badge.className = 'lv-source-badge';
+        badge.textContent = '📡';
+        badge.title = '金库/AI动态关卡';
+        n.appendChild(badge);
+      }
+    });
+
     // Total stars
     let totalStars = 0;
     Object.values(prog).forEach(p => totalStars += (p.stars||0));
@@ -89,6 +176,7 @@ const CrushApp = (() => {
     closePopup();
     CrushEngine.init(mode, currentLevel);
     show('gameScreen');
+    updateTheme();
     renderGame();
   }
 
@@ -96,10 +184,13 @@ const CrushApp = (() => {
     const S = CrushEngine.getState();
     if(!S) return;
 
-    // HUD
     document.getElementById('gameLevel').textContent = `Lv.${currentLevel+1}`;
     document.getElementById('gameScore').textContent = S.score;
     document.getElementById('gameMoves').textContent = S.moves;
+
+    // Moves color warning
+    const movesEl = document.getElementById('gameMoves');
+    movesEl.classList.toggle('low-moves', S.moves <= 5);
 
     // Sentence
     const sentText = document.getElementById('sentenceText');
@@ -121,7 +212,6 @@ const CrushApp = (() => {
     document.getElementById('progressFill').style.width = `${pct}%`;
     document.getElementById('progressText').textContent = `${filledCount}/${S.targetNeeded}`;
 
-    // Grid
     renderGrid();
   }
 
@@ -163,7 +253,6 @@ const CrushApp = (() => {
       return;
     }
 
-    // Already selected - try swap
     const sr = selected.r, sc = selected.c;
     selected = null;
 
@@ -172,7 +261,6 @@ const CrushApp = (() => {
       return;
     }
 
-    // Check adjacency
     if(Math.abs(sr-r)+Math.abs(sc-c) !== 1) {
       selected = {r, c};
       renderGrid();
@@ -183,20 +271,21 @@ const CrushApp = (() => {
     const result = CrushEngine.swap(sr, sc, r, c);
 
     if(!result || !result.valid) {
-      // Invalid swap - shake
       processing = false;
       renderGrid();
+      // Shake animation
+      const grid = document.getElementById('gameGrid');
+      grid.classList.add('shake');
+      setTimeout(() => grid.classList.remove('shake'), 300);
       if(navigator.vibrate) navigator.vibrate(50);
       return;
     }
 
-    // Animate matches
     animateResult(result);
   }
 
   function animateResult(result) {
     let delay = 0;
-    const S = CrushEngine.getState();
 
     result.chains.forEach((chain, idx) => {
       setTimeout(() => {
@@ -204,11 +293,22 @@ const CrushApp = (() => {
         if(chain.chain >= 2) {
           showCombo(`COMBO x${chain.chain}!`);
         }
-        // Show score
+        // Special tile creation feedback
+        if(chain.specialCreated) {
+          if(chain.specialCreated.type === 'bomb') {
+            showCombo('💣 炸弹生成!');
+          } else if(chain.specialCreated.type === 'rainbow') {
+            showCombo('🌈 彩虹生成!');
+          } else if(chain.specialCreated.type === 'rainbow_activated') {
+            showCombo('🌈 彩虹消除!');
+          }
+        }
         showFloat(`+${chain.score}`, false);
-        // Target hit feedback
         if(chain.targetHits > 0) {
+          showFloat(`✅ 目标词 ×${chain.targetHits}`, false);
           if(navigator.vibrate) navigator.vibrate(100);
+          // Spawn celebration particles
+          spawnBurstParticles();
         }
         renderGame();
       }, delay);
@@ -223,6 +323,26 @@ const CrushApp = (() => {
         setTimeout(() => showResult(), 500);
       }
     }, delay + 200);
+  }
+
+  // ═══ 消除粒子爆发 ═══
+  function spawnBurstParticles() {
+    const burst = document.createElement('div');
+    burst.className = 'burst-container';
+    document.body.appendChild(burst);
+
+    for(let i=0; i<12; i++) {
+      const p = document.createElement('div');
+      p.className = 'burst-particle';
+      const angle = (i/12) * Math.PI * 2;
+      const dist = 40 + Math.random()*60;
+      p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
+      p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
+      p.style.background = ['#f59e0b','#10b981','#3b82f6','#ef4444','#a855f7','#22d3ee'][i%6];
+      burst.appendChild(p);
+    }
+
+    setTimeout(() => burst.remove(), 800);
   }
 
   // ═══ EFFECTS ═══
@@ -263,7 +383,19 @@ const CrushApp = (() => {
 
     show('resultScreen');
 
-    document.getElementById('resultStars').textContent = stars > 0 ? '⭐'.repeat(stars) : '💔';
+    // Stars display with animation
+    const starsEl = document.getElementById('resultStars');
+    if(stars > 0) {
+      starsEl.innerHTML = '';
+      for(let i=0; i<stars; i++) {
+        setTimeout(() => {
+          starsEl.innerHTML += `<span class="star-pop" style="animation-delay:${i*0.15}s">⭐</span>`;
+        }, i * 200);
+      }
+    } else {
+      starsEl.textContent = '💔';
+    }
+
     document.getElementById('resultTitle').textContent = S.won ? '通关!' : '步数用完...';
 
     // Completed sentence
@@ -279,10 +411,38 @@ const CrushApp = (() => {
     document.getElementById('rTime').textContent = `${m}:${String(s).padStart(2,'0')}`;
     document.getElementById('rQi').textContent = `+${qi}`;
 
-    // Learning
+    // Learning card with flip animation
     const learn = document.getElementById('resultLearn');
     learn.innerHTML = `<div class="result-learn-title">💡 你学到了：</div>` +
-      S.wordsLearned.map(w => `<div class="result-learn-item">· ${w}</div>`).join('');
+      S.wordsLearned.map((w,i) =>
+        `<div class="result-learn-item flip-in" style="animation-delay:${i*0.2}s">· ${w}</div>`
+      ).join('');
+
+    // Victory celebration
+    if(S.won) {
+      spawnCelebration();
+    }
+  }
+
+  // ═══ 通关庆祝: 星星飘落 ═══
+  function spawnCelebration() {
+    const container = document.createElement('div');
+    container.className = 'celebration-container';
+    document.body.appendChild(container);
+
+    const emojis = ['⭐','✨','🌟','💫','🎉','🎊'];
+    for(let i=0; i<20; i++) {
+      const star = document.createElement('div');
+      star.className = 'celebration-star';
+      star.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      star.style.left = Math.random()*100 + '%';
+      star.style.animationDuration = (1.5 + Math.random()*2) + 's';
+      star.style.animationDelay = Math.random()*1 + 's';
+      star.style.fontSize = (14 + Math.random()*16) + 'px';
+      container.appendChild(star);
+    }
+
+    setTimeout(() => container.remove(), 4000);
   }
 
   function nextLevel() {
