@@ -789,7 +789,23 @@ const QUESTION_THEFT_PROMPTS = {
 };
 
 // Gemini 2.5 Pro 考卷出题指令
-const PAPER_FORGE_PROMPT = `你是北大考研天机阁的核心出卷引擎。基于提供的情报素材，按严格的试卷模板架构成一套完整考卷。输出规范:严格输出JSON数组。每题格式:{"id":"S1-001","type":"single_choice","stem":"完整题干","options":["A.","B.","C.","D."],"answer":"A","analysis":"详细解析","chapter":"章节","difficulty":3,"score":2,"source":"来源"}。四科模板:101政治(满分100):单选16题1分+多选17题2分+材料分析5题10分。201英语(满分100):完形20题0.5分+传统阅读20题2分+新题型5题2分+翻译5题2分+写作小10大20分。301数学一(满分150):选择10题5分+填空6题5分+解答6题总70分。408计算机(满分150):单选40题2分+综合应用7题总70分涵盖DS/CO/OS/Net。难度分布:基础30%+中等45%+拔高25%`;
+const PAPER_FORGE_PROMPT = `你是北大考研天机阁的出卷引擎。基于情报素材出题。
+
+【输出规则 - 极其重要】
+1. 只输出一个JSON数组，不要任何其他文字
+2. 不要用markdown代码块包裹
+3. 直接以 [ 开头，以 ] 结尾
+
+【每题格式】
+{"id":"Q001","type":"single_choice","stem":"题干","options":["A.xxx","B.xxx","C.xxx","D.xxx"],"answer":"A","analysis":"解析","difficulty":3,"score":2}
+
+【出题要求】
+- 出15道选择题(单选为主，可含2-3道多选标注type为multi_choice)
+- 题目必须直接基于提供的情报素材，考查核心知识点
+- 难度分布：基础5题 + 中等7题 + 拔高3题
+- 每题的analysis字段必须包含详细解题过程
+
+记住：直接输出JSON数组，不要任何前缀后缀！`;
 
 // Gemini 2.5 Pro 出卷 (三通道降级: 直连 → 中转阁 → OpenRouter)
 async function callGeminiPro(systemPrompt, userPrompt) {
@@ -799,7 +815,7 @@ async function callGeminiPro(systemPrompt, userPrompt) {
   if (key) { try {
     console.log('[天机] ⚡ 通道1: Gemini直连出卷...');
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=' + key;
-    const r1 = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ system_instruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user',parts:[{text:userPrompt}]}], generationConfig:{temperature:0.5,maxOutputTokens:8192} }) });
+    const r1 = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ system_instruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user',parts:[{text:userPrompt}]}], generationConfig:{temperature:0.3,maxOutputTokens:16384,responseMimeType:"application/json"} }) });
     const d1 = await r1.json(); if(d1.error) throw new Error(d1.error.message);
     const t1 = d1.candidates?.[0]?.content?.parts?.[0]?.text||'';
     if(t1){console.log('[天机] ✅ Gemini直连完成!('+t1.length+'字)'); return t1.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
@@ -808,7 +824,7 @@ async function callGeminiPro(systemPrompt, userPrompt) {
   try {
     console.log('[天机] 🔁 通道2: 中转阁Gemini出卷...');
     const h2 = {'Content-Type':'application/json'}; if(key) h2['x-gemini-key']=key;
-    const r2 = await fetch(RELAY_URL+'/gemini/generate', { method:'POST', headers:h2, body:JSON.stringify({model:'gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
+    const r2 = await fetch(RELAY_URL+'/gemini/generate', { method:'POST', headers:h2, body:JSON.stringify({model:'gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.3,max_tokens:16384}) });
     const d2 = await r2.json(); if(d2.error) throw new Error(d2.error.message||JSON.stringify(d2.error));
     const t2 = (d2.choices||[{}])[0]?.message?.content || d2.candidates?.[0]?.content?.parts?.[0]?.text || '';
     if(t2){console.log('[天机] ✅ 中转阁出卷完成!('+t2.length+'字)'); return t2.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
@@ -817,7 +833,7 @@ async function callGeminiPro(systemPrompt, userPrompt) {
   const orKey = KEYS.OR_KEY;
   if(orKey){ try {
     console.log('[天机] 🔁 通道3: OpenRouter Gemini出卷...');
-    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.5,max_tokens:8192}) });
+    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro-preview',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.3,max_tokens:16384}) });
     const d3 = await r3.json(); if(d3.error) throw new Error(d3.error.message);
     const t3 = (d3.choices||[{}])[0]?.message?.content||'';
     if(t3){console.log('[天机] ✅ OpenRouter出卷完成!('+t3.length+'字)'); return t3.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
@@ -847,9 +863,7 @@ async function stealAndForge(subject) {
 ${rawIntel}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-请基于以上情报素材，架构成一套完整的考研${subNames[subject]}试卷。
-包含所有题型，按真实考研格式和分值分布。
-严格输出JSON数组。`;
+请基于以上情报素材，出15道高质量选择题。直接输出JSON数组，不要其他文字。`;
 
   const paperRaw = await callGeminiPro(PAPER_FORGE_PROMPT, forgePrompt);
   
@@ -857,14 +871,37 @@ ${rawIntel}
   statusEl.textContent = `💾 存入金库 ${subject}...`;
   progressEl.style.width = '90%';
   let questions = [];
-  try {
-    const jsonMatch = paperRaw.match(/\[[\s\S]*\]/);
-    if (jsonMatch) questions = JSON.parse(jsonMatch[0]);
-    else throw new Error('No JSON array found');
-  } catch(e) {
-    try { questions = JSON.parse('[' + paperRaw.replace(/```json?\n?/g,'').replace(/```/g,'').trim() + ']'); }
-    catch(e2) { console.warn('[天机] JSON解析失败，存储原始文本'); }
-  }
+  console.log('[天机] 📄 Gemini原始返回(前500字):', paperRaw.substring(0, 500));
+  // 多策略JSON提取
+  const extractJSON = (raw) => {
+    if (!raw || raw.length < 10) return [];
+    // 策略1: 直接解析(如果是纯JSON)
+    try { const arr = JSON.parse(raw.trim()); if(Array.isArray(arr) && arr.length>0) return arr; } catch(e){}
+    // 策略2: 去掉markdown代码块
+    const cleaned = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    try { const arr = JSON.parse(cleaned); if(Array.isArray(arr) && arr.length>0) return arr; } catch(e){}
+    // 策略3: 提取最外层 [...]
+    const m1 = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (m1) { try { return JSON.parse(m1[0]); } catch(e){} }
+    // 策略4: 提取所有 {...} 对象
+    const objs = [];
+    const regex = /\{[^{}]*"stem"[^{}]*\}/g;
+    let match;
+    while((match = regex.exec(raw)) !== null) {
+      try { objs.push(JSON.parse(match[0])); } catch(e){}
+    }
+    if (objs.length > 0) { console.log('[天机] 策略4: 逐个提取到', objs.length, '题'); return objs; }
+    // 策略5: 修复常见JSON错误(尾部逗号、截断)
+    try {
+      let fixed = cleaned.replace(/,\s*\]/g, ']').replace(/,\s*$/,'');
+      if (!fixed.endsWith(']')) fixed += ']}';
+      if (fixed.startsWith('[')) { return JSON.parse(fixed); }
+    } catch(e){}
+    console.warn('[天机] ❌ 所有JSON提取策略均失败');
+    return [];
+  };
+  questions = extractJSON(paperRaw);
+  console.log('[天机] 📊 JSON提取结果:', questions.length, '题');
 
   // 存入 Global Vault
   let existing = [];
