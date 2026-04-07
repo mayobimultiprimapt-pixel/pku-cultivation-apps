@@ -1,146 +1,641 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <title>猛鬼考研宿舍 · 北大真题密卷</title>
-  <meta name="description" content="恐怖宿舍探索 x 考研四科综合模拟 — 答题保命，存活到天亮">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Sans+SC:wght@400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="ghost-style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>猛鬼宿舍 · 塔防答题 — 北大考研修仙应用集</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a12;--card:#12121f;--border:#1e1e35;
+  --red:#ff2e63;--green:#39ff14;--gold:#ffd700;--cyan:#08f7fe;--purple:#9d4edd;
+  --text:#e8e8f0;--sub:#666;--dim:#444;
+  --font-d:'Orbitron',monospace;--font-c:'Noto Sans SC',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-c);overflow:hidden;height:100vh;width:100vw}
+button{font-family:var(--font-c);cursor:pointer;border:none;outline:none}
+
+/* ═══ 开始界面 ═══ */
+#startScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:20px;animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.game-logo{font-size:48px;margin-bottom:8px}
+.game-title{font-family:var(--font-d);font-size:28px;color:var(--red);text-shadow:0 0 20px rgba(255,46,99,.4);margin-bottom:4px}
+.game-sub{font-size:12px;color:var(--sub);letter-spacing:3px;margin-bottom:30px}
+.subject-pick{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
+.subject-btn{padding:18px 24px;background:var(--card);border:2px solid var(--border);border-radius:14px;color:var(--text);font-size:14px;font-weight:700;min-width:140px;transition:.3s}
+.subject-btn:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 8px 25px rgba(157,78,221,.2)}
+.subject-btn.active{border-color:var(--red);background:rgba(255,46,99,.08);box-shadow:0 0 20px rgba(255,46,99,.15)}
+.subject-btn .sb-code{font-family:var(--font-d);font-size:22px;color:var(--red);margin-bottom:4px}
+.subject-btn .sb-name{font-size:11px;color:var(--sub)}
+.subject-btn .sb-info{font-size:10px;color:var(--dim);margin-top:6px}
+.start-btn{padding:16px 60px;background:linear-gradient(135deg,var(--red),var(--purple));color:#fff;font-size:18px;font-weight:900;border-radius:50px;letter-spacing:4px;transition:.3s;box-shadow:0 4px 20px rgba(255,46,99,.3)}
+.start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,46,99,.5)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.back-link{margin-top:20px;color:var(--sub);font-size:12px;text-decoration:none}
+.back-link:hover{color:var(--text)}
+
+/* ═══ 游戏界面 ═══ */
+#gameScreen{display:none;height:100vh;flex-direction:column}
+
+/* 顶部状态栏 */
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(10,10,18,.95);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat{display:flex;align-items:center;gap:4px;font-family:var(--font-d);font-size:13px}
+.stat-gold{color:var(--gold)}
+.stat-wave{color:var(--red)}
+.stat-score{color:var(--cyan)}
+
+/* 宿舍视图 */
+.dorm-view{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#0d0d1a 0%,#151528 100%)}
+.dorm-grid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:8px}
+.room{background:rgba(18,18,31,.8);border:1px solid var(--border);border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;transition:.3s}
+.room.has-bed{background:rgba(255,215,0,.03);border-color:rgba(255,215,0,.15)}
+.room.has-turret{background:rgba(8,247,254,.03);border-color:rgba(8,247,254,.15)}
+.room-icon{font-size:28px;opacity:.7}
+.room-level{position:absolute;top:4px;right:6px;font-family:var(--font-d);font-size:9px;color:var(--gold);background:rgba(0,0,0,.5);padding:1px 5px;border-radius:4px}
+.room-label{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:9px;color:var(--sub)}
+
+/* 走廊(中间) */
+.corridor{grid-column:2;grid-row:1/-1;background:rgba(18,18,31,.4);border:1px solid var(--border);border-radius:8px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px}
+.door-area{width:80%;padding:8px;background:rgba(255,46,99,.05);border:2px solid var(--red);border-radius:8px;text-align:center}
+.door-hp-bar{width:100%;height:8px;background:var(--bg);border-radius:4px;margin-top:4px;overflow:hidden}
+.door-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--green));border-radius:4px;transition:width .3s}
+.door-label{font-size:10px;color:var(--sub);margin-top:2px}
+
+/* 猛鬼 */
+.ghost{font-size:40px;transition:transform .5s,opacity .5s;animation:ghostFloat 2s ease-in-out infinite}
+.ghost.attacking{animation:ghostAttack .3s ease infinite}
+.ghost.hidden{opacity:0;transform:scale(0)}
+@keyframes ghostFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ghostAttack{0%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}100%{transform:translateX(0)}}
+
+/* 警报效果 */
+.dorm-view.alert{animation:alertFlash .5s ease}
+@keyframes alertFlash{0%,100%{box-shadow:inset 0 0 0 transparent}50%{box-shadow:inset 0 0 60px rgba(255,46,99,.2)}}
+
+/* 建造菜单 */
+.build-menu{display:flex;gap:6px;padding:8px 12px;background:rgba(10,10,18,.95);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.build-btn{flex:1;padding:8px 4px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:10px;text-align:center;transition:.2s;min-width:70px}
+.build-btn:hover:not(:disabled){border-color:var(--gold);background:rgba(255,215,0,.05)}
+.build-btn:disabled{opacity:.3;cursor:not-allowed}
+.build-btn .bb-icon{font-size:18px;display:block;margin-bottom:2px}
+.build-btn .bb-name{font-weight:700;font-size:11px}
+.build-btn .bb-cost{color:var(--gold);font-family:var(--font-d);font-size:10px;margin-top:2px}
+
+/* 答题区 */
+.question-area{flex-shrink:0;padding:12px;background:var(--card);border-top:1px solid var(--border)}
+.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.q-progress{font-size:11px;color:var(--sub)}
+.q-timer{font-family:var(--font-d);font-size:13px;color:var(--red)}
+.q-stem{font-size:14px;line-height:1.8;margin-bottom:10px;min-height:40px}
+.q-stem .blank{display:inline-block;min-width:60px;border-bottom:2px solid var(--cyan);color:var(--cyan);text-align:center;padding:0 4px;margin:0 2px}
+.q-input-row{display:flex;gap:8px}
+.q-input{flex:1;padding:10px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-c);outline:none;transition:.2s}
+.q-input:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(8,247,254,.15)}
+.q-submit{padding:10px 20px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;font-weight:900;border-radius:10px;font-size:14px;transition:.2s}
+.q-submit:hover{transform:scale(1.05)}
+/* 选项式(完形) */
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.q-opt{padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;text-align:left;transition:.2s}
+.q-opt:hover{border-color:var(--cyan);background:rgba(8,247,254,.05)}
+.q-opt.correct{border-color:var(--green);background:rgba(57,255,20,.1);color:var(--green)}
+.q-opt.wrong{border-color:var(--red);background:rgba(255,46,99,.1);color:var(--red)}
+
+/* 反馈 */
+.feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-d);font-size:36px;font-weight:900;pointer-events:none;animation:fbPop .8s ease-out forwards;z-index:100}
+@keyframes fbPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
+.fb-correct{color:var(--green);text-shadow:0 0 20px rgba(57,255,20,.5)}
+.fb-wrong{color:var(--red);text-shadow:0 0 20px rgba(255,46,99,.5)}
+
+/* 波次提示 */
+.wave-banner{position:fixed;top:0;left:0;right:0;padding:30px;text-align:center;background:linear-gradient(180deg,rgba(255,46,99,.15),transparent);font-family:var(--font-d);font-size:24px;color:var(--red);text-shadow:0 0 30px rgba(255,46,99,.5);animation:waveIn 2s ease-out forwards;z-index:99;pointer-events:none}
+@keyframes waveIn{0%{opacity:0;transform:translateY(-30px)}20%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+/* 结算 */
+#resultScreen{display:none;position:fixed;inset:0;background:rgba(10,10,18,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.result-icon{font-size:64px;margin-bottom:12px}
+.result-title{font-family:var(--font-d);font-size:28px;margin-bottom:8px}
+.result-sub{color:var(--sub);font-size:14px;margin-bottom:20px}
+.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;width:100%;max-width:300px}
+.rs-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.rs-val{font-family:var(--font-d);font-size:20px;color:var(--gold)}
+.rs-label{font-size:11px;color:var(--sub);margin-top:4px}
+.retry-btn{padding:14px 50px;background:linear-gradient(135deg,var(--red),var(--purple));color:#fff;font-size:16px;font-weight:900;border-radius:50px;letter-spacing:3px}
+
+@media(max-width:500px){
+  .dorm-grid{grid-template-columns:1fr 1.5fr 1fr}
+  .game-title{font-size:22px}
+  .game-logo{font-size:36px}
+}
+</style>
 </head>
 <body>
-  <div id="app">
-    <!-- Start -->
-    <section id="startScreen" class="screen">
-      <div class="start-bg"></div>
-      <div class="start-content">
-        <div class="start-icon">👻</div>
-        <h1 class="start-title">猛鬼考研宿舍</h1>
-        <p class="start-sub">在闹鬼宿舍搜集真题密卷<br>答对考研题才能活到天亮</p>
-        <div class="start-info">
-          <span>🏚 3层12间房</span>
-          <span>👻 25-30题</span>
-          <span>📜 5张密卷</span>
-        </div>
-        <button class="btn-start" onclick="GhostApp.startGame()">🕯 进入宿舍</button>
-        <a href="../index.html" class="btn-home">🏠 返回门户</a>
-      </div>
-    </section>
 
-    <!-- Hallway -->
-    <section id="hallScreen" class="screen hidden">
-      <div class="hall-bg" id="hallBg"></div>
-      <div class="hall-scanline"></div>
-      <div class="hall-hud">
-        <div class="hud-sanity">
-          <span>🕯</span>
-          <div class="sanity-bar"><div class="sanity-fill" id="sanityFill"></div></div>
-          <span class="sanity-val" id="sanityVal">100</span>
-        </div>
-        <div class="hud-floor" id="hudFloor">1F</div>
-        <div class="hud-scrolls">📜 <span id="hudScrolls">0</span>/5</div>
-      </div>
-      <!-- Flashlight overlay -->
-      <div class="flashlight" id="flashlight"></div>
-      <!-- Ghost flash -->
-      <div class="hall-ghost hidden" id="hallGhost">👻</div>
-      <!-- Doors -->
-      <div class="hall-doors" id="hallDoors"></div>
-      <!-- Floor nav -->
-      <div class="hall-nav">
-        <button class="nav-btn" id="navDown" onclick="GhostApp.changeFloor(-1)">⬇ 下楼</button>
-        <span class="nav-floor" id="navFloorLabel">1F 走廊</span>
-        <button class="nav-btn" id="navUp" onclick="GhostApp.changeFloor(1)">⬆ 上楼</button>
-      </div>
-      <!-- Hall warning -->
-      <div class="hall-warn hidden" id="hallWarn">有什么东西在靠近...</div>
-    </section>
+<!-- ═══ 开始界面 ═══ -->
+<div id="startScreen">
+  <div class="game-logo">👻</div>
+  <div class="game-title">猛鬼宿舍</div>
+  <div class="game-sub">HAUNTED DORM · TOWER DEFENSE</div>
 
-    <!-- Room -->
-    <section id="roomScreen" class="screen hidden">
-      <div class="room-bg"></div>
-      <div class="room-scanline"></div>
-      <div class="room-hud">
-        <button class="hud-back" onclick="GhostApp.exitRoom()">← 离开</button>
-        <span class="room-label" id="roomLabel">Room 101</span>
-        <div class="hud-sanity-mini">🕯 <span id="roomSanity">100</span></div>
-      </div>
-      <!-- Hotspots -->
-      <div class="room-scene" id="roomScene">
-        <div class="hotspot hs-desk" onclick="GhostApp.searchSpot('desk')">
-          <span class="hs-icon">📜</span>
-          <span class="hs-label">桌面</span>
-        </div>
-        <div class="hotspot hs-closet" onclick="GhostApp.searchSpot('closet')">
-          <span class="hs-icon">🚪</span>
-          <span class="hs-label">衣柜</span>
-        </div>
-        <div class="hotspot hs-bed" onclick="GhostApp.searchSpot('bed')">
-          <span class="hs-icon">🔦</span>
-          <span class="hs-label">床底</span>
-        </div>
-      </div>
-      <!-- Search result popup -->
-      <div class="room-found hidden" id="roomFound">
-        <div class="found-icon" id="foundIcon">📜</div>
-        <div class="found-text" id="foundText">发现了什么...</div>
-      </div>
-    </section>
-
-    <!-- Ghost Encounter -->
-    <section id="ghostScreen" class="screen hidden">
-      <div class="ghost-bg"></div>
-      <div class="ghost-vignette"></div>
-      <div class="ghost-static"></div>
-      <div class="ghost-figure" id="ghostFigure">👻</div>
-      <div class="ghost-speech" id="ghostSpeech">答对...就放你走...</div>
-      <div class="ghost-question" id="ghostQuestion">
-        <div class="gq-subject" id="gqSubject">政治</div>
-        <div class="gq-timer"><span id="gqTimer">10</span>s</div>
-        <div class="gq-text" id="gqText">Loading...</div>
-        <div class="gq-options" id="gqOptions"></div>
-      </div>
-      <!-- Answer result -->
-      <div class="ghost-result hidden" id="ghostResult">
-        <div class="gr-icon" id="grIcon">✅</div>
-        <div class="gr-text" id="grText">正确!</div>
-        <div class="gr-explain" id="grExplain"></div>
-        <button class="btn-ghost-continue" onclick="GhostApp.afterGhost()">继续</button>
-      </div>
-    </section>
-
-    <!-- Jump Scare -->
-    <div class="jumpscare hidden" id="jumpScare">
-      <div class="js-face">👹</div>
-    </div>
-
-    <!-- Game Over -->
-    <section id="overScreen" class="screen hidden">
-      <div class="over-bg"></div>
-      <div class="over-card">
-        <div class="over-icon" id="overIcon">💀</div>
-        <h2 class="over-title" id="overTitle">理智崩溃...</h2>
-        <div class="over-sub" id="overSub">你被厉鬼抓走了</div>
-        <div class="over-grid">
-          <div class="og"><span class="og-l">存活</span><span class="og-v" id="ogTime">0:00</span></div>
-          <div class="og"><span class="og-l">密卷</span><span class="og-v" id="ogScrolls">0/5</span></div>
-          <div class="og"><span class="og-l">答题</span><span class="og-v" id="ogTotal">0</span></div>
-          <div class="og"><span class="og-l">正确率</span><span class="og-v" id="ogAcc">0%</span></div>
-          <div class="og"><span class="og-l">击退鬼</span><span class="og-v" id="ogGhosts">0</span></div>
-          <div class="og"><span class="og-l">灵气</span><span class="og-v" id="ogQi">+0</span></div>
-        </div>
-        <div class="over-learn" id="overLearn"></div>
-        <div class="over-btns">
-          <button class="btn-start" onclick="GhostApp.startGame()">🏚 再闯一次</button>
-          <button class="btn-home" onclick="location.href='../index.html'">🏠 返回</button>
-        </div>
-      </div>
-    </section>
+  <div class="subject-pick">
+    <button class="subject-btn active" data-sub="201" onclick="selectSub(this)">
+      <div class="sb-code">201</div>
+      <div class="sb-name">英语 · 完形填空</div>
+      <div class="sb-info">20空 / 每空4选项</div>
+    </button>
+    <button class="subject-btn" data-sub="301" onclick="selectSub(this)">
+      <div class="sb-code">301</div>
+      <div class="sb-name">数学 · 填空题</div>
+      <div class="sb-info">6题 / 精确填答案</div>
+    </button>
   </div>
 
-  <script src="ghost-data.js"></script>
-  <script src="ghost-engine.js"></script>
-  <script src="ghost-app.js"></script>
+  <button class="start-btn" onclick="startGame()">准 备</button>
+  <a href="../" class="back-link">← 返回门户</a>
+</div>
+
+<!-- ═══ 游戏界面 ═══ -->
+<div id="gameScreen">
+  <div class="top-bar">
+    <div class="stat stat-gold">💰 <span id="goldVal">0</span></div>
+    <div class="stat stat-wave">👻 WAVE <span id="waveVal">0</span>/5</div>
+    <div class="stat stat-score">📊 <span id="scoreVal">0</span>分</div>
+  </div>
+
+  <div class="dorm-view" id="dormView">
+    <div class="dorm-grid">
+      <!-- 左房间 -->
+      <div class="room has-bed" id="room-bed" onclick="upgradeBed()">
+        <div class="room-icon">🛏️</div>
+        <div class="room-level" id="bedLv">Lv.1</div>
+        <div class="room-label">床铺</div>
+      </div>
+      <div class="corridor" id="corridor">
+        <div class="door-area" id="doorArea" onclick="upgradeDoor()">
+          <div style="font-size:12px;color:var(--red)">🚪 大门 <span id="doorLv">Lv.1</span></div>
+          <div class="door-hp-bar"><div class="door-hp-fill" id="doorHP" style="width:100%"></div></div>
+          <div class="door-label"><span id="doorHPText">100</span> / <span id="doorMaxText">100</span></div>
+        </div>
+        <div class="ghost hidden" id="ghost">👻</div>
+      </div>
+      <div class="room has-turret" id="room-turret1" onclick="buildTurret(1)">
+        <div class="room-icon" id="turret1Icon">🔧</div>
+        <div class="room-level" id="turret1Lv" style="display:none">Lv.1</div>
+        <div class="room-label">炮位 1</div>
+      </div>
+      <!-- 下排 -->
+      <div class="room" id="room-elec" onclick="buildElec()">
+        <div class="room-icon" id="elecIcon">🔌</div>
+        <div class="room-level" id="elecLv" style="display:none">Lv.1</div>
+        <div class="room-label">电力室</div>
+      </div>
+      <div class="room" style="grid-column:2;background:transparent;border:none">
+        <!-- 留空 -->
+      </div>
+      <div class="room has-turret" id="room-turret2" onclick="buildTurret(2)">
+        <div class="room-icon" id="turret2Icon">🔧</div>
+        <div class="room-level" id="turret2Lv" style="display:none">Lv.1</div>
+        <div class="room-label">炮位 2</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="build-menu">
+    <button class="build-btn" onclick="upgradeBed()" id="btnBed">
+      <span class="bb-icon">🛏️</span>
+      <span class="bb-name">升级床</span>
+      <span class="bb-cost" id="bedCost">30💰</span>
+    </button>
+    <button class="build-btn" onclick="upgradeDoor()" id="btnDoor">
+      <span class="bb-icon">🚪</span>
+      <span class="bb-name">加固门</span>
+      <span class="bb-cost" id="doorCost">40💰</span>
+    </button>
+    <button class="build-btn" onclick="buildTurret(1)" id="btnTurret1">
+      <span class="bb-icon">🔫</span>
+      <span class="bb-name">炮塔1</span>
+      <span class="bb-cost" id="turret1Cost">60💰</span>
+    </button>
+    <button class="build-btn" onclick="buildTurret(2)" id="btnTurret2">
+      <span class="bb-icon">🔫</span>
+      <span class="bb-name">炮塔2</span>
+      <span class="bb-cost" id="turret2Cost">60💰</span>
+    </button>
+    <button class="build-btn" onclick="buildElec()" id="btnElec">
+      <span class="bb-icon">⚡</span>
+      <span class="bb-name">电力室</span>
+      <span class="bb-cost" id="elecCost">80💰</span>
+    </button>
+  </div>
+
+  <div class="question-area" id="questionArea">
+    <div class="q-header">
+      <span class="q-progress" id="qProgress">题目 1/20</span>
+      <span class="q-timer" id="qTimer">⏱ 15s</span>
+    </div>
+    <div class="q-stem" id="qStem">加载题目中...</div>
+    <div class="q-options" id="qOptions"></div>
+    <div class="q-input-row" id="qInputRow" style="display:none">
+      <input class="q-input" id="qInput" placeholder="输入答案..." autocomplete="off">
+      <button class="q-submit" onclick="submitFill()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 结算界面 ═══ -->
+<div id="resultScreen">
+  <div class="result-icon" id="resultIcon">🏆</div>
+  <div class="result-title" id="resultTitle" style="color:var(--gold)">通关成功!</div>
+  <div class="result-sub" id="resultSub">你成功挺过了猛鬼的5波进攻</div>
+  <div class="result-stats">
+    <div class="rs-item"><div class="rs-val" id="rsCorrect">0</div><div class="rs-label">答对</div></div>
+    <div class="rs-item"><div class="rs-val" id="rsWrong">0</div><div class="rs-label">答错</div></div>
+    <div class="rs-item"><div class="rs-val" id="rsGold">0</div><div class="rs-label">总金币</div></div>
+    <div class="rs-item"><div class="rs-val" id="rsWave">0</div><div class="rs-label">存活波数</div></div>
+  </div>
+  <button class="retry-btn" onclick="location.reload()">再来一局</button>
+  <a href="../" class="back-link" style="margin-top:16px">← 返回门户</a>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// 猛鬼宿舍 · 塔防答题引擎 v4.0
+// ═══════════════════════════════════════════
+
+// ---- 游戏状态 ----
+var G = {
+  subject: '201',
+  gold: 0, score: 0,
+  bedLv: 1, doorLv: 1,
+  doorHP: 100, doorMax: 100,
+  turrets: [0, 0], // 0=未建, 1/2/3=等级
+  elecLv: 0, elecGen: 0,
+  wave: 0, maxWave: 5,
+  ghostHP: 0, ghostMax: 0, ghostAtk: 0,
+  ghostActive: false,
+  questions: [], currentQ: 0,
+  correct: 0, wrong: 0, totalGold: 0,
+  timer: null, qTimer: 15, qInterval: null,
+  gameOver: false,
+  ghostInterval: null, turretInterval: null
+};
+
+// ---- 内置题库(保底) ----
+var BUILTIN_201 = [
+  {stem:'The weather was ___ cold that we stayed indoors.', options:['A. so','B. such','C. very','D. too'], answer:'A'},
+  {stem:'She has been working here ___ 2020.', options:['A. for','B. since','C. from','D. at'], answer:'B'},
+  {stem:'Neither Tom nor his friends ___ interested in football.', options:['A. is','B. was','C. are','D. has been'], answer:'C'},
+  {stem:'The manager insisted that the report ___ finished by Friday.', options:['A. be','B. is','C. was','D. will be'], answer:'A'},
+  {stem:'It was not until midnight ___ he finished the work.', options:['A. when','B. that','C. which','D. as'], answer:'B'},
+  {stem:'The number of students ___ increased this year.', options:['A. have','B. has','C. are','D. were'], answer:'B'},
+  {stem:'He would rather ___ at home than go out in the rain.', options:['A. stay','B. stays','C. stayed','D. to stay'], answer:'A'},
+  {stem:'The book is well worth ___.', options:['A. read','B. reading','C. to read','D. being read'], answer:'B'},
+  {stem:'___ hard he tried, he could not solve the problem.', options:['A. Whatever','B. Although','C. However','D. No matter'], answer:'C'},
+  {stem:'Tom, together with his classmates, ___ going to the museum.', options:['A. are','B. is','C. were','D. have been'], answer:'B'},
+  {stem:'By the time she arrives, we ___ dinner.', options:['A. finish','B. finished','C. will have finished','D. have finished'], answer:'C'},
+  {stem:'The reason ___ he was late was that he missed the bus.', options:['A. which','B. that','C. why','D. for'], answer:'C'},
+  {stem:'I wish I ___ a bird.', options:['A. am','B. was','C. were','D. be'], answer:'C'},
+  {stem:'He ran fast ___ he could catch the bus.', options:['A. in order to','B. so that','C. as to','D. for'], answer:'B'},
+  {stem:'Not only ___ hard, but also he is very honest.', options:['A. he works','B. does he work','C. he does work','D. works he'], answer:'B'},
+  {stem:'The problem is ___ difficult for me to solve.', options:['A. so','B. very','C. too','D. quite'], answer:'C'},
+  {stem:'She ___ in Beijing for ten years by next year.', options:['A. will live','B. has lived','C. will have lived','D. lived'], answer:'C'},
+  {stem:'This is the factory ___ we visited last week.', options:['A. where','B. which','C. in which','D. what'], answer:'B'},
+  {stem:'___ from the hill, the city looks beautiful.', options:['A. Seeing','B. Seen','C. To see','D. Having seen'], answer:'B'},
+  {stem:'Had I known the truth, I ___ you earlier.', options:['A. told','B. would tell','C. would have told','D. will tell'], answer:'C'},
+];
+
+var BUILTIN_301 = [
+  {stem:'求极限 lim(x→0) sin(3x)/x = ?', answer:'3'},
+  {stem:'求导数 d/dx [x²·eˣ] 在x=0处的值 = ?', answer:'0'},
+  {stem:'定积分 ∫₀¹ 2x dx = ?', answer:'1'},
+  {stem:'矩阵 A=[1,2;3,4] 的行列式 |A| = ?', answer:'-2'},
+  {stem:'P(A)=0.3, P(B)=0.4, A与B独立, 则P(AB) = ?', answer:'0.12'},
+  {stem:'函数 f(x)=x³-3x 在x=1处的极值为?', answer:'-2'},
+];
+
+// ---- 科目选择 ----
+function selectSub(btn) {
+  document.querySelectorAll('.subject-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  G.subject = btn.dataset.sub;
+}
+
+// ---- 开始游戏 ----
+function startGame() {
+  G.questions = G.subject === '201' ? BUILTIN_201.slice() : BUILTIN_301.slice();
+  // 打乱题序
+  for (var i = G.questions.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = G.questions[i]; G.questions[i] = G.questions[j]; G.questions[j] = t;
+  }
+  G.currentQ = 0; G.correct = 0; G.wrong = 0;
+  G.gold = 0; G.score = 0; G.totalGold = 0;
+  G.bedLv = 1; G.doorLv = 1;
+  G.doorHP = 100; G.doorMax = 100;
+  G.turrets = [0, 0]; G.elecLv = 0;
+  G.wave = 0; G.ghostActive = false; G.gameOver = false;
+
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  updateUI();
+  showQuestion();
+  startWaveTimer();
+}
+
+// ---- 显示题目 ----
+function showQuestion() {
+  if (G.currentQ >= G.questions.length) {
+    // 题目做完了 → 循环
+    G.currentQ = 0;
+    for (var i = G.questions.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = G.questions[i]; G.questions[i] = G.questions[j]; G.questions[j] = t;
+    }
+  }
+  var q = G.questions[G.currentQ];
+  var total = G.questions.length;
+  document.getElementById('qProgress').textContent = '题目 ' + (G.currentQ + 1) + '/' + total;
+
+  if (G.subject === '201') {
+    // 完形: 显示选项
+    document.getElementById('qStem').innerHTML = q.stem.replace(/_+/g, '<span class="blank">____</span>');
+    document.getElementById('qOptions').style.display = 'grid';
+    document.getElementById('qInputRow').style.display = 'none';
+    var optHtml = '';
+    for (var i = 0; i < q.options.length; i++) {
+      optHtml += '<button class="q-opt" onclick="selectOption(this,' + i + ')" data-idx="' + i + '">' + q.options[i] + '</button>';
+    }
+    document.getElementById('qOptions').innerHTML = optHtml;
+  } else {
+    // 填空: 显示输入框
+    document.getElementById('qStem').textContent = q.stem;
+    document.getElementById('qOptions').style.display = 'none';
+    document.getElementById('qInputRow').style.display = 'flex';
+    document.getElementById('qInput').value = '';
+    document.getElementById('qInput').focus();
+  }
+
+  // 倒计时
+  G.qTimer = G.subject === '201' ? 12 : 20;
+  document.getElementById('qTimer').textContent = '⏱ ' + G.qTimer + 's';
+  clearInterval(G.qInterval);
+  G.qInterval = setInterval(function() {
+    G.qTimer--;
+    document.getElementById('qTimer').textContent = '⏱ ' + G.qTimer + 's';
+    if (G.qTimer <= 0) {
+      clearInterval(G.qInterval);
+      handleAnswer(false);
+    }
+  }, 1000);
+}
+
+// ---- 选项点击(完形) ----
+function selectOption(btn, idx) {
+  var q = G.questions[G.currentQ];
+  var correctIdx = 'ABCD'.indexOf(q.answer.trim().charAt(0).toUpperCase());
+  var isCorrect = idx === correctIdx;
+
+  // 高亮
+  var btns = document.querySelectorAll('.q-opt');
+  btns.forEach(function(b, i) {
+    b.disabled = true;
+    if (i === correctIdx) b.classList.add('correct');
+    if (i === idx && !isCorrect) b.classList.add('wrong');
+  });
+
+  clearInterval(G.qInterval);
+  setTimeout(function() { handleAnswer(isCorrect); }, 600);
+}
+
+// ---- 填空提交 ----
+function submitFill() {
+  var q = G.questions[G.currentQ];
+  var input = document.getElementById('qInput').value.trim();
+  var isCorrect = input === q.answer || input === q.answer.replace(/\s/g,'');
+  clearInterval(G.qInterval);
+  handleAnswer(isCorrect);
+}
+
+// 回车提交
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('qInputRow').style.display !== 'none') {
+    submitFill();
+  }
+});
+
+// ---- 答题结果处理 ----
+function handleAnswer(isCorrect) {
+  if (G.gameOver) return;
+  if (isCorrect) {
+    G.correct++;
+    var earnings = 5 + G.bedLv * 5 + (G.elecLv > 0 ? G.elecLv * 3 : 0);
+    G.gold += earnings;
+    G.totalGold += earnings;
+    G.score += G.subject === '201' ? 1 : 5;
+    showFeedback(true, '+' + earnings + '💰');
+  } else {
+    G.wrong++;
+    showFeedback(false, '答错了');
+  }
+  G.currentQ++;
+  updateUI();
+  setTimeout(showQuestion, 500);
+}
+
+// ---- 反馈动画 ----
+function showFeedback(correct, text) {
+  var el = document.createElement('div');
+  el.className = 'feedback ' + (correct ? 'fb-correct' : 'fb-wrong');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 900);
+}
+
+// ---- 波次系统 ----
+function startWaveTimer() {
+  // 第一波30秒后来
+  setTimeout(function() { startWave(); }, 15000);
+}
+
+function startWave() {
+  if (G.gameOver) return;
+  G.wave++;
+  if (G.wave > G.maxWave) {
+    endGame(true);
+    return;
+  }
+  document.getElementById('waveVal').textContent = G.wave;
+
+  // 波次横幅
+  var banner = document.createElement('div');
+  banner.className = 'wave-banner';
+  banner.textContent = '⚠️ WAVE ' + G.wave + ' · 猛鬼来袭!';
+  document.body.appendChild(banner);
+  setTimeout(function() { banner.remove(); }, 2500);
+
+  // 猛鬼参数(每波更强)
+  G.ghostMax = 30 + G.wave * 25;
+  G.ghostHP = G.ghostMax;
+  G.ghostAtk = 8 + G.wave * 5;
+  G.ghostActive = true;
+
+  var ghostEl = document.getElementById('ghost');
+  ghostEl.classList.remove('hidden');
+  ghostEl.classList.add('attacking');
+  document.getElementById('dormView').classList.add('alert');
+
+  // 猛鬼攻击循环
+  clearInterval(G.ghostInterval);
+  G.ghostInterval = setInterval(function() {
+    if (G.gameOver || !G.ghostActive) return;
+    // 鬼攻击门
+    G.doorHP -= G.ghostAtk;
+    if (G.doorHP <= 0) { G.doorHP = 0; endGame(false); }
+    updateDoorUI();
+    document.getElementById('dormView').classList.remove('alert');
+    setTimeout(function() { document.getElementById('dormView').classList.add('alert'); }, 50);
+  }, 2000);
+
+  // 炮塔反击循环
+  clearInterval(G.turretInterval);
+  G.turretInterval = setInterval(function() {
+    if (G.gameOver || !G.ghostActive) return;
+    var dmg = 0;
+    if (G.turrets[0] > 0) dmg += G.turrets[0] * 8;
+    if (G.turrets[1] > 0) dmg += G.turrets[1] * 8;
+    if (dmg > 0) {
+      G.ghostHP -= dmg;
+      if (G.ghostHP <= 0) {
+        // 鬼被击退
+        G.ghostHP = 0;
+        G.ghostActive = false;
+        var ghostEl = document.getElementById('ghost');
+        ghostEl.classList.remove('attacking');
+        ghostEl.classList.add('hidden');
+        clearInterval(G.ghostInterval);
+        clearInterval(G.turretInterval);
+        G.gold += 20 * G.wave;
+        G.totalGold += 20 * G.wave;
+        showFeedback(true, '击退! +' + (20*G.wave) + '💰');
+        updateUI();
+        // 下一波
+        setTimeout(function() { startWave(); }, 10000 + Math.random() * 5000);
+      }
+    }
+  }, 1500);
+}
+
+// ---- 建造系统 ----
+var COSTS = {
+  bed: [30, 60, 120, 200],
+  door: [40, 80, 150, 250],
+  turret: [60, 120, 200],
+  elec: [80, 150, 250]
+};
+
+function upgradeBed() {
+  if (G.bedLv >= 5) return;
+  var cost = COSTS.bed[G.bedLv - 1] || 999;
+  if (G.gold < cost) return;
+  G.gold -= cost;
+  G.bedLv++;
+  document.getElementById('bedLv').textContent = 'Lv.' + G.bedLv;
+  showFeedback(true, '🛏️ Lv.' + G.bedLv);
+  updateUI();
+}
+
+function upgradeDoor() {
+  if (G.doorLv >= 5) return;
+  var cost = COSTS.door[G.doorLv - 1] || 999;
+  if (G.gold < cost) return;
+  G.gold -= cost;
+  G.doorLv++;
+  G.doorMax = 100 * G.doorLv;
+  G.doorHP = G.doorMax; // 满血恢复
+  document.getElementById('doorLv').textContent = 'Lv.' + G.doorLv;
+  showFeedback(true, '🚪 Lv.' + G.doorLv);
+  updateDoorUI();
+  updateUI();
+}
+
+function buildTurret(slot) {
+  var idx = slot - 1;
+  if (G.turrets[idx] >= 3) return;
+  var cost = COSTS.turret[G.turrets[idx]] || 999;
+  if (G.gold < cost) return;
+  G.gold -= cost;
+  G.turrets[idx]++;
+  var lv = G.turrets[idx];
+  document.getElementById('turret' + slot + 'Icon').textContent = lv >= 2 ? '🔫' : '🔧';
+  document.getElementById('turret' + slot + 'Lv').style.display = 'block';
+  document.getElementById('turret' + slot + 'Lv').textContent = 'Lv.' + lv;
+  if (lv >= 1) document.getElementById('turret' + slot + 'Icon').textContent = '🔫';
+  showFeedback(true, '🔫 炮塔' + slot + ' Lv.' + lv);
+  updateUI();
+}
+
+function buildElec() {
+  if (G.elecLv >= 3) return;
+  var cost = COSTS.elec[G.elecLv] || 999;
+  if (G.gold < cost) return;
+  G.gold -= cost;
+  G.elecLv++;
+  document.getElementById('elecIcon').textContent = '⚡';
+  document.getElementById('elecLv').style.display = 'block';
+  document.getElementById('elecLv').textContent = 'Lv.' + G.elecLv;
+  showFeedback(true, '⚡ 电力 Lv.' + G.elecLv);
+  updateUI();
+}
+
+// ---- UI 更新 ----
+function updateUI() {
+  document.getElementById('goldVal').textContent = G.gold;
+  document.getElementById('scoreVal').textContent = G.score;
+  document.getElementById('waveVal').textContent = G.wave;
+
+  // 建造按钮cost + 可用状态
+  var bc = COSTS.bed[G.bedLv - 1]; document.getElementById('bedCost').textContent = bc ? bc + '💰' : 'MAX';
+  var dc = COSTS.door[G.doorLv - 1]; document.getElementById('doorCost').textContent = dc ? dc + '💰' : 'MAX';
+  var t1c = COSTS.turret[G.turrets[0]]; document.getElementById('turret1Cost').textContent = t1c ? t1c + '💰' : 'MAX';
+  var t2c = COSTS.turret[G.turrets[1]]; document.getElementById('turret2Cost').textContent = t2c ? t2c + '💰' : 'MAX';
+  var ec = COSTS.elec[G.elecLv]; document.getElementById('elecCost').textContent = ec ? ec + '💰' : 'MAX';
+
+  document.getElementById('btnBed').disabled = !bc || G.gold < bc;
+  document.getElementById('btnDoor').disabled = !dc || G.gold < dc;
+  document.getElementById('btnTurret1').disabled = !t1c || G.gold < t1c;
+  document.getElementById('btnTurret2').disabled = !t2c || G.gold < t2c;
+  document.getElementById('btnElec').disabled = !ec || G.gold < ec;
+}
+
+function updateDoorUI() {
+  var pct = Math.max(0, G.doorHP / G.doorMax * 100);
+  document.getElementById('doorHP').style.width = pct + '%';
+  document.getElementById('doorHPText').textContent = Math.max(0, Math.round(G.doorHP));
+  document.getElementById('doorMaxText').textContent = G.doorMax;
+  // 颜色变化
+  var fill = document.getElementById('doorHP');
+  if (pct < 30) fill.style.background = 'var(--red)';
+  else if (pct < 60) fill.style.background = 'linear-gradient(90deg,var(--red),var(--gold))';
+  else fill.style.background = 'linear-gradient(90deg,var(--green),var(--cyan))';
+}
+
+// ---- 结算 ----
+function endGame(won) {
+  G.gameOver = true;
+  clearInterval(G.qInterval);
+  clearInterval(G.ghostInterval);
+  clearInterval(G.turretInterval);
+
+  document.getElementById('resultScreen').style.display = 'flex';
+  document.getElementById('resultIcon').textContent = won ? '🏆' : '💀';
+  document.getElementById('resultTitle').textContent = won ? '通关成功!' : '宿舍沦陷...';
+  document.getElementById('resultTitle').style.color = won ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('resultSub').textContent = won ? '你成功挺过了猛鬼的' + G.maxWave + '波进攻!' : '大门被猛鬼攻破了...WAVE ' + G.wave;
+  document.getElementById('rsCorrect').textContent = G.correct;
+  document.getElementById('rsWrong').textContent = G.wrong;
+  document.getElementById('rsGold').textContent = G.totalGold;
+  document.getElementById('rsWave').textContent = G.wave;
+}
+</script>
 </body>
 </html>
