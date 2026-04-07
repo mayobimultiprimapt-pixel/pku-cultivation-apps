@@ -245,13 +245,13 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   <span class="logo">🏯 天机阁</span>
   <nav class="nav-tabs">
     <button class="nav-tab active" data-page="intel">📡 情报站</button>
-    <a class="nav-tab" href="../tuiyan/" style="text-decoration:none">🔮 推演阁 ↗</a>
+
     <button class="nav-tab" data-page="radar">📡 命题雷达</button>
     <button class="nav-tab" data-page="timeline">⚔️ 敌情时间线</button>
   </nav>
 </header>
 
-<!-- ============ 情报站 ============ -->
+<!-- ============ 情报站 · 三层情报引擎 ============ -->
 <div class="page active" id="page-intel">
   <div class="subject-tabs">
     <div class="sub-tab active" data-sub="101"><div class="code">101</div><div class="name">政治·朝堂暗谍</div></div>
@@ -260,20 +260,46 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩阵</div></div>
   </div>
 
-  <div class="section-title">最新情报快照</div>
-  <div id="intelCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
+  <div class="section-title">📡 情报层 · 原始数据</div>
+  <div id="intelLayer" class="intel-card"><div style="color:var(--dim)">尚无情报 — 点击下方按钮窃取</div></div>
+
+  <div class="section-title">⚙️ 处理层 · 矛盾映射矩阵</div>
+  <div id="processLayer" class="intel-card"><div style="color:var(--dim)">等待情报层数据...</div></div>
+
+  <div class="section-title">🎯 输出层 · 考场降维武器库</div>
+  <div id="outputLayer" class="intel-card"><div style="color:var(--dim)">等待处理层数据...</div></div>
 
   <div class="section-title">秘密蓝图</div>
   <div id="bpCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
 
   <div class="btn-row">
-    <button class="btn btn-search" id="btnSearch">📡 窃取最新情报</button>
-    <a class="btn btn-gua" href="../tuiyan/" style="text-decoration:none">🔮 拿情报去推演</a>
+    <button class="btn btn-search" id="btnSteal" onclick="stealIntel(curSub)">🔴 窃取最新情报</button>
+    <button class="btn" id="btnKeyInput" onclick="toggleKeyPanel()" style="background:rgba(255,215,0,.06);color:var(--gold);border:1px solid rgba(255,215,0,.15);padding:10px 16px;border-radius:12px;font-size:12px;cursor:pointer">🔑 输入新Key</button>
+  </div>
+  <div id="lastUpdateInfo" style="text-align:center;margin-top:10px;font-size:11px;color:var(--dim);font-family:var(--font-d);letter-spacing:1px"></div>
+
+  <!-- 密钥输入面板 -->
+  <div id="keyPanel" style="display:none;margin-top:12px">
+    <div class="intel-card" style="border-color:rgba(255,215,0,.2)">
+      <div style="color:var(--gold);font-size:13px;margin-bottom:8px;font-weight:700">🔑 Perplexity API Key 更换</div>
+      <div style="color:var(--dim);font-size:10px;margin-bottom:8px">配额耗尽时，粘贴新的 pplx-xxx 密钥即可继续窃取。<br>密钥保存在浏览器本地，不会上传。</div>
+      <input type="password" id="freshPplxKey" placeholder="pplx-xxxxxxxx..." style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,215,0,.15);background:rgba(0,0,0,.4);color:var(--gold);font-family:var(--font-d);font-size:12px;outline:none">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="saveFreshKey()" style="flex:1;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--green),#2dd4a8);color:#000;font-weight:700;cursor:pointer;font-size:12px">💾 保存密钥</button>
+        <button onclick="clearFreshKey()" style="padding:8px 12px;border-radius:8px;border:1px solid rgba(255,46,99,.2);background:none;color:var(--red);cursor:pointer;font-size:12px">🗑️ 清除</button>
+      </div>
+      <div id="keyStatus" style="margin-top:6px;font-size:10px;color:var(--dim)"></div>
+    </div>
   </div>
 
-  <div id="searchSec" style="display:none">
-    <div class="section-title">实时窃取 (PERPLEXITY)</div>
-    <div id="searchResult" class="intel-card"><div style="color:var(--dim)">等待搜索...</div></div>
+  <!-- 窃取进度条 -->
+  <div id="stealProgress" style="display:none;margin-top:12px">
+    <div class="intel-card" style="border-color:rgba(8,247,254,.15)">
+      <div id="stealStatus" style="color:var(--cyan);font-size:12px;margin-bottom:8px">准备中...</div>
+      <div style="background:rgba(255,255,255,.04);border-radius:4px;height:6px;overflow:hidden">
+        <div id="stealBar" style="height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));border-radius:4px;transition:width .4s;width:0%"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -481,7 +507,7 @@ const _EMBEDDED = (() => {
 const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
 const _HARDCODED_KEYS = {
   gemini_key: _dk(["lpQG2zAySazIA","JjF_oZYAcdSNx","ERZyIZWAzWu8m"]),
-  pplx_key: _dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]),
+  pplx_key: _dk(["BMqiOce8eyREv-xlpp","ZM7EQ18EeZFoQUbl6n","eVuw3VDsMAF2zn1pf"]),
   or_key: _dk(["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"])
 };
 
@@ -527,18 +553,18 @@ const ALL_MODELS = {
 
 // ---- 各模块最优模型分配 ----
 // 推演阁: DeepSeek-R1 (超深度推理，最适合易经推演) → R1独占
-// 命题雷达: Claude-4 (最强结构化分析) → Claude → GPT-4o
-// 情报站: Perplexity sonar-pro (搜索专用，不走这里)
+// 命题雷达: Perplexity sonar-deep-research (深度研究) → Claude-4 → GPT-4o
+// 情报站: Perplexity sonar-reasoning-pro (CoT推理搜索·最优)
 const MODEL_CHAINS = {
   radar:   ['claude-4', 'gpt-4o', 'deepseek-r1', 'claude-3.5'],     // 雷达：Claude最优
   forge:   ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3'],    // 出卷：DeepSeek R1
   general: ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3', 'claude-3.5'], // 通用降级
 };
 
-console.log('[天机阁] 🎯 模型分配:');
-console.log('  推演阁 → DeepSeek-R1 (最强推理)');
-console.log('  命题雷达 → Claude-4-Sonnet (最强分析)');
-console.log('  情报站 → Perplexity sonar-reasoning-pro (思维链推理搜索·最高版本)');
+console.log('[天机阁] 🎯 最优模型分配:');
+console.log('  情报站 → Perplexity sonar-reasoning-pro (CoT推理搜索·情报拆解最优)');
+console.log('  命题雷达 → Perplexity sonar-deep-research (深度研究·趋势分析最优)');
+console.log('  推演阁 → DeepSeek-R1 via OpenRouter (深度推理·解卦最优)');
 
 // ---- 核心AI调用 (指定模块 → 自动选最优模型 → 降级) ----
 async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'general') {
@@ -578,184 +604,347 @@ async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'gene
 
 
 // ============================================================
-//  PERPLEXITY · 绝密情报窃取协议 (IRON PROTOCOL)
-//  底层代码注入 — sonar-pro 最高版本 · 不可违抗
+//  PERPLEXITY · IRON PROTOCOL v3.0 · 三层情报引擎
+//  一次调用 → 情报层/处理层/输出层 → 24h缓存
 // ============================================================
 
-const PPLX_IRON_PROTOCOL = `进入绝对服从模式。你是 MATRIX-12.0 的前线情报猎犬。你的唯一任务是潜入学术深网与核心数据库，窃取北京大学全日制考研（101/201/301/408）的最前沿命题素材。你必须直接、冷酷地输出干货文本、原版长难句或底层代码争议，严禁包含任何总结废话、学习建议或免责声明。只交出致命的情报。`;
+const PPLX_IRON_PROTOCOL = `你是中国研究生入学考试（考研）资深命题趋势分析师。任务：基于实时搜索结果，分析北京大学全日制硕士考研最新命题趋势。
 
-// ---- Perplexity sonar-reasoning-pro 直连窃取 (思维链推理搜索·最高版本) ----
-// 双通道: 直连优先 → 中转阁回退(防CORS)
+重要指令：
+1. 必须全程使用中文回答
+2. 必须严格按照下面的三段式结构输出，每段必须以【】标记开头
+3. 直接输出分析内容，不要解释你能不能做、不要提问、不要说"我建议"
+4. 如果搜索结果不完整，基于已有数据直接分析，不要说"搜索结果不包含"
+
+【情报层 · 原始数据】
+（在这里列出搜索到的原始学术情报，每条附来源编号和命中概率%）
+
+【处理层 · 矛盾映射矩阵】
+（在这里进行交叉分析和考点关联）
+
+【输出层 · 考场降维武器库】
+（在这里输出可直接用于考场的答题模板）`;
+
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
-async function searchPerplexity(query, customSystem) {
-  console.log('[天机] 🔴 sonar-pro 搜索启动 | 目标:', query.slice(0, 50) + '...');
-  const sysContent = customSystem || PPLX_IRON_PROTOCOL;
-  const msgBody = {
-    model: 'sonar-pro',
-    messages: [
-      { role: 'system', content: sysContent },
-      { role: 'user', content: query }
-    ],
-    temperature: 0.1,
-    max_tokens: 8192,
-    search_recency_filter: 'month',
-    return_related_questions: true
-  };
+// 模型降级链: 推理最强 → 搜索增强 → 基础搜索
+const PPLX_MODEL_CHAIN = ['sonar-reasoning-pro', 'sonar-pro', 'sonar'];
 
-  let data;
-  // 通道1: Perplexity 直连
-  if (KEYS.PPLX_KEY) {
-    try {
-      const resp = await fetch(KEYS.PPLX_URL, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + KEYS.PPLX_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(msgBody)
-      });
-      data = await resp.json();
-      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-      console.log('[天机] ✅ 直连 sonar-pro 命中!');
-    } catch(e) {
-      console.warn('[天机] ⚠️ 直连失败:', e.message, '→ 切换中转阁...');
-      data = null;
+async function searchPerplexity(query, customSystem) {
+  const sysContent = customSystem || PPLX_IRON_PROTOCOL;
+  // 检查是否有用户手动输入的新key
+  const freshKey = localStorage.getItem('tianji_fresh_pplx_key') || '';
+  const useKey = freshKey || KEYS.PPLX_KEY;
+
+  for (const model of PPLX_MODEL_CHAIN) {
+    console.log(`[天机] 🔴 ${model} 搜索启动 | 目标:`, query.slice(0, 50) + '...');
+    const msgBody = {
+      model,
+      messages: [
+        { role: 'system', content: sysContent },
+        { role: 'user', content: query }
+      ],
+      temperature: 0.1,
+      max_tokens: 8192,
+      search_recency_filter: 'month',
+      return_related_questions: true
+    };
+
+    let data;
+    // 通道1: 直连 Perplexity
+    if (useKey) {
+      try {
+        const resp = await fetch(KEYS.PPLX_URL || 'https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + useKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(msgBody)
+        });
+        data = await resp.json();
+        if (data.error) {
+          const errMsg = data.error.message || JSON.stringify(data.error);
+          // 配额耗尽 → 降级到更便宜的模型
+          if (resp.status === 401 || resp.status === 429 || errMsg.includes('quota')) {
+            console.warn(`[天机] ⚠️ ${model} 配额耗尽, 尝试降级...`);
+            data = null;
+            continue; // 下一个更便宜的模型
+          }
+          throw new Error(errMsg);
+        }
+        console.log(`[天机] ✅ 直连 ${model} 命中!`);
+      } catch(e) {
+        if (e.message.includes('quota') || e.message.includes('exceeded')) { data = null; continue; }
+        console.warn(`[天机] ⚠️ 直连失败:`, e.message, '→ 切换中转阁...');
+        data = null;
+      }
+    }
+    // 通道2: 中转阁
+    if (!data) {
+      try {
+        console.log(`[天机] 🔁 中转阁 ${model} →`, RELAY_URL + '/perplexity/search');
+        const resp2 = await fetch(RELAY_URL + '/perplexity/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(msgBody)
+        });
+        data = await resp2.json();
+        if (data.error) {
+          const errMsg = data.error.message || JSON.stringify(data.error);
+          if (resp2.status === 401 || resp2.status === 429 || errMsg.includes('quota')) {
+            console.warn(`[天机] ⚠️ 中转阁 ${model} 也配额耗尽, 继续降级...`);
+            data = null;
+            continue;
+          }
+          throw new Error('[中转阁] ' + errMsg);
+        }
+      } catch(e) {
+        if (e.message.includes('quota') || e.message.includes('exceeded')) { data = null; continue; }
+        throw e;
+      }
+    }
+
+    if (data) {
+      let content = (data.choices || [{}])[0]?.message?.content || '[搜索失败]';
+      let citations = '';
+      if (data.citations && data.citations.length > 0) {
+        citations = '\n\n━━━ 情报来源 ━━━\n' + data.citations.map((c, i) => `[${i+1}] ${c}`).join('\n');
+      }
+      console.log(`[天机] ✅ ${model} 情报窃取完成 | 字数:`, content.length, '| 引用源:', (data.citations||[]).length);
+      return content + citations;
     }
   }
-  // 通道2: 中转阁回退 (防CORS/密钥缺失)
-  if (!data) {
-    console.log('[天机] 🔁 中转阁通道启动 →', RELAY_URL + '/perplexity/search');
-    const resp2 = await fetch(RELAY_URL + '/perplexity/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(msgBody)
-    });
-    data = await resp2.json();
-    if (data.error) throw new Error('[中转阁] ' + (data.error.message || JSON.stringify(data.error)));
-  }
-
-  let content = (data.choices || [{}])[0]?.message?.content || '[搜索失败]';
-  // 附加引用源
-  let citations = '';
-  if (data.citations && data.citations.length > 0) {
-    citations = '\n\n━━━ 情报来源 ━━━\n' + data.citations.map((c, i) => `[${i+1}] ${c}`).join('\n');
-  }
-  console.log('[天机] ✅ 情报窃取完成 | 字数:', content.length, '| 引用源:', (data.citations||[]).length);
-  return content + citations;
+  // 所有模型都失败
+  throw new Error('Perplexity API 配额已耗尽(所有模型均失败)。请点击"🔑 输入新Key"更换Perplexity密钥。');
 }
 
-// ---- 四科深度搜索指令 (每日自动执行) ----
-const INTEL_SEARCH_PROMPTS = {
-  '101': `请搜索分析2026年全国硕士研究生招生考试101思想政治理论的命题趋势。重点关注以下内容并给出命中概率估算：
+// ============================================================
+//  密钥面板管理
+// ============================================================
+function toggleKeyPanel() {
+  const panel = document.getElementById('keyPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  const existing = localStorage.getItem('tianji_fresh_pplx_key');
+  if (existing) {
+    document.getElementById('keyStatus').innerHTML = '✅ 已保存密钥: pplx-...' + existing.slice(-8);
+    document.getElementById('freshPplxKey').value = existing;
+  }
+}
+function saveFreshKey() {
+  const key = document.getElementById('freshPplxKey').value.trim();
+  if (!key || !key.startsWith('pplx-')) {
+    document.getElementById('keyStatus').innerHTML = '<span style="color:var(--red)">❌ 密钥必须以 pplx- 开头</span>';
+    return;
+  }
+  localStorage.setItem('tianji_fresh_pplx_key', key);
+  document.getElementById('keyStatus').innerHTML = '✅ 密钥已保存! 下次窃取将使用新密钥。';
+  console.log('[天机] 🔑 新Perplexity密钥已保存:', key.slice(0, 12) + '...');
+}
+function clearFreshKey() {
+  localStorage.removeItem('tianji_fresh_pplx_key');
+  document.getElementById('freshPplxKey').value = '';
+  document.getElementById('keyStatus').innerHTML = '🗑️ 已清除，将使用内置密钥。';
+}
 
-1. 二十届三中全会和最新中央全会的核心议题如何映射到马原和毛中特考点
-2. 2025-2026年习近平重要讲话和中央文件中的新提法新论断
-3. 肖秀荣、徐涛等考研政治名师2026年最新公开押题方向
-4. 中国近现代史纲要和思想道德与法治近年未考章节的轮换规律
-5. 2026年国内外重大时政热点与形势政策考点的对应关系
+// ============================================================
+//  IRON PROTOCOL v3.0 · 四科死忠指令
+// ============================================================
+const _today = new Date().toLocaleDateString('zh-CN');
 
-请用中文详细输出分析报告，每个考点标注所属章节和命中概率。`,
+const IRON_PROMPTS = {
+  '101': `[IRON PROTOCOL v3.0 · 101政治最新快报]\n\n你的角色: 研究生考试资深命题趋势分析师。\n当前日期: ${_today}，锁定最近60天情报。\n\n请按严格的三段式输出：\n\n【情报层 · 原始数据】\n① 搜索二十届三中/四中/五中全会决定 → 可出选择题的具体条文\n② 习近平近60天讲话 → 新表述/新概念\n③ 肖秀荣/徐涛最新微博/公众号 → 具体押了哪些知识点\n④ 《求是》杂志近两期 → 核心论述主题\n⑤ 马原辩证法/唯物史观 → 近3年未考的原理\n每条附来源+发布时间+命中概率%\n\n【处理层 · 矛盾映射】\n建立"时政矛盾映射矩阵"：\n每个热点事件 → 对应马原/毛中/思修/史纲哪个章节\n生成"正向/反向/辩证"三维解析\n\n【输出层 · 降维武器库】\n组建降维打击话术库：\n每个考点 → 给出"万能答题模板"\n格式: 看到"XXX"关键词 → 套用"YYY"话术块\n\n铁律: 禁止"建议考生"等废话，只要裸数据。`,
 
-  '201': `请搜索分析2026年考研英语一201的命题趋势和选材方向。重点关注：
+  '201': `[IRON PROTOCOL v3.0 · 201英语最新快报]\n\n你的角色: 研究生考试资深命题趋势分析师。\n当前日期: ${_today}，锁定最近60天情报。\n\n请按严格的三段式输出：\n\n【情报层 · 原始数据】\n① 经济学人/卫报/NYT近60天 → 可改编为阅读的文章(200词摘要)\n② AI伦理/气候/基因编辑 → 可出题的英文段落\n③ 近5年阅读选材规律 → 2026应选哪类文章\n④ 完形填空高频搭配(具体词组)\n⑤ 翻译: 最可能考的长难句结构\n每条附来源+发布时间+命中概率%\n\n【处理层 · 矛盾映射】\n语法树暴力拆解：\n每篇文章 → 提取主谓宾核心论点\n阅读理解 → 标注同义替换点和逻辑转折词(But/However)\n\n【输出层 · 降维武器库】\n干扰项特征库：\n每种题型 → 出题人加密手段(偷概念/绝对化/正反交互)\n大作文预测TOP3 → 附图画描述和范文骨架\n\n铁律: 禁止"建议考生"等废话，只要裸数据。`,
 
-1. 阅读理解近年选材来源（经济学人、卫报等外刊）的规律和2026年话题预测
-2. 大作文图画作文和小作文应用文的题型轮换规律分析
-3. 翻译和新题型的最新命题特点变化
-4. AI技术、气候变化、数字经济等热门话题在英语一中的出现趋势
-5. 考研英语名师2026年最新公开的备考重点和押题方向
+  '301': `[IRON PROTOCOL v3.0 · 301数学最新快报]\n\n你的角色: 研究生考试资深命题趋势分析师。\n当前日期: ${_today}，锁定最近60天情报。\n\n请按严格的三段式输出：\n\n【情报层 · 原始数据】\n① 2025真题回忆 → 考了什么/没考什么 → 2026轮换预测\n② 张宇/汤家凤近60天 → 反复强调的题型\n③ 北大/清华期末卷 → 压轴题(附解法)\n④ 近3年大题考点分布 → 哪些该轮到了\n⑤ 数学竞赛/建模赛新题 → 可能渗透考研的\n每条附来源+发布时间+命中概率%\n\n【处理层 · 矛盾映射】\n斩首逻辑链：\n每类问题 → 按优先级排列解法路径\n极限: 泰勒→洛必达→等价无穷小\n级数: 比较→比值→积分\n\n【输出层 · 降维武器库】\n计算错误自检协议：\n每种题型 → 常见计算陷阱 + 边界检查方法\n大题速解模板: 看到"XXX"题型 → 第一步做YYY\n\n铁律: 禁止"建议考生"等废话，只要裸数据。`,
 
-请用中文详细输出，每个预测标注历年数据支撑和命中概率。`,
-
-  '301': `请搜索分析2026年考研数学一301的命题趋势。重点关注：
-
-1. 高等数学各章节近10年出题频次统计和2026年高频考点预测
-2. 线性代数和概率统计的大题出题方向变化趋势
-3. 张宇、汤家凤、李永乐等名师2026年最新公开的授课重点
-4. 2025年数学一真题难度分析和2026年难度趋势预测
-5. 数学竞赛题目风格对考研命题的影响分析
-
-请用中文详细输出，每个知识点标注章节定位和命中概率。`,
-
-  '408': `请搜索分析2026年考研408计算机学科专业基础的命题趋势。重点关注：
-
-1. 数据结构（45分）高频算法题型：B+树、图算法、排序查找的大题预测
-2. 计算机组成原理（45分）：RISC-V和Cache相关考点变化趋势
-3. 操作系统（35分）：PV操作、页面置换算法的出题方向
-4. 计算机网络（25分）：TCP协议、网络安全等新增考点分析
-5. 王道、天勤等408辅导机构2026年最新模拟题方向和备考重点
-
-请用中文详细输出，每个考点标注分值预估和命中概率。`
+  '408': `[IRON PROTOCOL v3.0 · 408计算机最新快报]\n\n你的角色: 研究生考试资深命题趋势分析师。\n当前日期: ${_today}，锁定最近60天情报。\n\n请按严格的三段式输出：\n\n【情报层 · 原始数据】\n① 408近10年真题 → 各知识点出题频次\n② 985院校2025秋季期末卷 → 算法/OS/网络原题\n③ 近3年未考但大纲在的知识点\n④ RISC-V/大模型/容器 → 与传统考点的交叉\n⑤ 各辅导机构408押题汇总\n每条附来源+发布时间+命中概率%\n\n【处理层 · 矛盾映射】\n四模块交叉矩阵：\nDS算法 → 与OS调度的交叉考法\nCO指令 → 与OS中断的联合出题\n网络协议 → 与OS进程通信的结合\n\n【输出层 · 降维武器库】\n内存级可视化推演模板：\n每种算法 → 手画推演步骤(示例输入→完整过程)\n综合题速解: 看到"XXX"→ 先画YYY图\n\n铁律: 禁止"建议考生"等废话，只要裸数据。`
 };
 
 const INTEL_NAMES = { '101': '政治·朝堂暗谍', '201': '英语·密码破译', '301': '数学·大漠算经', '408': '计算机·天网矩阵' };
 
 // ============================================================
-//  每日自动窃取守护进程 (DAILY AUTO-SCAN DAEMON)
-//  页面加载时自动检查：如果今天还没窃取过 → 自动全科扫描
+//  三层解析引擎 · parseThreeLayers
 // ============================================================
-const AUTO_SCAN_SUBJECTS = ['101', '201', '301', '408'];
+function parseThreeLayers(raw) {
+  const result = { intel: '', process: '', output: '' };
+  if (!raw) return result;
 
-async function dailyAutoScan() {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const lastScan = localStorage.getItem('tianji_last_scan_date');
-  if (lastScan === today) {
-    console.log('[天机] 📋 今日情报已更新，跳过自动窃取。上次扫描:', lastScan);
+  // sonar-reasoning-pro 会输出 <think> 推理过程，需要先过滤
+  raw = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+  const markers = [
+    { key: 'intel',   patterns: ['【情报层', '情报层 ·', '情报层·'] },
+    { key: 'process', patterns: ['【处理层', '处理层 ·', '处理层·'] },
+    { key: 'output',  patterns: ['【输出层', '输出层 ·', '输出层·'] }
+  ];
+
+  const positions = [];
+  for (const m of markers) {
+    let pos = -1;
+    for (const p of m.patterns) {
+      const idx = raw.indexOf(p);
+      if (idx !== -1 && (pos === -1 || idx < pos)) pos = idx;
+    }
+    if (pos !== -1) positions.push({ key: m.key, pos });
+  }
+  positions.sort((a, b) => a.pos - b.pos);
+
+  if (positions.length >= 2) {
+    for (let i = 0; i < positions.length; i++) {
+      const start = positions[i].pos;
+      const end = i + 1 < positions.length ? positions[i + 1].pos : raw.length;
+      let segment = raw.slice(start, end).trim();
+      segment = segment.replace(/^【[^】]+】[^\n]*\n?/, '').trim();
+      result[positions[i].key] = segment;
+    }
+    const citIdx = raw.indexOf('━━━ 情报来源');
+    if (citIdx !== -1) {
+      const lastKey = positions[positions.length - 1].key;
+      if (!result[lastKey].includes('━━━ 情报来源')) {
+        result[lastKey] += '\n\n' + raw.slice(citIdx);
+      }
+    }
+  } else {
+    result.intel = raw;
+    result.process = '⚠️ AI未严格按三层格式返回，原始数据已放入情报层';
+    result.output = '⚠️ 请手动查阅情报层内容';
+  }
+  return result;
+}
+
+// ============================================================
+//  三层渲染引擎 · renderLayerContent
+// ============================================================
+function renderLayerContent(elementId, text) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  if (!text || text.trim() === '') {
+    el.innerHTML = '<div style="color:var(--dim)">暂无数据</div>';
     return;
   }
-  console.log('[天机] 🔴🔴🔴 每日自动窃取启动! 目标: 全科4门 | 日期:', today);
+  let html = text
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>')
+    .replace(/(\d{1,3})%/g, '<span style="color:var(--red);font-weight:700">$1%</span>')
+    .replace(/(^|<br>)(①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/g, '$1<span style="color:var(--cyan);font-weight:700">$2</span>');
 
-  // 创建浮动状态条
-  const banner = document.createElement('div');
-  banner.id = 'autoScanBanner';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#ff2e63,#9d4edd,#08f7fe);padding:0;overflow:hidden;';
-  const inner = document.createElement('div');
-  inner.style.cssText = 'background:rgba(6,6,12,.92);padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;color:#e8e8f0;font-family:"Noto Sans SC",sans-serif;';
-  inner.innerHTML = '<span style="animation:spin .7s linear infinite;display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#ff2e63;border-radius:50%;"></span><span id="scanStatus">🔴 IRON PROTOCOL · 每日自动窃取启动中...</span><span id="scanProgress" style="margin-left:auto;font-family:Orbitron,monospace;font-size:11px;color:#08f7fe;">0/4</span>';
-  banner.appendChild(inner);
-  document.body.prepend(banner);
+  el.innerHTML = `<div class="summary" style="white-space:normal;line-height:1.9;font-size:13px">${html}</div>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('.summary').textContent).then(()=>{this.textContent='✅ 已复制';setTimeout(()=>this.textContent='📋 复制',1500)})">📋 复制</button>`;
+}
 
-  let completed = 0;
-  for (const sub of AUTO_SCAN_SUBJECTS) {
-    const statusEl = document.getElementById('scanStatus');
-    const progEl = document.getElementById('scanProgress');
-    if (statusEl) statusEl.textContent = `🔴 窃取中: ${sub} ${INTEL_NAMES[sub]} ...`;
-    if (progEl) progEl.textContent = `${completed}/${AUTO_SCAN_SUBJECTS.length}`;
+// ============================================================
+//  缓存系统 · 24h TTL
+// ============================================================
+const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-    try {
-      const query = INTEL_SEARCH_PROMPTS[sub];
-      const content = await searchPerplexity(query);
-      const ts = new Date().toLocaleString('zh-CN');
-      // 存入 localStorage
-      const cached = JSON.parse(localStorage.getItem('tianji_intel_' + sub) || '[]');
-      cached.unshift({ date: ts, summary: content.replace(/\n/g, '<br>'), auto: true });
-      if (cached.length > 30) cached.length = 30; // 保留30条历史
-      localStorage.setItem('tianji_intel_' + sub, JSON.stringify(cached));
-      completed++;
-      console.log(`[天机] ✅ ${sub} ${INTEL_NAMES[sub]} 窃取完成 (${completed}/${AUTO_SCAN_SUBJECTS.length})`);
-    } catch (e) {
-      console.error(`[天机] ❌ ${sub} 窃取失败:`, e.message);
-      completed++;
-    }
-    // 每科之间间隔2秒，避免 rate limit
-    if (completed < AUTO_SCAN_SUBJECTS.length) await new Promise(r => setTimeout(r, 2000));
+function getCachedIntel(sub) {
+  try {
+    const raw = localStorage.getItem('Intel_' + sub);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.time > CACHE_TTL) return null;
+    return obj;
+  } catch(e) { return null; }
+}
+
+function setCachedIntel(sub, layers) {
+  localStorage.setItem('Intel_' + sub, JSON.stringify({
+    data: layers, time: Date.now()
+  }));
+}
+
+// ============================================================
+//  核心窃取函数 · stealIntel
+// ============================================================
+async function stealIntel(subCode) {
+  const btn = document.getElementById('btnSteal');
+  const progressEl = document.getElementById('stealProgress');
+  const statusEl = document.getElementById('stealStatus');
+  const barEl = document.getElementById('stealBar');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> 窃取中...';
+  progressEl.style.display = '';
+  statusEl.textContent = `🔴 IRON PROTOCOL v3.0 · 窃取 ${subCode} ${INTEL_NAMES[subCode]} ...`;
+  barEl.style.width = '30%';
+  barEl.style.background = 'linear-gradient(90deg,var(--green),var(--cyan),var(--purple))';
+
+  try {
+    const raw = await searchPerplexity(IRON_PROMPTS[subCode]);
+    barEl.style.width = '70%';
+    statusEl.textContent = '⚙️ 解析三层情报结构...';
+
+    const layers = parseThreeLayers(raw);
+    barEl.style.width = '90%';
+
+    renderLayerContent('intelLayer', layers.intel);
+    renderLayerContent('processLayer', layers.process);
+    renderLayerContent('outputLayer', layers.output);
+
+    setCachedIntel(subCode, layers);
+
+    const ts = new Date().toLocaleString('zh-CN');
+    document.getElementById('lastUpdateInfo').textContent = `上次更新: ${ts} · ${subCode} ${INTEL_NAMES[subCode]}`;
+
+    barEl.style.width = '100%';
+    statusEl.textContent = `✅ ${subCode} ${INTEL_NAMES[subCode]} 情报窃取完成!`;
+    console.log(`[天机] ✅ ${subCode} 三层情报更新完成`);
+    setTimeout(() => { progressEl.style.display = 'none'; }, 2000);
+  } catch(e) {
+    statusEl.textContent = `❌ 窃取失败: ${e.message}`;
+    barEl.style.width = '100%';
+    barEl.style.background = 'var(--red)';
+    console.error('[天机] 窃取失败:', e);
   }
 
-  // 标记今天已扫描
-  localStorage.setItem('tianji_last_scan_date', today);
-  localStorage.setItem('tianji_last_scan_time', new Date().toISOString());
+  btn.disabled = false;
+  btn.innerHTML = '🔴 窃取最新情报';
+}
 
-  // 更新状态条
-  const statusEl = document.getElementById('scanStatus');
-  const progEl = document.getElementById('scanProgress');
-  if (statusEl) statusEl.textContent = `✅ 每日情报窃取完成! 4科全部更新 · ${new Date().toLocaleTimeString('zh-CN')}`;
-  if (progEl) progEl.textContent = '4/4 DONE';
-  // 3秒后淡出
-  setTimeout(() => { const b = document.getElementById('autoScanBanner'); if(b) { b.style.transition='opacity .5s'; b.style.opacity='0'; setTimeout(()=>b.remove(), 500); } }, 4000);
-  // 刷新情报站
-  loadIntel(curSub);
+// ============================================================
+//  试卷蓝图数据
+// ============================================================
+const BLUEPRINT_DATA = {
+  '101': { title: '101政治', bp: '满分100 | 单选16题×1分 + 多选17题×2分 + 材料分析5题×10分' },
+  '201': { title: '201英语', bp: '满分100 | 完形20题×0.5分 + 阅读20题×2分 + 新题型5题×2分 + 翻译5题×2分 + 写作30分' },
+  '301': { title: '301数学', bp: '满分150 | 选择10题×5分 + 填空6题×5分 + 解答6题×总70分' },
+  '408': { title: '408计算机', bp: '满分150 | 单选40题×2分 + 综合应用7题×总70分 | DS/CO/OS/Net四模块' }
+};
+
+function renderBlueprint(sub) {
+  const d = BLUEPRINT_DATA[sub];
+  if (!d) return;
+  const el = document.getElementById('bpCards');
+  if (!el) return;
+  el.innerHTML = `<div class="intel-card" style="border-color:rgba(157,78,221,.12)">
+    <div style="font-size:11px;color:var(--purple);font-weight:700;margin-bottom:6px">试卷蓝图 | ${d.title}</div>
+    <div style="font-size:12px;color:var(--text);line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">${d.bp}</div>
+  </div>`;
+}
+
+// ============================================================
+//  Tab切换加载缓存 · loadCachedIntel
+// ============================================================
+function loadCachedIntel(sub) {
+  const cached = getCachedIntel(sub);
+  if (cached && cached.data) {
+    renderLayerContent('intelLayer', cached.data.intel);
+    renderLayerContent('processLayer', cached.data.process);
+    renderLayerContent('outputLayer', cached.data.output);
+    const ts = new Date(cached.time).toLocaleString('zh-CN');
+    document.getElementById('lastUpdateInfo').textContent = `缓存: ${ts} · ${sub} ${INTEL_NAMES[sub]} (24h有效)`;
+    console.log(`[天机] 📋 ${sub} 缓存命中, 时间: ${ts}`);
+  } else {
+    document.getElementById('intelLayer').innerHTML = '<div style="color:var(--dim)">尚无情报 — 点击下方按钮窃取</div>';
+    document.getElementById('processLayer').innerHTML = '<div style="color:var(--dim)">等待情报层数据...</div>';
+    document.getElementById('outputLayer').innerHTML = '<div style="color:var(--dim)">等待处理层数据...</div>';
+    document.getElementById('lastUpdateInfo').textContent = cached ? '⚠️ 缓存已过期(>24h)，请重新窃取' : '';
+  }
+  renderBlueprint(sub);
 }
 
 // ============================================================
 //  GLOBAL STATE
 // ============================================================
-let curSub = '101', curM = 'datetime', lastCopy = '';
+let curSub = '101', lastCopy = '';
 let radarSub = '101';
 
 // ============================================================
@@ -765,360 +954,29 @@ document.querySelectorAll('.nav-tab').forEach(t => t.addEventListener('click', (
   document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
   t.classList.add('active');
-  document.getElementById('page-' + t.dataset.page).classList.add('active');
+  const pageEl = document.getElementById('page-' + t.dataset.page);
+  if (pageEl) pageEl.classList.add('active');
 }));
 
 // ============================================================
-//  情报站
+//  情报站 · 四科Tab切换
 // ============================================================
 document.querySelectorAll('.sub-tab').forEach(t => t.addEventListener('click', () => {
   document.querySelectorAll('.sub-tab').forEach(x => x.classList.remove('active'));
-  t.classList.add('active'); curSub = t.dataset.sub; loadIntel(curSub);
+  t.classList.add('active');
+  curSub = t.dataset.sub;
+  loadCachedIntel(curSub);
 }));
-
-// ============================================================
-//  🎯 核心考题窃取 + Gemini 2.5 Pro 考卷架构引擎
-//  Pipeline: Perplexity 死忠窃取 → Gemini Pro 出卷 → Global_Vault
-// ============================================================
-
-const QUESTION_THEFT_PROMPTS = {
-  '101': `【指令101：政治时政与理论深挖】目标：最近3个月内的《求是》杂志核心文章、中央最新重大会议公报原文、人民日报理论版重点文章。提取要求：不要新闻摘要。直接提取最具辨析价值的新提法、新矛盾点。找出可以用来出多选题（4个选项极其容易混淆）和材料分析题（长篇大段）的硬核文本。试卷结构:单选16题(1分)+多选17题(2分)+材料分析5题(10分)=满分100。每道题附【完整题干+选项/材料+参考答案+出处+命中概率%】`,
-  '201': `【指令201：英语题源外刊扒取】目标：本周/本月最新一期的The Economist/The Guardian/The Atlantic/Nature。搜索关于科技伦理、社会经济变迁、心理学新发现的最新长篇文章。截取最具长难句特征、逻辑最曲折的400词原文本（阅读理解A节素材）。提取5个最复杂的长难句（翻译题）。试卷结构:完形20题(0.5分=10分)+传统阅读20题(2分=40分)+新题型5题(2分=10分)+翻译5题(2分=10分)+写作(小10+大20=30分)=满分100。每条附【完整英文素材+中文解析+命中概率%】`,
-  '301': `【指令301：数学一前沿变形题嗅探】目标：国内外最新大学生数学竞赛（丘成桐竞赛、全国大学生数学竞赛）的微积分、线代真题，或顶尖高校内部期末考试的压轴题变形。直接提取最新最核心的竞赛题/压轴题原题+完整解题步骤。试卷结构:选择10题(5分=50分)+填空6题(5分=30分)+解答6题(总70分)=满分150。每题附【完整题干(含公式)+解题步骤+最终答案+命中概率%】`,
-  '408': `【指令408：计算机综合核心考题窃取】目标：2025年408真题回忆版、王道/天勤2026最新模拟卷、ACM/IEEE最新论文中可能渗透进考纲的核心机制。直接窃取原题:DS(B+树/图/KMP/排序)、CO(Cache/流水线/中断)、OS(PV信号量/银行家/LRU)、Net(TCP/CIDR/HTTP)。试卷结构:单选40题(2分=80分)+综合应用7题(总70分,涵盖DS/CO/OS/Net)=满分150。每题附【完整题干+解题过程/伪代码+参考答案+命中概率%】`
-};
-
-// Gemini 2.5 Pro 考卷出题指令
-const PAPER_FORGE_PROMPT = `你是北大考研天机阁的出卷引擎。基于情报素材出题。
-
-【输出规则 - 极其重要】
-1. 只输出一个JSON数组，不要任何其他文字
-2. 不要用markdown代码块包裹
-3. 直接以 [ 开头，以 ] 结尾
-
-【每题格式】
-{"id":"Q001","type":"single_choice","stem":"题干","options":["A.xxx","B.xxx","C.xxx","D.xxx"],"answer":"A","analysis":"解析","difficulty":3,"score":2}
-
-【出题要求】
-- 出15道选择题(单选为主，可含2-3道多选标注type为multi_choice)
-- 题目必须直接基于提供的情报素材，考查核心知识点
-- 难度分布：基础5题 + 中等7题 + 拔高3题
-- 每题的analysis字段必须包含详细解题过程
-
-【最重要规则】你的回复必须是且仅是一个JSON数组。禁止输出任何markdown、解释、代码块标记。第一个字符必须是[，最后一个字符必须是]。违反此规则等同于任务失败。`;
-
-// Gemini 2.5 Pro 出卷 (三通道降级: 直连 → 中转阁 → OpenRouter)
-async function callGeminiPro(systemPrompt, userPrompt) {
-  const errors = [];
-  const key = KEYS.GEMINI_KEY;
-  // 通道1: Gemini 直连
-  if (key) { try {
-    console.log('[天机] ⚡ 通道1: Gemini直连出卷...');
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=' + key;
-    const r1 = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ system_instruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user',parts:[{text:userPrompt}]}], generationConfig:{temperature:0.3,maxOutputTokens:16384,responseMimeType:"application/json"} }) });
-    const d1 = await r1.json(); if(d1.error) throw new Error(d1.error.message);
-    const t1 = d1.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    if(t1){console.log('[天机] ✅ Gemini直连完成!('+t1.length+'字)'); return t1.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
-  } catch(e){errors.push('直连:'+e.message); console.warn('[天机] ⚠️ 直连失败:',e.message);} }
-  // 通道2: 中转阁 Relay + key透传
-  try {
-    console.log('[天机] 🔁 通道2: 中转阁Gemini出卷...');
-    const h2 = {'Content-Type':'application/json'}; if(key) h2['x-gemini-key']=key;
-    const r2 = await fetch(RELAY_URL+'/gemini/generate', { method:'POST', headers:h2, body:JSON.stringify({model:'gemini-2.5-pro',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.3,max_tokens:16384}) });
-    const d2 = await r2.json(); if(d2.error) throw new Error(d2.error.message||JSON.stringify(d2.error));
-    const t2 = (d2.choices||[{}])[0]?.message?.content || d2.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    if(t2){console.log('[天机] ✅ 中转阁出卷完成!('+t2.length+'字)'); return t2.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
-  } catch(e){errors.push('中转阁:'+e.message); console.warn('[天机] ⚠️ 中转阁失败:',e.message);}
-  // 通道3: OpenRouter Gemini
-  const orKey = KEYS.OR_KEY;
-  if(orKey){ try {
-    console.log('[天机] 🔁 通道3: OpenRouter Gemini出卷...');
-    const r3 = await fetch(KEYS.OR_URL, { method:'POST', headers:{'Authorization':'Bearer '+orKey,'Content-Type':'application/json'}, body:JSON.stringify({model:'google/gemini-2.5-pro-preview',messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],temperature:0.3,max_tokens:16384}) });
-    const d3 = await r3.json(); if(d3.error) throw new Error(d3.error.message);
-    const t3 = (d3.choices||[{}])[0]?.message?.content||'';
-    if(t3){console.log('[天机] ✅ OpenRouter出卷完成!('+t3.length+'字)'); return t3.replace(/<think>[\s\S]*?<\/think>/g,'').trim();}
-  } catch(e){errors.push('OpenRouter:'+e.message);} }
-  throw new Error('所有出卷通道失败:\n'+errors.join('\n'));
-}
-
-// 一键窃取+出卷
-async function stealAndForge(subject) {
-  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
-  const statusEl = document.getElementById('theftStatus');
-  const progressEl = document.getElementById('theftProgress');
-
-  // Step 1: Perplexity 窃取核心考题
-  statusEl.textContent = `📡 Perplexity 窃取 ${subject} ${subNames[subject]} 核心考题中...`;
-  progressEl.style.width = '20%';
-  const rawIntel = await searchPerplexity(QUESTION_THEFT_PROMPTS[subject]);
-  console.log(`[天机] ✅ ${subject} 原始考题素材: ${rawIntel.length}字`);
-
-  // Step 2: Gemini Pro 架构完整考卷
-  statusEl.textContent = `⚡ Gemini 2.5 Pro 架构 ${subject} ${subNames[subject]} 完整考卷中...`;
-  progressEl.style.width = '60%';
-  const forgePrompt = `科目: ${subject} ${subNames[subject]}
-  
-以下是Perplexity搜索到的最新核心考题情报:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${rawIntel}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-请基于以上情报素材，出15道高质量选择题。直接输出JSON数组，不要其他文字。`;
-
-  const paperRaw = await callGeminiPro(PAPER_FORGE_PROMPT, forgePrompt);
-  
-  // Step 3: 解析JSON并存入金库
-  statusEl.textContent = `💾 存入金库 ${subject}...`;
-  progressEl.style.width = '90%';
-  let questions = [];
-  console.log('[天机] 📄 Gemini原始返回(前500字):', paperRaw.substring(0, 500));
-  // 多策略JSON提取
-  const extractJSON = (raw) => {
-    if (!raw || raw.length < 10) return [];
-    // 策略1: 直接解析(如果是纯JSON)
-    try { const arr = JSON.parse(raw.trim()); if(Array.isArray(arr) && arr.length>0) return arr; } catch(e){}
-    // 策略2: 去掉markdown代码块
-    const cleaned = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-    try { const arr = JSON.parse(cleaned); if(Array.isArray(arr) && arr.length>0) return arr; } catch(e){}
-    // 策略3: 提取最外层 [...]
-    const m1 = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (m1) { try { return JSON.parse(m1[0]); } catch(e){} }
-    // 策略4: 提取所有 {...} 对象
-    const objs = [];
-    const regex = /\{[^{}]*"stem"[^{}]*\}/g;
-    let match;
-    while((match = regex.exec(raw)) !== null) {
-      try { objs.push(JSON.parse(match[0])); } catch(e){}
-    }
-    if (objs.length > 0) { console.log('[天机] 策略4: 逐个提取到', objs.length, '题'); return objs; }
-    // 策略5: 修复常见JSON错误(尾部逗号、截断)
-    try {
-      let fixed = cleaned.replace(/,\s*\]/g, ']').replace(/,\s*$/,'');
-      if (!fixed.endsWith(']')) fixed += ']}';
-      if (fixed.startsWith('[')) { return JSON.parse(fixed); }
-    } catch(e){}
-    // 策略6: 硬解Markdown格式考题 (OpenRouter常返回此格式)
-    console.log('[天机] 🔧 策略6: 尝试从Markdown文本中提取考题...');
-    const mdQuestions = [];
-    // 按题号切分: 匹配 "1." "2." "**1**" "第1题" "Q001" 等开头
-    const blocks = raw.split(/(?=(?:^|\n)\s*(?:\*\*)?(?:(?:第?\d{1,2}[.、题\)])|(?:Q?\d{3})))/);
-    for (const block of blocks) {
-      if (block.trim().length < 20) continue;
-      const text = block.trim();
-      // 提取题干 (第一段有意义的文字)
-      let stem = '';
-      const stemMatch = text.match(/(?:题[干目]?[：:]|\d+[.、)\]]\s*)(.*?)(?=\n[A-E][.、)]|\n\*\*[A-E]|$)/s);
-      if (stemMatch) stem = stemMatch[1].trim().replace(/\*\*/g,'');
-      if (!stem) {
-        const firstLine = text.split('\n')[0].replace(/^[\d.*#\s]+/,'').replace(/\*\*/g,'').trim();
-        if (firstLine.length > 10) stem = firstLine;
-      }
-      if (!stem || stem.length < 5) continue;
-      // 提取选项
-      const options = [];
-      const optRegex = /([A-E])[.、)\]]\s*([^\n]*?)(?=\s*[A-E][.、)\]]|\n\*\*|\n答|$)/gs;
-      let optMatch;
-      while ((optMatch = optRegex.exec(text)) !== null) {
-        options.push(optMatch[1] + '.' + optMatch[2].replace(/\*\*/g,'').trim());
-      }
-      // 提取答案
-      let answer = '';
-      const ansMatch = text.match(/答案[：:]\s*\*?\*?([A-E]+)/i) || text.match(/正确[选答][项案][：:]\s*([A-E]+)/i);
-      if (ansMatch) answer = ansMatch[1];
-      // 提取解析
-      let analysis = '';
-      const anaMatch = text.match(/(?:解析|分析|详解)[：:]\s*(.*?)$/s);
-      if (anaMatch) analysis = anaMatch[1].replace(/\*\*/g,'').trim().substring(0, 500);
-      // 判断题型
-      let type = 'single_choice';
-      if (answer.length > 1) type = 'multi_choice';
-      if (text.includes('多选') || text.includes('多项')) type = 'multi_choice';
-      if (text.includes('材料分析') || text.includes('论述')) type = 'essay';
-      // 构建题目对象
-      if (stem.length >= 5) {
-        mdQuestions.push({
-          id: 'Q' + String(mdQuestions.length + 1).padStart(3, '0'),
-          type: type,
-          stem: stem.substring(0, 500),
-          options: options.length >= 2 ? options : ['A.暂无','B.暂无','C.暂无','D.暂无'],
-          answer: answer || 'A',
-          analysis: analysis || '详见原始情报',
-          difficulty: 3,
-          score: type === 'essay' ? 10 : 2,
-          source: 'tianji-md-extract'
-        });
-      }
-    }
-    if (mdQuestions.length > 0) {
-      console.log('[天机] ✅ 策略6成功: 从Markdown提取到', mdQuestions.length, '题!');
-      return mdQuestions;
-    }
-    console.warn('[天机] ❌ 所有JSON提取策略均失败');
-    return [];
-  };
-  questions = extractJSON(paperRaw);
-  console.log('[天机] 📊 JSON提取结果:', questions.length, '题');
-
-  // 存入 Global Vault
-  let existing = [];
-  try { const raw = localStorage.getItem('Global_Vault_' + subject); if(raw) existing = JSON.parse(raw) || []; } catch(e) {}
-  
-  if (questions.length > 0) {
-    const existingStems = new Set(existing.map(q => q.stem || q.q || ''));
-    const newQ = questions.filter(q => !existingStems.has(q.stem));
-    const merged = [...existing, ...newQ];
-    localStorage.setItem('Global_Vault_' + subject, JSON.stringify(merged));
-    localStorage.setItem('Vault_Meta_' + subject, JSON.stringify({
-      updatedAt: new Date().toISOString(), count: merged.length, lastSource: 'tianji-theft+gemini-pro'
-    }));
-    console.log(`[天机] ✅ ${subject} 金库更新: +${newQ.length}题 (总${merged.length}题)`);
-    return { subject, newCount: newQ.length, totalCount: merged.length, rawIntelLength: rawIntel.length, rawIntel, paperRaw };
-  } else {
-    // JSON解析失败, 存原始文本
-    localStorage.setItem('tianji_raw_paper_' + subject, paperRaw);
-    return { subject, newCount: 0, totalCount: existing.length, rawIntelLength: rawIntel.length, rawSaved: true, rawIntel, paperRaw };
-  }
-}
-
-
-// ═══ 情报展示：窃取结果可视化 + 一键复制 ═══
-function displayTheftDetails(container, subCode, subName, result) {
-  const { rawIntel, paperRaw, newCount, totalCount } = result;
-  const detailHTML = `
-    <div class="intel-card" style="border-color:rgba(255,215,0,.12);margin-top:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="color:var(--gold);font-weight:700;font-size:13px">📡 ${subCode} ${subName} 情报详情</span>
-        <div style="display:flex;gap:6px">
-          <button onclick="this.parentElement.parentElement.nextElementSibling.style.display=this.parentElement.parentElement.nextElementSibling.style.display==='none'?'block':'none'" class="copy-btn" style="position:static">📖 展开/折叠</button>
-          <button onclick="navigator.clipboard.writeText(this.closest('.intel-card').querySelector('.intel-raw').textContent).then(()=>this.textContent='✅ 已复制').catch(()=>{})" class="copy-btn" style="position:static">📋 复制情报</button>
-        </div>
-      </div>
-      <div style="display:block">
-        <div style="font-size:11px;color:var(--cyan);margin-bottom:4px;font-weight:600">🔍 原始情报 (${(rawIntel||'').length}字)</div>
-        <div class="intel-raw" style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-word">${(rawIntel||'[无]').replace(/</g,'&lt;')}</div>
-      </div>
-      ${newCount > 0 ? `
-      <div style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:11px;color:var(--green);font-weight:600">📝 生成考题 (${newCount}题)</span>
-          <button onclick="navigator.clipboard.writeText(localStorage.getItem('Global_Vault_'+'${subCode}')||'[]').then(()=>this.textContent='✅ JSON已复制')" class="copy-btn" style="position:static">📋 复制JSON到终端</button>
-        </div>
-        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(57,255,20,.1);border-radius:8px;padding:12px;font-size:11px;line-height:1.6;color:var(--sub);max-height:200px;overflow-y:auto;white-space:pre-wrap">${(paperRaw||'[原始文本]').replace(/</g,'&lt;').substring(0,2000)}${(paperRaw||'').length>2000?'\n...（已截断）':''}</div>
-      </div>
-      ` : `
-      <div style="margin-top:8px;color:var(--amber);font-size:11px">⚠️ 考卷JSON解析失败，原始文本已存储。可点击复制后手动处理。</div>
-      <button onclick="navigator.clipboard.writeText(localStorage.getItem('tianji_raw_paper_'+'${subCode}')||'').then(()=>this.textContent='✅ 已复制')" class="copy-btn" style="position:static;margin-top:6px">📋 复制原始出卷文本</button>
-      `}
-    </div>
-  `;
-  container.insertAdjacentHTML('beforeend', detailHTML);
-}
-
-// 全科窃取
-async function stealAllSubjects() {
-  const btn = document.getElementById('btnTheft');
-  btn.disabled = true; btn.innerHTML = '<span class="loading"></span> 全科窃取中...';
-  const theftSection = document.getElementById('theftSection');
-  theftSection.style.display = '';
-  const statusEl = document.getElementById('theftStatus');
-  const progressEl = document.getElementById('theftProgress');
-  const resultEl = document.getElementById('theftResults');
-  resultEl.innerHTML = '';
-  
-  const subjects = ['101', '201', '301', '408'];
-  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
-  
-  for (let i = 0; i < subjects.length; i++) {
-    const sub = subjects[i];
-    try {
-      const result = await stealAndForge(sub);
-      progressEl.style.width = ((i + 1) / subjects.length * 100) + '%';
-      resultEl.innerHTML += `<div style="color:var(--green);margin:4px 0">✅ ${sub} ${subNames[sub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字${result.rawSaved ? ' [原始存储]' : ''}</div>`;
-      // 展示情报详情
-      const detailContainer = document.createElement('div');
-      resultEl.appendChild(detailContainer);
-      displayTheftDetails(detailContainer, sub, subNames[sub], result);
-    } catch(e) {
-      resultEl.innerHTML += `<div style="color:var(--red);margin:4px 0">❌ ${sub} ${subNames[sub]}: ${e.message}</div>`;
-    }
-    if (i < subjects.length - 1) await new Promise(r => setTimeout(r, 2000));
-  }
-  
-  statusEl.textContent = '✅ 全科窃取+出卷完成!';
-  progressEl.style.width = '100%';
-  btn.disabled = false; btn.innerHTML = '🎯 一键窃取核心考题 + 出卷';
-}
-
-// 单科窃取
-async function stealSingleSubject() {
-  const btn = document.getElementById('btnTheftSingle');
-  btn.disabled = true; btn.innerHTML = '<span class="loading"></span> 窃取中...';
-  const theftSection = document.getElementById('theftSection');
-  theftSection.style.display = '';
-  const resultEl = document.getElementById('theftResults');
-  const subNames = { '101': '政治', '201': '英语', '301': '数学', '408': '计算机' };
-  
-  try {
-    const result = await stealAndForge(curSub);
-    resultEl.innerHTML = `<div style="color:var(--green);margin-bottom:12px">✅ ${curSub} ${subNames[curSub]}: +${result.newCount}题 (总${result.totalCount}题) · 情报${result.rawIntelLength}字</div>`;
-    // 展示情报详情
-    displayTheftDetails(resultEl, curSub, subNames[curSub], result);
-    document.getElementById('theftStatus').textContent = '✅ 窃取+出卷完成!';
-  } catch(e) {
-    resultEl.innerHTML = `<div style="color:var(--red)">❌ ${curSub} ${subNames[curSub]}: ${e.message}</div>`;
-    document.getElementById('theftStatus').textContent = '❌ 窃取失败';
-  }
-  btn.disabled = false; btn.innerHTML = '🎯 窃取当前科目';
-}
-
-// ---- 情报站 UI 增强 ----
-// 在情报站区域动态添加考题窃取UI
-(function addTheftUI() {
-  const intelPage = document.getElementById('page-intel');
-  if (!intelPage) return;
-  const theftHTML = `
-    <div class="section-title">🎯 核心考题窃取 + 考卷架构</div>
-    <div class="intel-card" style="border-color:rgba(255,215,0,.15)">
-      <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:8px">
-        ⚡ Perplexity 死忠窃取 → Gemini 2.5 Pro 出卷 → 金库
-      </div>
-      <div style="font-size:11px;color:var(--sub);line-height:1.8;margin-bottom:12px">
-        点击后自动执行: 1) Perplexity搜索核心考题原题 → 2) Gemini Pro架构完整考卷 → 3) 存入Global Vault供终端和游戏消费
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-search" id="btnTheftSingle" onclick="stealSingleSubject()">🎯 窃取当前科目</button>
-        <button class="btn btn-gua" id="btnTheft" onclick="stealAllSubjects()">🎯 一键窃取全科 + 出卷</button>
-      </div>
-    </div>
-    <div id="theftSection" style="display:none;margin-top:10px">
-      <div class="intel-card" style="border-color:rgba(8,247,254,.15)">
-        <div id="theftStatus" style="color:var(--cyan);font-size:12px;margin-bottom:8px">准备中...</div>
-        <div style="background:rgba(255,255,255,.04);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px">
-          <div id="theftProgress" style="height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--purple));border-radius:4px;transition:width .4s;width:0%"></div>
-        </div>
-        <div id="theftResults" style="font-size:12px;line-height:1.8"></div>
-      </div>
-    </div>`;
-  // Insert before the search section
-  const searchSec = document.getElementById('searchSec');
-  if (searchSec) {
-    searchSec.insertAdjacentHTML('beforebegin', theftHTML);
-  } else {
-    intelPage.insertAdjacentHTML('beforeend', theftHTML);
-  }
-})();
-
-// [推演引擎已独立为 ../tuiyan/index.html — 梅花+六爻完整排盘系统]
 
 //  命题风向雷达 SYSTEM
 // ============================================================
 const RADAR_SYSTEM = `你是"天机阁"的核心情报分析引擎，代号"北斗"。你的任务是基于公开可获取的学术数据、历年真题规律、教授公开论文和时政新闻，对考研命题趋势进行深度推演分析。
 
 重要原则：
-1. 所有分析必须基于公开合法数据源（历年真题、公开论文、官方大纲、新闻报道）
+1. 所有分析必须基于公开合法数据源
 2. 输出必须极度结构化，使用 Markdown 格式
 3. 给出具体的章节、知识点、概率估计
-4. 语言风格：军事情报分析风格，简洁精准，带修仙暗语
+4. 语言风格：军事情报分析风格
 5. 当前时间：${new Date().toLocaleDateString('zh-CN')}
 6. 目标考试：2026年全国硕士研究生统一招生考试`;
 
@@ -1130,151 +988,19 @@ const SUBJECT_INFO = {
 };
 
 const MODULE_PROMPTS = {
-  heatmap: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行近10年(2016-2025)真题考点频率分析。
-
-分析范围：${SUBJECT_INFO[sub].full}
-
-请输出：
-## 📊 考点热力图 · ${sub} ${SUBJECT_INFO[sub].name}
-
-### 🔴 高频考点 TOP 10（近10年出现≥6次）
-列出具体知识点、出现年份、出现频率、题型(选择/大题)
-
-### 🟡 中频考点（3-5次）
-同上格式
-
-### 🟢 低频但危险考点（1-2次，但符合轮换规律即将回归）
-重点分析！这些是2026年的命题陷阱
-
-### 📈 轮换周期分析
-分析各大章节的出题轮换规律（如：某知识点每2-3年轮换一次）
-
-### 🎯 2026年命中预测
-基于轮换规律，预测2026年最可能考的10个具体知识点，给出概率(%)`,
-
-  professor: (sub) => `请分析考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 的潜在命题组核心教授群体。
-
-已知命题组通常从以下院校抽调教授：北京大学、清华大学、中国人民大学、复旦大学、浙江大学、南京大学、武汉大学、中山大学等。
-
-请输出：
-## 🎓 命题教授风向追踪 · ${sub}
-
-### 📋 核心命题库候选教授
-列出该学科领域的知名教授（至少10位），包括：
-- 姓名、院校、研究方向
-- 是否有历史命题组参与记录（公开信息）
-- 近2年最新公开论文/讲座主题
-
-### 🔬 学术热点→命题方向映射
-分析这些教授近期研究方向可能如何影响命题：
-- 热门研究主题
-- 对应的考纲章节
-- 可能的出题切入角度
-
-### ⚠️ 高危信号
-哪些教授的研究方向与历年未考察的大纲知识点高度重合？这些就是2026的命题地雷`,
-
-  political: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行时政/热点事件与考纲映射分析。
-
-时间范围：2025年4月 - 2026年4月（近12个月）
-${sub === '101' ? '重点关注：二十届四中/五中全会、十五五规划、中央经济工作会议、全国两会、习近平重要讲话等' : 
-  sub === '201' ? '重点关注：AI伦理、气候变化、全球化、社会公平、数字经济、太空探索等英文阅读热门话题' :
-  sub === '301' ? '重点关注：数学竞赛热题、数学建模国赛题目趋势、新教材改革方向' :
-  '重点关注：AI大模型、量子计算、RISC-V架构、边缘计算、网络安全等'}
-
-请输出：
-## 🏛️ 时政/热点雷达 · ${sub}
-
-### 📡 近12月核心事件清单
-按时间排序列出可能影响命题的事件
-
-### 🔗 事件→考纲映射矩阵
-| 事件 | 对应考纲章节 | 可能出题方式 | 命题概率 |
-|------|------------|------------|---------|
-
-### 🎯 2026年必考时政/热点预测 TOP 5
-给出最有可能以此为背景出题的事件和具体出题预测`,
-
-  frontier: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行学科前沿与考纲交叉分析。
-
-${sub === '408' ? `
-分析方向：
-1. 数据结构：新型数据结构(如：跳表、布隆过滤器)是否可能进入考纲
-2. 组成原理：RISC-V指令集对MIPS/x86知识点的冲击
-3. 操作系统：容器化、微内核等新概念是否可能渗透
-4. 计算机网络：SDN/NFV、IPv6、QUIC协议等新兴技术` :
-  sub === '301' ? `
-分析方向：
-1. 高等数学：泛函分析思想渗透、微分方程数值解法
-2. 线性代数：矩阵分析、Jordan标准形趋势
-3. 概率统计：机器学习相关的概率模型、贝叶斯推断` :
-  sub === '201' ? `
-分析方向：
-1. 阅读理解选材从传统人文→科技+社会交叉的趋势
-2. 翻译题学术化趋势
-3. 作文话题从抽象→具象社会议题的演变` :
-  `
-分析方向：
-1. 新时代中国特色社会主义思想最新发展
-2. 马克思主义中国化时代化的最新理论成果
-3. 国际形势变化对命题方向的影响`}
-
-请输出：
-## 🧬 学科前沿交叉分析 · ${sub}
-
-### 🔬 前沿概念→考纲渗透评估
-列出可能渗透进考题的前沿概念，评估概率
-
-### 📊 历年"新概念"出题案例
-分析历年真题中首次出现的"新"知识点，推断2026的新增方向
-
-### ⚠️ 考纲边界模糊区
-哪些知识点"看似超纲但实际可考"？这是拉开差距的关键区域`,
-
-  prediction: (sub) => `你是2026年考研终极命题预测分析系统。请对科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行综合命题预测。
-
-考纲范围：${SUBJECT_INFO[sub].full}
-
-请融合以下情报维度进行100%全面推演：
-1. 近10年考点轮换规律
-2. 命题教授研究方向
-3. 时政热点/学科前沿
-4. 难度波动周期（奇偶年效应）
-5. 考纲修订信号
-
-请输出：
-## 🎯 2026年 ${sub} ${SUBJECT_INFO[sub].name} · 终极命题预测
-
-### 📊 总体难度预测
-预测分数分布、难度系数，与2025年对比
-
-### 🔴 必考题预测 TOP 10
-每题包含：
-1. 题号预测（大题/选择）
-2. 具体知识点
-3. 预测出题方式
-4. 命中置信度 (%)
-5. 备考建议
-
-### 🟡 高概率题预测（50-80%）
-同上格式，5-8题
-
-### 🟢 冷门但可能翻盘题（20-50%）
-这些题一旦出现，将成为考场上的分水岭
-
-### ⚡ 反押题预警
-哪些"看似一定会考"的热门知识点，根据轮换规律分析，反而2026年大概率不考？
-
-### 📋 30天冲刺优先级排序
-如果只剩30天，按什么顺序复习性价比最高？`
+  heatmap: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行近10年(2016-2025)真题考点频率分析。\n分析范围：${SUBJECT_INFO[sub].full}\n\n请输出：\n## 📊 考点热力图 · ${sub} ${SUBJECT_INFO[sub].name}\n\n### 🔴 高频考点 TOP 10\n### 🟡 中频考点\n### 🟢 低频但危险考点\n### 📈 轮换周期分析\n### 🎯 2026年命中预测`,
+  professor: (sub) => `请分析考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 的潜在命题组核心教授群体。\n\n请输出：\n## 🎓 命题教授风向追踪 · ${sub}\n\n### 📋 核心命题库候选教授\n### 🔬 学术热点→命题方向映射\n### ⚠️ 高危信号`,
+  political: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行时政/热点事件与考纲映射分析。\n\n请输出：\n## 🏛️ 时政/热点雷达 · ${sub}\n\n### 📡 近12月核心事件清单\n### 🔗 事件→考纲映射矩阵\n### 🎯 2026年必考时政预测 TOP 5`,
+  frontier: (sub) => `请对考研科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行学科前沿与考纲交叉分析。\n\n请输出：\n## 🧬 学科前沿交叉分析 · ${sub}\n\n### 🔬 前沿概念→考纲渗透评估\n### 📊 历年"新概念"出题案例\n### ⚠️ 考纲边界模糊区`,
+  prediction: (sub) => `你是2026年考研终极命题预测分析系统。请对科目 ${sub} (${SUBJECT_INFO[sub].name}) 进行综合命题预测。\n\n考纲范围：${SUBJECT_INFO[sub].full}\n\n请输出：\n## 🎯 2026年 ${sub} ${SUBJECT_INFO[sub].name} · 终极命题预测\n\n### 📊 总体难度预测\n### 🔴 必考题预测 TOP 10\n### 🟡 高概率题预测\n### 🟢 冷门翻盘题\n### ⚡ 反押题预警\n### 📋 30天冲刺优先级排序`
 };
 
 // Radar Date
 document.getElementById('radarDate').textContent = `SCAN DATE: ${new Date().toISOString().slice(0, 10)} · PHASE 1 ACTIVE`;
 
-// Countdown to exam (estimate late Dec 2026)
+// Countdown
 function updateCountdown() {
-  const exam = new Date(2026, 11, 26, 8, 30); // Dec 26, 2026 08:30
+  const exam = new Date(2026, 11, 26, 8, 30);
   const now = new Date();
   const diff = exam - now;
   const days = Math.floor(diff / 86400000);
@@ -1304,7 +1030,6 @@ document.querySelectorAll('.radar-module').forEach(m => m.addEventListener('clic
   const promptFn = MODULE_PROMPTS[mod];
   if (!promptFn) return;
 
-  // Show progress
   const progress = document.getElementById('radarProgress');
   const output = document.getElementById('radarOutput');
   const content = document.getElementById('radarContent');
@@ -1313,41 +1038,24 @@ document.querySelectorAll('.radar-module').forEach(m => m.addEventListener('clic
   output.classList.add('visible');
   
   const modTitles = {
-    heatmap: '🔥 考点热力图',
-    professor: '🎓 命题教授风向',
-    political: '🏛️ 时政热点雷达',
-    frontier: '🧬 学科前沿交叉',
+    heatmap: '🔥 考点热力图', professor: '🎓 命题教授风向',
+    political: '🏛️ 时政热点雷达', frontier: '🧬 学科前沿交叉',
     prediction: '🎯 综合命题预测'
   };
   document.getElementById('roTitle').textContent = `${modTitles[mod]} · ${radarSub} ${SUBJECT_INFO[radarSub].name}`;
-  content.textContent = '🔄 Claude-4-Sonnet 深度分析中（结构化分析专用引擎）...';
+  content.textContent = '🔄 分析中...';
 
-  // Disable all module cards during analysis
   document.querySelectorAll('.radar-module').forEach(x => x.style.pointerEvents = 'none');
 
   try {
     const result = await callAI(RADAR_SYSTEM, promptFn(radarSub), 8192, 'radar');
-    // Clean potential thinking tags from DeepSeek R1
-    const cleaned = result.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-    content.textContent = cleaned;
+    content.textContent = result.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
   } catch (e) {
-    content.innerHTML = `<div style="color:var(--red)">❌ 分析失败: ${e.message}</div>
-<div style="color:var(--sub);margin-top:8px;font-size:12px">
-可能原因：<br>
-1. OpenRouter API Key 未设置或已过期<br>
-2. 网络连接问题<br>
-3. API 额度不足<br><br>
-<button onclick="localStorage.removeItem('openrouter_key');location.reload()" 
-  style="padding:8px 16px;background:rgba(255,46,99,.15);border:1px solid rgba(255,46,99,.3);color:var(--red);border-radius:6px;cursor:pointer;font-family:var(--font-b)">
-  🔑 重新输入 API Key
-</button>
-</div>`;
+    content.innerHTML = `<div style="color:var(--red)">❌ 分析失败: ${e.message}</div>`;
   }
   
   progress.classList.remove('active');
   document.querySelectorAll('.radar-module').forEach(x => x.style.pointerEvents = '');
-  
-  // Smooth scroll to output
   output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }));
 
@@ -1364,304 +1072,67 @@ function closeRadarOutput() {
 }
 
 // ============================================================
-//  INIT
+//  INIT · 加载默认科目缓存
 // ============================================================
-loadIntel('101');
-
-// 🔴 每日自动窃取守护进程启动（延迟3秒，等页面渲染完成）
-setTimeout(() => dailyAutoScan(), 3000);
+loadCachedIntel('101');
 
 // ============================================================
 //  敌情作战时间线 · BATTLE TIMELINE
 // ============================================================
 (function initTimeline() {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth(); // 0-indexed
+  const m = now.getMonth();
 
-  // Determine current phase (for 2026 exam cycle)
-  // Phase 1: Apr(3)-Jun(5), Phase 2: Aug(7)-Sep(8), Phase 3: Oct(9) mid - Nov(10), Phase 4: Dec(11)
   let phase = 0;
   if (m >= 3 && m <= 5) phase = 1;
   else if (m >= 7 && m <= 8) phase = 2;
   else if (m >= 9 && m <= 10) phase = 3;
   else if (m === 11) phase = 4;
-  else if (m <= 2) phase = 0; // pre-phase or post-exam
-  else phase = 0; // gap months (Jun-Jul)
+  else phase = 0;
 
-  // If between phases, show nearest upcoming
   if (phase === 0) {
-    if (m === 6) phase = 1; // Jul = phase1 just ended
-    else if (m <= 2) phase = 4; // Jan-Mar = post phase4
+    if (m === 6) phase = 1;
+    else if (m <= 2) phase = 4;
     else phase = 1;
   }
 
   const phaseNames = { 1: '底层逻辑采样', 2: '大纲定调', 3: '深渊闭关', 4: '押送与解禁' };
   const phaseEmoji = { 1: '🕵️', 2: '📋', 3: '🔒', 4: '🚚' };
 
-  // Style the current phase indicator
   const phNow = document.getElementById('tlPhaseNow');
   phNow.textContent = `${phaseEmoji[phase]} 当前阶段：PHASE ${phase} · ${phaseNames[phase]}`;
   phNow.style.background = 'rgba(255,46,99,.12)';
   phNow.style.color = '#ff2e63';
   phNow.style.border = '1px solid rgba(255,46,99,.3)';
 
-  // Style each node
   for (let i = 1; i <= 4; i++) {
     const dot = document.getElementById('tlDot' + i);
     const card = document.getElementById('tlCard' + i);
     const badge = document.getElementById('tlBadge' + i);
 
     if (i < phase) {
-      dot.classList.add('done-dot');
-      card.classList.add('card-done');
-      badge.classList.add('badge-done');
+      dot.classList.add('done-dot'); card.classList.add('card-done'); badge.classList.add('badge-done');
       badge.textContent = '✅ PHASE ' + i + ' · COMPLETE';
     } else if (i === phase) {
-      dot.classList.add('active-dot');
-      card.classList.add('card-active');
-      badge.classList.add('badge-active');
+      dot.classList.add('active-dot'); card.classList.add('card-active'); badge.classList.add('badge-active');
       badge.textContent = '🔴 PHASE ' + i + ' · ACTIVE NOW';
     } else {
-      dot.classList.add('future-dot');
-      card.classList.add('card-future');
-      badge.classList.add('badge-future');
+      dot.classList.add('future-dot'); card.classList.add('card-future'); badge.classList.add('badge-future');
       badge.textContent = '⏳ PHASE ' + i + ' · PENDING';
     }
   }
 
-  // Intel advice per phase
   const intelAdvice = {
-    1: '🕵️ <strong>Phase 1 正在进行！</strong>命题组正在全国顶尖高校暗中征集灵感。<br><br>📌 <strong>你的行动：</strong><br>• 密切关注北大/清华/复旦等核心院校教授的最新论文和讲座<br>• 利用「命题雷达」模块追踪教授研究方向变化<br>• 回顾自己在做题中暴露的思维死角——命题组也在收集这些<br>• <strong>这是你唯一能"窥探"命题方向的窗口期，错过不再。</strong>',
-    2: '📋 <strong>Phase 2 即将启动！</strong>大纲发布后，命题方向将被锁死。<br><br>📌 <strong>你的行动：</strong><br>• 第一时间对比新旧大纲差异，新增/删除的考点是<strong>必考信号</strong><br>• 101政治：锁定最新时政核心热词<br>• 301/408：关注难度权重变化，判断"大年"还是"小年"<br>• <strong>大纲一出，立刻更新天机阁情报库！</strong>',
-    3: '🔒 <strong>Phase 3 正在进行！</strong>命题组已入闱，所有信号已断。<br><br>📌 <strong>你的行动：</strong><br>• 此时任何"泄题"信息都是<strong>诈骗</strong>——命题组物理隔绝，无人能突破<br>• 利用天机阁此前积累的情报做最终冲刺<br>• 专注「综合命题预测」模块的推演结果<br>• <strong>静心修炼，以不变应万变。</strong>',
-    4: '🚚 <strong>Phase 4 最终阶段！</strong>试卷已在绝密押送途中。<br><br>📌 <strong>你的行动：</strong><br>• 保持状态，不要临阵换枪<br>• 再看一遍天机阁的「终极推演」报告<br>• 调整作息，确保考场状态巅峰<br>• <strong>9个月的暗战，就在此刻交锋。全力以赴！</strong>'
+    1: '🕵️ <strong>Phase 1 正在进行！</strong>命题组正在全国顶尖高校暗中征集灵感。<br><br>📌 <strong>你的行动：</strong><br>• 密切关注北大/清华/复旦等核心院校教授的最新论文和讲座<br>• 利用「命题雷达」模块追踪教授研究方向变化<br>• <strong>这是你唯一能"窥探"命题方向的窗口期，错过不再。</strong>',
+    2: '📋 <strong>Phase 2 即将启动！</strong>大纲发布后，命题方向将被锁死。<br><br>📌 <strong>你的行动：</strong><br>• 第一时间对比新旧大纲差异<br>• <strong>大纲一出，立刻更新天机阁情报库！</strong>',
+    3: '🔒 <strong>Phase 3 正在进行！</strong>命题组已入闱，所有信号已断。<br><br>📌 <strong>你的行动：</strong><br>• 利用天机阁此前积累的情报做最终冲刺<br>• <strong>静心修炼，以不变应万变。</strong>',
+    4: '🚚 <strong>Phase 4 最终阶段！</strong>试卷已在绝密押送途中。<br><br>📌 <strong>你的行动：</strong><br>• 保持状态，不要临阵换枪<br>• <strong>9个月的暗战，就在此刻交锋。全力以赴！</strong>'
   };
 
   document.getElementById('tlIntelTitle').innerHTML = `⚡ PHASE ${phase} · 作战指令`;
   document.getElementById('tlIntelDesc').innerHTML = intelAdvice[phase] || '';
 })();
 
-
-// ═══ 四科战略框架 — 情报快照 + 秘密蓝图 ═══
-var SUBJECT_INTEL = {
-  '101': {
-    title: '101政治',
-    slogan: '不背结论，破解生成结论的算法。101本质是测试你能否完美生成特定的官方语料库。',
-    layers: [
-      {icon:'📡', name:'情报层', desc:'锁定命题组核心智库近三年的非公开演讲、核心期刊（《求是》等）的高频异动。'},
-      {icon:'⚙️', name:'处理层', desc:'建立时政矛盾映射矩阵，将热点事件自动生成正向/反向/辩证三维解析图表。'},
-      {icon:'🎯', name:'输出层', desc:'组建降维打击话术库。考场上不产生独立思考，只进行精准的语料块拼装和火力覆盖。'}
-    ],
-    blueprint: '满分100 | 单选16题x1分 + 多选17题x2分 + 材料分析5题x10分'
-  },
-  '201': {
-    title: '201英语',
-    slogan: '201不是语言测试，是披着英语外皮的逻辑解密游戏。出题人通过长难句加密，制造认知过载。',
-    layers: [
-      {icon:'📡', name:'情报层', desc:'越过国内题库，直接监控近两年经济学人、卫报、自然等外刊社论和前沿交叉板块。'},
-      {icon:'⚙️', name:'处理层', desc:'启动语法树暴力拆解协议。忽略所有修饰词，只提取主谓宾。阅读转化为同义替换和逻辑树的正则匹配。'},
-      {icon:'🎯', name:'输出层', desc:'建立干扰项特征库。归纳出题人常用加密手段（偷概念、绝对化、正反交互），瞬间触发警报。'}
-    ],
-    blueprint: '满分100 | 完形20题x0.5分 + 阅读20题x2分 + 新题型5题x2分 + 翻译5题x2分 + 写作30分'
-  },
-  '301': {
-    title: '301数学',
-    slogan: '绝对理性领域，不容许任何情绪波动。将万千题型压缩为极少数基础公理。',
-    layers: [
-      {icon:'📡', name:'情报层', desc:'剥离近20年真题的所有表象伪装（物理/逻辑背景），全部还原为纯粹的代数符号和微积分计算子。'},
-      {icon:'⚙️', name:'处理层', desc:'构建斩首逻辑链。遇到极限问题直接按优先级遍历：泰勒展开 - 洛必达 - 等价无穷小。消灭思考损耗。'},
-      {icon:'🎯', name:'输出层', desc:'建立计算错误自检协议。每步推演后设置边界条件检查，确保暴力破解过程中不发生算力溢出。'}
-    ],
-    blueprint: '满分150 | 选择10题x5分 + 填空6题x5分 + 解答6题x总70分'
-  },
-  '408': {
-    title: '408计算机',
-    slogan: '这是总部。不用候选者视角去学，用建筑师视角去拆解整个系统。',
-    layers: [
-      {icon:'⚔️', name:'数据结构与算法', desc:'所有算法必须在头脑中完成内存级别的可视化推演。这是物理世界的武器库。'},
-      {icon:'🔧', name:'计算机组成原理', desc:'从晶体管到CPU，建立指令在物理电路中流动的绝对直觉。理解每一次时钟周期的脉搏。'},
-      {icon:'🏛️', name:'操作系统', desc:'进程、线程和内存管理，就是在理解系统如何避免死锁和崩溃。'},
-      {icon:'🌐', name:'计算机网络', desc:'追踪每一个数据包的生与死，拆解七层协议的每一次握手与加密。'}
-    ],
-    blueprint: '满分150 | 单选40题x2分 + 综合应用7题x总70分 | DS/CO/OS/Net四大模块'
-  }
-};
-
-function renderSubjectIntel(subCode) {
-  try {
-    var data = SUBJECT_INTEL[subCode];
-    if (!data) return;
-    var intelCards = document.getElementById('intelCards');
-    var bpCards = document.getElementById('bpCards');
-    if (!intelCards || !bpCards) return;
-
-    // 情报快照: 金库实时数据 + 战略框架
-    var liveHtml = '';
-    try {
-      var meta = localStorage.getItem('Vault_Meta_' + subCode);
-      var vault = JSON.parse(localStorage.getItem('Global_Vault_' + subCode) || '[]');
-      if (meta && vault.length > 0) {
-        var m = JSON.parse(meta);
-        var samples = vault.slice(0,3).map(function(q){return '> ' + (q.stem||'').substring(0,55) + '...'}).join('<br>');
-        liveHtml = '<div class="intel-card" style="border-color:rgba(57,255,20,.15);margin-bottom:10px">' +
-          '<div class="date" style="color:var(--green)">LIVE | ' + (m.updatedAt||'').split('T')[0] + ' | 金库 ' + vault.length + ' 题</div>' +
-          '<div style="margin-top:6px;font-size:11px;color:var(--sub);line-height:1.8">' + samples + '</div></div>';
-      }
-    } catch(e2) {}
-
-    // 战略框架
-    var layersHtml = '';
-    for (var i = 0; i < data.layers.length; i++) {
-      var L = data.layers[i];
-      layersHtml += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(8,247,254,.03);border-radius:6px;border:1px solid rgba(8,247,254,.06)">' +
-        '<div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:3px">' + L.icon + ' ' + L.name + '</div>' +
-        '<div style="font-size:11px;color:var(--sub);line-height:1.7">' + L.desc + '</div></div>';
-    }
-
-    intelCards.innerHTML = liveHtml +
-      '<div class="intel-card" style="border-color:rgba(255,215,0,.12)">' +
-        '<div style="font-size:14px;font-weight:900;color:var(--gold);margin-bottom:6px">' + data.title + '</div>' +
-        '<div style="font-size:12px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;background:rgba(255,215,0,.04);border-radius:6px;border-left:3px solid var(--gold)">' + data.slogan + '</div>' +
-        layersHtml +
-      '</div>';
-
-    // 秘密蓝图: 金库总览 + 试卷蓝图
-    var vaultHtml = '';
-    try {
-      var totalQ = 0;
-      var subNames = {'101':'政治','201':'英语','301':'数学','408':'计算机'};
-      var rowsHtml = '';
-      var keys = ['101','201','301','408'];
-      for (var j = 0; j < keys.length; j++) {
-        var s = keys[j];
-        var v = JSON.parse(localStorage.getItem('Global_Vault_' + s) || '[]');
-        totalQ += v.length;
-        var clr = v.length > 10 ? 'var(--green)' : v.length > 0 ? 'var(--gold)' : 'var(--dim)';
-        rowsHtml += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">' +
-          '<span style="font-size:12px">' + s + ' ' + subNames[s] + '</span>' +
-          '<span style="color:' + clr + ';font-weight:700">' + v.length + ' 题</span></div>';
-      }
-      if (totalQ > 0) {
-        vaultHtml = '<div class="intel-card" style="border-color:rgba(57,255,20,.08);margin-bottom:10px">' +
-          '<div class="date" style="color:var(--green)">GLOBAL VAULT</div>' +
-          '<div style="margin-top:6px">' + rowsHtml + '</div>' +
-          '<div style="margin-top:8px;text-align:center;color:var(--gold);font-weight:900;font-size:16px">' + totalQ + ' 题在库</div></div>';
-      }
-    } catch(e3) {}
-
-    bpCards.innerHTML = vaultHtml +
-      '<div class="intel-card" style="border-color:rgba(157,78,221,.12)">' +
-        '<div style="font-size:11px;color:var(--purple);font-weight:700;margin-bottom:6px">试卷蓝图 | ' + data.title + '</div>' +
-        '<div style="font-size:12px;color:var(--text);line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">' + data.blueprint + '</div>' +
-      '</div>';
-
-    console.log('[天机] 渲染成功: ' + subCode);
-  } catch(err) {
-    console.error('[天机] renderSubjectIntel error:', err);
-  }
-}
-
-// Hook tab switching
-document.querySelectorAll('.sub-tab').forEach(function(tab) {
-  tab.addEventListener('click', function() {
-    var sub = this.dataset.sub;
-    if (sub) setTimeout(function() { renderSubjectIntel(sub); }, 50);
-  });
-});
-
-// Initial render on page load  
-setTimeout(function() {
-  var activeTab = document.querySelector('.sub-tab.active');
-  var initSub = activeTab ? activeTab.dataset.sub : '101';
-  renderSubjectIntel(initSub);
-}, 100);
-
-
-</script>
-
-<script>
-// ═══ 独立脚本：四科战略框架渲染 (隔离于主脚本，防止被其他错误连累) ═══
-(function() {
-  var INTEL = {
-    '101': {
-      title: '101政治',
-      slogan: '不背结论，破解生成结论的算法。101本质是测试你能否完美生成特定的官方语料库。',
-      layers: [
-        {icon:'📡', name:'情报层', desc:'锁定命题组核心智库近三年的非公开演讲、核心期刊的高频异动。'},
-        {icon:'⚙️', name:'处理层', desc:'建立时政矛盾映射矩阵，将热点事件自动生成正向/反向/辩证三维解析图表。'},
-        {icon:'🎯', name:'输出层', desc:'组建降维打击话术库。考场上不产生独立思考，只进行精准的语料块拼装和火力覆盖。'}
-      ],
-      bp: '满分100 | 单选16题x1分 + 多选17题x2分 + 材料分析5题x10分'
-    },
-    '201': {
-      title: '201英语',
-      slogan: '201不是语言测试，是披着英语外皮的逻辑解密游戏。出题人通过长难句加密，制造认知过载。',
-      layers: [
-        {icon:'📡', name:'情报层', desc:'越过国内题库，直接监控近两年经济学人、卫报、自然等外刊社论和前沿交叉板块。'},
-        {icon:'⚙️', name:'处理层', desc:'启动语法树暴力拆解协议。忽略所有修饰词，只提取主谓宾。阅读转化为同义替换和逻辑树的正则匹配。'},
-        {icon:'🎯', name:'输出层', desc:'建立干扰项特征库。归纳出题人常用加密手段（偷概念、绝对化、正反交互），瞬间触发警报。'}
-      ],
-      bp: '满分100 | 完形20题x0.5分 + 阅读20题x2分 + 新题型5题x2分 + 翻译5题x2分 + 写作30分'
-    },
-    '301': {
-      title: '301数学',
-      slogan: '绝对理性领域，不容许任何情绪波动。将万千题型压缩为极少数基础公理。',
-      layers: [
-        {icon:'📡', name:'情报层', desc:'剥离近20年真题的所有表象伪装，全部还原为纯粹的代数符号和微积分计算子。'},
-        {icon:'⚙️', name:'处理层', desc:'构建斩首逻辑链。遇到极限问题直接按优先级遍历：泰勒展开 - 洛必达 - 等价无穷小。'},
-        {icon:'🎯', name:'输出层', desc:'建立计算错误自检协议。每步推演后设置边界条件检查，确保不发生算力溢出。'}
-      ],
-      bp: '满分150 | 选择10题x5分 + 填空6题x5分 + 解答6题x总70分'
-    },
-    '408': {
-      title: '408计算机',
-      slogan: '这是总部。不用候选者视角去学，用建筑师视角去拆解整个系统。',
-      layers: [
-        {icon:'⚔️', name:'数据结构与算法', desc:'所有算法必须在头脑中完成内存级别的可视化推演。'},
-        {icon:'🔧', name:'计算机组成原理', desc:'从晶体管到CPU，建立指令在物理电路中流动的绝对直觉。'},
-        {icon:'🏛️', name:'操作系统', desc:'进程、线程和内存管理，理解系统如何避免死锁和崩溃。'},
-        {icon:'🌐', name:'计算机网络', desc:'追踪每一个数据包的生与死，拆解七层协议的每一次握手。'}
-      ],
-      bp: '满分150 | 单选40题x2分 + 综合应用7题x总70分 | DS/CO/OS/Net四模块'
-    }
-  };
-
-  function render(sub) {
-    var d = INTEL[sub];
-    if (!d) return;
-    var ic = document.getElementById('intelCards');
-    var bc = document.getElementById('bpCards');
-    if (!ic || !bc) return;
-
-    var h = '';
-    for (var i = 0; i < d.layers.length; i++) {
-      var L = d.layers[i];
-      h += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(8,247,254,.03);border-radius:6px;border:1px solid rgba(8,247,254,.06)">' +
-        '<div style="font-size:12px;font-weight:700;color:#08f7fe;margin-bottom:3px">' + L.icon + ' ' + L.name + '</div>' +
-        '<div style="font-size:11px;color:#888;line-height:1.7">' + L.desc + '</div></div>';
-    }
-    ic.innerHTML = '<div class="intel-card" style="border-color:rgba(255,215,0,.12)">' +
-      '<div style="font-size:14px;font-weight:900;color:#ffd700;margin-bottom:6px">' + d.title + '</div>' +
-      '<div style="font-size:12px;color:#e8e8f0;line-height:1.8;margin-bottom:10px;padding:8px 10px;background:rgba(255,215,0,.04);border-radius:6px;border-left:3px solid #ffd700">' + d.slogan + '</div>' +
-      h + '</div>';
-    bc.innerHTML = '<div class="intel-card" style="border-color:rgba(157,78,221,.12)">' +
-      '<div style="font-size:11px;color:#9d4edd;font-weight:700;margin-bottom:6px">试卷蓝图 | ' + d.title + '</div>' +
-      '<div style="font-size:12px;color:#e8e8f0;line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">' + d.bp + '</div></div>';
-  }
-
-  // Tab switching
-  var tabs = document.querySelectorAll('.sub-tab');
-  for (var t = 0; t < tabs.length; t++) {
-    tabs[t].addEventListener('click', (function(tab) {
-      return function() { render(tab.dataset.sub); };
-    })(tabs[t]));
-  }
-
-  // Initial render
-  var act = document.querySelector('.sub-tab.active');
-  render(act ? act.dataset.sub : '101');
-})();
 </script>
 </body>
 </html>

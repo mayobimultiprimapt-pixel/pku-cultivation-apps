@@ -202,7 +202,7 @@ app.post('/perplexity/search', async (req, res) => {
     const r = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pplxKey}` },
-      body: JSON.stringify({ model: model || 'sonar-pro', messages, max_tokens: max_tokens || 4096 })
+      body: JSON.stringify({ model: model || 'sonar-reasoning-pro', messages, max_tokens: max_tokens || 4096 })
     });
     const data = await r.json();
     if (!r.ok) return res.status(r.status).json(data);

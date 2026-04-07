@@ -662,7 +662,7 @@ ${template}`;
   try {
     // 通道1: OpenRouter (DeepSeek R1)
     const orKeys = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
-    const embKeys = {or_key: ["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"].map(s=>s.split("").reverse().join("")).join("")}; } catch(e) { return {}; } })();
+    const embKeys = {or_key: ["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"].map(s=>s.split("").reverse().join("")).join("")};
     const orKey = orKeys.or_key || embKeys.or_key || '';
     if (orKey) {
       console.log('[推演阁] 🧠 OpenRouter DeepSeek-R1 启动...');
