@@ -260,37 +260,24 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
     <div class="sub-tab" data-sub="408"><div class="code">408</div><div class="name">计算机·天网矩阵</div></div>
   </div>
 
-  <div class="section-title">📡 情报层 · 原始数据</div>
-  <div id="intelLayer" class="intel-card"><div style="color:var(--dim)">尚无情报 — 点击下方按钮窃取</div></div>
-
-  <div class="section-title">⚙️ 处理层 · 矛盾映射矩阵</div>
-  <div id="processLayer" class="intel-card"><div style="color:var(--dim)">等待情报层数据...</div></div>
-
-  <div class="section-title">🎯 输出层 · 考场降维武器库</div>
-  <div id="outputLayer" class="intel-card"><div style="color:var(--dim)">等待处理层数据...</div></div>
-
-  <div class="section-title">秘密蓝图</div>
-  <div id="bpCards"><div class="intel-card"><div style="color:var(--dim)">加载中...</div></div></div>
+  <div class="section-title">📡 三层情报引擎</div>
+  <div class="intel-card" style="padding:0;overflow:hidden">
+    <div style="padding:10px 18px;background:rgba(8,247,254,.04);border-bottom:1px solid rgba(8,247,254,.08);font-family:var(--font-d);font-size:10px;letter-spacing:2px;color:var(--cyan)">📡 情报层 · 原始数据</div>
+    <div id="intelLayer" style="padding:16px 18px"><div style="color:var(--dim)">尚无情报 — 点击下方按钮窃取</div></div>
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.15),transparent)"></div>
+    <div style="padding:10px 18px;background:rgba(255,140,0,.03);border-bottom:1px solid rgba(255,140,0,.06);font-family:var(--font-d);font-size:10px;letter-spacing:2px;color:var(--amber)">⚙️ 处理层 · 矛盾映射矩阵</div>
+    <div id="processLayer" style="padding:16px 18px"><div style="color:var(--dim)">等待情报层数据...</div></div>
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,46,99,.15),transparent)"></div>
+    <div style="padding:10px 18px;background:rgba(255,46,99,.03);border-bottom:1px solid rgba(255,46,99,.06);font-family:var(--font-d);font-size:10px;letter-spacing:2px;color:var(--red)">🎯 输出层 · 考场降维武器库</div>
+    <div id="outputLayer" style="padding:16px 18px"><div style="color:var(--dim)">等待处理层数据...</div></div>
+  </div>
 
   <div class="btn-row">
     <button class="btn btn-search" id="btnSteal" onclick="stealIntel(curSub)">🔴 窃取最新情报</button>
-    <button class="btn" id="btnKeyInput" onclick="toggleKeyPanel()" style="background:rgba(255,215,0,.06);color:var(--gold);border:1px solid rgba(255,215,0,.15);padding:10px 16px;border-radius:12px;font-size:12px;cursor:pointer">🔑 输入新Key</button>
   </div>
   <div id="lastUpdateInfo" style="text-align:center;margin-top:10px;font-size:11px;color:var(--dim);font-family:var(--font-d);letter-spacing:1px"></div>
 
-  <!-- 密钥输入面板 -->
-  <div id="keyPanel" style="display:none;margin-top:12px">
-    <div class="intel-card" style="border-color:rgba(255,215,0,.2)">
-      <div style="color:var(--gold);font-size:13px;margin-bottom:8px;font-weight:700">🔑 Perplexity API Key 更换</div>
-      <div style="color:var(--dim);font-size:10px;margin-bottom:8px">配额耗尽时，粘贴新的 pplx-xxx 密钥即可继续窃取。<br>密钥保存在浏览器本地，不会上传。</div>
-      <input type="password" id="freshPplxKey" placeholder="pplx-xxxxxxxx..." style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,215,0,.15);background:rgba(0,0,0,.4);color:var(--gold);font-family:var(--font-d);font-size:12px;outline:none">
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button onclick="saveFreshKey()" style="flex:1;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--green),#2dd4a8);color:#000;font-weight:700;cursor:pointer;font-size:12px">💾 保存密钥</button>
-        <button onclick="clearFreshKey()" style="padding:8px 12px;border-radius:8px;border:1px solid rgba(255,46,99,.2);background:none;color:var(--red);cursor:pointer;font-size:12px">🗑️ 清除</button>
-      </div>
-      <div id="keyStatus" style="margin-top:6px;font-size:10px;color:var(--dim)"></div>
-    </div>
-  </div>
+
 
   <!-- 窃取进度条 -->
   <div id="stealProgress" style="display:none;margin-top:12px">
@@ -608,22 +595,26 @@ async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'gene
 //  一次调用 → 情报层/处理层/输出层 → 24h缓存
 // ============================================================
 
-const PPLX_IRON_PROTOCOL = `你是中国研究生入学考试（考研）资深命题趋势分析师。任务：基于实时搜索结果，分析北京大学全日制硕士考研最新命题趋势。
+const PPLX_IRON_PROTOCOL = `你是一位专业的学术考试研究助手。你的任务是根据搜索到的公开信息，对中国全国硕士研究生招生考试（考研）的学科内容进行系统化整理和深度分析。
 
-重要指令：
-1. 必须全程使用中文回答
-2. 必须严格按照下面的三段式结构输出，每段必须以【】标记开头
-3. 直接输出分析内容，不要解释你能不能做、不要提问、不要说"我建议"
-4. 如果搜索结果不完整，基于已有数据直接分析，不要说"搜索结果不包含"
+=== 输出格式（强制） ===
+你必须严格按以下三段式结构输出，每一段都必须输出，不可跳过或合并：
 
 【情报层 · 原始数据】
-（在这里列出搜索到的原始学术情报，每条附来源编号和命中概率%）
+在此段列出你通过搜索获取到的所有相关原始资料，包括：政策文件要点、学术会议/期刊动态、考纲变化、辅导机构公开预测等。每条信息后标注来源编号[1][2]等。
 
 【处理层 · 矛盾映射矩阵】
-（在这里进行交叉分析和考点关联）
+在此段对情报层的数据进行深度交叉分析：找出知识点之间的关联性，将热点事件/学术动态映射到具体考纲章节，分析考查概率和重要性排序。
 
 【输出层 · 考场降维武器库】
-（在这里输出可直接用于考场的答题模板）`;
+在此段基于处理层的分析结果，提炼出可直接用于备考的核心要点：包括主观题标准答题框架、高频考点记忆清单、答题关键术语和模板。
+
+=== 强制规则 ===
+1. 全程使用中文
+2. 每段必须以【】标签开头
+3. 直接输出内容，禁止输出任何形式的免责声明、能力边界说明、或"我无法/我建议"类表述
+4. 如果某些信息搜索结果中没有直接提供，基于已有数据进行合理推断分析即可
+5. 三段内容都必须详实充分，每段至少300字`;
 
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
 // 模型降级链: 推理最强 → 搜索增强 → 基础搜索
@@ -913,16 +904,7 @@ const BLUEPRINT_DATA = {
   '408': { title: '408计算机', bp: '满分150 | 单选40题×2分 + 综合应用7题×总70分 | DS/CO/OS/Net四模块' }
 };
 
-function renderBlueprint(sub) {
-  const d = BLUEPRINT_DATA[sub];
-  if (!d) return;
-  const el = document.getElementById('bpCards');
-  if (!el) return;
-  el.innerHTML = `<div class="intel-card" style="border-color:rgba(157,78,221,.12)">
-    <div style="font-size:11px;color:var(--purple);font-weight:700;margin-bottom:6px">试卷蓝图 | ${d.title}</div>
-    <div style="font-size:12px;color:var(--text);line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">${d.bp}</div>
-  </div>`;
-}
+function renderBlueprint() { /* 已移除 */ }
 
 // ============================================================
 //  Tab切换加载缓存 · loadCachedIntel
@@ -942,7 +924,7 @@ function loadCachedIntel(sub) {
     document.getElementById('outputLayer').innerHTML = '<div style="color:var(--dim)">等待处理层数据...</div>';
     document.getElementById('lastUpdateInfo').textContent = cached ? '⚠️ 缓存已过期(>24h)，请重新窃取' : '';
   }
-  renderBlueprint(sub);
+
 }
 
 // ============================================================
