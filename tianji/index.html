@@ -864,26 +864,72 @@ async function stealIntel(subCode) {
   btn.innerHTML = '<span class="loading"></span> 窃取中...';
   progressEl.style.display = '';
   statusEl.textContent = `🔴 IRON PROTOCOL v3.0 · 窃取 ${subCode} ${INTEL_NAMES[subCode]} ...`;
-  barEl.style.width = '30%';
+  barEl.style.width = '20%';
   barEl.style.background = 'linear-gradient(90deg,var(--green),var(--cyan),var(--purple))';
 
   try {
     const raw = await searchPerplexity(IRON_PROMPTS[subCode]);
-    barEl.style.width = '70%';
+    barEl.style.width = '50%';
     statusEl.textContent = '⚙️ 解析三层情报结构...';
 
-    const layers = parseThreeLayers(raw);
-    barEl.style.width = '90%';
+    let layers = parseThreeLayers(raw);
 
+    // 二次整理: 如果处理层或输出层为空，调用DeepSeek重新整理
+    if (!layers.process || !layers.output || layers.process.trim() === '' || layers.output.trim() === '') {
+      console.log('[天机] ⚠️ Perplexity未按三层格式输出, 启动DeepSeek二次整理...');
+      statusEl.textContent = '🧠 DeepSeek 二次情报整理中...';
+      barEl.style.width = '65%';
+      try {
+        const structurePrompt = `你是一位学术考试分析专家。以下是搜索引擎获取的关于考研${INTEL_NAMES[subCode]}科目的原始情报。请严格按以下三段式结构重新整理输出：
+
+【情报层 · 原始数据】
+整理原始信息中的核心数据点，附来源编号。
+
+【处理层 · 矛盾映射矩阵】
+交叉分析：知识点关联、考纲章节映射、重要性排序。
+
+【输出层 · 考场降维武器库】
+提炼备考核心要点：答题框架、高频考点、答题模板。
+
+要求：每段以【】标签开头，三段全部输出，每段至少300字，直接输出无免责声明。
+
+===原始情报===
+${raw}`;
+
+        const resp = await fetch(RELAY_URL + '/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'deepseek/deepseek-chat',
+            messages: [{ role: 'user', content: structurePrompt }],
+            temperature: 0.3, max_tokens: 6000
+          })
+        });
+        const data = await resp.json();
+        let structured = (data.choices || [{}])[0]?.message?.content || '';
+        structured = structured.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+        if (structured.length > 200) {
+          const newLayers = parseThreeLayers(structured);
+          if (newLayers.process && newLayers.output && newLayers.process.trim() !== '' && newLayers.output.trim() !== '') {
+            layers = newLayers;
+            console.log('[天机] ✅ DeepSeek二次整理成功!');
+          } else {
+            layers.intel = structured;
+          }
+        }
+      } catch(e2) {
+        console.warn('[天机] DeepSeek二次整理失败:', e2.message);
+      }
+    }
+
+    barEl.style.width = '90%';
     renderLayerContent('intelLayer', layers.intel);
     renderLayerContent('processLayer', layers.process);
     renderLayerContent('outputLayer', layers.output);
-
     setCachedIntel(subCode, layers);
 
     const ts = new Date().toLocaleString('zh-CN');
     document.getElementById('lastUpdateInfo').textContent = `上次更新: ${ts} · ${subCode} ${INTEL_NAMES[subCode]}`;
-
     barEl.style.width = '100%';
     statusEl.textContent = `✅ ${subCode} ${INTEL_NAMES[subCode]} 情报窃取完成!`;
     console.log(`[天机] ✅ ${subCode} 三层情报更新完成`);
