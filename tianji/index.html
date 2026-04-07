@@ -1579,5 +1579,89 @@ setTimeout(function() {
 
 
 </script>
+
+<script>
+// ═══ 独立脚本：四科战略框架渲染 (隔离于主脚本，防止被其他错误连累) ═══
+(function() {
+  var INTEL = {
+    '101': {
+      title: '101政治',
+      slogan: '不背结论，破解生成结论的算法。101本质是测试你能否完美生成特定的官方语料库。',
+      layers: [
+        {icon:'📡', name:'情报层', desc:'锁定命题组核心智库近三年的非公开演讲、核心期刊的高频异动。'},
+        {icon:'⚙️', name:'处理层', desc:'建立时政矛盾映射矩阵，将热点事件自动生成正向/反向/辩证三维解析图表。'},
+        {icon:'🎯', name:'输出层', desc:'组建降维打击话术库。考场上不产生独立思考，只进行精准的语料块拼装和火力覆盖。'}
+      ],
+      bp: '满分100 | 单选16题x1分 + 多选17题x2分 + 材料分析5题x10分'
+    },
+    '201': {
+      title: '201英语',
+      slogan: '201不是语言测试，是披着英语外皮的逻辑解密游戏。出题人通过长难句加密，制造认知过载。',
+      layers: [
+        {icon:'📡', name:'情报层', desc:'越过国内题库，直接监控近两年经济学人、卫报、自然等外刊社论和前沿交叉板块。'},
+        {icon:'⚙️', name:'处理层', desc:'启动语法树暴力拆解协议。忽略所有修饰词，只提取主谓宾。阅读转化为同义替换和逻辑树的正则匹配。'},
+        {icon:'🎯', name:'输出层', desc:'建立干扰项特征库。归纳出题人常用加密手段（偷概念、绝对化、正反交互），瞬间触发警报。'}
+      ],
+      bp: '满分100 | 完形20题x0.5分 + 阅读20题x2分 + 新题型5题x2分 + 翻译5题x2分 + 写作30分'
+    },
+    '301': {
+      title: '301数学',
+      slogan: '绝对理性领域，不容许任何情绪波动。将万千题型压缩为极少数基础公理。',
+      layers: [
+        {icon:'📡', name:'情报层', desc:'剥离近20年真题的所有表象伪装，全部还原为纯粹的代数符号和微积分计算子。'},
+        {icon:'⚙️', name:'处理层', desc:'构建斩首逻辑链。遇到极限问题直接按优先级遍历：泰勒展开 - 洛必达 - 等价无穷小。'},
+        {icon:'🎯', name:'输出层', desc:'建立计算错误自检协议。每步推演后设置边界条件检查，确保不发生算力溢出。'}
+      ],
+      bp: '满分150 | 选择10题x5分 + 填空6题x5分 + 解答6题x总70分'
+    },
+    '408': {
+      title: '408计算机',
+      slogan: '这是总部。不用候选者视角去学，用建筑师视角去拆解整个系统。',
+      layers: [
+        {icon:'⚔️', name:'数据结构与算法', desc:'所有算法必须在头脑中完成内存级别的可视化推演。'},
+        {icon:'🔧', name:'计算机组成原理', desc:'从晶体管到CPU，建立指令在物理电路中流动的绝对直觉。'},
+        {icon:'🏛️', name:'操作系统', desc:'进程、线程和内存管理，理解系统如何避免死锁和崩溃。'},
+        {icon:'🌐', name:'计算机网络', desc:'追踪每一个数据包的生与死，拆解七层协议的每一次握手。'}
+      ],
+      bp: '满分150 | 单选40题x2分 + 综合应用7题x总70分 | DS/CO/OS/Net四模块'
+    }
+  };
+
+  function render(sub) {
+    var d = INTEL[sub];
+    if (!d) return;
+    var ic = document.getElementById('intelCards');
+    var bc = document.getElementById('bpCards');
+    if (!ic || !bc) return;
+
+    var h = '';
+    for (var i = 0; i < d.layers.length; i++) {
+      var L = d.layers[i];
+      h += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(8,247,254,.03);border-radius:6px;border:1px solid rgba(8,247,254,.06)">' +
+        '<div style="font-size:12px;font-weight:700;color:#08f7fe;margin-bottom:3px">' + L.icon + ' ' + L.name + '</div>' +
+        '<div style="font-size:11px;color:#888;line-height:1.7">' + L.desc + '</div></div>';
+    }
+    ic.innerHTML = '<div class="intel-card" style="border-color:rgba(255,215,0,.12)">' +
+      '<div style="font-size:14px;font-weight:900;color:#ffd700;margin-bottom:6px">' + d.title + '</div>' +
+      '<div style="font-size:12px;color:#e8e8f0;line-height:1.8;margin-bottom:10px;padding:8px 10px;background:rgba(255,215,0,.04);border-radius:6px;border-left:3px solid #ffd700">' + d.slogan + '</div>' +
+      h + '</div>';
+    bc.innerHTML = '<div class="intel-card" style="border-color:rgba(157,78,221,.12)">' +
+      '<div style="font-size:11px;color:#9d4edd;font-weight:700;margin-bottom:6px">试卷蓝图 | ' + d.title + '</div>' +
+      '<div style="font-size:12px;color:#e8e8f0;line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">' + d.bp + '</div></div>';
+  }
+
+  // Tab switching
+  var tabs = document.querySelectorAll('.sub-tab');
+  for (var t = 0; t < tabs.length; t++) {
+    tabs[t].addEventListener('click', (function(tab) {
+      return function() { render(tab.dataset.sub); };
+    })(tabs[t]));
+  }
+
+  // Initial render
+  var act = document.querySelector('.sub-tab.active');
+  render(act ? act.dataset.sub : '101');
+})();
+</script>
 </body>
 </html>
