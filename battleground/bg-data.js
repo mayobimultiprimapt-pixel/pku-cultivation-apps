@@ -216,5 +216,48 @@ const BGData = (() => {
     return result;
   }
 
-  return { getMap, getMapIds, getAirdrops, rollAirdrop, MAPS };
+
+  // ═══ Global Vault 注入 — 从天机阁金库读取真题合并 ═══
+  const VAULT_MAP = { politics:'101', english:'201', math:'301', cs:'408' };
+  function convertVaultQ(vq) {
+    // 转换 vault 格式 → 游戏格式
+    const opts = (vq.options || []).map(o => typeof o === 'string' ? o : String(o));
+    let ansIdx = 0;
+    if (vq.answer && opts.length > 0) {
+      const ansLetter = String(vq.answer).trim().charAt(0).toUpperCase();
+      ansIdx = 'ABCDE'.indexOf(ansLetter);
+      if (ansIdx < 0) ansIdx = 0;
+    }
+    return {
+      stem: vq.stem || vq.q || '题目加载失败',
+      opts: opts.length >= 2 ? opts : ['A.暂无','B.暂无','C.暂无','D.暂无'],
+      ans: ansIdx,
+      hint: vq.analysis ? vq.analysis.substring(0, 50) : '来源: 天机阁金库',
+      fromVault: true
+    };
+  }
+  function loadVaultQuestions() {
+    try {
+      for (const [mapId, subCode] of Object.entries(VAULT_MAP)) {
+        const raw = localStorage.getItem('Global_Vault_' + subCode);
+        if (!raw) continue;
+        const vaultQ = JSON.parse(raw);
+        if (!Array.isArray(vaultQ) || vaultQ.length === 0) continue;
+        // 只取 single_choice 类型
+        const single = vaultQ.filter(q => !q.type || q.type === 'single_choice' || q.type === 'multi_choice');
+        const converted = single.map(convertVaultQ).filter(q => q.stem.length > 5);
+        if (converted.length > 0 && MAPS[mapId]) {
+          // 合并: vault题放前面 + 原有题保底
+          const existStems = new Set(MAPS[mapId].questions.map(q => q.stem));
+          const newQ = converted.filter(q => !existStems.has(q.stem));
+          MAPS[mapId].questions = [...newQ, ...MAPS[mapId].questions];
+          console.log('[刺激战场] ' + mapId + ': 加载金库 +' + newQ.length + ' 题 (总' + MAPS[mapId].questions.length + ')');
+        }
+      }
+    } catch(e) { console.warn('[刺激战场] 金库读取失败:', e.message); }
+  }
+  // 页面加载时自动读取
+  if (typeof localStorage !== 'undefined') loadVaultQuestions();
+
+  return { getMap, getMapIds, getAirdrops, rollAirdrop, MAPS, loadVaultQuestions };
 })();

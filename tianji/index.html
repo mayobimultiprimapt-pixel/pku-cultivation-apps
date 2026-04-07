@@ -1441,6 +1441,59 @@ setTimeout(() => dailyAutoScan(), 3000);
   document.getElementById('tlIntelTitle').innerHTML = `⚡ PHASE ${phase} · 作战指令`;
   document.getElementById('tlIntelDesc').innerHTML = intelAdvice[phase] || '';
 })();
+
+// ═══ 自动加载情报/金库到展示区 ═══
+(function autoLoadIntelDisplay() {
+  // 情报快照
+  const intelCards = document.getElementById('intelCards');
+  const bpCards = document.getElementById('bpCards');
+  if (!intelCards || !bpCards) return;
+  
+  // 从 localStorage 读取最新情报
+  let hasIntel = false;
+  for (const sub of ['101','201','301','408']) {
+    const meta = localStorage.getItem('Vault_Meta_' + sub);
+    if (meta) {
+      try {
+        const m = JSON.parse(meta);
+        if (!hasIntel) { intelCards.innerHTML = ''; hasIntel = true; }
+        const vault = JSON.parse(localStorage.getItem('Global_Vault_' + sub) || '[]');
+        intelCards.innerHTML += '<div class="intel-card"><div class="date">' + (m.updatedAt || '').split('T')[0] + '</div><div class="summary" style="font-size:13px;line-height:1.8">' +
+          '<strong style="color:var(--gold)">' + sub + '</strong> · 金库 <strong style="color:var(--green)">' + (m.count || vault.length) + '</strong> 题' +
+          (vault[0] ? '<br><span style="color:var(--sub);font-size:11px">样题: ' + (vault[0].stem || '').substring(0,60) + '...</span>' : '') +
+          '</div></div>';
+      } catch(e) {}
+    }
+  }
+  if (!hasIntel) {
+    intelCards.innerHTML = '<div class="intel-card"><div style="color:var(--dim)">暂无情报 — 点击下方"窃取最新情报"开始</div></div>';
+  }
+  
+  // 秘密蓝图 — 显示金库概览
+  let totalQ = 0;
+  const subjects = {101:'政治',201:'英语',301:'数学',408:'计算机'};
+  let bpHTML = '';
+  for (const [sub, name] of Object.entries(subjects)) {
+    try {
+      const vault = JSON.parse(localStorage.getItem('Global_Vault_' + sub) || '[]');
+      totalQ += vault.length;
+      if (vault.length > 0) {
+        bpHTML += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">' +
+          '<span style="color:var(--text)">' + sub + ' ' + name + '</span>' +
+          '<span style="color:var(--green);font-weight:700">' + vault.length + ' 题</span></div>';
+      }
+    } catch(e) {}
+  }
+  if (totalQ > 0) {
+    bpCards.innerHTML = '<div class="intel-card" style="border-color:rgba(57,255,20,.12)">' +
+      '<div class="date">GLOBAL VAULT · 金库总览</div>' +
+      '<div style="margin-top:8px">' + bpHTML + '</div>' +
+      '<div style="margin-top:10px;color:var(--gold);font-weight:700;font-size:16px">总计: ' + totalQ + ' 题</div></div>';
+  } else {
+    bpCards.innerHTML = '<div class="intel-card"><div style="color:var(--dim)">金库为空 — 点击"窃取"开始填充</div></div>';
+  }
+})();
+
 </script>
 </body>
 </html>

@@ -222,7 +222,50 @@ const GhostData = (() => {
       questions[qi++] || questions[3],
       questions[qi++] || questions[4],
     ];
-    return {rooms, hallQuestions};
+    
+  // ═══ Global Vault 注入 — 从天机阁金库读取多选/分析题 ═══
+  function loadVaultForGhost() {
+    try {
+      const allQ = [];
+      for (const subCode of ['101','201','301','408']) {
+        const raw = localStorage.getItem('Global_Vault_' + subCode);
+        if (!raw) continue;
+        const vaultQ = JSON.parse(raw);
+        if (!Array.isArray(vaultQ)) continue;
+        vaultQ.forEach(q => {
+          const opts = (q.options || []).map(o => typeof o === 'string' ? o : String(o));
+          let ansIdx = 0;
+          if (q.answer) { ansIdx = 'ABCDE'.indexOf(String(q.answer).charAt(0).toUpperCase()); if(ansIdx<0) ansIdx=0; }
+          allQ.push({
+            subject: subCode === '101' ? '政治' : subCode === '201' ? '英语' : subCode === '301' ? '数学' : '计算机',
+            stem: q.stem || q.q || '',
+            opts: opts.length >= 2 ? opts : ['A.暂无','B.暂无','C.暂无','D.暂无'],
+            ans: ansIdx,
+            explain: q.analysis || '来源: 天机阁金库',
+            fromVault: true
+          });
+        });
+      }
+      if (allQ.length > 0) {
+        // Merge with existing questions
+        if (typeof GHOST_QUESTIONS !== 'undefined') {
+          const existStems = new Set(GHOST_QUESTIONS.map(q => q.stem));
+          const newQ = allQ.filter(q => !existStems.has(q.stem) && q.stem.length > 5);
+          GHOST_QUESTIONS.push(...newQ);
+          console.log('[猛鬼宿舍] 金库加载 +' + newQ.length + ' 题');
+        } else if (typeof GhostData !== 'undefined' && GhostData.QUESTIONS) {
+          const existStems = new Set(GhostData.QUESTIONS.map(q => q.stem));
+          const newQ = allQ.filter(q => !existStems.has(q.stem) && q.stem.length > 5);
+          GhostData.QUESTIONS.push(...newQ);
+          console.log('[猛鬼宿舍] 金库加载 +' + newQ.length + ' 题');
+        }
+      }
+    } catch(e) { console.warn('[猛鬼宿舍] 金库读取失败:', e.message); }
+  }
+  if (typeof localStorage !== 'undefined') setTimeout(loadVaultForGhost, 100);
+
+
+  return {rooms, hallQuestions};
   }
 
   return {QUESTIONS, GHOSTS, generateRooms, shuffle, getQuestionSet};

@@ -162,3 +162,26 @@ const CrushData = (() => {
 
   return { getLevel, getTotalLevels, buildGrid, GRID_SIZE, COLORS, TARGET_MATCHES };
 })();
+
+// ═══ Global Vault 自动加载 ═══
+(function loadVaultForSiege() {
+  try {
+    for (const subCode of ['101','201','301','408']) {
+      const raw = localStorage.getItem('Global_Vault_' + subCode);
+      if (!raw) continue;
+      const vaultQ = JSON.parse(raw);
+      if (!Array.isArray(vaultQ)) continue;
+      const converted = vaultQ.filter(q => q.stem && q.stem.length > 5).map(q => {
+        const opts = (q.options || []).map(o => typeof o === 'string' ? o : String(o));
+        let ansIdx = 0;
+        if (q.answer) { ansIdx = 'ABCDE'.indexOf(String(q.answer).charAt(0).toUpperCase()); if(ansIdx<0) ansIdx=0; }
+        return { stem: q.stem, opts, ans: ansIdx, explain: q.analysis || '', subject: subCode, fromVault: true };
+      });
+      if (converted.length > 0 && typeof SiegeData !== 'undefined') {
+        SiegeData._vaultQ = SiegeData._vaultQ || [];
+        SiegeData._vaultQ.push(...converted);
+        console.log('[消消乐] ' + subCode + ' 金库加载 +' + converted.length + ' 题');
+      }
+    }
+  } catch(e) { console.warn('[消消乐] 金库读取失败:', e.message); }
+})();
