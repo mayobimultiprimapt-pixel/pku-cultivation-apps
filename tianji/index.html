@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1444,187 +1444,134 @@ setTimeout(() => dailyAutoScan(), 3000);
 
 
 // ═══ 四科战略框架 — 情报快照 + 秘密蓝图 ═══
-const SUBJECT_INTEL = {
-  "101": {
-    "title": "101政治：认知战防线",
-    "codename": "代号：朝堂暗谍",
-    "slogan": "不背结论，破解生成结论的算法。101本质是测试你能否完美生成特定的官方语料库。",
-    "layers": [
-      {
-        "icon": "📡",
-        "name": "情报层 Data Ingestion",
-        "desc": "部署高频爬虫，锁定命题组核心智库（如顶尖高校湖北省）近三年的非公开演讲、核心期刊（《求是》等）的高频异动。"
-      },
-      {
-        "icon": "⚙️",
-        "name": "处理层 Processing",
-        "desc": "建立\"时政矛盾映射矩阵\"。将当年热点事件输入矩阵，自动生成\"正向/反向/辩证\"三维解析图表。"
-      },
-      {
-        "icon": "🎯",
-        "name": "输出层 执行",
-        "desc": "组建定制的\"降维打击话术库\"。在考场上，不产生独立思考，只进行精准的语料块拼装和火力覆盖。"
-      }
+var SUBJECT_INTEL = {
+  '101': {
+    title: '101政治',
+    slogan: '不背结论，破解生成结论的算法。101本质是测试你能否完美生成特定的官方语料库。',
+    layers: [
+      {icon:'📡', name:'情报层', desc:'锁定命题组核心智库近三年的非公开演讲、核心期刊（《求是》等）的高频异动。'},
+      {icon:'⚙️', name:'处理层', desc:'建立时政矛盾映射矩阵，将热点事件自动生成正向/反向/辩证三维解析图表。'},
+      {icon:'🎯', name:'输出层', desc:'组建降维打击话术库。考场上不产生独立思考，只进行精准的语料块拼装和火力覆盖。'}
     ],
-    "blueprint": "满分100 | 单选16题×1分 + 多选17题×2分 + 材料分析5题×10分"
+    blueprint: '满分100 | 单选16题x1分 + 多选17题x2分 + 材料分析5题x10分'
   },
-  "201": {
-    "title": "201英语：密码破译与溯源",
-    "codename": "代号：巴别塔劫持",
-    "slogan": "201不是语言测试，是披着英语外皮的逻辑解密游戏。出题人通过长难句加密，制造认知过载。",
-    "layers": [
-      {
-        "icon": "📡",
-        "name": "情报层 Data Ingestion",
-        "desc": "越过国内题库，直接监控近两年《经济学人》《卫报》《自然》等外刊的社论和前沿交叉板块，建立源头活水池。"
-      },
-      {
-        "icon": "⚙️",
-        "name": "处理层 Processing",
-        "desc": "启动\"语法树暴力拆解\"协议。忽略所有修饰词和副词，只提取主谓宾词组。阅读理解转化为寻找\"同义替换\"和\"逻辑树(But/However)\"的正则匹配任务。"
-      },
-      {
-        "icon": "🎯",
-        "name": "输出层 执行",
-        "desc": "建立\"干扰项特征库\"。归纳出题人常用加密手段（偷概念、绝对化、正反交互），看到选项瞬间触发警报。"
-      }
+  '201': {
+    title: '201英语',
+    slogan: '201不是语言测试，是披着英语外皮的逻辑解密游戏。出题人通过长难句加密，制造认知过载。',
+    layers: [
+      {icon:'📡', name:'情报层', desc:'越过国内题库，直接监控近两年经济学人、卫报、自然等外刊社论和前沿交叉板块。'},
+      {icon:'⚙️', name:'处理层', desc:'启动语法树暴力拆解协议。忽略所有修饰词，只提取主谓宾。阅读转化为同义替换和逻辑树的正则匹配。'},
+      {icon:'🎯', name:'输出层', desc:'建立干扰项特征库。归纳出题人常用加密手段（偷概念、绝对化、正反交互），瞬间触发警报。'}
     ],
-    "blueprint": "满分100 | 完形20题×0.5分 + 传统阅读20题×2分 + 新题型5题×2分 + 翻译5题×2分 + 写作小10大20分"
+    blueprint: '满分100 | 完形20题x0.5分 + 阅读20题x2分 + 新题型5题x2分 + 翻译5题x2分 + 写作30分'
   },
-  "301": {
-    "title": "301数学：绝对量化与算力收敛",
-    "codename": "代号：大漠算经",
-    "slogan": "绝对理性领域，不容许任何情绪波动。《大漠算经》将万千题型压缩为极少数基础公理。",
-    "layers": [
-      {
-        "icon": "📡",
-        "name": "情报层 Data Ingestion",
-        "desc": "剥离近20年真题的所有表象伪装（物理/逻辑背景），全部还原为纯粹的代数符号和微积分计算子。"
-      },
-      {
-        "icon": "⚙️",
-        "name": "处理层 Processing",
-        "desc": "构建\"斩首逻辑链\"。遇到极限问题直接按优先级遍历：泰勒展开 → 洛必达 → 等价无穷小。消灭思考损耗。"
-      },
-      {
-        "icon": "🎯",
-        "name": "输出层 执行",
-        "desc": "建立\"计算错误自检协议\"。每一步推演后设置边界条件检查，确保暴力破解过程中不发生算力溢出。"
-      }
+  '301': {
+    title: '301数学',
+    slogan: '绝对理性领域，不容许任何情绪波动。将万千题型压缩为极少数基础公理。',
+    layers: [
+      {icon:'📡', name:'情报层', desc:'剥离近20年真题的所有表象伪装（物理/逻辑背景），全部还原为纯粹的代数符号和微积分计算子。'},
+      {icon:'⚙️', name:'处理层', desc:'构建斩首逻辑链。遇到极限问题直接按优先级遍历：泰勒展开 - 洛必达 - 等价无穷小。消灭思考损耗。'},
+      {icon:'🎯', name:'输出层', desc:'建立计算错误自检协议。每步推演后设置边界条件检查，确保暴力破解过程中不发生算力溢出。'}
     ],
-    "blueprint": "满分150 | 选择10题×5分 + 填空6题×5分 + 解答6题×总70分"
+    blueprint: '满分150 | 选择10题x5分 + 填空6题x5分 + 解答6题x总70分'
   },
-  "408": {
-    "title": "408计算机：物理渗透与底层占领",
-    "codename": "代号：硅基霸权",
-    "slogan": "这是总部。不用候选者视角去学，用建筑师视角去拆解整个系统。",
-    "layers": [
-      {
-        "icon": "⚔️",
-        "name": "数据结构与算法 · 兵器谱",
-        "desc": "不纸上谈兵，所有算法必须在头脑中完成内存级别的可视化推演。这是物理世界的武器库。"
-      },
-      {
-        "icon": "🔧",
-        "name": "计算机组成 · 硬件解剖图",
-        "desc": "从晶体管到CPU，建立指令在物理电路中流动的绝对直觉。理解每一次时钟周期的脉搏。"
-      },
-      {
-        "icon": "🏛️",
-        "name": "操作系统 · 资源调度统帅",
-        "desc": "进程、线程和内存管理，就是在理解天机阁系统如何避免死锁和崩溃。"
-      },
-      {
-        "icon": "🌐",
-        "name": "计算机网络 · 情报传输网络",
-        "desc": "追踪每一个数据包的生与死，拆解七层协议的每一次握手与加密。"
-      }
+  '408': {
+    title: '408计算机',
+    slogan: '这是总部。不用候选者视角去学，用建筑师视角去拆解整个系统。',
+    layers: [
+      {icon:'⚔️', name:'数据结构与算法', desc:'所有算法必须在头脑中完成内存级别的可视化推演。这是物理世界的武器库。'},
+      {icon:'🔧', name:'计算机组成原理', desc:'从晶体管到CPU，建立指令在物理电路中流动的绝对直觉。理解每一次时钟周期的脉搏。'},
+      {icon:'🏛️', name:'操作系统', desc:'进程、线程和内存管理，就是在理解系统如何避免死锁和崩溃。'},
+      {icon:'🌐', name:'计算机网络', desc:'追踪每一个数据包的生与死，拆解七层协议的每一次握手与加密。'}
     ],
-    "blueprint": "满分150 | 单选40题×2分 + 综合应用7题×总70分 | 涵盖DS/CO/OS/Net四大模块"
+    blueprint: '满分150 | 单选40题x2分 + 综合应用7题x总70分 | DS/CO/OS/Net四大模块'
   }
 };
 
 function renderSubjectIntel(subCode) {
-  const data = SUBJECT_INTEL[subCode];
-  if (!data) return;
-  
-  const intelCards = document.getElementById('intelCards');
-  const bpCards = document.getElementById('bpCards');
-  
-  // === 最新情报快照 ===
-  // Check if we have live vault data for this subject
-  let liveIntel = '';
   try {
-    const meta = localStorage.getItem('Vault_Meta_' + subCode);
-    const vault = JSON.parse(localStorage.getItem('Global_Vault_' + subCode) || '[]');
-    if (meta && vault.length > 0) {
-      const m = JSON.parse(meta);
-      liveIntel = '<div class="intel-card" style="border-color:rgba(57,255,20,.15);margin-bottom:10px">' +
-        '<div class="date" style="color:var(--green)">🔴 LIVE · ' + (m.updatedAt||'').split('T')[0] + ' · 金库 ' + vault.length + ' 题</div>' +
-        '<div class="summary" style="margin-top:6px;font-size:12px">' +
-        vault.slice(0,3).map(q => '• ' + (q.stem||'').substring(0,60) + '...').join('<br>') +
-        '</div></div>';
+    var data = SUBJECT_INTEL[subCode];
+    if (!data) return;
+    var intelCards = document.getElementById('intelCards');
+    var bpCards = document.getElementById('bpCards');
+    if (!intelCards || !bpCards) return;
+
+    // 情报快照: 金库实时数据 + 战略框架
+    var liveHtml = '';
+    try {
+      var meta = localStorage.getItem('Vault_Meta_' + subCode);
+      var vault = JSON.parse(localStorage.getItem('Global_Vault_' + subCode) || '[]');
+      if (meta && vault.length > 0) {
+        var m = JSON.parse(meta);
+        var samples = vault.slice(0,3).map(function(q){return '> ' + (q.stem||'').substring(0,55) + '...'}).join('<br>');
+        liveHtml = '<div class="intel-card" style="border-color:rgba(57,255,20,.15);margin-bottom:10px">' +
+          '<div class="date" style="color:var(--green)">LIVE | ' + (m.updatedAt||'').split('T')[0] + ' | 金库 ' + vault.length + ' 题</div>' +
+          '<div style="margin-top:6px;font-size:11px;color:var(--sub);line-height:1.8">' + samples + '</div></div>';
+      }
+    } catch(e2) {}
+
+    // 战略框架
+    var layersHtml = '';
+    for (var i = 0; i < data.layers.length; i++) {
+      var L = data.layers[i];
+      layersHtml += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(8,247,254,.03);border-radius:6px;border:1px solid rgba(8,247,254,.06)">' +
+        '<div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:3px">' + L.icon + ' ' + L.name + '</div>' +
+        '<div style="font-size:11px;color:var(--sub);line-height:1.7">' + L.desc + '</div></div>';
     }
-  } catch(e) {}
-  
-  // Render strategic framework
-  intelCards.innerHTML = liveIntel +
-    '<div class="intel-card" style="border-color:rgba(255,215,0,.12)">' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
-        '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.2);font-weight:700">' + data.codename + '</span>' +
-      '</div>' +
-      '<div style="font-size:15px;font-weight:900;color:var(--gold);margin-bottom:6px">' + data.title + '</div>' +
-      '<div style="font-size:12px;color:var(--text);line-height:1.8;margin-bottom:12px;padding:8px 12px;background:rgba(255,215,0,.04);border-radius:8px;border-left:3px solid var(--gold)">' + data.slogan + '</div>' +
-      data.layers.map(function(layer) {
-        return '<div style="margin-bottom:10px;padding:10px 12px;background:rgba(8,247,254,.03);border-radius:8px;border:1px solid rgba(8,247,254,.06)">' +
-          '<div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:4px">' + layer.icon + ' ' + layer.name + '</div>' +
-          '<div style="font-size:12px;color:var(--sub);line-height:1.8">' + layer.desc + '</div>' +
-        '</div>';
-      }).join('') +
-    '</div>';
-  
-  // === 秘密蓝图 ===
-  // Show exam structure + vault overview
-  let vaultOverview = '';
-  try {
-    let totalQ = 0;
-    const subs = {101:'政治',201:'英语',301:'数学',408:'计算机'};
-    let rows = '';
-    for (const [s, n] of Object.entries(subs)) {
-      const v = JSON.parse(localStorage.getItem('Global_Vault_' + s) || '[]');
-      totalQ += v.length;
-      const color = v.length > 10 ? 'var(--green)' : v.length > 0 ? 'var(--gold)' : 'var(--dim)';
-      const bar = v.length > 0 ? '<div style="height:3px;background:' + color + ';width:' + Math.min(v.length * 3, 100) + '%;border-radius:2px;margin-top:4px"></div>' : '';
-      rows += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">' +
-        '<span style="color:var(--text);font-size:12px">' + s + ' ' + n + '</span>' +
-        '<span style="color:' + color + ';font-weight:700;font-size:13px">' + v.length + ' 题</span></div>' + bar;
-    }
-    if (totalQ > 0) {
-      vaultOverview = '<div class="intel-card" style="border-color:rgba(57,255,20,.08);margin-bottom:10px">' +
-        '<div class="date" style="color:var(--green)">GLOBAL VAULT · 金库总览</div>' +
-        '<div style="margin-top:6px">' + rows + '</div>' +
-        '<div style="margin-top:8px;text-align:center;color:var(--gold);font-weight:900;font-size:18px">' + totalQ + ' 题在库</div></div>';
-    }
-  } catch(e) {}
-  
-  bpCards.innerHTML = vaultOverview +
-    '<div class="intel-card" style="border-color:rgba(157,78,221,.12)">' +
-      '<div style="font-size:11px;color:var(--purple);font-weight:700;margin-bottom:6px">📐 试卷蓝图 · ' + data.title.split('：')[0] + '</div>' +
-      '<div style="font-size:13px;color:var(--text);line-height:2;padding:8px 12px;background:rgba(157,78,221,.04);border-radius:8px;font-family:\'JetBrains Mono\',\'Orbitron\',monospace;border:1px solid rgba(157,78,221,.08)">' + data.blueprint + '</div>' +
-    '</div>';
+
+    intelCards.innerHTML = liveHtml +
+      '<div class="intel-card" style="border-color:rgba(255,215,0,.12)">' +
+        '<div style="font-size:14px;font-weight:900;color:var(--gold);margin-bottom:6px">' + data.title + '</div>' +
+        '<div style="font-size:12px;color:var(--text);line-height:1.8;margin-bottom:10px;padding:8px 10px;background:rgba(255,215,0,.04);border-radius:6px;border-left:3px solid var(--gold)">' + data.slogan + '</div>' +
+        layersHtml +
+      '</div>';
+
+    // 秘密蓝图: 金库总览 + 试卷蓝图
+    var vaultHtml = '';
+    try {
+      var totalQ = 0;
+      var subNames = {'101':'政治','201':'英语','301':'数学','408':'计算机'};
+      var rowsHtml = '';
+      var keys = ['101','201','301','408'];
+      for (var j = 0; j < keys.length; j++) {
+        var s = keys[j];
+        var v = JSON.parse(localStorage.getItem('Global_Vault_' + s) || '[]');
+        totalQ += v.length;
+        var clr = v.length > 10 ? 'var(--green)' : v.length > 0 ? 'var(--gold)' : 'var(--dim)';
+        rowsHtml += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:12px">' + s + ' ' + subNames[s] + '</span>' +
+          '<span style="color:' + clr + ';font-weight:700">' + v.length + ' 题</span></div>';
+      }
+      if (totalQ > 0) {
+        vaultHtml = '<div class="intel-card" style="border-color:rgba(57,255,20,.08);margin-bottom:10px">' +
+          '<div class="date" style="color:var(--green)">GLOBAL VAULT</div>' +
+          '<div style="margin-top:6px">' + rowsHtml + '</div>' +
+          '<div style="margin-top:8px;text-align:center;color:var(--gold);font-weight:900;font-size:16px">' + totalQ + ' 题在库</div></div>';
+      }
+    } catch(e3) {}
+
+    bpCards.innerHTML = vaultHtml +
+      '<div class="intel-card" style="border-color:rgba(157,78,221,.12)">' +
+        '<div style="font-size:11px;color:var(--purple);font-weight:700;margin-bottom:6px">试卷蓝图 | ' + data.title + '</div>' +
+        '<div style="font-size:12px;color:var(--text);line-height:2;padding:8px 10px;background:rgba(157,78,221,.04);border-radius:6px;border:1px solid rgba(157,78,221,.08)">' + data.blueprint + '</div>' +
+      '</div>';
+
+    console.log('[天机] 渲染成功: ' + subCode);
+  } catch(err) {
+    console.error('[天机] renderSubjectIntel error:', err);
+  }
 }
 
-// Hook into subject tab switching
-const origSubTabHandler = document.querySelectorAll('.sub-tab');
-origSubTabHandler.forEach(function(tab) {
+// Hook tab switching
+document.querySelectorAll('.sub-tab').forEach(function(tab) {
   tab.addEventListener('click', function() {
-    const sub = this.dataset.sub;
+    var sub = this.dataset.sub;
     if (sub) setTimeout(function() { renderSubjectIntel(sub); }, 50);
   });
 });
 
-// Initial render
-renderSubjectIntel(curSub || '101');
+// Initial render on page load  
+setTimeout(function() { renderSubjectIntel(curSub || '101'); }, 100);
 
 
 </script>
