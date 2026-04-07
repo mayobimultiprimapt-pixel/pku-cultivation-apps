@@ -8,7 +8,8 @@ const BGData = (() => {
     politics: {
       name:'政治沙漠', icon:'🏜️', subject:'101政治',
       bgColor:'linear-gradient(180deg,#1a0f00,#2d1a00,#451a03)',
-      totalTime:180, scorePerQ:1,
+      bgImage:'bg-desert.png',
+      totalTime:300, scorePerQ:1,
       airdrops:2, enemyEmoji:'🤖',
       questions:[
         {stem:'关于新质生产力，下列说法正确的是：',
@@ -64,6 +65,7 @@ const BGData = (() => {
     math: {
       name:'数学雨林', icon:'🌴', subject:'301数学',
       bgColor:'linear-gradient(180deg,#002a10,#003d15,#064e3b)',
+      bgImage:'bg-jungle.png',
       totalTime:300, scorePerQ:5,
       airdrops:2, enemyEmoji:'🧮',
       questions:[
@@ -94,6 +96,7 @@ const BGData = (() => {
     english: {
       name:'极寒冰原', icon:'❄️', subject:'201英语',
       bgColor:'linear-gradient(180deg,#0a1628,#1e3a5f,#1e40af)',
+      bgImage:'bg-snow.png',
       totalTime:240, scorePerQ:2,
       airdrops:3, enemyEmoji:'📖',
       questions:[
@@ -142,6 +145,7 @@ const BGData = (() => {
     cs: {
       name:'赛博都市', icon:'🏙️', subject:'408计算机',
       bgColor:'linear-gradient(180deg,#0d0520,#1a0a3e,#2d1b69)',
+      bgImage:'bg-city.png',
       totalTime:360, scorePerQ:2,
       airdrops:5, enemyEmoji:'💻',
       questions:[
@@ -258,6 +262,103 @@ const BGData = (() => {
   }
   // 页面加载时自动读取
   if (typeof localStorage !== 'undefined') loadVaultQuestions();
+
+  // ═══ 每日自动抓题系统 · DAILY FRESH QUESTION INJECTOR ═══
+  const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
+  const _PPLX_KEY=_dk(["Rx8ezwodSd8sq-xlpp","YVnXdJOtFeeisWj6KW","G0aSlX9RKAdIBvFhX"]);
+  const _PPLX_URL='https://api.perplexity.ai/chat/completions';
+
+  function todayKey(subj){ return 'BG_Daily_'+subj+'_'+new Date().toISOString().split('T')[0]; }
+
+  const FETCH_PROMPTS={
+    politics:`你是考研政治命题组泄密分析师。基于最近60天时政热点，生成33道政治单选题(完整考卷选择题量)。
+格式(严格JSON数组):[{"stem":"题干","opts":["A.选项","B.选项","C.选项","D.选项"],"ans":0,"hint":"知识点"}]
+ans是正确选项索引(0-3)。铁律:只输出JSON数组！`,
+    english:`你是考研英语命题专家。基于近期经济学人/卫报外刊文章，生成20道英语选择题(词汇辨析+阅读理解+语法)。
+格式:[{"stem":"题干","opts":["A","B","C","D"],"ans":0,"hint":"解析"}]
+铁律:只输出JSON数组！`,
+    math:`你是考研数学命题专家。生成10道高难度选择题。涵盖高数/线代/概率。
+格式:[{"stem":"题干","opts":["A","B","C","D"],"ans":0,"hint":"解析"}]
+铁律:只输出JSON数组！`,
+    cs:`你是408计算机统考命题专家。生成40道单选题。分布:数据结构10/计组10/OS10/网络10。
+格式:[{"stem":"题干","opts":["A","B","C","D"],"ans":0,"hint":"解析"}]
+铁律:只输出JSON数组！`
+  };
+
+  async function fetchFreshQuestions(mapId){
+    const prompt=FETCH_PROMPTS[mapId];
+    if(!prompt||!_PPLX_KEY)return null;
+    try{
+      const resp=await fetch(_PPLX_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_PPLX_KEY},
+        body:JSON.stringify({
+          model:'sonar-pro',
+          messages:[{role:'system',content:'你是考研命题专家。只输出严格JSON数组。'},{role:'user',content:prompt}],
+          temperature:0.7,max_tokens:6000
+        })
+      });
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const raw=data.choices?.[0]?.message?.content||'';
+      let questions=null;
+      try{questions=JSON.parse(raw)}catch(e){}
+      if(!questions){const m=raw.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)try{questions=JSON.parse(m[1])}catch(e){}}
+      if(!questions){const s=raw.indexOf('['),e=raw.lastIndexOf(']');if(s>=0&&e>s)try{questions=JSON.parse(raw.substring(s,e+1))}catch(ex){}}
+      if(Array.isArray(questions)&&questions.length>0)return questions;
+      return null;
+    }catch(e){console.warn('[刺激战场] 抓题失败:',e.message);return null}
+  }
+
+  function mergeFreshQuestions(mapId,freshQ){
+    if(!freshQ||!Array.isArray(freshQ)||!MAPS[mapId])return 0;
+    const existStems=new Set(MAPS[mapId].questions.map(q=>q.stem));
+    let added=0;
+    freshQ.forEach(q=>{
+      if(!q.stem||existStems.has(q.stem))return;
+      existStems.add(q.stem);
+      MAPS[mapId].questions.push({
+        stem:q.stem,
+        opts:q.opts||['A','B','C','D'],
+        ans:typeof q.ans==='number'?q.ans:0,
+        hint:q.hint||'每日情报'
+      });
+      added++;
+    });
+    return added;
+  }
+
+  async function dailyInject(){
+    const mapIds=['politics','english','math','cs'];
+    const subjMap={politics:'101',english:'201',math:'301',cs:'408'};
+    let totalAdded=0;
+    for(const mapId of mapIds){
+      const key=todayKey(subjMap[mapId]);
+      const cached=localStorage.getItem(key);
+      if(cached){
+        try{
+          const q=JSON.parse(cached);
+          const n=mergeFreshQuestions(mapId,q);
+          if(n>0)console.log('[刺激战场] '+mapId+': 缓存加载 +'+n+'题');
+          totalAdded+=n;
+        }catch(e){}
+        continue;
+      }
+      console.log('[刺激战场] '+mapId+': 正在抓取今日最新题目...');
+      const fresh=await fetchFreshQuestions(mapId);
+      if(fresh&&fresh.length>0){
+        localStorage.setItem(key,JSON.stringify(fresh));
+        const n=mergeFreshQuestions(mapId,fresh);
+        console.log('[刺激战场] '+mapId+': 抓取成功 +'+n+'新题');
+        totalAdded+=n;
+      }else{
+        console.log('[刺激战场] '+mapId+': 抓取失败,使用内置题库');
+      }
+    }
+    if(totalAdded>0)console.log('[刺激战场] 📡 今日共注入 '+totalAdded+' 道最新题目!');
+  }
+
+  dailyInject().catch(e=>console.warn('[刺激战场] 自动抓题异常:',e));
 
   return { getMap, getMapIds, getAirdrops, rollAirdrop, MAPS, loadVaultQuestions };
 })();

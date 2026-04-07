@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>刺激战场 · 选择题速杀 — 北大考研修仙应用集</title>
-  <meta name="description" content="第一人称吃鸡答题 — 跳伞空降·遭遇假人·答题击杀·毒圈逼近·吃鸡">
+  <meta name="description" content="第一人称吃鸡答题 — 跳伞空降·遭遇战·答题击杀·毒圈逼近·吃鸡">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -25,8 +25,8 @@
           <div class="mc-overlay">
             <div class="mc-icon">🏜️</div>
             <div class="mc-name">政治沙漠</div>
-            <div class="mc-badge">101政治 · 16题单选</div>
-            <div class="mc-info">1分/题 · 速战速决 · 毒圈3分钟</div>
+            <div class="mc-badge">101政治 · 33题单选</div>
+            <div class="mc-info">1分/题 · 完整考卷 · 毒圈5分钟</div>
           </div>
         </button>
         <button class="map-card" data-map="english" id="mapEnglish">
@@ -35,7 +35,7 @@
             <div class="mc-icon">❄️</div>
             <div class="mc-name">极寒冰原</div>
             <div class="mc-badge">201英语 · 20题阅读选择</div>
-            <div class="mc-info">2分/题 · 据点夺取 · 毒圈4分钟</div>
+            <div class="mc-info">2分/题 · 阅读理解 · 毒圈4分钟</div>
           </div>
         </button>
         <button class="map-card" data-map="math" id="mapMath">
@@ -43,8 +43,8 @@
           <div class="mc-overlay">
             <div class="mc-icon">🌴</div>
             <div class="mc-name">数学雨林</div>
-            <div class="mc-badge">301数学 · 10题选择</div>
-            <div class="mc-info">5分/题 · 高风险 · 毒圈5分钟</div>
+            <div class="mc-badge">301数学 · 10题高阶选择</div>
+            <div class="mc-info">5分/题 · 高分值 · 毒圈5分钟</div>
           </div>
         </button>
         <button class="map-card" data-map="cs" id="mapCS">
@@ -66,7 +66,7 @@
       <div class="para-overlay">
         <div class="para-hud">
           <span class="para-map-name" id="paraMapName">政治沙漠 · 空降中...</span>
-          <span class="para-count" id="paraCount">剩余 16/16</span>
+          <span class="para-alive" id="paraAlive">存活 100/100</span>
         </div>
         <div class="para-center">
           <div class="para-chute">🪂</div>
@@ -94,8 +94,18 @@
 
     <!-- ═══ 战斗主界面 ═══ -->
     <section id="battleScreen" class="screen hidden">
-      <!-- 战场背景 -->
+      <!-- 战场滚动背景(模拟奔跑) -->
       <div class="battle-bg" id="battleBg"></div>
+      <div class="battle-terrain" id="battleTerrain"></div>
+
+      <!-- 毒圈屏幕边缘效果 -->
+      <div class="poison-edge" id="poisonEdge"></div>
+
+      <!-- 红色受伤闪烁 -->
+      <div class="dmg-flash" id="dmgFlash"></div>
+
+      <!-- 击杀播报(左上) -->
+      <div class="kill-feed" id="killFeed"></div>
 
       <!-- 顶部 HUD -->
       <div class="hud-top">
@@ -104,6 +114,7 @@
           <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
           <span class="hp-text" id="hpText">100%</span>
         </div>
+        <div class="hud-alive" id="hudAlive">🟢 存活 100</div>
         <div class="hud-timer" id="hudTimer">⏱ 03:00</div>
         <div class="hud-score">
           <span class="score-val" id="scoreVal">0</span>分
@@ -125,17 +136,39 @@
         <div class="combo-text" id="comboText">🔥 三连杀!</div>
       </div>
 
-      <!-- 假人敌人 -->
+      <!-- 奔跑搜索覆层(两题之间) -->
+      <div class="run-overlay hidden" id="runOverlay">
+        <div class="run-text" id="runText">🏃 搜索中...</div>
+        <div class="run-footstep" id="runFootstep">👣</div>
+      </div>
+
+      <!-- 第一人称准星 -->
+      <div class="crosshair" id="crosshair">
+        <div class="ch-dot"></div>
+        <div class="ch-h"></div><div class="ch-h ch-r"></div>
+        <div class="ch-v"></div><div class="ch-v ch-b"></div>
+      </div>
+
+      <!-- 假人敌人(从远处跑来) -->
       <div class="enemy-wrap" id="enemyWrap">
         <div class="enemy-body" id="enemyBody">
           <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemyHpFill"></div></div>
           <div class="enemy-name" id="enemyName">假人兵 · Lv.1</div>
-          <div class="enemy-figure">🤖</div>
+          <div class="enemy-figure" id="enemyFigure">🤖</div>
         </div>
       </div>
 
+      <!-- ⚠ 发现敌人! 弹窗 -->
+      <div class="encounter-alert hidden" id="encounterAlert">
+        <span>⚠ 发现敌人!</span>
+      </div>
+
       <!-- 题卡 -->
-      <div class="question-card" id="questionCard">
+      <div class="question-card hidden" id="questionCard">
+        <div class="q-header">
+          <span class="q-num" id="qNum">#1</span>
+          <span class="q-kp" id="qKp"></span>
+        </div>
         <div class="q-stem" id="qStem">加载题目中...</div>
         <div class="q-options" id="qOptions"></div>
       </div>
@@ -143,12 +176,23 @@
       <!-- 分数飞字 -->
       <div class="float-score hidden" id="floatScore">+1</div>
 
+      <!-- 搜刮尸体 -->
+      <div class="loot-popup hidden" id="lootPopup">
+        <div class="loot-title">🎒 搜刮战利品</div>
+        <div class="loot-item" id="lootItem">💊 +5HP</div>
+      </div>
+
       <!-- 底部操作 -->
       <div class="hud-bottom">
+        <div class="weapon-display" id="weaponDisplay">
+          <span class="weapon-icon">🔫</span>
+          <span class="weapon-name" id="weaponName">M416</span>
+          <span class="weapon-ammo" id="weaponAmmo">30/90</span>
+        </div>
         <div class="airdrop-notify hidden" id="airdropNotify" onclick="BG.openAirdrop()">
           📦 <span id="airdropText">空投物资</span>
         </div>
-        <button class="fire-btn" id="fireBtn" disabled onclick="BG.fire()">🎯 确认击杀</button>
+        <button class="fire-btn" id="fireBtn" disabled onclick="BG.fire()">🎯 开火击杀</button>
         <button class="hint-btn" id="hintBtn" onclick="BG.useHint()">💡 提示 <span id="hintCount">3</span></button>
       </div>
     </section>
@@ -168,6 +212,7 @@
       <div class="result-card">
         <div class="result-icon" id="resultIcon">🏆</div>
         <h1 class="result-title" id="resultTitle">大吉大利！今晚吃鸡！</h1>
+        <div class="result-rank" id="resultRank">#1</div>
         <div class="result-grid">
           <div class="rg"><span class="rg-l">击杀</span><span class="rg-v" id="rKills">0/0</span></div>
           <div class="rg"><span class="rg-l">得分</span><span class="rg-v" id="rScore">0</span></div>
