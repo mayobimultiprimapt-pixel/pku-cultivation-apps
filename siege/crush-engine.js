@@ -1,6 +1,6 @@
 /**
- * Vocabulary Crush Engine
- * Match-3 with word tiles: swap, match, cascade, special tiles
+ * Vocabulary Crush Engine — v2.0
+ * Match-3 with word tiles: swap, match, cascade, special tiles (bomb + rainbow)
  */
 const CrushEngine = (() => {
   let S = null;
@@ -32,8 +32,23 @@ const CrushEngine = (() => {
 
   function swap(r1,c1,r2,c2) {
     if(!S || S.finished) return null;
-    // Must be adjacent
     if(Math.abs(r1-r2)+Math.abs(c1-c2) !== 1) return null;
+
+    // Check for special tile activation (rainbow click)
+    const tile1 = S.grid[r1][c1];
+    const tile2 = S.grid[r2][c2];
+
+    // Rainbow special: clear all tiles of the swapped word
+    if(tile1.special === 'rainbow' || tile2.special === 'rainbow') {
+      S.moves--;
+      S.combo = 0;
+      const rainbowTile = tile1.special === 'rainbow' ? tile1 : tile2;
+      const otherTile = tile1.special === 'rainbow' ? tile2 : tile1;
+      const result = activateRainbow(rainbowTile, otherTile.word);
+      result.valid = true;
+      checkWinLose(result);
+      return result;
+    }
 
     // Do swap
     doSwap(r1,c1,r2,c2);
@@ -41,7 +56,6 @@ const CrushEngine = (() => {
     // Check matches
     const matches = findMatches();
     if(matches.length === 0) {
-      // No match, swap back
       doSwap(r1,c1,r2,c2);
       return { valid:false };
     }
@@ -49,21 +63,24 @@ const CrushEngine = (() => {
     S.moves--;
     S.combo = 0;
 
-    // Process chain
-    const result = processChain();
+    // Determine special tile creation from this swap
+    const swapInfo = {r1,c1,r2,c2};
+    const result = processChain(swapInfo);
     result.valid = true;
 
-    // Check win/lose
+    checkWinLose(result);
+    return result;
+  }
+
+  function checkWinLose(result) {
     if(S.targetMatched >= S.targetNeeded) {
       S.won = true;
       S.finished = true;
     } else if(S.moves <= 0) {
       S.finished = true;
     }
-
     result.finished = S.finished;
     result.won = S.won;
-    return result;
   }
 
   function doSwap(r1,c1,r2,c2) {
@@ -80,7 +97,6 @@ const CrushEngine = (() => {
       for(let c=0;c<SIZE-2;c++){
         if(g[r][c].word && g[r][c].word===g[r][c+1].word && g[r][c].word===g[r][c+2].word){
           matches.add(`${r},${c}`);matches.add(`${r},${c+1}`);matches.add(`${r},${c+2}`);
-          // Check for 4 or 5
           if(c+3<SIZE && g[r][c].word===g[r][c+3].word) matches.add(`${r},${c+3}`);
           if(c+4<SIZE && g[r][c].word===g[r][c+4].word) matches.add(`${r},${c+4}`);
         }
@@ -102,9 +118,10 @@ const CrushEngine = (() => {
     });
   }
 
-  function processChain() {
+  function processChain(swapInfo) {
     const allMatched = [];
     let chainCount = 0;
+    let firstChain = true;
 
     while(true) {
       const matches = findMatches();
@@ -123,23 +140,120 @@ const CrushEngine = (() => {
       const targetHits = matches.filter(m => m.tile.isTarget);
       S.targetMatched += targetHits.length;
 
+      // ═══ 特殊方块生成 (4消=炸弹, 5消=彩虹) ═══
+      let specialCreated = null;
+      if(firstChain && swapInfo) {
+        // Group matches by word to find the line length
+        const matchCount = matches.length;
+        if(matchCount >= 5) {
+          // 5+消: 生成彩虹方块
+          specialCreated = { type:'rainbow', r:swapInfo.r1, c:swapInfo.c1 };
+        } else if(matchCount >= 4) {
+          // 4消: 生成炸弹方块
+          specialCreated = { type:'bomb', r:swapInfo.r1, c:swapInfo.c1 };
+        }
+      }
+
       // Record
       allMatched.push({matches:[...matches], chain:chainCount, score:gained,
-                       targetHits:targetHits.length});
+                       targetHits:targetHits.length, specialCreated});
+
+      // Activate specials that were matched
+      for(const m of matches) {
+        if(m.tile.special === 'bomb') {
+          activateBomb(m.r, m.c, matches);
+        }
+      }
 
       // Remove matched tiles
       for(const m of matches){
         S.grid[m.r][m.c] = {word:null,color:null,isTarget:false,special:null,row:m.r,col:m.c};
       }
 
+      // Place special tile if created (after clearing)
+      if(specialCreated) {
+        const sr = specialCreated.r, sc = specialCreated.c;
+        if(S.grid[sr][sc].word === null) {
+          // Create a new tile with special power
+          const level = S.level;
+          const allWords = [level.answer, ...level.distractors];
+          const word = allWords[Math.floor(Math.random()*allWords.length)];
+          const colorIdx = allWords.indexOf(word) % CrushData.COLORS.length;
+          S.grid[sr][sc] = {
+            word, color:CrushData.COLORS[colorIdx],
+            isTarget:word===level.answer,
+            special:specialCreated.type, row:sr, col:sc, isNew:true
+          };
+        }
+      }
+
       // Drop tiles
       dropTiles();
-
       // Fill new tiles
       fillEmpty();
+      firstChain = false;
     }
 
     return {chains:allMatched, totalChains:chainCount, combo:S.combo};
+  }
+
+  // ═══ 炸弹爆炸: 清除周围8格 ═══
+  function activateBomb(r, c, existingMatches) {
+    const matchSet = new Set(existingMatches.map(m => `${m.r},${m.c}`));
+    for(let dr=-1; dr<=1; dr++) {
+      for(let dc=-1; dc<=1; dc++) {
+        const nr = r+dr, nc = c+dc;
+        if(nr>=0 && nr<SIZE && nc>=0 && nc<SIZE) {
+          const key = `${nr},${nc}`;
+          if(!matchSet.has(key) && S.grid[nr][nc].word !== null) {
+            // Count target hits from bomb
+            if(S.grid[nr][nc].isTarget) S.targetMatched++;
+            S.score += 15;
+            S.grid[nr][nc] = {word:null,color:null,isTarget:false,special:null,row:nr,col:nc};
+          }
+        }
+      }
+    }
+  }
+
+  // ═══ 彩虹消除: 清除全场同色/同词方块 ═══
+  function activateRainbow(rainbowTile, targetWord) {
+    const chains = [];
+    const matches = [];
+    let scoreGained = 0;
+
+    // Clear all tiles matching the target word
+    for(let r=0; r<SIZE; r++) {
+      for(let c=0; c<SIZE; c++) {
+        if(S.grid[r][c].word === targetWord) {
+          if(S.grid[r][c].isTarget) S.targetMatched++;
+          matches.push({r,c,tile:{...S.grid[r][c]}});
+          S.grid[r][c] = {word:null,color:null,isTarget:false,special:null,row:r,col:c};
+          scoreGained += 20;
+        }
+      }
+    }
+
+    // Also clear the rainbow tile itself
+    const rr = rainbowTile.row, rc = rainbowTile.col;
+    if(S.grid[rr][rc].word !== null) {
+      S.grid[rr][rc] = {word:null,color:null,isTarget:false,special:null,row:rr,col:rc};
+    }
+
+    S.score += scoreGained;
+    S.combo++;
+    S.maxCombo = Math.max(S.maxCombo, S.combo);
+
+    chains.push({matches, chain:1, score:scoreGained, targetHits:matches.filter(m=>m.tile&&m.tile.isTarget).length, specialCreated:{type:'rainbow_activated'}});
+
+    dropTiles();
+    fillEmpty();
+
+    // Continue chain if new matches appeared
+    const bonus = processChain(null);
+    chains.push(...bonus.chains);
+
+    return {chains, totalChains:1+bonus.totalChains, combo:S.combo};
   }
 
   function dropTiles() {
@@ -163,7 +277,6 @@ const CrushEngine = (() => {
     for(let r=0;r<SIZE;r++){
       for(let c=0;c<SIZE;c++){
         if(S.grid[r][c].word === null){
-          // Small chance of target word if we still need them
           const needMore = S.targetMatched < S.targetNeeded;
           const currentTargets = S.grid.flat().filter(t=>t.isTarget).length;
           let word;
@@ -185,8 +298,7 @@ const CrushEngine = (() => {
 
   function getGrade() {
     if(!S) return {stars:0,qi:0};
-    const movesUsed = S.maxMoves - S.moves;
-    const efficiency = S.moves / S.maxMoves; // remaining ratio
+    const efficiency = S.moves / S.maxMoves;
     let stars, qi;
     if(S.won){
       if(efficiency >= 0.5) {stars=3;qi=35;}
