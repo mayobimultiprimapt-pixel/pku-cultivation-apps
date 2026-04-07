@@ -762,9 +762,9 @@ function parseThreeLayers(raw) {
   raw = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
   const markers = [
-    { key: 'intel',   patterns: ['【情报层', '情报层', '原始数据', '核心命题热点', '1. 情报', '一、情报'] },
-    { key: 'process', patterns: ['【处理层', '处理层', '矛盾映射', '交叉分析', '2. 处理', '二、处理'] },
-    { key: 'output',  patterns: ['【输出层', '输出层', '降维武器', '答题模板', '3. 输出', '三、输出'] }
+    { key: 'intel',   patterns: ['【情报层 · 原始数据】', '【情报层', '## 情报层', '情报层 ·', '原始数据】'] },
+    { key: 'process', patterns: ['【处理层 · 矛盾映射矩阵】', '【处理层', '## 处理层', '处理层 ·', '矛盾映射矩阵】', '矛盾映射'] },
+    { key: 'output',  patterns: ['【输出层 · 考场降维武器库】', '【输出层', '## 输出层', '输出层 ·', '降维武器库】', '降维武器'] }
   ];
 
   const positions = [];
@@ -773,9 +773,10 @@ function parseThreeLayers(raw) {
     for (const p of m.patterns) {
       const idx = raw.indexOf(p);
       if (idx !== -1 && (pos === -1 || idx < pos)) {
-          // 确保匹配的不是正文里碰巧出现的词语，而是类似标题（前有换行或在文件头）
-          const isAtStart = idx === 0 || raw.charAt(idx - 1) === '\\n' || raw.substring(Math.max(0, idx-3), idx).includes('#');
-          if(isAtStart) pos = idx;
+          const before = idx === 0 ? '\n' : raw.charAt(idx - 1);
+          if (idx === 0 || before === '\n' || before === '\r' || before === '#' || before === '*' || before === ' ') {
+            pos = idx;
+          }
       }
     }
     if (pos !== -1) positions.push({ key: m.key, pos });
@@ -798,9 +799,8 @@ function parseThreeLayers(raw) {
       }
     }
   } else {
+    // 解析失败时，全部内容放入情报层，其余留空
     result.intel = raw;
-    result.process = '⚠️ AI未严格按三层格式返回，原始数据已放入情报层';
-    result.output = '⚠️ 请手动查阅情报层内容';
   }
   return result;
 }
@@ -812,9 +812,14 @@ function renderLayerContent(elementId, text) {
   const el = document.getElementById(elementId);
   if (!el) return;
   if (!text || text.trim() === '') {
-    el.innerHTML = '<div style="color:var(--dim)">暂无数据</div>';
+    el.style.display = 'none';
+    const hdr = el.previousElementSibling;
+    if (hdr) { hdr.style.display = 'none'; const dv = hdr.previousElementSibling; if (dv && dv.style.height === '1px') dv.style.display = 'none'; }
     return;
   }
+  el.style.display = '';
+  const hdr2 = el.previousElementSibling;
+  if (hdr2) { hdr2.style.display = ''; const dv2 = hdr2.previousElementSibling; if (dv2) dv2.style.display = ''; }
   let html = text
     .replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>')
