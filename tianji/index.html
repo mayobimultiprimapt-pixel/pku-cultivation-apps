@@ -1571,7 +1571,11 @@ document.querySelectorAll('.sub-tab').forEach(function(tab) {
 });
 
 // Initial render on page load  
-setTimeout(function() { renderSubjectIntel(curSub || '101'); }, 100);
+setTimeout(function() {
+  var activeTab = document.querySelector('.sub-tab.active');
+  var initSub = activeTab ? activeTab.dataset.sub : '101';
+  renderSubjectIntel(initSub);
+}, 100);
 
 
 </script>
