@@ -771,9 +771,9 @@ function parseThreeLayers(raw) {
   raw = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
   const markers = [
-    { key: 'intel',   patterns: ['【情报层', '情报层 ·', '情报层·'] },
-    { key: 'process', patterns: ['【处理层', '处理层 ·', '处理层·'] },
-    { key: 'output',  patterns: ['【输出层', '输出层 ·', '输出层·'] }
+    { key: 'intel',   patterns: ['【情报层', '情报层', '原始数据', '核心命题热点', '1. 情报', '一、情报'] },
+    { key: 'process', patterns: ['【处理层', '处理层', '矛盾映射', '交叉分析', '2. 处理', '二、处理'] },
+    { key: 'output',  patterns: ['【输出层', '输出层', '降维武器', '答题模板', '3. 输出', '三、输出'] }
   ];
 
   const positions = [];
@@ -781,7 +781,11 @@ function parseThreeLayers(raw) {
     let pos = -1;
     for (const p of m.patterns) {
       const idx = raw.indexOf(p);
-      if (idx !== -1 && (pos === -1 || idx < pos)) pos = idx;
+      if (idx !== -1 && (pos === -1 || idx < pos)) {
+          // 确保匹配的不是正文里碰巧出现的词语，而是类似标题（前有换行或在文件头）
+          const isAtStart = idx === 0 || raw.charAt(idx - 1) === '\\n' || raw.substring(Math.max(0, idx-3), idx).includes('#');
+          if(isAtStart) pos = idx;
+      }
     }
     if (pos !== -1) positions.push({ key: m.key, pos });
   }
@@ -792,7 +796,7 @@ function parseThreeLayers(raw) {
       const start = positions[i].pos;
       const end = i + 1 < positions.length ? positions[i + 1].pos : raw.length;
       let segment = raw.slice(start, end).trim();
-      segment = segment.replace(/^【[^】]+】[^\n]*\n?/, '').trim();
+      segment = segment.replace(/^(【[^】]+】|#+ .*|\d+\.\s*.*|一、.*)/, '').trim();
       result[positions[i].key] = segment;
     }
     const citIdx = raw.indexOf('━━━ 情报来源');
