@@ -678,8 +678,67 @@ async function forgeExam(messages) {
 // ========== Storage ==========
 function getVault(s){try{return JSON.parse(localStorage.getItem(`vault_${s}`)||'[]')}catch(e){return[]}}
 function saveVault(s,p){localStorage.setItem(`vault_${s}`,JSON.stringify(p))}
-function addPaper(s,p){const v=getVault(s);v.unshift(p);saveVault(s,v);updateStats()}
+function addPaper(s,p){const v=getVault(s);v.unshift(p);saveVault(s,v);updateStats();syncToTerminal(s,p)}
 function updateStats(){['101','201','301','408'].forEach(s=>{document.getElementById('st'+s).textContent=getVault(s).length})}
+
+// ========== 自动同步到终端 (Global_Vault) ==========
+// 终端使用 GameFeedAdapter 格式: {q, o, a, type, difficulty, subject, ...}
+// 金库出卷后自动转换并合并，终端/游戏模块可直接读取
+function syncToTerminal(subj, paper) {
+  try {
+    // 将金库格式转换为终端格式
+    const gameQuestions = [];
+    for (const q of (paper.questions || [])) {
+      if (!q.options || q.options.length === 0) continue;
+      // 标准化选项（去除 "A. " 前缀）
+      const opts = q.options.map(o => o.replace(/^[A-D][\.．\s]+/, ''));
+      // 解析答案索引
+      let ansIdx = 0;
+      if (typeof q.answer === 'string') {
+        const letter = q.answer.trim().toUpperCase()[0];
+        ansIdx = Math.max(0, ['A','B','C','D'].indexOf(letter));
+      }
+      gameQuestions.push({
+        q: q.stem || q.question || '',
+        o: opts,
+        a: ansIdx,
+        type: q.type || 'single',
+        difficulty: q.difficulty || 2,
+        subject: subj,
+        section: q.section || '',
+        analysis: q.analysis || '',
+        chapter: q.chapter || '',
+        score: q.score || 0,
+        _paperId: paper.id,
+        _source: 'vault-genesis'
+      });
+    }
+    if (gameQuestions.length === 0) return;
+
+    // 合并到 Global_Vault（终端使用的 key）
+    let existing = [];
+    try {
+      const raw = localStorage.getItem('Global_Vault_' + subj);
+      if (raw) existing = JSON.parse(raw) || [];
+    } catch(e) {}
+
+    // 去重（基于题干文本）
+    const existingStems = new Set(existing.map(q => q.q || ''));
+    const newQ = gameQuestions.filter(q => !existingStems.has(q.q));
+    const merged = [...existing, ...newQ];
+
+    localStorage.setItem('Global_Vault_' + subj, JSON.stringify(merged));
+    localStorage.setItem('Vault_Meta_' + subj, JSON.stringify({
+      updatedAt: new Date().toISOString(),
+      count: merged.length,
+      lastPaperId: paper.id
+    }));
+
+    console.log(`[金库→终端] ${subj} 同步成功: +${newQ.length}题, 总计${merged.length}题`);
+  } catch(e) {
+    console.error('[金库→终端] 同步失败:', e.message);
+  }
+}
 
 // ========== Tab Switch ==========
 function switchTab(tab){
@@ -862,6 +921,7 @@ ${sectionsDesc}
 
   addPaper(subj, paper);
   addLog(`🏆 ${paper.title} (${paper.questionCount}题·情报${paper.intelSize}字符) 已入库`, 'success');
+  addLog(`📡 已同步到终端 Global_Vault_${subj}（游戏/大逃杀/消消乐可直接读取）`, 'info');
 
   // 中转阁同步
   try {
@@ -952,6 +1012,7 @@ ${sectionsDesc}
 
   addPaper(subj, paper);
   addLog(`🏆 ${paper.title} (${paper.questionCount}题) 已入库`, 'success');
+  addLog(`📡 已同步到终端 Global_Vault_${subj}（游戏/大逃杀/消消乐可直接读取）`, 'info');
 
   try {
     await fetch(`${RELAY_URL}/vault/papers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paper:{questions:paper.questions},subject:subj,source:usedEngine,paperNum,metadata:{title:paper.title,totalScore:paper.totalScore,timeMinutes:paper.timeMinutes,structure:paper.structure,generatedAt:paper.generatedAt}})});
