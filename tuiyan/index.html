@@ -149,6 +149,15 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
 .key-status.inactive{color:var(--red);border:1px solid rgba(231,76,60,.2);background:rgba(231,76,60,.05)}
 .key-status:hover{transform:translateY(-1px)}
 .model-badge{font-family:'Orbitron',monospace;font-size:8px;padding:2px 8px;border-radius:6px;background:rgba(8,247,254,.08);color:var(--cyan);border:1px solid rgba(8,247,254,.15);margin-left:6px;letter-spacing:1px}
+.question-row{margin-top:14px}
+.question-input{width:100%;padding:11px 14px;border-radius:10px;background:rgba(6,6,14,.7);border:1px solid rgba(255,215,0,.12);color:var(--text);font-size:13px;font-family:'Noto Sans SC',sans-serif;outline:none;transition:.3s}
+.question-input:focus{border-color:rgba(255,215,0,.4);box-shadow:0 0 15px rgba(255,215,0,.1)}
+.question-input::placeholder{color:var(--dim)}
+.question-label{font-size:11px;color:var(--dim);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.topic-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.topic-btn{padding:4px 10px;border-radius:6px;font-size:10px;cursor:pointer;border:1px solid rgba(157,78,221,.15);background:rgba(157,78,221,.04);color:var(--sub);transition:.3s}
+.topic-btn:hover{color:var(--purple);border-color:rgba(157,78,221,.3);background:rgba(157,78,221,.08)}
+.topic-btn.active{color:var(--purple);border-color:rgba(157,78,221,.4);background:rgba(157,78,221,.1)}
 </style>
 </head>
 <body>
@@ -184,6 +193,20 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
       <div class="num-group">
         <input type="number" class="num-input" id="n3" min="1" placeholder="动">
         <div class="num-label">÷6 定动爻</div>
+      </div>
+    </div>
+    <div class="question-row">
+      <div class="question-label">🎯 占问事项（可选，填写后 AI 解读更精准）</div>
+      <input type="text" class="question-input" id="questionInput" placeholder="例如：考研能否上岸？这次面试结果如何？今年运势怎么样？">
+      <div class="topic-row">
+        <span class="topic-btn" onclick="setTopic(this,'考研能否成功上岸？')">🎓 考研</span>
+        <span class="topic-btn" onclick="setTopic(this,'这次考试/面试结果如何？')">📝 考试</span>
+        <span class="topic-btn" onclick="setTopic(this,'近期运势如何？')">🔮 运势</span>
+        <span class="topic-btn" onclick="setTopic(this,'这件事能否成功？')">✅ 成败</span>
+        <span class="topic-btn" onclick="setTopic(this,'感情/人际关系如何发展？')">❤️ 感情</span>
+        <span class="topic-btn" onclick="setTopic(this,'财运/投资前景如何？')">💰 财运</span>
+        <span class="topic-btn" onclick="setTopic(this,'健康状况如何？')">🎯 健康</span>
+        <span class="topic-btn" onclick="setTopic(this,'找工作/跳槽是否顺利？')">💼 事业</span>
       </div>
     </div>
     <div class="btn-row">
@@ -428,6 +451,19 @@ function setNums(a,b,c){
   document.getElementById('n1').value=a;
   document.getElementById('n2').value=b;
   document.getElementById('n3').value=c;
+}
+
+function setTopic(el, text) {
+  const input = document.getElementById('questionInput');
+  // Toggle: if same topic clicked again, clear it
+  if (input.value === text) {
+    input.value = '';
+    el.classList.remove('active');
+  } else {
+    input.value = text;
+    document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
 }
 
 function doFullCast(n1,n2,n3){
@@ -780,7 +816,10 @@ async function aiInterpret() {
   resultEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:20px">🧠 ' + DEEPSEEK_MODEL_LABEL + ' 最强推演引擎启动中，请稍候...</div>';
 
   const template = document.getElementById('templateOutput').textContent;
-  const prompt = `你是梅花易数+六爻纳甲双修大师，精通周易、梅花易数、六爻纳甲。请根据以下完整排盘数据，给出【详细、深度、专业】的解卦解读。
+  const question = document.getElementById('questionInput').value.trim();
+  const questionLine = question ? `\n\n═══ 占问事项 ═══\n求占者具体要问的问题是：「${question}」\n请围绕此问题进行有针对性的解读，结合卦象分析此事的吉凶、走势、建议。` : '';
+
+  const prompt = `你是梅花易数+六爻纳甲双修大师，精通周易、梅花易数、六爻纳甲。请根据以下完整排盘数据，给出【详细、深度、专业】的解卦解读。${questionLine}
 
 ═══ 解读要求（必须严格按以下框架逐项展开）═══
 
