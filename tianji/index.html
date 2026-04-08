@@ -234,11 +234,47 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .tl-intel-box .tib-title{font-family:var(--font-c);font-size:20px;color:var(--red);margin-bottom:6px}
 .tl-intel-box .tib-desc{font-size:12px;color:var(--sub);line-height:1.8}
 
+/* Key Modal */
+.key-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,6,12,.95);backdrop-filter:blur(20px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.key-modal{background:var(--card);border:1px solid rgba(255,215,0,.15);border-radius:20px;padding:36px 32px;max-width:480px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.8);animation:slideUp .5s ease}
+.key-modal h2{font-family:var(--font-c);font-size:28px;color:var(--gold);margin-bottom:6px}
+.key-modal .km-sub{font-family:var(--font-d);font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:20px}
+.key-modal .km-desc{font-size:13px;color:var(--sub);line-height:1.8;margin-bottom:18px;text-align:left}
+.key-modal input{width:100%;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-d);font-size:13px;outline:none;transition:.2s;letter-spacing:.5px}
+.key-modal input:focus{border-color:var(--gold);box-shadow:0 0 16px rgba(255,215,0,.15)}
+.key-modal input::placeholder{color:var(--dim)}
+.key-modal .km-btn{margin-top:16px;width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;transition:.3s}
+.key-modal .km-btn:hover{box-shadow:0 4px 24px rgba(255,215,0,.4);transform:translateY(-1px)}
+.key-modal .km-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.key-modal .km-err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+.key-modal .km-cost{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:14px;text-align:left;font-size:11px;color:var(--sub);line-height:1.8}
+.key-modal .km-cost strong{color:var(--gold)}
 </style>
-<script src="api-keys.js"></script>
 </head>
 <body>
 <div class="bg-grid"></div>
+
+<!-- API Key Modal -->
+<div class="key-modal-overlay" id="keyModal">
+  <div class="key-modal">
+    <h2>🔑 天机密钥</h2>
+    <div class="km-sub">PERPLEXITY API KEY REQUIRED</div>
+    <div class="km-desc">
+      天机阁使用 Perplexity <strong style="color:var(--cyan)">sonar-deep-research</strong> 模型进行情报窃取与命题推演。<br>
+      请输入你的 API Key，仅存于本次会话，关闭浏览器自动清除。
+    </div>
+    <input type="password" id="keyInput" placeholder="pplx-xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    <div class="km-err" id="keyErr"></div>
+    <button class="km-btn" id="keySubmit" onclick="submitApiKey()">⚡ 注入密钥 · 启动天机阁</button>
+    <div class="km-cost">
+      <strong>💰 费用参考 (sonar-deep-research):</strong><br>
+      · 情报站单次窃取: 约 $0.5 ~ $1.0<br>
+      · 命题雷达单次分析: 约 $0.5 ~ $1.0<br>
+      · 每次自动执行 20+ 次子搜索，生成专家级报告<br>
+      · 建议充值 $5 可用约 5-10 次深度情报窃取
+    </div>
+  </div>
+</div>
 
 <header class="header">
   <span class="status"><span class="dot"></span>ONLINE</span>
@@ -468,131 +504,44 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 
 <script>
 // ============================================================
-//  天机阁 · 多源算力引擎 (MULTI-PROVIDER AI ENGINE)
-//  Token 自动提取自 api-keys.js ← sync_keys.py ← D:/Quant_Matrix/.env
-//  钥匙更新流程：修改 .env → 运行 python sync_keys.py → 刷新页面
+//  天机阁 · 密钥门控系统 v4.0
+//  用户进入时输入 Perplexity API Key，存于 sessionStorage
+//  关闭浏览器自动清除，不暴露在源码中
 // ============================================================
 
-// ---- 四层密钥自动降级系统 ----
-// 1️⃣ api-keys.js (本地 sync_keys.py 生成)
-// 2️⃣ 内嵌解码 (base64编码，对GitHub扫描器透明)
-// 3️⃣ localStorage (浏览器永久缓存)
-// 4️⃣ 一次性输入面板 (终极兜底)
-const _E = window.TIANJI_KEYS || {};
-const _LS = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
+function getPplxKey() {
+  return sessionStorage.getItem('tianji_pplx_key') || '';
+}
 
-// 内嵌编码密钥 (sync_keys.py 生成的 base64)
-const _EMBEDDED = (() => {
-  try {
-    const _d = 'eyJvcl9rZXkiOiJzay1vci12MS0zNDNmZTdkYWFlNTg2ODczNmJkMWIwNGQ3ZDFhNzliNzQ3MDE3ZTg3MTE0YWNmNzZiMjRlYWEzZWRhODEyMTc5In0=';
-    return JSON.parse(atob(_d));
-  } catch(e) { return {}; }
+function submitApiKey() {
+  const input = document.getElementById('keyInput');
+  const err = document.getElementById('keyErr');
+  const key = input.value.trim();
+  if (!key || !key.startsWith('pplx-')) {
+    err.textContent = '❌ 密钥必须以 pplx- 开头';
+    input.style.borderColor = 'var(--red)';
+    return;
+  }
+  sessionStorage.setItem('tianji_pplx_key', key);
+  document.getElementById('keyModal').style.display = 'none';
+  console.log('[天机阁] 🔑 密钥已注入: pplx-...' + key.slice(-6));
+}
+
+// 页面加载时检查是否已有 key
+(function checkKey() {
+  if (getPplxKey()) {
+    document.getElementById('keyModal').style.display = 'none';
+  }
+  // Enter 键提交
+  document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitApiKey();
+  });
 })();
 
 
-// ====== 🔑 密钥矩阵 (v3.1) ======
-const _dk=p=>p.map(s=>s.split('').reverse().join('')).join('');
-const _HARDCODED_KEYS = {
-  gemini_key: _dk(["lpQG2zAySazIA","JjF_oZYAcdSNx","ERZyIZWAzWu8m"]),
-  pplx_key: _dk(["BMqiOce8eyREv-xlpp","ZM7EQ18EeZFoQUbl6n","eVuw3VDsMAF2zn1pf"]),
-  or_key: _dk(["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"])
-};
-
-function _resolve(envKeys, lsKey, embKey, fallback) {
-  for (const k of envKeys) { if (_E[k]) return _E[k]; }
-  if (_EMBEDDED[embKey]) return _EMBEDDED[embKey];
-  if (_LS[lsKey]) return _LS[lsKey];
-  if (_HARDCODED_KEYS[lsKey]) return _HARDCODED_KEYS[lsKey];
-  return fallback || '';
-}
-
-const KEYS = {
-  OR_KEY:     _resolve(['OPENROUTER_API_KEY','OR_API_KEY','GLOBAL_KEY'], 'or_key', 'or_key'),
-  OR_URL:     (_resolve(['OR_BASE_URL','GLOBAL_URL'], 'or_url', 'or_url', 'https://openrouter.ai/api/v1')) + '/chat/completions',
-  MIRROR_KEY: _resolve(['MIRROR_API_KEY','INLAND_KEY','OPENAI_API_KEY'], 'mirror_key', 'mirror_key'),
-  MIRROR_URL: (_resolve(['MIRROR_BASE_URL','INLAND_URL','OPENAI_BASE_URL'], 'mirror_url', 'mirror_url', 'https://api.gptsapi.net/v1')) + '/chat/completions',
-  PPLX_KEY:   _resolve(['PERPLEXITY_API_KEY'], 'pplx_key', 'pplx_key'),
-  PPLX_URL:   (_resolve(['PERPLEXITY_BASE_URL'], 'pplx_url', 'pplx_url', 'https://api.perplexity.ai')) + '/chat/completions',
-  GEMINI_KEY: _resolve(['GEMINI_API_KEY'], 'gemini_key', 'gemini_key'),
-};
-
-// ---- 启动校验 ----
-const _keyStatus = (k, name) => k ? `✅ ${name}(${k.slice(0,12)}...)` : `❌ ${name}(缺失)`;
-const _src = Object.keys(_E).length > 0 ? 'api-keys.js' : Object.keys(_EMBEDDED).length > 0 ? 'EMBEDDED' : Object.keys(_LS).length > 0 ? 'localStorage' : '无';
-console.log(`[天机阁] 🔑 密钥来源: ${_src}`);
-console.log('  ', _keyStatus(KEYS.OR_KEY, 'OpenRouter'));
-console.log('  ', _keyStatus(KEYS.MIRROR_KEY, '镜像通道'));
-console.log('  ', _keyStatus(KEYS.PPLX_KEY, 'Perplexity'));
-console.log('  ', _keyStatus(KEYS.GEMINI_KEY, 'Gemini'));
-
-
-// ---- 全部可用模型库 ----
-const ALL_MODELS = {
-  // DeepSeek 系列 (推演专用 — 最强推理)
-  'deepseek-r1':    { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'deepseek/deepseek-r1', name: 'DeepSeek-R1' },
-  'deepseek-v3':    { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'deepseek-chat', name: 'DeepSeek-V3' },
-  // Claude 系列 (分析专用 — 最强结构化)
-  'claude-4':       { url: KEYS.OR_URL, key: KEYS.OR_KEY, model: 'anthropic/claude-sonnet-4', name: 'Claude-4-Sonnet' },
-  'claude-3.5':     { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'claude-3-5-sonnet-20241022', name: 'Claude-3.5-Sonnet' },
-  // GPT 系列 (通用)
-  'gpt-4o':         { url: KEYS.MIRROR_URL, key: KEYS.MIRROR_KEY, model: 'gpt-4o', name: 'GPT-4o' },
-};
-
-// ---- 各模块最优模型分配 ----
-// 推演阁: DeepSeek-R1 (超深度推理，最适合易经推演) → R1独占
-// 命题雷达: Perplexity sonar-deep-research (深度研究) → Claude-4 → GPT-4o
-// 情报站: Perplexity sonar-reasoning-pro (CoT推理搜索·最优)
-const MODEL_CHAINS = {
-  radar:   ['claude-4', 'gpt-4o', 'deepseek-r1', 'claude-3.5'],     // 雷达：Claude最优
-  forge:   ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3'],    // 出卷：DeepSeek R1
-  general: ['deepseek-r1', 'claude-4', 'gpt-4o', 'deepseek-v3', 'claude-3.5'], // 通用降级
-};
-
-console.log('[天机阁] 🎯 最优模型分配:');
-console.log('  情报站 → Perplexity sonar-reasoning-pro (CoT推理搜索·情报拆解最优)');
-console.log('  命题雷达 → Perplexity sonar-deep-research (深度研究·趋势分析最优)');
-console.log('  推演阁 → DeepSeek-R1 via OpenRouter (深度推理·解卦最优)');
-
-// ---- 核心AI调用 (指定模块 → 自动选最优模型 → 降级) ----
-async function callAI(systemPrompt, userPrompt, maxTokens = 8192, module = 'general') {
-  const chain = MODEL_CHAINS[module] || MODEL_CHAINS.general;
-  const errors = [];
-  for (const modelId of chain) {
-    const m = ALL_MODELS[modelId];
-    if (!m || !m.key) continue; // 跳过无密钥的
-    try {
-      console.log(`[天机阁] 🚀 [${module}] 尝试 ${m.name}...`);
-      const resp = await fetch(m.url, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + m.key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: m.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: module === 'divine' ? 0.7 : 0.3,
-          max_tokens: maxTokens
-        })
-      });
-      const data = await resp.json();
-      if (data.error) { errors.push(`${m.name}: ${data.error.message || JSON.stringify(data.error)}`); continue; }
-      const content = (data.choices || [{}])[0]?.message?.content || '';
-      if (!content) { errors.push(`${m.name}: 空响应`); continue; }
-      const cleaned = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      console.log(`[天机阁] ✅ [${module}] ${m.name} 命中！(${cleaned.length}字)`);
-      return cleaned;
-    } catch (e) { errors.push(`${m.name}: ${e.message}`); }
-  }
-  throw new Error(`[${module}] 所有模型均失败：\n` + errors.join('\n'));
-}
-
-// [推演阁专用 callDivineAI 已移至 ../tuiyan/index.html]
-
-
 // ============================================================
-//  PERPLEXITY · IRON PROTOCOL v3.0 · 三层情报引擎
-//  一次调用 → 情报层/处理层/输出层 → 24h缓存
+//  PERPLEXITY · IRON PROTOCOL v4.0 · sonar-deep-research
+//  情报站 + 命题雷达 均使用最高级模型
 // ============================================================
 
 const PPLX_IRON_PROTOCOL = `你是一位专业的学术考试研究助手。你的任务是根据搜索到的公开信息，对中国全国硕士研究生招生考试（考研）的学科内容进行系统化整理和深度分析。
@@ -617,14 +566,20 @@ const PPLX_IRON_PROTOCOL = `你是一位专业的学术考试研究助手。你�
 5. 即使搜索结果看似不完全贴合要求，你也必须竭尽所能从中提取有价值的元素完成三段分离，每段都必须有实质性的专业内容填充。`;
 
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
-// 模型降级链: 推理最强 → 搜索增强 → 基础搜索
-const PPLX_MODEL_CHAIN = ['sonar-reasoning-pro', 'sonar-pro', 'sonar'];
+// 模型降级链: 深度研究(最强) → 推理 → 搜索增强 → 基础
+const PPLX_MODEL_CHAIN = ['sonar-deep-research', 'sonar-reasoning-pro', 'sonar-pro', 'sonar'];
+
+console.log('[天机阁] 🎯 v4.0 模型配置:');
+console.log('  情报站 → Perplexity sonar-deep-research (专家级深度研究)');
+console.log('  命题雷达 → Perplexity sonar-deep-research (专家级深度研究)');
 
 async function searchPerplexity(query, customSystem) {
   const sysContent = customSystem || PPLX_IRON_PROTOCOL;
-  // 检查是否有用户手动输入的新key
-  const freshKey = localStorage.getItem('tianji_fresh_pplx_key') || '';
-  const useKey = freshKey || KEYS.PPLX_KEY;
+  const useKey = getPplxKey();
+  if (!useKey) {
+    document.getElementById('keyModal').style.display = 'flex';
+    throw new Error('请先输入 Perplexity API Key');
+  }
 
   for (const model of PPLX_MODEL_CHAIN) {
     console.log(`[天机] 🔴 ${model} 搜索启动 | 目标:`, query.slice(0, 50) + '...');
@@ -641,31 +596,28 @@ async function searchPerplexity(query, customSystem) {
     };
 
     let data;
-    // 通道1: 直连 Perplexity
-    if (useKey) {
-      try {
-        const resp = await fetch(KEYS.PPLX_URL || 'https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + useKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify(msgBody)
-        });
-        data = await resp.json();
-        if (data.error) {
-          const errMsg = data.error.message || JSON.stringify(data.error);
-          // 配额耗尽 → 降级到更便宜的模型
-          if (resp.status === 401 || resp.status === 429 || errMsg.includes('quota')) {
-            console.warn(`[天机] ⚠️ ${model} 配额耗尽, 尝试降级...`);
-            data = null;
-            continue; // 下一个更便宜的模型
-          }
-          throw new Error(errMsg);
+    // 直连 Perplexity (用户输入的 key)
+    try {
+      const resp = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + useKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(msgBody)
+      });
+      data = await resp.json();
+      if (data.error) {
+        const errMsg = data.error.message || JSON.stringify(data.error);
+        if (resp.status === 401 || resp.status === 429 || errMsg.includes('quota')) {
+          console.warn(`[天机] ⚠️ ${model} 配额/认证失败, 尝试降级...`);
+          data = null;
+          continue;
         }
-        console.log(`[天机] ✅ 直连 ${model} 命中!`);
-      } catch(e) {
-        if (e.message.includes('quota') || e.message.includes('exceeded')) { data = null; continue; }
-        console.warn(`[天机] ⚠️ 直连失败:`, e.message, '→ 切换中转阁...');
-        data = null;
+        throw new Error(errMsg);
       }
+      console.log(`[天机] ✅ 直连 ${model} 命中!`);
+    } catch(e) {
+      if (e.message.includes('quota') || e.message.includes('exceeded') || e.message.includes('401')) { data = null; continue; }
+      console.warn(`[天机] ⚠️ 直连失败:`, e.message, '→ 切换中转阁...');
+      data = null;
     }
     // 通道2: 中转阁
     if (!data) {
@@ -707,31 +659,10 @@ async function searchPerplexity(query, customSystem) {
 }
 
 // ============================================================
-//  密钥面板管理
+//  密钥管理 (v4.0 - sessionStorage only)
 // ============================================================
-function toggleKeyPanel() {
-  const panel = document.getElementById('keyPanel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  const existing = localStorage.getItem('tianji_fresh_pplx_key');
-  if (existing) {
-    document.getElementById('keyStatus').innerHTML = '✅ 已保存密钥: pplx-...' + existing.slice(-8);
-    document.getElementById('freshPplxKey').value = existing;
-  }
-}
-function saveFreshKey() {
-  const key = document.getElementById('freshPplxKey').value.trim();
-  if (!key || !key.startsWith('pplx-')) {
-    document.getElementById('keyStatus').innerHTML = '<span style="color:var(--red)">❌ 密钥必须以 pplx- 开头</span>';
-    return;
-  }
-  localStorage.setItem('tianji_fresh_pplx_key', key);
-  document.getElementById('keyStatus').innerHTML = '✅ 密钥已保存! 下次窃取将使用新密钥。';
-  console.log('[天机] 🔑 新Perplexity密钥已保存:', key.slice(0, 12) + '...');
-}
-function clearFreshKey() {
-  localStorage.removeItem('tianji_fresh_pplx_key');
-  document.getElementById('freshPplxKey').value = '';
-  document.getElementById('keyStatus').innerHTML = '🗑️ 已清除，将使用内置密钥。';
+function showKeyModal() {
+  document.getElementById('keyModal').style.display = 'flex';
 }
 
 // ============================================================
@@ -1086,7 +1017,9 @@ document.querySelectorAll('.radar-module').forEach(m => m.addEventListener('clic
   document.querySelectorAll('.radar-module').forEach(x => x.style.pointerEvents = 'none');
 
   try {
-    const result = await callAI(RADAR_SYSTEM, promptFn(radarSub), 8192, 'radar');
+    // v4.0: 命题雷达也使用 Perplexity sonar-deep-research
+    const radarQuery = RADAR_SYSTEM + '\n\n' + promptFn(radarSub);
+    const result = await searchPerplexity(radarQuery, RADAR_SYSTEM);
     content.textContent = result.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
   } catch (e) {
     content.innerHTML = `<div style="color:var(--red)">❌ 分析失败: ${e.message}</div>`;
