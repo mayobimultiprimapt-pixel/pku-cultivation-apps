@@ -1,37 +1,42 @@
 /**
- * 论道殿 · 诸天舌战 — 主控制器
+ * 论道殿 · 双轨四科 — 主控制器
  * ========================================
- * 接案 → 破(识别谬误) → 立(选原理) → 论证链(关键词拼) → 判决
+ * 四科入口 + 双轨自动路由 + 金库穿透 + 增量题库
+ * 101/408 → 法庭模式 (8案)
+ * 201/301 → 骗子酒馆 (10轮)
  */
 
 const CourtApp = (() => {
-  let mode = 'politics';
+  let currentSubject = '101';
   let gameMode = 'court'; // 'court' or 'tavern'
   let breakHand = [];
   let buildPool = [];
 
   // ─── 初始化 ─────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.mode-card').forEach(btn => {
+    // 四科选择
+    document.querySelectorAll('.subject-card').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.mode-card').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.subject-card').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        mode = btn.dataset.mode;
+        currentSubject = btn.dataset.subject;
+        gameMode = btn.dataset.mode;
+        // Update start button
+        const startBtn = document.getElementById('btnStart');
+        if (gameMode === 'tavern') {
+          startBtn.textContent = '🍺 进入骗子酒馆';
+          startBtn.className = 'start-btn tavern-start';
+        } else {
+          startBtn.textContent = '⚡ 升堂开审';
+          startBtn.className = 'start-btn';
+        }
       });
     });
+
     document.getElementById('btnStart').addEventListener('click', startTrial);
 
-    // Game mode buttons
-    document.querySelectorAll('.gamemode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.gamemode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        gameMode = btn.dataset.gamemode;
-        // Update start button text
-        document.getElementById('btnStart').textContent =
-          gameMode === 'tavern' ? '🍺 进入酒馆' : '⚡ 升堂开审';
-      });
-    });
+    // 金库状态探测
+    detectVault();
 
     // 每日更新
     if (typeof DailyUpdate !== 'undefined') {
@@ -42,16 +47,103 @@ const CourtApp = (() => {
         }
       });
     }
+
+    // 粒子背景
+    initParticles();
   });
 
-  // ─── 开始庭审 ───────────────────────────────────────
+  // ─── 金库探测 ───────────────────────────────────────
+  function detectVault() {
+    ['101','201','301','408'].forEach(code => {
+      const count = CaseDB.getVaultCount(code);
+      const el = document.getElementById('vault' + code);
+      if (el) {
+        if (count > 0) {
+          el.textContent = `🔥 金库${count}道实弹`;
+          el.className = 'sc-vault-tag vault-active';
+        } else {
+          el.textContent = '📡 使用静态题库';
+          el.className = 'sc-vault-tag vault-static';
+        }
+      }
+    });
+    // 更新总状态
+    const total = ['101','201','301','408'].reduce((s,c) => s + CaseDB.getVaultCount(c), 0);
+    const statusEl = document.getElementById('vaultStatus');
+    if (statusEl) {
+      if (total > 0) {
+        statusEl.innerHTML = `<span class="vs-icon">🔥</span> 金库已装填 ${total} 道实弹考题 · 实时投喂中`;
+        statusEl.className = 'start-vault-status vault-loaded';
+      } else {
+        statusEl.innerHTML = `<span class="vs-icon">📡</span> 金库暂无动态题 · 使用静态精选题库`;
+        statusEl.className = 'start-vault-status';
+      }
+    }
+  }
+
+  // ─── 粒子背景 ───────────────────────────────────────
+  function initParticles() {
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize(); window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random()-0.5)*0.3,
+        vy: (Math.random()-0.5)*0.3,
+        r: Math.random()*2+0.5,
+        a: Math.random()*0.3+0.1,
+        color: ['#f59e0b','#3b82f6','#22c55e','#ef4444','#8b5cf6'][Math.floor(Math.random()*5)]
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.a;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+      // Lines between close particles
+      for (let i=0;i<particles.length;i++) {
+        for (let j=i+1;j<particles.length;j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = particles[i].color;
+            ctx.globalAlpha = 0.06 * (1 - dist/150);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  // ─── 开始 ───────────────────────────────────────
   function startTrial() {
     if (gameMode === 'tavern') {
-      // Route to Liar's Tavern
-      TavernUI.start(mode);
+      TavernUI.start(currentSubject);
       return;
     }
-    CourtEngine.init(mode);
+    CourtEngine.init(currentSubject);
     show('courtScreen');
     loadCase();
   }
@@ -62,11 +154,13 @@ const CourtApp = (() => {
     const S = CourtEngine.getState();
     if (!c) { showResults(); return; }
 
-    document.getElementById('caseSubject').textContent = mode === 'english' ? '英语推断' : '政治论述';
+    const info = CaseDB.getSubjectInfo(currentSubject);
+    document.getElementById('caseSubject').textContent = info.name;
     document.getElementById('caseRound').innerHTML = `案件 ${S.caseIndex+1}/${S.totalCases}` +
       (document.getElementById('dailyBadge')?.outerHTML || '');
     document.getElementById('dossierDiff').textContent = '★'.repeat(c.diff) + '☆'.repeat(5-c.diff);
-    document.getElementById('dossierBadge').textContent = mode === 'english' ? '📜 Contract' : '📋 卷宗';
+    document.getElementById('dossierBadge').textContent = currentSubject === '201' ? '📜 Contract' :
+      currentSubject === '408' ? '💻 Case' : '📋 卷宗';
     document.getElementById('dossierTitle').textContent = c.title;
     document.getElementById('dossierText').textContent = c.text;
 
@@ -114,7 +208,6 @@ const CourtApp = (() => {
     setPhase('break');
     setSpeech('"原被告各执一词。请指出他们论述中的逻辑谬误！"');
 
-    // 显示谬误卡
     const battle = document.getElementById('panelBattle');
     const fallacies = c.breakPhase.fallacies;
     battle.innerHTML = `
@@ -133,11 +226,8 @@ const CourtApp = (() => {
       </div>
     `;
 
-    // 生成手牌（破谬卡）
     breakHand = CourtEngine.generateBreakHand(c);
     renderBreakHand();
-
-    // 设置按钮
     setActionBtn('⚡ 提交破局', () => submitBreakPhase());
   }
 
@@ -176,9 +266,7 @@ const CourtApp = (() => {
     const result = CourtEngine.submitBreak(S.breakSelected);
     updateStats();
 
-    // 显示结果
     const battle = document.getElementById('panelBattle');
-    const c = CourtEngine.getCase();
     battle.innerHTML = `
       <div class="battle-title"><span class="bt-icon">🔨</span> 破局结果</div>
       <div class="phase-content">
@@ -258,15 +346,12 @@ const CourtApp = (() => {
 
   function pickBuildCard(name) {
     const S = CourtEngine.getState();
-    const c = CourtEngine.getCase();
-    // 找到第一个空槽
     const emptyIdx = S.buildSelected.indexOf('');
     if (emptyIdx < 0) return;
 
     S.buildSelected[emptyIdx] = name;
     document.getElementById(`slotVal-${emptyIdx}`).textContent = name;
     document.getElementById(`slot-${emptyIdx}`).classList.add('filled');
-
     renderBuildHand();
   }
 
@@ -356,7 +441,6 @@ const CourtApp = (() => {
     document.getElementById(`cs-${idx}`).textContent = keyword;
     document.getElementById(`cs-${idx}`).classList.add('filled');
 
-    // Mark chip as used
     document.querySelectorAll('.chain-chip').forEach(ch => {
       if (ch.textContent === keyword) ch.classList.add('used');
     });
@@ -371,19 +455,16 @@ const CourtApp = (() => {
     const result = CourtEngine.submitChain(S.chainSelected);
     updateStats();
 
-    // Show results on chain slots
     result.results.forEach((r, i) => {
       const el = document.getElementById(`cs-${i}`);
       el.classList.add(r.isCorrect ? 'correct' : 'wrong');
       if (!r.isCorrect) el.title = `应为: ${r.expected}`;
     });
 
-    // Mark correct/wrong chips
     document.querySelectorAll('.chain-chip').forEach(ch => {
       if (c.chainPhase.correct.includes(ch.textContent)) ch.classList.add('correct');
     });
 
-    // Add verdict button
     const battle = document.getElementById('panelBattle');
     battle.innerHTML += `
       <div style="text-align:center;margin-top:.5rem">
@@ -401,7 +482,7 @@ const CourtApp = (() => {
       : '"尚有不足，但已展现潜力。"');
   }
 
-  // ═══ Phase 5: 完形填空 Bonus ═════════════════════════
+  // ═══ Phase 5: 完形填空 ═════════════════════════════
   function enterCloze() {
     const c = CourtEngine.getCase();
     if (!c || !c.clozePhase) { showVerdict(); return; }
@@ -411,17 +492,8 @@ const CourtApp = (() => {
     const cloze = c.clozePhase;
     CourtEngine.getState().clozeSelected = new Array(cloze.blanks.length).fill('');
 
-    // 渲染文章 + 空格
-    let passageHtml = cloze.passage;
-    cloze.blanks.forEach((_, i) => {
-      passageHtml = passageHtml.replace(
-        `___①②③④⑤⑥⑦⑧⑨`[i] ? `___${'①②③④⑤⑥⑦⑧⑨'[i]}___` : `___${i+1}___`,
-        `<span class="cloze-blank" id="cb-${i}" onclick="CourtApp.clearCloze(${i})">①②③④⑤⑥⑦⑧⑨'[i] || (i+1)</span>`
-      );
-    });
-    // Fix: use proper unicode circles
     const circles = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
-    passageHtml = cloze.passage;
+    let passageHtml = cloze.passage;
     cloze.blanks.forEach((_, i) => {
       passageHtml = passageHtml.replace(
         `___${circles[i]}___`,
@@ -429,7 +501,6 @@ const CourtApp = (() => {
       );
     });
 
-    // 打乱选项
     const allOpts = CaseDB.shuffle([...cloze.blanks, ...cloze.distractors]);
 
     const battle = document.getElementById('panelBattle');
@@ -461,7 +532,6 @@ const CourtApp = (() => {
     const el = document.getElementById(`cb-${idx}`);
     if (el) { el.textContent = word; el.classList.add('filled'); }
 
-    // Mark option as used
     document.querySelectorAll('.cloze-opt').forEach(opt => {
       if (opt.dataset.word === word) opt.classList.add('used');
     });
@@ -501,7 +571,6 @@ const CourtApp = (() => {
       }
     });
 
-    // Mark correct options
     document.querySelectorAll('.cloze-opt').forEach(opt => {
       if (blanks.includes(opt.dataset.word)) opt.classList.add('correct');
     });
@@ -555,6 +624,7 @@ const CourtApp = (() => {
   // ═══ 结算 ═══════════════════════════════════════════
   function showResults() {
     const stats = CourtEngine.getFinalStats();
+    const info = CaseDB.getSubjectInfo(currentSubject);
     show('resultScreen');
     document.getElementById('rGrade').textContent = stats.grade;
     document.getElementById('rTitle').textContent = stats.title;
@@ -563,7 +633,12 @@ const CourtApp = (() => {
     document.getElementById('rBuild').textContent = stats.buildSuccess;
     document.getElementById('rChain').textContent = stats.chainSuccess;
     document.getElementById('rCombo').textContent = stats.maxCombo;
-    document.getElementById('rHp').textContent = stats.playerHp + '/6';
+    document.getElementById('rHp').textContent = stats.playerHp + '/8';
+    const badge = document.getElementById('rSubjectBadge');
+    if (badge) {
+      badge.textContent = `${info.icon} ${info.label}`;
+      badge.style.color = info.color;
+    }
   }
 
   // ═══ UI 工具 ═══════════════════════════════════════
@@ -571,8 +646,8 @@ const CourtApp = (() => {
     const S = CourtEngine.getState();
     document.getElementById('comboVal').textContent = S.combo;
     document.getElementById('scoreVal').textContent = S.score;
-    document.getElementById('playerHp').style.width = (S.playerHp / 6 * 100) + '%';
-    document.getElementById('judgeHp').style.width = (S.judgeHp / 6 * 100) + '%';
+    document.getElementById('playerHp').style.width = (S.playerHp / 8 * 100) + '%';
+    document.getElementById('judgeHp').style.width = (S.judgeHp / 8 * 100) + '%';
     document.getElementById('playerHpN').textContent = S.playerHp;
     document.getElementById('judgeHpN').textContent = S.judgeHp;
   }
@@ -581,7 +656,7 @@ const CourtApp = (() => {
     document.querySelectorAll('.pi-step').forEach(el => {
       el.classList.remove('active','done');
       const p = el.dataset.phase;
-      const order = ['read','break','build','chain'];
+      const order = ['read','break','build','chain','cloze'];
       if (order.indexOf(p) < order.indexOf(phase)) el.classList.add('done');
       if (p === phase) el.classList.add('active');
     });
@@ -609,7 +684,6 @@ const CourtApp = (() => {
       const c = CourtEngine.getCase();
       btn.disabled = S.chainSelected.length < (c?.chainPhase.correct.length || 3);
     } else if (S.phase === 'cloze') {
-      const c = CourtEngine.getCase();
       btn.disabled = S.clozeSelected?.includes('') ?? true;
     }
   }

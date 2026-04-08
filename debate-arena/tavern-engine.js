@@ -1,13 +1,13 @@
 /**
- * 骗子酒馆 · 游戏引擎
+ * 骗子酒馆 · 游戏引擎 v2.0
  * ========================================
- * 6局制 + 俄罗斯轮盘 + 信誉值
+ * 10局制 + 俄罗斯轮盘 + 信誉值 + 四科支持
  */
 const TavernEngine = (() => {
   let S = null;
 
   function init(subject) {
-    const rounds = TavernData.buildRounds(subject, 6);
+    const rounds = TavernData.buildRounds(subject, 10);
     S = {
       subject,
       rounds,
@@ -24,17 +24,16 @@ const TavernEngine = (() => {
       survived: 0,
       correctCalls: 0,
       wrongCalls: 0,
-      learnings: [], // 学到的知识点
+      learnings: [],
       // Meta
       finished: false,
-      phase:'intro', // intro, claim, decide, reveal, roulette, result
+      phase:'intro',
       timerSeconds: 15,
     };
     return S;
   }
 
   function buildChambers() {
-    // 6 slots, randomly place 1 bullet
     const c = [false,false,false,false,false,false];
     c[Math.floor(Math.random()*6)] = true;
     return c;
@@ -51,11 +50,6 @@ const TavernEngine = (() => {
     return TavernData.getNPC(r.speaker);
   }
 
-  /**
-   * Player makes their decision
-   * @param {string} action - 'believe' or 'liar'
-   * @returns {object} result
-   */
   function decide(action) {
     const r = getCurrentRound();
     if(!r) return null;
@@ -72,14 +66,12 @@ const TavernEngine = (() => {
 
     if(action === 'believe') {
       if(!r.isLie) {
-        // Correctly believed truth
         result.correct = true;
         S.credibility += 1;
         S.score += 10;
         S.correctCalls++;
         result.explanation = '✅ 他说的是真话，你的判断正确。';
       } else {
-        // Believed a lie!
         result.correct = false;
         S.credibility -= 2;
         S.wrongCalls++;
@@ -87,9 +79,8 @@ const TavernEngine = (() => {
         result.explanation = `❌ 你被骗了！\n${r.truth}`;
         S.learnings.push(r.truth);
       }
-    } else { // 'liar'
+    } else {
       if(r.isLie) {
-        // Correctly identified liar
         result.correct = true;
         S.credibility += 3;
         S.score += 30;
@@ -97,7 +88,6 @@ const TavernEngine = (() => {
         result.explanation = `🎯 识破骗子！\n${r.truth}`;
         S.learnings.push(r.truth);
       } else {
-        // Wrongly accused truth-teller
         result.correct = false;
         S.credibility -= 3;
         S.wrongCalls++;
@@ -109,10 +99,6 @@ const TavernEngine = (() => {
     return result;
   }
 
-  /**
-   * Pull the trigger
-   * @returns {object} { hit: boolean, chamberIndex: number }
-   */
   function pullTrigger() {
     if(!S) return { hit:true };
     S.rouletteCount++;
@@ -125,7 +111,7 @@ const TavernEngine = (() => {
       S.finished = true;
     } else {
       S.survived++;
-      S.credibility += 1; // survival bonus
+      S.credibility += 1;
       S.score += 5;
     }
 
@@ -140,16 +126,18 @@ const TavernEngine = (() => {
       return false;
     }
     // Adjust timer for difficulty
-    if(S.current >= 4) S.timerSeconds = 10;
+    if(S.current >= 6) S.timerSeconds = 10;
+    if(S.current >= 8) S.timerSeconds = 8;
     return true;
   }
 
   function getGrade() {
     if(!S) return { title:'韭菜', qi:0 };
     let title, qi, multiplier;
-    if(S.credibility >= 15) { title = '🏆 测谎大师'; qi = 60; multiplier = 2; }
-    else if(S.credibility >= 10) { title = '⭐ 老练酒客'; qi = 45; multiplier = 1.5; }
-    else if(S.credibility >= 5) { title = '🍺 常客'; qi = 25; multiplier = 1; }
+    if(S.credibility >= 20) { title = '🏆 测谎大师'; qi = 80; multiplier = 2; }
+    else if(S.credibility >= 15) { title = '⭐ 老练酒客'; qi = 60; multiplier = 1.5; }
+    else if(S.credibility >= 10) { title = '🍺 常客'; qi = 40; multiplier = 1.2; }
+    else if(S.credibility >= 5) { title = '🍺 新手'; qi = 25; multiplier = 1; }
     else { title = '💀 韭菜'; qi = 10; multiplier = 0.5; }
     qi = Math.round(qi * multiplier);
     return { title, qi, multiplier };

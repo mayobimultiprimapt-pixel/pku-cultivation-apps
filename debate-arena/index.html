@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>论道殿 · 诸天舌战 — 北大考研修仙应用集</title>
-  <meta name="description" content="赛博法庭庭审模拟器 — 政治论述+英语推断卡牌对战">
+  <title>论道殿 · 双轨四科推演 — 北大考研修仙应用集</title>
+  <meta name="description" content="赛博法庭 × 骗子酒馆 · 双轨四科全覆盖 · 金库实时投喂最新考题">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -23,39 +23,57 @@
     <!-- ═══ 开始界面 ═══ -->
     <section id="startScreen" class="screen start-screen">
       <div class="start-bg"></div>
+      <!-- 粒子背景 -->
+      <canvas id="particleCanvas" class="particle-canvas"></canvas>
       <div class="start-content">
         <div class="court-seal">⚖️</div>
-        <h1 class="start-title">论道殿 · 诸天舌战</h1>
-        <p class="start-sub">赛博最高法庭 · 以理破局</p>
-        <!-- 科目选择 -->
-        <div class="start-modes">
-          <button class="mode-card active" data-mode="politics" id="mPol">
-            <div class="mc-badge">101</div>
-            <span class="mc-icon">🏛️</span>
-            <span class="mc-name">政治论述</span>
-            <span class="mc-desc">时政案件 · 原理破局 · 申论对策</span>
+        <h1 class="start-title">论道殿 · 双轨四科</h1>
+        <p class="start-sub">法庭破局 × 骗子酒馆 · 金库实弹投喂</p>
+        
+        <!-- 四科选择 -->
+        <div class="subject-grid" id="subjectGrid">
+          <button class="subject-card active s-101" data-subject="101" data-mode="court" id="sub101">
+            <div class="sc-glow"></div>
+            <div class="sc-badge">101</div>
+            <span class="sc-icon">🏛️</span>
+            <span class="sc-name">政治论述</span>
+            <span class="sc-mode">⚖️ 法庭模式</span>
+            <span class="sc-desc">时政破局 · 原理庭辩 · 完形论证</span>
+            <div class="sc-vault-tag" id="vault101">📡 检测金库中...</div>
           </button>
-          <button class="mode-card" data-mode="english" id="mEng">
-            <div class="mc-badge">201</div>
-            <span class="mc-icon">📜</span>
-            <span class="mc-name">英语推断</span>
-            <span class="mc-desc">段落仲裁 · 谬误击碎 · 逻辑锁定</span>
+          <button class="subject-card s-201" data-subject="201" data-mode="tavern" id="sub201">
+            <div class="sc-glow"></div>
+            <div class="sc-badge">201</div>
+            <span class="sc-icon">📜</span>
+            <span class="sc-name">英语推断</span>
+            <span class="sc-mode">🍺 骗子酒馆</span>
+            <span class="sc-desc">词义辨析 · 阅读陷阱 · 真假排雷</span>
+            <div class="sc-vault-tag" id="vault201">📡 检测金库中...</div>
+          </button>
+          <button class="subject-card s-301" data-subject="301" data-mode="tavern" id="sub301">
+            <div class="sc-glow"></div>
+            <div class="sc-badge">301</div>
+            <span class="sc-icon">📐</span>
+            <span class="sc-name">数学排雷</span>
+            <span class="sc-mode">🍺 骗子酒馆</span>
+            <span class="sc-desc">公式陷阱 · 定理辨伪 · 计算排雷</span>
+            <div class="sc-vault-tag" id="vault301">📡 检测金库中...</div>
+          </button>
+          <button class="subject-card s-408" data-subject="408" data-mode="court" id="sub408">
+            <div class="sc-glow"></div>
+            <div class="sc-badge">408</div>
+            <span class="sc-icon">💻</span>
+            <span class="sc-name">计算机法庭</span>
+            <span class="sc-mode">⚖️ 法庭模式</span>
+            <span class="sc-desc">算法庭审 · 数据结构 · 系统辩护</span>
+            <div class="sc-vault-tag" id="vault408">📡 检测金库中...</div>
           </button>
         </div>
-        <!-- 玩法模式选择 -->
-        <div class="start-gamemodes">
-          <button class="gamemode-btn active" data-gamemode="court" id="gmCourt">
-            <span class="gm-icon">⚖️</span>
-            <span class="gm-name">法庭模式</span>
-            <span class="gm-desc">破→立→论证→完形 · 拖拽卡牌 · 系统学习</span>
-          </button>
-          <button class="gamemode-btn" data-gamemode="tavern" id="gmTavern">
-            <span class="gm-icon">🍺</span>
-            <span class="gm-name">骗子酒馆</span>
-            <span class="gm-desc">限时挑战 · 找出骗子 · 高风险高回报</span>
-          </button>
-        </div>
+
         <button class="start-btn" id="btnStart">⚡ 升堂开审</button>
+        <div class="start-vault-status" id="vaultStatus">
+          <span class="vs-icon">🔄</span> 正在穿透金库读取最新考题...
+        </div>
       </div>
     </section>
 
@@ -68,7 +86,7 @@
           <div class="judge-mini">🐲</div>
           <div class="ch-info">
             <div class="ch-title">论道殿 · <span id="caseSubject">政治论述</span></div>
-            <div class="ch-round" id="caseRound">案件 1/6 <span id="dailyBadge" class="daily-badge"></span></div>
+            <div class="ch-round" id="caseRound">案件 1/8 <span id="dailyBadge" class="daily-badge"></span></div>
           </div>
         </div>
         <div class="ch-center">
@@ -88,8 +106,8 @@
           <div class="stat-gem"><span class="sg-icon">🔥</span><span class="sg-val" id="comboVal">0</span></div>
           <div class="stat-gem accent"><span class="sg-icon">✦</span><span class="sg-val" id="scoreVal">0</span></div>
           <div class="hp-mini">
-            <div class="hpm-row"><span class="hpm-label">你</span><div class="hpm-track"><div class="hpm-fill player" id="playerHp" style="width:100%"></div></div><span class="hpm-num" id="playerHpN">6</span></div>
-            <div class="hpm-row"><span class="hpm-label">官</span><div class="hpm-track"><div class="hpm-fill judge" id="judgeHp" style="width:100%"></div></div><span class="hpm-num" id="judgeHpN">6</span></div>
+            <div class="hpm-row"><span class="hpm-label">你</span><div class="hpm-track"><div class="hpm-fill player" id="playerHp" style="width:100%"></div></div><span class="hpm-num" id="playerHpN">8</span></div>
+            <div class="hpm-row"><span class="hpm-label">官</span><div class="hpm-track"><div class="hpm-fill judge" id="judgeHp" style="width:100%"></div></div><span class="hpm-num" id="judgeHpN">8</span></div>
           </div>
         </div>
       </header>
@@ -141,6 +159,7 @@
         <div class="result-seal">⚖️</div>
         <div class="result-grade" id="rGrade">S</div>
         <h2 id="rTitle">完美庭审！</h2>
+        <div class="result-subject-badge" id="rSubjectBadge">101 政治</div>
         <div class="result-grid">
           <div class="rg"><span class="rg-l">总分</span><span class="rg-v" id="rScore">0</span></div>
           <div class="rg"><span class="rg-l">破谬成功</span><span class="rg-v" id="rBreak">0</span></div>
@@ -157,6 +176,7 @@
     </section>
   </div>
 
+  <script src="../shared/vault-loader.js"></script>
   <script src="debate-data.js"></script>
   <script src="daily-update.js"></script>
   <script src="debate-engine.js"></script>

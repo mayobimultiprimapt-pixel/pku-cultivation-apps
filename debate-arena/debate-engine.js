@@ -1,29 +1,31 @@
 /**
- * 论道殿 · 诸天舌战 — 三阶段法庭引擎
+ * 论道殿 · 双轨四科 — 法庭引擎
  * ========================================
- * Phase 1: 接案(read) → Phase 2: 破(break) → Phase 3: 立(build) → Phase 4: 论证链(chain)
+ * Phase: 接案(read) → 破(break) → 立(build) → 论证链(chain) → 完形(cloze)
+ * HP提升至8，适配四科
  */
 
 const CourtEngine = (() => {
   let S = {};
 
-  function init(mode) {
+  function init(subject) {
     S = {
-      mode,
-      cases: CaseDB.getCases(mode),
+      subject,
+      cases: CaseDB.getCases(subject),
       caseIndex: 0,
-      phase: 'read',    // read | break | build | chain | verdict
+      phase: 'read',
       score: 0,
       combo: 0,
       maxCombo: 0,
-      playerHp: 6,
-      judgeHp: 6,
+      playerHp: 8,
+      judgeHp: 8,
       breakSuccess: 0,
       buildSuccess: 0,
       chainSuccess: 0,
-      breakSelected: [],  // 破阶段选中的破谬卡
-      buildSelected: [],  // 立阶段选中的原理/政策卡
-      chainSelected: [],  // 论证链选中的关键词
+      breakSelected: [],
+      buildSelected: [],
+      chainSelected: [],
+      clozeSelected: [],
       totalCases: 0,
     };
     S.totalCases = S.cases.length;
@@ -35,7 +37,6 @@ const CourtEngine = (() => {
 
   // ═══ Phase 2: 破 — 识别谬误 ═══
   function generateBreakHand(c) {
-    // 游戏手牌 = 正确破谬卡 + 干扰卡
     const correctTypes = c.breakPhase.fallacies.map(f => f.type);
     const allBreak = CaseDB.getBreakCards();
     const correct = allBreak.filter(b => correctTypes.includes(b.id));
@@ -144,7 +145,7 @@ const CourtEngine = (() => {
       S.combo = 0;
     }
     S.score += scoreGained;
-    S.phase = 'verdict';
+    S.phase = 'cloze';
 
     return { results, allCorrect, scoreGained };
   }
@@ -156,6 +157,7 @@ const CourtEngine = (() => {
     S.breakSelected = [];
     S.buildSelected = [];
     S.chainSelected = [];
+    S.clozeSelected = [];
 
     if (S.caseIndex >= S.cases.length || S.playerHp <= 0 || S.judgeHp <= 0) {
       return { finished: true };
@@ -166,12 +168,12 @@ const CourtEngine = (() => {
   // ═══ 最终统计 ═══
   function getFinalStats() {
     let grade = 'D', title = '道心崩碎...';
-    if (S.score >= 600) { grade = 'SSS'; title = '千古名判！'; }
-    else if (S.score >= 450) { grade = 'SS'; title = '破局宗师！'; }
-    else if (S.score >= 350) { grade = 'S'; title = '逻辑猎手！'; }
-    else if (S.score >= 250) { grade = 'A'; title = '主理翘楚！'; }
-    else if (S.score >= 150) { grade = 'B'; title = '初识法理'; }
-    else if (S.score >= 80) { grade = 'C'; title = '尚需磨砺'; }
+    if (S.score >= 800) { grade = 'SSS'; title = '千古名判！'; }
+    else if (S.score >= 600) { grade = 'SS'; title = '破局宗师！'; }
+    else if (S.score >= 450) { grade = 'S'; title = '逻辑猎手！'; }
+    else if (S.score >= 350) { grade = 'A'; title = '主理翘楚！'; }
+    else if (S.score >= 250) { grade = 'B'; title = '初识法理'; }
+    else if (S.score >= 150) { grade = 'C'; title = '尚需磨砺'; }
 
     return {
       grade, title,

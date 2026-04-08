@@ -1,21 +1,22 @@
 /**
- * 骗子酒馆 · UI 渲染器
+ * 骗子酒馆 · UI 渲染器 v2.0
  * ========================================
  * 酒馆桌面 → NPC发言 → 判定 → 俄罗斯轮盘 → 结算
+ * 支持四科 + 10轮制
  */
 const TavernUI = (() => {
   let timerInterval = null;
-  let subject = 'politics';
+  let subject = '101';
 
   function start(sub) {
-    subject = sub || 'politics';
+    subject = sub || '101';
     TavernEngine.init(subject);
     buildTavernDOM();
     showIntro();
   }
 
   function buildTavernDOM() {
-    // Get or create tavern screen
+    const info = CaseDB.getSubjectInfo(subject);
     let screen = document.getElementById('tavernScreen');
     if(!screen) {
       screen = document.createElement('section');
@@ -29,8 +30,8 @@ const TavernUI = (() => {
 
       <!-- HUD top -->
       <div class="tv-hud">
-        <div class="tv-round">第 <span id="tvRound">1</span>/<span id="tvTotal">6</span> 局</div>
-        <div class="tv-title">🍺 骗子酒馆</div>
+        <div class="tv-round">第 <span id="tvRound">1</span>/<span id="tvTotal">10</span> 局</div>
+        <div class="tv-title">🍺 骗子酒馆 · <span style="color:${info.color}">${info.icon} ${info.name}</span></div>
         <div class="tv-lives" id="tvLives">❤️❤️❤️❤️❤️❤️</div>
       </div>
 
@@ -39,6 +40,7 @@ const TavernUI = (() => {
         <div class="tv-intro-card">
           <div class="tv-intro-icon">🍺</div>
           <h2>欢迎来到骗子酒馆</h2>
+          <div class="tv-intro-subject" style="color:${info.color};font-size:.9rem;font-weight:700;margin:.3rem 0">${info.icon} ${info.label} · 排雷挑战</div>
           <p>三位酒客将轮流说出考研知识点<br/>有的是真话，有的是骗子编的假话</p>
           <div class="tv-npc-intro">
             <div class="tv-npc-chip"><span>🦊</span> 狐教授 <small>油滑</small></div>
@@ -46,6 +48,7 @@ const TavernUI = (() => {
             <div class="tv-npc-chip"><span>🐯</span> 虎掌柜 <small>豪迈</small></div>
           </div>
           <p class="tv-intro-warn">⚠️ 判断错误 → 拿起左轮，朝自己扣扳机</p>
+          <p class="tv-intro-rounds">📊 本轮: 10局 · 后期缩短时限 · 难度递增</p>
           <button class="tv-btn tv-btn-gold" onclick="TavernUI.beginRounds()">入座开局</button>
         </div>
       </div>
@@ -77,22 +80,18 @@ const TavernUI = (() => {
 
         <!-- Claim card area -->
         <div class="tv-claim-area hidden" id="tvClaimArea">
-          <!-- Active speaker portrait -->
           <div class="tv-speaker" id="tvSpeaker">
             <div class="tv-speaker-avatar" id="tvSpeakerAvatar">🦊</div>
             <div class="tv-speaker-name" id="tvSpeakerName">狐教授</div>
             <div class="tv-speaker-tell hidden" id="tvSpeakerTell"></div>
           </div>
-          <!-- Speech bubble with claim -->
           <div class="tv-bubble" id="tvBubble">
             <div class="tv-bubble-text" id="tvBubbleText">Loading...</div>
           </div>
-          <!-- Timer bar -->
           <div class="tv-timer-bar">
             <div class="tv-timer-fill" id="tvTimerFill"></div>
           </div>
           <div class="tv-timer-text" id="tvTimerText">15s</div>
-          <!-- Hint -->
           <div class="tv-hint" id="tvHint">注意观察对手的微表情...</div>
         </div>
 
@@ -148,6 +147,7 @@ const TavernUI = (() => {
         <div class="tv-result-card">
           <div class="tv-result-icon" id="tvResultIcon">🏆</div>
           <h2 class="tv-result-title" id="tvResultTitle">幸存者!</h2>
+          <div class="tv-result-subject" id="tvResultSubject" style="font-size:.8rem;margin-bottom:.5rem"></div>
           <div class="tv-result-grid">
             <div class="tv-rg"><span class="rg-l">识破骗子</span><span class="rg-v" id="trCorrect">0</span></div>
             <div class="tv-rg"><span class="rg-l">信誉等级</span><span class="rg-v" id="trGrade">-</span></div>
@@ -170,7 +170,6 @@ const TavernUI = (() => {
   function showIntro() {
     const screen = document.getElementById('tavernScreen');
     screen.classList.remove('hidden');
-    // Hide other screens
     document.querySelectorAll('.screen').forEach(s => {
       if(s.id !== 'tavernScreen') s.classList.add('hidden');
     });
@@ -191,47 +190,39 @@ const TavernUI = (() => {
     const npc = TavernEngine.getNPCForRound();
     if(!round || !npc) { showFinalResult(); return; }
 
-    // Update HUD
     document.getElementById('tvRound').textContent = S.current + 1;
     document.getElementById('tvTotal').textContent = S.totalRounds;
     updateLives();
 
-    // Highlight active NPC
     document.querySelectorAll('.tv-npc').forEach(n => n.classList.remove('active'));
     const npcEl = document.getElementById(`npc${npc.id.charAt(0).toUpperCase()+npc.id.slice(1)}`);
     if(npcEl) npcEl.classList.add('active');
 
-    // Speaker card
     const claimArea = document.getElementById('tvClaimArea');
     claimArea.classList.remove('hidden');
     document.getElementById('tvSpeakerAvatar').textContent = npc.emoji;
     document.getElementById('tvSpeakerAvatar').className = `tv-speaker-avatar ${round.isLie ? npc.tellAnim : ''}`;
     document.getElementById('tvSpeakerName').textContent = npc.name;
 
-    // Tell hint (only show on lies, subtle)
     const tellEl = document.getElementById('tvSpeakerTell');
-    if(round.isLie && S.current < 4) {
+    if(round.isLie && S.current < 5) {
       tellEl.textContent = npc.tells[0];
       tellEl.classList.remove('hidden');
     } else {
       tellEl.classList.add('hidden');
     }
 
-    // Bubble text with typing effect
     const phrases = round.isLie ? npc.liePhrases : npc.truePhrases;
     const prefix = phrases[Math.floor(Math.random()*phrases.length)];
     const fullText = `${prefix}\n\n「${round.claim}」`;
-    typeText('tvBubbleText', fullText, 30);
+    typeText('tvBubbleText', fullText, 25);
 
-    // Hint
     document.getElementById('tvHint').textContent =
-      S.current < 2 ? '注意观察对手的微表情...' :
-      S.current < 4 ? '半真半假，仔细分辨...' : '⚠️ 时间紧迫，快做决定！';
+      S.current < 3 ? '注意观察对手的微表情...' :
+      S.current < 6 ? '半真半假，仔细分辨...' :
+      S.current < 8 ? '⚠️ 时间紧迫，快做决定！' : '💀 最后冲刺！';
 
-    // Show actions
     document.getElementById('tvActions').classList.remove('hidden');
-
-    // Start timer
     startTimer(S.timerSeconds);
   }
 
@@ -267,7 +258,6 @@ const TavernUI = (() => {
       else text.style.color = '';
       if(left <= 0) {
         clearInterval(timerInterval);
-        // Auto-believe on timeout
         onDecide('believe');
       }
     }, 1000);
@@ -282,7 +272,6 @@ const TavernUI = (() => {
     const result = TavernEngine.decide(action);
     if(!result) return;
 
-    // Show reveal
     showReveal(result);
   }
 
@@ -303,17 +292,14 @@ const TavernUI = (() => {
       : (result.action === 'liar' ? '冤枉好人了!' : '你被骗了!');
     document.getElementById('tvRevealText').textContent = result.explanation;
 
-    // NPC reaction
     const npc = result.npc;
     const react = result.correct
       ? npc.scared[Math.floor(Math.random()*npc.scared.length)]
       : npc.taunts[Math.floor(Math.random()*npc.taunts.length)];
     document.getElementById('tvRevealReact').textContent = `${npc.emoji} ${npc.name}：「${react}」`;
 
-    // Button text
     document.getElementById('tvRevealBtn').textContent = result.needRoulette ? '拿起左轮...' : '下一局';
 
-    // Vibrate on wrong
     if(!result.correct && navigator.vibrate) navigator.vibrate([100,50,100]);
   }
 
@@ -332,18 +318,15 @@ const TavernUI = (() => {
     document.getElementById('tvRoulette').classList.remove('hidden');
     document.getElementById('tvChamberInfo').textContent = `弹仓: ${S.chamberIndex}/6 已空`;
 
-    // Spin cylinder animation
     const inner = document.getElementById('tvCylinderInner');
     inner.style.animation = 'none';
     inner.offsetHeight;
     inner.style.animation = 'cylinderSpin 1.5s cubic-bezier(.25,.46,.45,.94)';
 
-    // Update chamber visuals
     document.querySelectorAll('.tv-chamber').forEach((ch, i) => {
       ch.className = `tv-chamber${i < S.chamberIndex ? ' spent' : ''}`;
     });
 
-    // Enable trigger after spin
     const btn = document.getElementById('tvTriggerBtn');
     btn.disabled = true;
     setTimeout(() => { btn.disabled = false; }, 1500);
@@ -353,13 +336,11 @@ const TavernUI = (() => {
     const result = TavernEngine.pullTrigger();
     document.getElementById('tvRoulette').classList.add('hidden');
 
-    // Show flash result
     const rrEl = document.getElementById('tvRouletteResult');
     const rrText = document.getElementById('tvRRText');
     rrEl.classList.remove('hidden');
 
     if(result.hit) {
-      // BANG!
       rrEl.className = 'tv-roulette-result hit';
       rrText.textContent = '💥 砰！';
       if(navigator.vibrate) navigator.vibrate([300,100,300,100,500]);
@@ -368,7 +349,6 @@ const TavernUI = (() => {
         showFinalResult();
       }, 2000);
     } else {
-      // Click... survived
       rrEl.className = 'tv-roulette-result survived';
       rrText.textContent = '咔嗒... 你活了。';
       if(navigator.vibrate) navigator.vibrate(200);
@@ -394,12 +374,18 @@ const TavernUI = (() => {
     const S = TavernEngine.getState();
     const { title, qi } = TavernEngine.getGrade();
     const won = S.lives > 0;
+    const info = CaseDB.getSubjectInfo(subject);
 
     document.getElementById('tvTable').classList.add('hidden');
     document.getElementById('tvResult').classList.remove('hidden');
 
     document.getElementById('tvResultIcon').textContent = won ? '🏆' : '💀';
     document.getElementById('tvResultTitle').textContent = won ? '幸存者!' : '醉倒在酒馆...';
+    const subEl = document.getElementById('tvResultSubject');
+    if (subEl) {
+      subEl.textContent = `${info.icon} ${info.label} · 骗子酒馆`;
+      subEl.style.color = info.color;
+    }
     document.getElementById('trCorrect').textContent = S.correctCalls;
     document.getElementById('trGrade').textContent = title;
     document.getElementById('trRoulette').textContent = S.rouletteCount;
@@ -407,7 +393,6 @@ const TavernUI = (() => {
     document.getElementById('trQi').textContent = `+${qi}`;
     document.getElementById('trSurvived').textContent = `${S.survived}次`;
 
-    // Learnings
     const learnEl = document.getElementById('tvLearnings');
     if(S.learnings.length > 0) {
       learnEl.innerHTML = `<div class="tv-learn-title">💡 你学到了：</div>` +
@@ -421,15 +406,8 @@ const TavernUI = (() => {
   function updateLives() {
     const S = TavernEngine.getState();
     const total = 6;
-    const alive = total - S.chamberIndex + (S.lives > 0 ? 0 : 0);
-    let hearts = '';
-    for(let i=0;i<total;i++) {
-      hearts += i < (total - S.rouletteCount + S.survived) ? '❤️' : '🖤';
-    }
-    // Simpler: show based on roulette count
-    const remaining = total - S.rouletteCount + S.survived;
-    hearts = '❤️'.repeat(Math.max(0,Math.min(6, 6 - S.rouletteCount + S.survived))) +
-             '🖤'.repeat(Math.max(0, S.rouletteCount - S.survived));
+    let hearts = '❤️'.repeat(Math.max(0,Math.min(6, 6 - S.rouletteCount + S.survived))) +
+                 '🖤'.repeat(Math.max(0, S.rouletteCount - S.survived));
     document.getElementById('tvLives').textContent = hearts;
   }
 
