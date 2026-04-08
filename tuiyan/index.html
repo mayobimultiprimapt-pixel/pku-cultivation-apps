@@ -129,6 +129,26 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
   .najia-table{font-size:10px}
   .najia-table th,.najia-table td{padding:6px 3px}
 }
+
+/* API Key Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-box{background:var(--card);border:1px solid rgba(255,215,0,.15);border-radius:18px;padding:28px 24px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(20px);transition:transform .3s}
+.modal-overlay.show .modal-box{transform:translateY(0)}
+.modal-title{font-family:'Ma Shan Zheng',serif;font-size:22px;color:var(--gold);text-align:center;margin-bottom:6px}
+.modal-sub{font-size:11px;color:var(--dim);text-align:center;margin-bottom:16px}
+.modal-input{width:100%;padding:13px 16px;border-radius:10px;background:rgba(6,6,14,.7);border:1px solid rgba(255,215,0,.12);color:var(--gold);font-size:13px;font-family:'Orbitron','Noto Sans SC',monospace;outline:none;transition:.3s;letter-spacing:.5px}
+.modal-input:focus{border-color:rgba(255,215,0,.4);box-shadow:0 0 20px rgba(255,215,0,.1)}
+.modal-input::placeholder{color:var(--dim);font-family:'Noto Sans SC',sans-serif;letter-spacing:0}
+.modal-hint{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.6}
+.modal-hint a{color:var(--cyan);text-decoration:none}
+.modal-btn-row{display:flex;gap:10px;margin-top:16px}
+.modal-btn-row .btn{flex:1}
+.key-status{font-size:10px;padding:3px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;transition:.3s}
+.key-status.active{color:var(--jade);border:1px solid rgba(45,212,168,.2);background:rgba(45,212,168,.05)}
+.key-status.inactive{color:var(--red);border:1px solid rgba(231,76,60,.2);background:rgba(231,76,60,.05)}
+.key-status:hover{transform:translateY(-1px)}
+.model-badge{font-family:'Orbitron',monospace;font-size:8px;padding:2px 8px;border-radius:6px;background:rgba(8,247,254,.08);color:var(--cyan);border:1px solid rgba(8,247,254,.15);margin-left:6px;letter-spacing:1px}
 </style>
 </head>
 <body>
@@ -142,6 +162,7 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
     <a href="../index.html">🏠 门户</a>
     <a href="../tianji/">🏯 天机阁</a>
     <a href="../terminal/">🧠 终端</a>
+    <span class="key-status inactive" id="keyStatus" onclick="showKeyModal()" title="点击配置 API Key">🔑 未配置</span>
   </div>
 </div>
 
@@ -211,9 +232,9 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
 
     <!-- 🧠 DeepSeek 大白话解读 -->
     <div class="card" id="cardAI" style="display:none">
-      <div class="card-head"><span class="card-icon">🧠</span><span class="card-title">DeepSeek · 大白话精准解读</span><span class="card-badge" style="background:rgba(8,247,254,.1);color:var(--cyan);border:1px solid rgba(8,247,254,.15)">AI</span></div>
+      <div class="card-head"><span class="card-icon">🧠</span><span class="card-title">DeepSeek V3.2 · 大白话精准解读</span><span class="card-badge" style="background:rgba(8,247,254,.1);color:var(--cyan);border:1px solid rgba(8,247,254,.15)">AI · V3.2</span></div>
       <div class="card-body">
-        <button class="btn btn-gold" id="btnAIRead" onclick="aiInterpret()" style="width:100%;margin-bottom:12px">🧠 一键 DeepSeek 大白话解读</button>
+        <button class="btn btn-gold" id="btnAIRead" onclick="aiInterpret()" style="width:100%;margin-bottom:12px">🧠 一键 DeepSeek V3.2 大白话解读</button>
         <div id="aiResult" style="white-space:pre-wrap;line-height:2;font-size:14px;color:var(--text);display:none"></div>
       </div>
     </div>
@@ -225,6 +246,24 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
         <div class="template-box" id="templateOutput"></div>
         <button class="btn btn-ghost copy-btn" onclick="copyTemplate()">📋 复制模板</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="keyModal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 输入 OpenRouter API Key</div>
+    <div class="modal-sub">输入一次 · 自动存入修仙应用集 · 解锁 DeepSeek V3.2 最强推演</div>
+    <input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-or-v1-xxxxxxxxxxxx" autocomplete="off">
+    <div class="modal-hint">
+      📌 获取方式：<a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> → 创建 Key → 复制粘贴<br>
+      🔒 Key 仅存储在本地浏览器，不会上传服务器<br>
+      ⚡ 存入后全应用集（天机阁·终端·推演阁）共享使用
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn btn-ghost" onclick="hideKeyModal()">取消</button>
+      <button class="btn btn-gold" onclick="saveApiKey()">🔓 存入 · 激活推演</button>
     </div>
   </div>
 </div>
@@ -633,17 +672,94 @@ function copyTemplate(){
   }).catch(()=>alert('复制失败，请手动选择'));
 }
 
-// ═══ DeepSeek-R1 大白话精准解读 (通过中转阁) ═══
+// ═══ DeepSeek V3.2 最强推演引擎 + API Key 管理 ═══
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
-let _lastTemplateText = '';
+const DEEPSEEK_MODEL = 'deepseek/deepseek-v3.2';
+const DEEPSEEK_MODEL_LABEL = 'DeepSeek V3.2';
 
+// ── API Key 管理 ──
+function getOrKey() {
+  const saved = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
+  return saved.or_key || '';
+}
+
+function updateKeyStatus() {
+  const el = document.getElementById('keyStatus');
+  const key = getOrKey();
+  if (key) {
+    el.className = 'key-status active';
+    el.innerHTML = '🔑 已激活 <span class="model-badge">' + DEEPSEEK_MODEL_LABEL + '</span>';
+  } else {
+    el.className = 'key-status inactive';
+    el.innerHTML = '🔑 未配置';
+  }
+}
+
+function showKeyModal() {
+  const modal = document.getElementById('keyModal');
+  modal.classList.add('show');
+  const existing = getOrKey();
+  if (existing) {
+    document.getElementById('apiKeyInput').value = existing;
+  }
+  setTimeout(() => document.getElementById('apiKeyInput').focus(), 300);
+}
+
+function hideKeyModal() {
+  document.getElementById('keyModal').classList.remove('show');
+}
+
+function saveApiKey() {
+  const input = document.getElementById('apiKeyInput');
+  const key = input.value.trim();
+  if (!key) { input.style.borderColor = 'var(--red)'; input.focus(); return; }
+  // Save to shared tianji_saved_keys
+  const saved = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
+  saved.or_key = key;
+  localStorage.setItem('tianji_saved_keys', JSON.stringify(saved));
+  hideKeyModal();
+  updateKeyStatus();
+  console.log('[推演阁] 🔑 API Key 已存入修仙应用集 (tianji_saved_keys)');
+  // If cast result is showing, auto-trigger interpret
+  if (document.getElementById('cardAI').style.display !== 'none' &&
+      document.getElementById('resultArea').classList.contains('show')) {
+    aiInterpret();
+  }
+}
+
+// Enter key support for modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('keyModal').classList.contains('show')) {
+    saveApiKey();
+  }
+  if (e.key === 'Escape' && document.getElementById('keyModal').classList.contains('show')) {
+    hideKeyModal();
+  }
+});
+
+// Click outside modal to close
+document.getElementById('keyModal').addEventListener('click', function(e) {
+  if (e.target === this) hideKeyModal();
+});
+
+// Init key status on load
+document.addEventListener('DOMContentLoaded', updateKeyStatus);
+
+// ── DeepSeek V3.2 AI 解读 ──
 async function aiInterpret() {
+  // Check if API key exists
+  let orKey = getOrKey();
+  if (!orKey) {
+    showKeyModal();
+    return;
+  }
+
   const btn = document.getElementById('btnAIRead');
   const resultEl = document.getElementById('aiResult');
   btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite"></span> DeepSeek-R1 推演中...';
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite"></span> ' + DEEPSEEK_MODEL_LABEL + ' 推演中...';
   resultEl.style.display = 'block';
-  resultEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:20px">🧠 DeepSeek-R1 正在深度推演中，请稍候...</div>';
+  resultEl.innerHTML = '<div style="color:var(--dim);text-align:center;padding:20px">🧠 ' + DEEPSEEK_MODEL_LABEL + ' 最强推演引擎启动中，请稍候...</div>';
 
   const template = document.getElementById('templateOutput').textContent;
   const prompt = `你是梅花易数+六爻纳甲双修大师。请根据以下完整排盘，用大白话给出精准解读。
@@ -660,40 +776,44 @@ async function aiInterpret() {
 ${template}`;
 
   try {
-    // 通道1: OpenRouter (DeepSeek R1)
-    const orKeys = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
-    const embKeys = {or_key: ["378685eaad7ef343-1v-ro-ks","178e710747b97a1d7d40b1db6","971218ade3aae42b67fca41"].map(s=>s.split("").reverse().join("")).join("")};
-    const orKey = orKeys.or_key || embKeys.or_key || '';
-    if (orKey) {
-      console.log('[推演阁] 🧠 OpenRouter DeepSeek-R1 启动...');
-      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + orKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'deepseek/deepseek-r1',
-          messages: [{ role: 'system', content: '你是梅花易数+六爻纳甲双修大师，用大白话说话，简洁有力量。全部用中文。' }, { role: 'user', content: prompt }],
-          temperature: 0.7, max_tokens: 4096
-        })
-      });
-      const data = await resp.json();
-      if (!data.error) {
-        let text = (data.choices || [{}])[0]?.message?.content || '';
-        text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-        if (text) {
-          resultEl.textContent = text;
-          btn.disabled = false; btn.innerHTML = '🧠 再次解读';
-          console.log('[推演阁] ✅ DeepSeek-R1 解读完成! (' + text.length + '字)');
-          return;
-        }
+    // 通道1: OpenRouter (DeepSeek V3.2 最强版)
+    console.log('[推演阁] 🧠 OpenRouter ' + DEEPSEEK_MODEL_LABEL + ' 启动...');
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + orKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: 'system', content: '你是梅花易数+六爻纳甲双修大师，用大白话说话，简洁有力量。全部用中文。' }, { role: 'user', content: prompt }],
+        temperature: 0.7, max_tokens: 4096
+      })
+    });
+    const data = await resp.json();
+    if (data.error) {
+      // If key is invalid, prompt to re-enter
+      if (data.error.code === 401 || (data.error.message && data.error.message.includes('auth'))) {
+        resultEl.innerHTML = '<div style="color:var(--red)">❌ API Key 无效，请重新输入</div>';
+        btn.disabled = false; btn.innerHTML = '🧠 一键 ' + DEEPSEEK_MODEL_LABEL + ' 大白话解读';
+        setTimeout(showKeyModal, 800);
+        return;
       }
+      throw new Error(data.error.message || JSON.stringify(data.error));
     }
-    // 通道2: 中转阁 Relay
-    console.log('[推演阁] 🔁 中转阁 DeepSeek-R1...');
+    let text = (data.choices || [{}])[0]?.message?.content || '';
+    text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    if (text) {
+      resultEl.textContent = text;
+      btn.disabled = false; btn.innerHTML = '🧠 再次推演 <span class="model-badge">' + DEEPSEEK_MODEL_LABEL + '</span>';
+      console.log('[推演阁] ✅ ' + DEEPSEEK_MODEL_LABEL + ' 解读完成! (' + text.length + '字)');
+      return;
+    }
+
+    // 通道2: 中转阁 Relay fallback
+    console.log('[推演阁] 🔁 中转阁 fallback...');
     const resp2 = await fetch(RELAY_URL + '/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1',
+        model: DEEPSEEK_MODEL,
         messages: [{ role: 'system', content: '你是梅花易数+六爻纳甲双修大师，用大白话说话，简洁有力量。全部用中文。' }, { role: 'user', content: prompt }],
         temperature: 0.7, max_tokens: 4096
       })
@@ -703,12 +823,12 @@ ${template}`;
     let text2 = (data2.choices || [{}])[0]?.message?.content || '';
     text2 = text2.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     resultEl.textContent = text2 || '解读失败，请重试';
-    console.log('[推演阁] ✅ 中转阁 DeepSeek 解读完成!');
+    console.log('[推演阁] ✅ 中转阁 ' + DEEPSEEK_MODEL_LABEL + ' 解读完成!');
   } catch(e) {
     resultEl.innerHTML = '<div style="color:var(--red)">❌ 解读失败: ' + e.message + '</div>';
     console.error('[推演阁] ❌', e);
   }
-  btn.disabled = false; btn.innerHTML = '🧠 一键 DeepSeek 大白话解读';
+  btn.disabled = false; btn.innerHTML = '🧠 一键 ' + DEEPSEEK_MODEL_LABEL + ' 大白话解读';
 }
 </script>
 </body>
