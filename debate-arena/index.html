@@ -30,43 +30,90 @@
         <h1 class="start-title">论道殿 · 双轨四科</h1>
         <p class="start-sub">法庭破局 × 骗子酒馆 · 金库实弹投喂</p>
         
-        <!-- 四科选择 -->
+        <!-- 四科选择 — 2x2游戏級卡片 -->
         <div class="subject-grid" id="subjectGrid">
+          <!-- 101 政治 — 法庭 -->
           <button class="subject-card active s-101" data-subject="101" data-mode="court" id="sub101">
-            <div class="sc-glow"></div>
-            <div class="sc-badge">101</div>
-            <span class="sc-icon">🏛️</span>
-            <span class="sc-name">政治论述</span>
-            <span class="sc-mode">⚖️ 法庭模式</span>
-            <span class="sc-desc">时政破局 · 原理庭辩 · 完形论证</span>
-            <div class="sc-vault-tag" id="vault101">📡 检测金库中...</div>
+            <div class="sc-border-anim"></div>
+            <div class="sc-bg-art">
+              <div class="sc-bg-icon">🏛️</div>
+            </div>
+            <div class="sc-content">
+              <div class="sc-top">
+                <span class="sc-code">101</span>
+                <span class="sc-mode-pill court-pill">⚖️ 法庭</span>
+              </div>
+              <div class="sc-main-icon">🏛️</div>
+              <div class="sc-name">政治论述</div>
+              <div class="sc-tagline">时政破局 · 原理庭辩 · 完形论证</div>
+              <div class="sc-stats">
+                <span>5案件</span><span>·</span><span>5阶段</span>
+              </div>
+              <div class="sc-vault-tag" id="vault101">📡 检测金库中...</div>
+            </div>
           </button>
+
+          <!-- 201 英语 — 酒馆 -->
           <button class="subject-card s-201" data-subject="201" data-mode="tavern" id="sub201">
-            <div class="sc-glow"></div>
-            <div class="sc-badge">201</div>
-            <span class="sc-icon">📜</span>
-            <span class="sc-name">英语推断</span>
-            <span class="sc-mode">🍺 骗子酒馆</span>
-            <span class="sc-desc">词义辨析 · 阅读陷阱 · 真假排雷</span>
-            <div class="sc-vault-tag" id="vault201">📡 检测金库中...</div>
+            <div class="sc-border-anim"></div>
+            <div class="sc-bg-art">
+              <div class="sc-bg-icon">📜</div>
+            </div>
+            <div class="sc-content">
+              <div class="sc-top">
+                <span class="sc-code">201</span>
+                <span class="sc-mode-pill tavern-pill">🍺 酒馆</span>
+              </div>
+              <div class="sc-main-icon">📜</div>
+              <div class="sc-name">英语推断</div>
+              <div class="sc-tagline">词义辨析 · 阅读陷阱 · 真假排雷</div>
+              <div class="sc-stats">
+                <span>10轮</span><span>·</span><span>俄罗斯轮盘</span>
+              </div>
+              <div class="sc-vault-tag" id="vault201">📡 检测金库中...</div>
+            </div>
           </button>
+
+          <!-- 301 数学 — 酒馆 -->
           <button class="subject-card s-301" data-subject="301" data-mode="tavern" id="sub301">
-            <div class="sc-glow"></div>
-            <div class="sc-badge">301</div>
-            <span class="sc-icon">📐</span>
-            <span class="sc-name">数学排雷</span>
-            <span class="sc-mode">🍺 骗子酒馆</span>
-            <span class="sc-desc">公式陷阱 · 定理辨伪 · 计算排雷</span>
-            <div class="sc-vault-tag" id="vault301">📡 检测金库中...</div>
+            <div class="sc-border-anim"></div>
+            <div class="sc-bg-art">
+              <div class="sc-bg-icon">📐</div>
+            </div>
+            <div class="sc-content">
+              <div class="sc-top">
+                <span class="sc-code">301</span>
+                <span class="sc-mode-pill tavern-pill">🍺 酒馆</span>
+              </div>
+              <div class="sc-main-icon">📐</div>
+              <div class="sc-name">数学排雷</div>
+              <div class="sc-tagline">公式陷阱 · 定理辨伪 · 计算排雷</div>
+              <div class="sc-stats">
+                <span>10轮</span><span>·</span><span>俄罗斯轮盘</span>
+              </div>
+              <div class="sc-vault-tag" id="vault301">📡 检测金库中...</div>
+            </div>
           </button>
+
+          <!-- 408 计算机 — 法庭 -->
           <button class="subject-card s-408" data-subject="408" data-mode="court" id="sub408">
-            <div class="sc-glow"></div>
-            <div class="sc-badge">408</div>
-            <span class="sc-icon">💻</span>
-            <span class="sc-name">计算机法庭</span>
-            <span class="sc-mode">⚖️ 法庭模式</span>
-            <span class="sc-desc">算法庭审 · 数据结构 · 系统辩护</span>
-            <div class="sc-vault-tag" id="vault408">📡 检测金库中...</div>
+            <div class="sc-border-anim"></div>
+            <div class="sc-bg-art">
+              <div class="sc-bg-icon">💻</div>
+            </div>
+            <div class="sc-content">
+              <div class="sc-top">
+                <span class="sc-code">408</span>
+                <span class="sc-mode-pill court-pill">⚖️ 法庭</span>
+              </div>
+              <div class="sc-main-icon">💻</div>
+              <div class="sc-name">计算机法庭</div>
+              <div class="sc-tagline">算法庭审 · 数据结构 · 系统辩护</div>
+              <div class="sc-stats">
+                <span>4案件</span><span>·</span><span>5阶段</span>
+              </div>
+              <div class="sc-vault-tag" id="vault408">📡 检测金库中...</div>
+            </div>
           </button>
         </div>
 
