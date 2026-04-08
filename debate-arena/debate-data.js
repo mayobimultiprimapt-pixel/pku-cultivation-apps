@@ -424,6 +424,13 @@ const CaseDB = (() => {
     },
   ];
 
+  // ═══ 每科目标案件数（≥真实考卷题量换算）═══
+  const TARGET_CASES = {
+    '101': 8,   // 政治33选择题 → 8案×5阶段≈40子题
+    '408': 10,  // 计算机47题 → 10案×5阶段≈50子题
+    '201': 8,   // 英语fallback法庭
+  };
+
   // ═══ 金库穿透读取 ═══
   function loadVaultQuestions(subjectCode) {
     try {
@@ -447,11 +454,111 @@ const CaseDB = (() => {
     } catch { return 0; }
   }
 
-  // ═══ 获取法庭案件 ═══
+  // ═══ 金库题 → 法庭案件自动转换器 ═══
+  // 将vault的选择题自动包装成完整法庭案件（破→立→链→填）
+  function vaultToCases(vaultQuestions) {
+    const cases = [];
+    // 每4道vault题打包成1个法庭案件
+    for (let i = 0; i < vaultQuestions.length; i += 4) {
+      const batch = vaultQuestions.slice(i, i + 4).filter(Boolean);
+      if (batch.length < 2) continue;
+
+      const main = batch[0];
+      const q2 = batch[1] || main;
+      const q3 = batch[2] || main;
+      const q4 = batch[3] || main;
+
+      // 从选项中提取关键词
+      const opts = main.o || main.opts || ['选项A','选项B','选项C','选项D'];
+      const correctIdx = typeof main.a === 'number' ? main.a : 0;
+      const correctOpt = opts[correctIdx] || opts[0] || '正确答案';
+      const wrongOpts = opts.filter((_, idx) => idx !== correctIdx);
+
+      const caseObj = {
+        id: `vault_${i}`,
+        diff: main.difficulty || 2,
+        title: `《金库绝密·${main.chapter || '综合'}》`,
+        text: main.q || '金库生成案件',
+        plaintiff: {
+          label: '原告（错误观点）',
+          text: wrongOpts[0] || '错误选项A'
+        },
+        defendant: {
+          label: '被告（争议观点）',
+          text: wrongOpts[1] || '错误选项B'
+        },
+        breakPhase: {
+          fallacies: [
+            { text: wrongOpts[0] || '错误表述', type: BREAK_CARDS[Math.floor(Math.random()*4)].id,
+              hint: main.analysis || main.tip || '此选项存在逻辑错误' },
+            { text: wrongOpts[1] || '错误表述2', type: BREAK_CARDS[4+Math.floor(Math.random()*4)].id,
+              hint: '注意区分相近概念' },
+          ],
+          distractors: [BREAK_CARDS[Math.floor(Math.random()*8)].id, BREAK_CARDS[Math.floor(Math.random()*8)].id],
+        },
+        buildPhase: {
+          slots: [
+            { label: '核心知识点', correct: correctOpt.substring(0, 8), desc: correctOpt },
+            { label: '解题关键', correct: (q2.o?.[q2.a||0] || '关键点').substring(0, 8), desc: q2.q || '' },
+            { label: '拓展应用', correct: (q3.o?.[q3.a||0] || '应用点').substring(0, 8), desc: q3.q || '' },
+          ],
+          pool: shuffle([
+            correctOpt.substring(0, 8),
+            (q2.o?.[q2.a||0] || '关键点').substring(0, 8),
+            (q3.o?.[q3.a||0] || '应用点').substring(0, 8),
+            ...wrongOpts.slice(0, 3).map(w => w.substring(0, 8)),
+            '干扰项A', '干扰项B',
+          ]),
+        },
+        chainPhase: {
+          prompt: '构建解题逻辑链',
+          correct: [
+            '审题定位考点',
+            '运用核心原理',
+            '排除干扰选答案',
+          ],
+          options: ['审题定位考点','运用核心原理','排除干扰选答案','跳过分析','随机猜测','死记硬背'],
+        },
+        clozePhase: {
+          passage: `本题考查___①___相关知识。关键在于理解___②___的内涵，并能正确区分___③___和___④___的区别。`,
+          blanks: [
+            main.chapter || '核心考点',
+            correctOpt.substring(0, 6),
+            (wrongOpts[0] || '错误A').substring(0, 6),
+            (wrongOpts[1] || '错误B').substring(0, 6),
+          ],
+          distractors: ['无关概念', '混淆项', '过时理论', '绝对化表述'],
+        },
+      };
+      cases.push(caseObj);
+    }
+    return cases;
+  }
+
+  // ═══ 获取法庭案件（静态+金库合并）═══
   function getCases(subject) {
-    if (subject === '408') return shuffle([...CS_CASES]);
-    if (subject === '201') return shuffle([...ENGLISH_CASES]);
-    return shuffle([...POLITICS_CASES]);
+    let staticCases;
+    if (subject === '408') staticCases = [...CS_CASES];
+    else if (subject === '201') staticCases = [...ENGLISH_CASES];
+    else staticCases = [...POLITICS_CASES];
+
+    // 从金库读取并转换
+    const vaultQs = loadVaultQuestions(subject);
+    const vaultCases = vaultToCases(vaultQs);
+
+    // 合并：金库题优先排在前面
+    const merged = [...vaultCases, ...staticCases];
+    const target = TARGET_CASES[subject] || 8;
+
+    console.log(`[论道殿] ${subject}科: 静态${staticCases.length}案 + 金库${vaultCases.length}案 = ${merged.length}案 (目标≥${target})`);
+    
+    // 如果不够目标数，循环复用（打乱顺序）
+    while (merged.length < target) {
+      const extra = shuffle([...staticCases]);
+      merged.push(...extra.slice(0, target - merged.length));
+    }
+
+    return shuffle(merged).slice(0, Math.max(target, merged.length));
   }
 
   function getSubjectInfo(code) {
@@ -470,5 +577,6 @@ const CaseDB = (() => {
   }
 
   return { getCases, getBreakCards, shuffle, getSubjectInfo, getVaultCount, loadVaultQuestions,
-           BREAK_CARDS, POLITICS_CASES, ENGLISH_CASES, CS_CASES, SUBJECTS };
+           vaultToCases, BREAK_CARDS, POLITICS_CASES, ENGLISH_CASES, CS_CASES, SUBJECTS, TARGET_CASES };
 })();
+

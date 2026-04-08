@@ -48,7 +48,8 @@ const TavernUI = (() => {
             <div class="tv-npc-chip"><span>🐯</span> 虎掌柜 <small>豪迈</small></div>
           </div>
           <p class="tv-intro-warn">⚠️ 判断错误 → 拿起左轮，朝自己扣扳机</p>
-          <p class="tv-intro-rounds">📊 本轮: 10局 · 后期缩短时限 · 难度递增</p>
+          <p class="tv-intro-rounds">📊 本轮: ${TavernData.TARGET_ROUNDS[subject] || 15}局 · 对齐真实考卷题量 · 弹仓6发自动装弹</p>
+          <p class="tv-intro-rounds" style="color:var(--gold)">🔥 金库: ${CaseDB.getVaultCount(subject)}道实弹 + ${(TavernData.CLAIMS[subject]||[]).length}道静态</p>
           <button class="tv-btn tv-btn-gold" onclick="TavernUI.beginRounds()">入座开局</button>
         </div>
       </div>

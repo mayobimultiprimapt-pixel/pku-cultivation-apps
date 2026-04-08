@@ -1,13 +1,15 @@
 /**
- * 骗子酒馆 · 游戏引擎 v2.0
+ * 骗子酒馆 · 游戏引擎 v3.0
  * ========================================
- * 10局制 + 俄罗斯轮盘 + 信誉值 + 四科支持
+ * 考卷对齐题量 + 俄罗斯轮盘 + 信誉值 + 四科支持
+ * 201英语20轮 · 301数学15轮 · 408计算机20轮
  */
 const TavernEngine = (() => {
   let S = null;
 
   function init(subject) {
-    const rounds = TavernData.buildRounds(subject, 10);
+    // 不传count，让buildRounds用TARGET_ROUNDS自动对齐考卷题量
+    const rounds = TavernData.buildRounds(subject);
     S = {
       subject,
       rounds,
@@ -113,9 +115,15 @@ const TavernEngine = (() => {
       S.survived++;
       S.credibility += 1;
       S.score += 5;
+      // 弹仓打完自动装弹（支持20轮长局）
+      if(S.chamberIndex >= 6) {
+        S.chambers = buildChambers();
+        S.chamberIndex = 0;
+        console.log('[酒馆] 弹仓已空，重新装弹！');
+      }
     }
 
-    return { hit, chamberIndex: idx, remaining: 6 - S.chamberIndex };
+    return { hit, chamberIndex: idx % 6, remaining: 6 - (S.chamberIndex % 6) };
   }
 
   function nextRound() {
@@ -125,9 +133,12 @@ const TavernEngine = (() => {
       S.finished = true;
       return false;
     }
-    // Adjust timer for difficulty
-    if(S.current >= 6) S.timerSeconds = 10;
-    if(S.current >= 8) S.timerSeconds = 8;
+    // 渐进式缩短时限（适配15-20轮长局）
+    const pct = S.current / S.totalRounds;
+    if(pct >= 0.75) S.timerSeconds = 8;      // 最后25%: 8秒
+    else if(pct >= 0.50) S.timerSeconds = 10; // 中后期: 10秒
+    else if(pct >= 0.25) S.timerSeconds = 12; // 中前期: 12秒
+    // 前25%保持15秒
     return true;
   }
 

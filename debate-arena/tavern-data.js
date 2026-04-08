@@ -200,33 +200,68 @@ const TavernData = (() => {
   function getNPC(id) { return NPCS.find(n => n.id === id); }
   function getAllNPCs() { return [...NPCS]; }
 
+  // ═══ 每科目标轮数（≥真实考卷题量）═══
+  const TARGET_ROUNDS = {
+    '101': 20,  // 政治fallback：33选择题→20轮
+    '201': 20,  // 英语：完形20+阅读20→20轮
+    '301': 15,  // 数学：8选择+6填空→15轮
+    '408': 20,  // 计算机：40选择→20轮
+  };
+
   /**
-   * Build a round set: 10 rounds for more content, ensuring mix of lies and truths
+   * Build a round set: auto-aligns to exam quantity
+   * Pulls from vault first, then static, then recycles if needed
    */
-  function buildRounds(subject, count=10) {
-    // 支持新旧两种key
+  function buildRounds(subject, count) {
     const subKey = subject === 'politics' ? '101' : subject === 'english' ? '201' : subject;
     
-    // 先尝试从金库读取
+    // 使用考卷对齐的目标轮数
+    const targetCount = count || TARGET_ROUNDS[subKey] || 15;
+    
+    // 从金库读取并转换
     const vaultQuestions = CaseDB.loadVaultQuestions(subKey);
-    let pool;
+    const converted = [];
     
     if (vaultQuestions.length > 0) {
-      // 将金库题转换为酒馆发言格式
-      const converted = vaultQuestions.map(vq => {
+      vaultQuestions.forEach((vq, idx) => {
         const speakers = ['fox','owl','tiger'];
-        return {
-          speaker: speakers[Math.floor(Math.random()*3)],
-          claim: vq.q || 'Unknown',
-          isLie: Math.random() < 0.5, // 随机设为真/假
-          truth: vq.analysis || vq.tip || '',
+        const opts = vq.o || vq.opts || [];
+        const correctIdx = typeof vq.a === 'number' ? vq.a : 0;
+        const correctAnswer = opts[correctIdx] || '正确答案';
+        const wrongAnswers = opts.filter((_, i) => i !== correctIdx);
+        
+        // 每道vault题生成2条发言：1条假话(用错误选项) + 1条真话(用正确选项)
+        if (wrongAnswers.length > 0) {
+          converted.push({
+            speaker: speakers[idx % 3],
+            claim: `关于「${vq.q?.substring(0, 30) || '考点'}」：${wrongAnswers[0]}`,
+            isLie: true,
+            truth: `正确答案是「${correctAnswer}」。${vq.analysis || vq.tip || ''}`,
+            difficulty: vq.difficulty || 2,
+            source: '🔥金库',
+          });
+        }
+        converted.push({
+          speaker: speakers[(idx + 1) % 3],
+          claim: `${vq.q?.substring(0, 50) || '考点'}——答案是：${correctAnswer}`,
+          isLie: false,
+          truth: '',
           difficulty: vq.difficulty || 2,
-        };
+          source: '🔥金库',
+        });
       });
-      // 混入静态题
-      pool = [...converted, ...(CLAIMS[subKey] || CLAIMS['101'])];
-    } else {
-      pool = [...(CLAIMS[subKey] || CLAIMS['101'])];
+    }
+    
+    // 混入静态题
+    const staticPool = [...(CLAIMS[subKey] || CLAIMS['101'])];
+    let pool = [...converted, ...staticPool];
+    
+    console.log(`[骗子酒馆] ${subKey}科: 金库${converted.length}条 + 静态${staticPool.length}条 = ${pool.length}条 (目标≥${targetCount}轮)`);
+    
+    // 如果不够目标数，循环复用静态题
+    while (pool.length < targetCount) {
+      const recycled = staticPool.map(c => ({...c, difficulty: Math.min(3, (c.difficulty||1) + 1)}));
+      pool.push(...recycled.slice(0, targetCount - pool.length));
     }
     
     // Shuffle
@@ -234,24 +269,28 @@ const TavernData = (() => {
       const j=Math.floor(Math.random()*(i+1));
       [pool[i],pool[j]]=[pool[j],pool[i]];
     }
-    // Sort by difficulty
-    pool.sort((a,b) => a.difficulty - b.difficulty);
+    // Sort by difficulty (easy first)
+    pool.sort((a,b) => (a.difficulty||1) - (b.difficulty||1));
 
-    // Ensure at least 3 lies and 3 truths
+    // Ensure good lie/truth ratio
     const lies = pool.filter(c => c.isLie);
     const truths = pool.filter(c => !c.isLie);
     const rounds = [];
-    for(let i=0; i<count; i++) {
-      if(i < 3) {
+    for(let i=0; i<targetCount; i++) {
+      if(i < 4) {
+        // Easy warmup: alternate
         rounds.push(i%2===0 ? (lies.shift()||truths.shift()) : (truths.shift()||lies.shift()));
-      } else if(i < 6) {
+      } else if(i < 10) {
+        // Mid: 60% lies
         rounds.push(Math.random()<0.6 ? (lies.shift()||truths.shift()) : (truths.shift()||lies.shift()));
       } else {
+        // Hard: random mix
         rounds.push((Math.random()<0.5 ? lies : truths).shift() || pool.shift());
       }
     }
-    return rounds.filter(Boolean).slice(0, count);
+    return rounds.filter(Boolean).slice(0, targetCount);
   }
 
-  return { getNPC, getAllNPCs, buildRounds, CLAIMS };
+  return { getNPC, getAllNPCs, buildRounds, CLAIMS, TARGET_ROUNDS };
 })();
+
