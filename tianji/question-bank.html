@@ -3,323 +3,677 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>题库搜集�?· 绝密考卷金库</title>
+<title>题库搜集站 · 绝密考卷金库</title>
+<meta name="description" content="北大考研修仙应用集 · 绝密考卷金库 — Perplexity情报窃取 + Gemini最强出卷">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#06060e;--bg2:#0c0c18;--bg3:#141428;--card:rgba(16,16,36,.95);--text:#e4e4f0;--dim:#4a4a6a;--sub:#7a7a9a;--border:rgba(255,255,255,.06);--gold:#ffd700;--red:#ff2e63;--blue:#3b82f6;--green:#39ff14;--purple:#a855f7;--cyan:#06b6d4;--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif}
+:root{--bg:#06060e;--bg2:#0c0c18;--bg3:#141428;--card:rgba(16,16,36,.92);--card2:rgba(20,20,44,.85);--text:#e4e4f0;--dim:#4a4a6a;--sub:#7a7a9a;--border:rgba(255,255,255,.06);--border-hi:rgba(255,215,0,.15);--gold:#ffd700;--red:#ff2e63;--blue:#3b82f6;--green:#39ff14;--purple:#a855f7;--cyan:#06b6d4;--amber:#ff8c00;--font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
-.container{max-width:720px;margin:0 auto;padding:16px}
-.vault-header{text-align:center;padding:30px 0 20px;position:relative}
-.vault-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.vault-title{font-family:var(--font-d);font-size:20px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.vault-sub{font-family:var(--font-d);font-size:9px;letter-spacing:4px;color:var(--dim);margin-top:6px}
-.vault-badge{display:inline-block;margin-top:10px;padding:4px 14px;border:1px solid var(--red);border-radius:20px;font-family:var(--font-d);font-size:8px;letter-spacing:3px;color:var(--red);animation:pulse 2s ease infinite}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(255,215,0,.03),transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(255,46,99,.03),transparent 50%),repeating-linear-gradient(0deg,transparent,transparent 99px,rgba(255,215,0,.015) 100px),repeating-linear-gradient(90deg,transparent,transparent 99px,rgba(255,215,0,.015) 100px);pointer-events:none;z-index:0}
+
+.container{max-width:1100px;margin:0 auto;padding:20px 24px;position:relative;z-index:1}
+
+/* Back Button */
+.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:13px;text-decoration:none;margin-bottom:16px;padding:6px 12px;border-radius:8px;border:1px solid transparent;transition:.3s}
+.back-btn:hover{color:var(--gold);border-color:var(--border-hi);background:rgba(255,215,0,.04)}
+.back-btn svg{width:16px;height:16px;fill:currentColor}
+
+/* Header */
+.vault-header{text-align:center;padding:36px 0 28px;position:relative}
+.vault-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:280px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.vault-header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.3),transparent)}
+.vault-title{font-family:var(--font-d);font-size:26px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.vault-sub{font-family:var(--font-d);font-size:10px;letter-spacing:5px;color:var(--dim);margin-top:8px;text-transform:uppercase}
+.vault-badge{display:inline-block;margin-top:12px;padding:5px 18px;border:1px solid var(--red);border-radius:20px;font-family:var(--font-d);font-size:9px;letter-spacing:3px;color:var(--red);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.2s}
-.stat-card:hover,.stat-card.active{transform:translateY(-2px);border-color:var(--gold)}
-.stat-card .sc-num{font-family:var(--font-d);font-size:24px;font-weight:900}
-.stat-card .sc-label{font-size:10px;color:var(--sub);margin-top:2px}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(255,255,255,.02));pointer-events:none}
+.stat-card:hover,.stat-card.active{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 8px 24px rgba(255,215,0,.08)}
+.stat-card .sc-num{font-family:var(--font-d);font-size:28px;font-weight:900}
+.stat-card .sc-label{font-size:11px;color:var(--sub);margin-top:4px;letter-spacing:1px}
+.stat-card .sc-tag{font-family:var(--font-d);font-size:8px;color:var(--dim);margin-top:6px;letter-spacing:2px}
 .stat-card.s101 .sc-num{color:var(--red)}.stat-card.s201 .sc-num{color:var(--blue)}
 .stat-card.s301 .sc-num{color:var(--gold)}.stat-card.s408 .sc-num{color:var(--green)}
-.section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
-.section-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.section-title .icon{font-size:20px}
-.tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto}
-.tab{padding:8px 16px;border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;transition:.2s}
-.tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold)}
-select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:var(--font-b);margin:4px 0}
-.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:.2s;margin-top:8px}
-.btn-gold{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:20px}
+.tab{padding:10px 22px;border:1px solid var(--border);border-radius:12px;font-size:13px;cursor:pointer;white-space:nowrap;transition:.3s;font-weight:500}
+.tab:hover{border-color:var(--gold);color:var(--gold)}
+.tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold);font-weight:700}
+
+/* Sections */
+.section{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;backdrop-filter:blur(10px);transition:.3s}
+.section:hover{border-color:var(--border-hi)}
+.section-title{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.section-title .icon{font-size:22px}
+.section-desc{font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.7}
+
+/* API Key Section */
+.key-section{background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(6,182,212,.04));border:1px solid rgba(168,85,247,.15);border-radius:18px;padding:24px;margin-bottom:16px}
+.key-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.key-group label{display:block;font-size:11px;color:var(--sub);margin-bottom:4px;letter-spacing:1px;font-weight:600}
+.key-input{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:var(--font-b);transition:.3s}
+.key-input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 12px rgba(168,85,247,.15)}
+.key-input::placeholder{color:var(--dim)}
+.key-status{display:flex;align-items:center;gap:8px;font-size:11px;margin-top:8px}
+.key-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.key-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.key-dot.off{background:var(--dim)}
+.key-actions{display:flex;gap:8px;margin-top:12px}
+
+/* Form Elements */
+select{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:13px;font-family:var(--font-b);margin:4px 0;transition:.3s;cursor:pointer}
+select:focus{outline:none;border-color:var(--gold)}
+
+/* Buttons */
+.btn{padding:14px 20px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:.3s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-full{width:100%;margin-top:8px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--amber));color:#000}
+.btn-gold:hover{box-shadow:0 4px 20px rgba(255,215,0,.3);transform:translateY(-1px)}
 .btn-red{background:linear-gradient(135deg,var(--red),#ff6b8a);color:#fff}
+.btn-red:hover{box-shadow:0 4px 20px rgba(255,46,99,.3)}
 .btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff}
+.btn-purple:hover{box-shadow:0 4px 20px rgba(168,85,247,.3)}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff}
+.btn-cyan:hover{box-shadow:0 4px 20px rgba(6,182,212,.3)}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
-.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed}
-.progress-wrap{margin:12px 0;display:none}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-row{display:flex;gap:8px;margin-top:10px}
+.btn-row .btn{flex:1}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:8px;margin:0}
+
+/* Progress */
+.progress-wrap{margin:14px 0;display:none}
 .progress-wrap.show{display:block}
-.progress-text{font-size:11px;color:var(--sub);margin-bottom:6px}
-.progress-bar{width:100%;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;border-radius:2px;transition:width .3s;width:0%}
+.progress-text{font-size:11px;color:var(--sub);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{width:100%;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .3s}
 .pf-gold{background:linear-gradient(90deg,var(--gold),var(--red))}
 .pf-purple{background:linear-gradient(90deg,var(--purple),var(--cyan))}
-.log{max-height:280px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;font-family:monospace;font-size:11px;line-height:1.8}
+
+/* Phase Indicator */
+.phase-indicator{display:flex;gap:10px;margin:14px 0;align-items:center;padding:10px 14px;background:rgba(168,85,247,.04);border-radius:10px;border:1px solid rgba(168,85,247,.1)}
+.phase-dot{width:10px;height:10px;border-radius:50%;background:var(--dim);transition:.3s;flex-shrink:0}
+.phase-dot.active{background:var(--purple);box-shadow:0 0 10px var(--purple);animation:pulse 1s ease infinite}
+.phase-dot.done{background:var(--green);box-shadow:0 0 8px var(--green)}
+.phase-label{font-size:11px;color:var(--sub)}
+
+/* Log */
+.log{max-height:320px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px;font-family:'Courier New',monospace;font-size:11px;line-height:1.9}
 .log::-webkit-scrollbar{width:3px}.log::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
-.log-entry{border-bottom:1px solid var(--border);padding:2px 0}
+.log-entry{border-bottom:1px solid var(--border);padding:3px 0}
 .log-entry.success{color:var(--green)}.log-entry.error{color:var(--red)}.log-entry.info{color:var(--blue)}.log-entry.intel{color:var(--purple)}.log-entry.warn{color:var(--gold)}
-.paper-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;transition:.2s}
-.paper-card:hover{border-color:var(--gold)}
+
+/* Paper Cards */
+.paper-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;transition:.3s}
+.paper-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(255,215,0,.06)}
 .paper-head{display:flex;justify-content:space-between;align-items:center}
-.paper-title{font-size:14px;font-weight:700}
-.paper-badge{font-family:var(--font-d);font-size:9px;padding:3px 10px;border-radius:6px;letter-spacing:1px}
+.paper-title{font-size:15px;font-weight:700}
+.paper-badge{font-family:var(--font-d);font-size:9px;padding:4px 12px;border-radius:6px;letter-spacing:1px}
 .paper-badge.s101{background:rgba(255,46,99,.1);color:var(--red);border:1px solid rgba(255,46,99,.3)}
 .paper-badge.s201{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
 .paper-badge.s301{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.3)}
 .paper-badge.s408{background:rgba(57,255,20,.1);color:var(--green);border:1px solid rgba(57,255,20,.3)}
-.paper-meta{font-size:10px;color:var(--sub);margin-top:4px}
-.paper-preview{margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:12px;line-height:1.8;max-height:200px;overflow-y:auto;display:none}
+.paper-meta{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6}
+.paper-preview{margin-top:12px;padding:14px;background:var(--bg);border-radius:10px;font-size:12px;line-height:1.9;max-height:400px;overflow-y:auto;display:none}
 .paper-preview.show{display:block}
-.paper-q{padding:6px 0;border-bottom:1px solid var(--border)}
-.paper-q .stem{font-weight:600}.paper-q .opts{color:var(--sub);margin-left:16px}
-.paper-q .ans{color:var(--green);font-size:11px;margin-left:16px}
-.subj-tabs{display:flex;gap:6px;margin-bottom:12px}
-.subj-tab{padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid var(--border);transition:.2s}
+.paper-q{padding:8px 0;border-bottom:1px solid var(--border)}
+.paper-q .stem{font-weight:600}.paper-q .opts{color:var(--sub);margin-left:16px;margin-top:2px}
+.paper-q .ans{color:var(--green);font-size:11px;margin-left:16px;margin-top:2px}
+
+/* Subject Filter Tabs */
+.subj-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.subj-tab{padding:8px 16px;border-radius:10px;font-size:12px;cursor:pointer;border:1px solid var(--border);transition:.3s;font-weight:500}
+.subj-tab:hover{border-color:var(--gold)}
 .subj-tab.active{border-color:var(--gold);background:rgba(255,215,0,.08);color:var(--gold)}
-.back-btn{display:inline-flex;align-items:center;gap:4px;color:var(--sub);font-size:12px;text-decoration:none;margin-bottom:12px}.back-btn:hover{color:var(--text)}
-.phase-indicator{display:flex;gap:8px;margin:12px 0;align-items:center}
-.phase-dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
-.phase-dot.active{background:var(--purple);box-shadow:0 0 8px var(--purple);animation:pulse 1s ease infinite}
-.phase-dot.done{background:var(--green)}
-.phase-label{font-size:11px;color:var(--sub)}
+
+/* Responsive */
+@media(max-width:768px){
+  .container{padding:14px 16px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .key-grid{grid-template-columns:1fr}
+  .btn-row{flex-direction:column}
+  .vault-title{font-size:20px;letter-spacing:2px}
+  .stat-card .sc-num{font-size:22px}
+  .section{padding:16px}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-wrap:wrap}
+}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeIn .4s ease}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite}
 </style>
 </head>
 <body>
 <div class="container">
-  <a class="back-btn" href="../">�?返回应用�?/a>
+  <a class="back-btn" href="../">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    返回应用集
+  </a>
+
   <div class="vault-header">
-    <div class="vault-title">题库搜集�?/div>
+    <div class="vault-title">绝密考卷金库</div>
     <div class="vault-sub">CLASSIFIED EXAM VAULT · TOP SECRET</div>
-    <div class="vault-badge">�?AUTHORIZED PERSONNEL ONLY</div>
+    <div class="vault-badge">⚠ AUTHORIZED PERSONNEL ONLY</div>
   </div>
 
   <div class="stats-grid">
-    <div class="stat-card s101"><div class="sc-num" id="st101">0</div><div class="sc-label">101 政治�?/div></div>
-    <div class="stat-card s201"><div class="sc-num" id="st201">0</div><div class="sc-label">201 英语�?/div></div>
-    <div class="stat-card s301"><div class="sc-num" id="st301">0</div><div class="sc-label">301 数学�?/div></div>
-    <div class="stat-card s408"><div class="sc-num" id="st408">0</div><div class="sc-label">408 计算机卷</div></div>
+    <div class="stat-card s101"><div class="sc-num" id="st101">0</div><div class="sc-label">101 政治</div><div class="sc-tag">100分 · 38题</div></div>
+    <div class="stat-card s201"><div class="sc-num" id="st201">0</div><div class="sc-label">201 英语</div><div class="sc-tag">100分 · 52题</div></div>
+    <div class="stat-card s301"><div class="sc-num" id="st301">0</div><div class="sc-label">301 数学</div><div class="sc-tag">150分 · 22题</div></div>
+    <div class="stat-card s408"><div class="sc-num" id="st408">0</div><div class="sc-label">408 计算机</div><div class="sc-tag">150分 · 47题</div></div>
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('collect')">🤖 采集密卷</div>
-    <div class="tab" onclick="switchTab('vault')">📋 试卷金库</div>
+    <div class="tab active" onclick="switchTab('collect')">🔮 情报采集 + 出卷</div>
+    <div class="tab" onclick="switchTab('vault')">📦 试卷金库</div>
   </div>
 
+  <!-- ========== TAB: COLLECT ========== -->
   <div class="vault-tab" id="tabCollect">
+
+    <!-- API Key Section -->
+    <div class="key-section" id="keySection">
+      <div class="section-title"><span class="icon">🔑</span>死忠密码注入（API Key 直连）</div>
+      <div class="section-desc">
+        输入你的官方 API Key，直连 Perplexity / Gemini 官方接口。<br>
+        Key 仅存于当前页面会话（sessionStorage），关闭页面即销毁，不上传任何服务器。
+      </div>
+      <div class="key-grid">
+        <div class="key-group">
+          <label>🟣 PERPLEXITY API KEY</label>
+          <input class="key-input" type="password" id="ppxKey" placeholder="pplx-xxxxxxxxxxxx" autocomplete="off">
+          <div class="key-status"><div class="key-dot off" id="ppxDot"></div><span id="ppxStatus">未连接</span></div>
+        </div>
+        <div class="key-group">
+          <label>🔵 GEMINI API KEY</label>
+          <input class="key-input" type="password" id="gemKey" placeholder="AIzaSyxxxxxxxxxx" autocomplete="off">
+          <div class="key-status"><div class="key-dot off" id="gemDot"></div><span id="gemStatus">未连接</span></div>
+        </div>
+      </div>
+      <div class="key-actions">
+        <button class="btn btn-purple btn-sm" onclick="saveKeys()">💾 保存并检测</button>
+        <button class="btn btn-outline btn-sm" onclick="clearKeys()">🗑 清除 Key</button>
+        <span id="gemModelInfo" style="font-size:11px;color:var(--cyan);margin-left:auto;display:none"></span>
+      </div>
+    </div>
+
+    <!-- Collect Section -->
     <div class="section">
-      <div class="section-title"><span class="icon">🎯</span>Perplexity 情报窃取 + Genesis 压铸</div>
-      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">
-        Phase 1: Perplexity Sonar 深网情报窃取 �?Phase 2: AI Genesis Loop 模具压铸 �?完整密卷入库
-      </p>
+      <div class="section-title"><span class="icon">⚡</span>Perplexity 情报窃取 + Genesis 压制出卷</div>
+      <div class="section-desc">
+        Phase 1: Perplexity Sonar 深网情报窃取 → Phase 2: AI Genesis Loop 模拟压制 → 入金库
+      </div>
+
       <select id="paperSubject">
-        <option value="101">101 政治 �?时政深挖·求是/人民日报/中央公报</option>
-        <option value="201">201 英语一 �?外刊扒取·经济学人/卫报/大西洋月�?/option>
-        <option value="301">301 数学一 �?竞赛变形·丘成�?全国数竞/高校压轴</option>
-        <option value="408">408 计算�?�?论文窃取·ACM/IEEE/最新机�?/option>
+        <option value="101">101 政治 — 马原/毛概/史纲/思修/时政</option>
+        <option value="201">201 英语一 — 完形/阅读/翻译/写作</option>
+        <option value="301">301 数学一 — 高数/线代/概率论</option>
+        <option value="408">408 计算机 — 数据结构/组原/OS/网络</option>
       </select>
+
+      <select id="paperSource">
+        <option value="direct">🔑 死忠直连（用自己的 Key）</option>
+        <option value="relay">📡 中转阁代理（服务器 Key）</option>
+      </select>
+
       <select id="paperEngine">
-        <option value="all">🔥 双通道轮换（推荐）</option>
-        <option value="sonarReasoning">🧠 Sonar-Reasoning-Pro · 推理搜索</option>
-        <option value="gemini31pro">💎 Gemini-3.1-Pro · 纯血旗舰</option>
+        <option value="all">⚔ 双通道自动选（推荐）</option>
+        <option value="sonar">🟣 Perplexity 情报 → Gemini 出卷</option>
+        <option value="gemini">🔵 纯 Gemini 出卷（无情报）</option>
       </select>
-      <button class="btn btn-purple" onclick="launchGenesisHeist()" id="btnHeist">🕵�?启动情报窃取 + 压铸密卷</button>
-      <button class="btn btn-gold" onclick="collectPaper()" id="btnCollect">�?直接AI出卷（跳过情报）</button>
+
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="launchGenesisHeist()" id="btnHeist">⚡🔮 情报窃取 + 压制出卷</button>
+        <button class="btn btn-gold" onclick="collectPaper()" id="btnCollect">📋 直接 AI 出卷</button>
+      </div>
+
       <div class="phase-indicator" id="phaseIndicator" style="display:none">
         <div class="phase-dot" id="phase1Dot"></div><span class="phase-label">Phase 1: 情报窃取</span>
-        <div class="phase-dot" id="phase2Dot"></div><span class="phase-label">Phase 2: 模具压铸</span>
+        <div class="phase-dot" id="phase2Dot"></div><span class="phase-label">Phase 2: 模拟压制</span>
+        <div class="phase-dot" id="phase3Dot"></div><span class="phase-label">Phase 3: 入库</span>
       </div>
       <div class="progress-wrap" id="progressWrap">
-        <div class="progress-text" id="progressText">准备�?..</div>
+        <div class="progress-text"><span id="progressText">准备中...</span><span id="progressPct"></span></div>
         <div class="progress-bar"><div class="progress-fill pf-purple" id="progressFill"></div></div>
       </div>
       <div class="log" id="collectLog" style="display:none"></div>
     </div>
   </div>
 
+  <!-- ========== TAB: VAULT ========== -->
   <div class="vault-tab" id="tabVault" style="display:none">
     <div class="section">
-      <div class="section-title"><span class="icon">📋</span>试卷金库</div>
+      <div class="section-title"><span class="icon">📦</span>试卷金库</div>
       <div class="subj-tabs">
         <div class="subj-tab active" onclick="filterSubj('all')">全部</div>
         <div class="subj-tab" onclick="filterSubj('101')">101 政治</div>
         <div class="subj-tab" onclick="filterSubj('201')">201 英语</div>
         <div class="subj-tab" onclick="filterSubj('301')">301 数学</div>
-        <div class="subj-tab" onclick="filterSubj('408')">408 计算�?/div>
+        <div class="subj-tab" onclick="filterSubj('408')">408 计算机</div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-outline" onclick="exportAll()" style="flex:1">💾 导出全部</button>
-        <button class="btn btn-outline" onclick="clearAll()" style="flex:1;color:var(--red);border-color:rgba(255,46,99,.3)">🗑�?清空</button>
+      <div class="btn-row" style="margin-bottom:14px">
+        <button class="btn btn-outline btn-sm" onclick="exportAll()">📥 导出全部</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:rgba(255,46,99,.3)" onclick="clearAll()">🗑️ 清空金库</button>
       </div>
       <div id="vaultList"></div>
     </div>
   </div>
 </div>
 
-<!-- Keys handled by relay server --><script>
+<script>
 // ============================================================
-//  题库搜集�?v3.0 �?Perplexity 情报窃取 + Genesis Loop 压铸
+//  绝密考卷金库 v4.0 — 死忠密码直连 + Genesis Heist
 // ============================================================
 
 const RELAY_URL = 'https://pku-api-relay.onrender.com';
 
-// (PERPLEXITY_SYSTEM_PROMPT 已升级为 IRON PROTOCOL，定义在下方模型配置�?
-
-// ========== 完整试卷模板 (硬编码考研真实结构) ==========
+// ========== 试卷结构模板 (硬编码真实考研结构) ==========
 const TEMPLATES = {
   '101': {
-    name:'考研政治', score:100, time:180,
-    topics:'马克思主义基本原理、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策',
+    name:'考研政治', code:'101', score:100, time:180,
+    topics:'马克思主义基本原理概论、毛泽东思想和中国特色社会主义理论体系概论、中国近现代史纲要、思想道德与法治、形势与政策及当代世界经济与政治',
     sections:[
-      {type:'single',label:'单项选择�?,count:16,score:1,total:16,note:'四选一，考查基本概念/原理/时政识记'},
-      {type:'multi',label:'多项选择�?,count:17,score:2,total:34,note:'四选多(�?个正确答�?，全对才得分'},
-      {type:'analysis',label:'材料分析�?,count:5,score:10,total:50,note:'给出材料，结合原理进行深度分析论�?}
+      {type:'single',label:'单项选择题',count:16,score:1,total:16,note:'四选一，基本概念/原理/时政识记'},
+      {type:'multi',label:'多项选择题',count:17,score:2,total:34,note:'四选多(至少两个正确选项)，全对才得分'},
+      {type:'analysis',label:'材料分析题',count:5,score:10,total:50,note:'结合材料，运用原理分析论述，每题2-3小问'}
     ],
     totalQ:38,
     intelQueries:[
-      '最�?个月《求是》杂志核心理论文章中的新提法、新论断、新矛盾表述，原文引�?,
-      '中央最新重大会议公报原文中最具辨析价值的关键语句和政策表�?,
-      '人民日报理论版近期重点文章中，适合出材料分析题和多选辨析题的核心段落原�?
+      '2026年考研政治最新命题趋势预测，重点分析马原哲学辩证法论断、矛盾基本原理的考查方式',
+      '习近平新时代中国特色社会主义思想最新论述及考研政治可能考查的重大公共政策原理',
+      '中国近现代史纲要与时政结合的分析题出题方向，思想道德与法治高频考点'
     ]
   },
   '201': {
-    name:'考研英语一', score:100, time:180,
-    topics:'词汇语法上下文连贯、阅读理解、七选五/段落排序/小标题匹配、长难句翻译、应用文与议论文写作',
+    name:'考研英语一', code:'201', score:100, time:180,
+    topics:'英语知识运用(词汇/语法/语义)、传统阅读(主旨/细节/推断/态度/词义)、新题型(7选5/排序/小标题匹配)、英译汉翻译、应用文/图表写作',
     sections:[
-      {type:'cloze',label:'完形填空',count:20,score:0.5,total:10,note:'�?50词文�?0空，四选一考词�?语法/连贯'},
-      {type:'reading',label:'阅读理解A�?,count:20,score:2,total:40,note:'4篇文章各5题，主旨/细节/推断/态度/词义'},
-      {type:'newtype',label:'新题型B�?,count:5,score:2,total:10,note:'七选五/段落排序/小标题匹�?},
-      {type:'translation',label:'翻译C�?,count:5,score:2,total:10,note:'5个长难句英译�?},
-      {type:'writing',label:'写作',count:2,score:0,total:30,note:'小作�?0�?应用�?+大作�?0�?议论�?'}
+      {type:'cloze',label:'完形填空',count:20,score:0.5,total:10,note:'约350词20空，四选一，词汇/语法/连贯'},
+      {type:'reading',label:'阅读理解A节',count:20,score:2,total:40,note:'4篇文章各5题，主旨/细节/推断/态度/词义'},
+      {type:'newtype',label:'阅读理解B节',count:5,score:2,total:10,note:'7选5段落填空/排序/小标题匹配'},
+      {type:'translation',label:'翻译C节',count:5,score:2,total:10,note:'5个划线句子英译汉'},
+      {type:'writing',label:'写作',count:2,score:0,total:30,note:'小作文10分(应用文)+大作文20分(图表)'}
     ],
     totalQ:52,
     intelQueries:[
-      '本月最新The Economist经济学人关于科技伦理和社会经济变迁的长篇文章，截�?00词原文段�?,
-      '最新The Guardian卫报和The Atlantic大西洋月刊中关于心理学新发现的深度文章原�?,
-      '最新Nature自然杂志中逻辑最曲折�?个英语长难句原文，适合翻译题的复杂句式'
+      '近年来The Economist、Nature、The Atlantic等权威期刊中关于科技社会经济变迁的长篇文章，适合考研英语阅读的题材',
+      '2026年考研英语一完形填空高频词汇统计及阅读理解常考推理技巧',
+      '英语长难句翻译训练素材，复杂从句嵌套结构的翻译方法'
     ]
   },
   '301': {
-    name:'考研数学一', score:150, time:180,
-    topics:'高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代�?0%(行列�?矩阵/特征�?二次�? 概率�?0%(随机变量/数字特征/假设检�?',
+    name:'考研数学一', code:'301', score:150, time:180,
+    topics:'高等数学60%(极限/导数/积分/微分方程/级数/多元函数) 线性代数20%(行列式/矩阵/向量/线性方程组/特征值) 概率论20%(随机变量/分布/期望/方差)',
     sections:[
-      {type:'single',label:'选择�?,count:10,score:5,total:50,note:'四选一，基本概�?性质/计算/简单应�?},
-      {type:'blank',label:'填空�?,count:6,score:5,total:30,note:'直接填写结果，基本运�?公式/简单推�?},
-      {type:'solution',label:'解答�?,count:6,score:0,total:70,note:'完整求解过程，综合大�?}
+      {type:'single',label:'选择题',count:10,score:5,total:50,note:'四选一，概念/性质/计算/应用'},
+      {type:'blank',label:'填空题',count:6,score:5,total:30,note:'直接填写结果，公式/运算/推理'},
+      {type:'solution',label:'解答题',count:6,score:0,total:70,note:'完整解题步骤和推理过程，综合性强'}
     ],
     totalQ:22,
     intelQueries:[
-      '最新丘成桐大学生数学竞赛和全国大学生数学竞赛中的微积分与线性代数真题原�?,
-      '国内顶尖985高校(北大清华浙大)最新高等数学期末考试压轴题和原版变形�?,
-      '近期数学分析学术论文中出现的可转化为考研数学一的具体计算方法和证明技�?
+      '同济高等数学、清华线性代数中可能被改编为考研数学一的经典题目',
+      '近年985高校(清华北大)期末考试中高等数学/线性代数原题分析',
+      '数学一考研中常见的巧妙转化方法和证明技巧'
     ]
   },
   '408': {
-    name:'计算机学科专业基础', score:150, time:180,
-    topics:'数据结构45�?线性表/�?�?排序/查找) 计算机组成原�?5�?CPU/存储�?总线/IO) 操作系统35�?进程/内存/文件) 计算机网�?5�?TCP/IP/路由/HTTP)',
+    name:'计算机学科专业基础', code:'408', score:150, time:180,
+    topics:'数据结构45分(线性表/树/图/排序/查找) 计组45分(CPU/存储体系/指令/IO) 操作系统35分(进程/内存/文件系统) 计网25分(TCP/IP/路由/HTTP)',
     sections:[
-      {type:'single',label:'单项选择�?,count:40,score:2,total:80,note:'四选一，覆盖四大模块所有基础知识�?},
-      {type:'comprehensive',label:'综合应用�?,count:7,score:0,total:70,note:'涵盖DS/CO/OS/Net的综合大�?}
+      {type:'single',label:'单项选择题',count:40,score:2,total:80,note:'四选一，四大模块基础知识点'},
+      {type:'comprehensive',label:'综合应用题',count:7,score:0,total:70,note:'DS/CO/OS/Net综合大题，算法设计与分析'}
     ],
     totalQ:47,
     intelQueries:[
-      '近期ACM/IEEE关于操作系统内存管理和进程调度的最新论文核心机制与争议�?,
-      '最新计算机网络协议更新(HTTP/3 QUIC/TCP BBR)和数据结构算法竞赛题原文',
-      '国内985高校计算机组成原理和操作系统期末考试最新综合应用题原始题面'
+      'ACM/IEEE最新操作系统、内存与进程调度的核心机制及考研408考查方向',
+      '新型协议(HTTP/3 QUIC/TCP BBR)及数据结构算法设计的出题角度',
+      '985高校计组和操作系统期末综合应用题原始题目分析'
     ]
   }
 };
 
-// ============================================================
-//  考题素材深度搜索系统提示 (学术专家语气·防触发安全过�?
-// ============================================================
-const PERPLEXITY_SYSTEM_PROMPT = `你是一位资深的中国硕士研究生招生考试命题研究专家，专注于真题趋势分析和备考素材整理。你的任务是深度搜索公开可查的学术数据和教育资源，为试卷命题提供高质量的素材支撑�?
-## 搜索与输出要�?
-1. **数据来源**：从以下公开渠道深度搜索�?   - 学术论文库（知网、万方、Google Scholar、arXiv最新发表）
-   - 高校官方公告、命题相关教授的公开研究动�?   - 教育部、考试院发布的官方政策文件与考纲变化
-   - 考研辅导名师（肖秀荣、张宇、汤家凤、王道、天勤等）的公开授课重点
-   - 知乎、B站等公开讨论中的有价值分�?
-2. **输出精度**：每条分析结论须包含�?   - 具体知识点名称、所属章节、考纲对应位置
-   - 信息出处（含发布时间�?   - 基于历年规律的命中概率估算（百分比）
+// ========== 情报系统提示 ==========
+const PERPLEXITY_SYSTEM_PROMPT = `你是一位中国硕士研究生入学考试（考研）专家，专注于学术前沿和备考资源的搜集与整理。为试卷生成提供情报支撑。
 
-3. **输出格式**�?   - 🔴 **高度关注**（命中概率≥80%�?   - 🟡 **重点关注**�?0-80%�?   - 🟢 **持续跟踪**�?0-50%�?
-4. **核心需求：直接可用于出题的具体素材**�?   - 具体的题目原型、经典真题的变形方向
-   - 可转化为题目背景的真实事件、数据、案例、学术文章摘�?   - 各大辅导机构公开模拟题中的典型题型和出题思路
-   - 高校公开的期末考试题目中可借鉴的命题素�?
-5. **语言**：全部用中文输出，优先搜索最�?0天内容。直接给出结论和数据。`;
+## 核心要求：
+1. **权威来源**优先：
+   - 学术数据库（知网、万方、Google Scholar、arXiv等）
+   - 各高校官方出版的真题与教材
+   - 教育部考试院的官方文件与考纲变化
+   - 知名考研教师（肖秀荣、汤家凤等）的公开课重点
+   - 知乎等高质量社区的经验总结
 
-// ============================================================
-//  每日自动情报窃取守护进程 (DAILY AUTO-SCAN DAEMON)
-//  页面加载时检�? 今天还没窃取�?�?自动全科扫描窃取最新素�?// ============================================================
+2. **结构化输出**每条情报：
+   - 知识点定位（科目/章节/考纲对应位置）
+   - 信息来源与可信度
+   - 历年考查频率（大致百分比）
+
+3. **标注优先级**：
+   - 🔴 **高度关注**：考查概率>80%
+   - 🟡 **重点关注**：50-80%
+   - 🟢 **一般**：30-50%
+
+4. 直接给出可以转化为真题的题干素材、学术摘要
+5. 全部中文回答，给出至少20条情报`;
+
+// ========== 每日自动情报采集提示 ==========
 const DAILY_INTEL_PROMPTS = {
-  '101': `[金库窃取令�?01政治] 立即搜索以下全部目标�?1. 2026考研101思想政治理论——近30天最新命题趋势信�?2. 二十届四中全会、五中全会核心议�?�?可以直接出的大题方向
-3. 习近平最新重要讲话关键词 �?可用于选择题的具体素材
-4. 肖秀�?徐涛/腿姐最新押题方向中的具体题目或题型
-5. 中国近现代史纲要�?年未考章�?�?2026轮换出题素材
-6. �?0天全网考研政治模拟�?押题的具体题干和答案
-每条给出：具体素材内�?+ 所属章�?+ 命中概率(%) + 信息来源`,
+  '101': `[情报采集·101政治] 全方位扫描：
+1. 2026年101思想政治理论最新30天命题热点
+2. 党的二十大全会、中央全会公报中可直接出题的政策分析方向
+3. 习近平重要讲话关键词及多选题的精准素材
+4. 肖秀荣/徐涛等名师押题方向中的精准母题
+5. 中国近现代史纲要"新民主主义革命"2026年最新情报
+6. 30条全真模拟题的母题素材和考频
+每条情报：来源 + 预测考向 + 考查概率(%) + 信息来源`,
 
-  '201': `[金库窃取令�?01英语一] 立即搜索�?1. 2026考研英语一——近30天阅读理解选材方向(经济学人/卫报/纽约时报)
-2. AI伦理/气候变�?数字经济/太空探索 �?可直接用于阅读理解出题的英文文章摘录
-3. 大作文图画作文话题预�?TOP5的具体素�?4. 小作文应用文类型轮换规律 �?2026考哪种的具体范例
-5. 完形填空高频考点词汇最新统�?6. �?0天全网考研英语模拟�?真题解析中的具体题类素材
-每条给出：具体素�?文章 + 预测考点 + 命中概率(%)`,
+  '201': `[情报采集·201英语一] 全面扫描：
+1. 2026年英语一最新30天阅读选材方向(经济学人/科学/纽约时报)
+2. AI人工智能/气候变迁/太空探索等最新可做阅读原文的英语摘录
+3. 完形填空和图表作文预测TOP5的精准素材
+4. 小作文应用文趋势及2026年最可能出现的题型范文
+5. 最新高频词汇统计
+6. 30条全真英语模拟题的母题素材`,
 
-  '301': `[金库窃取令�?01数学一] 立即搜索�?1. 2026考研数学一——近30天最新命题趋�?2. 丘成桐大学生数学竞赛和全国大学生数学竞赛最新真题中可变形为考研题的具体题目
-3. 张宇/汤家�?李永乐最新授课重点中的具体题型和解题方法
-4. 985高校(北大清华浙大)最新高等数�?线性代数期末考试压轴题原�?5. 2025考研数学一真题难点复盘 �?2026奇偶年效应预�?6. 概率统计数理统计部分最新考点变化
-每条给出：具体题�?解法 + 章节 + 难度 + 命中概率(%)`,
+  '301': `[情报采集·301数学一] 全面扫描：
+1. 2026年数学一最新30天命题趋势
+2. 同济高数、清华/北大线性代数中可能被改编为考研原题的经典母题
+3. 多元微分/级数在今年考纲重点中的精准题型和解法
+4. 985高校期末考试中高等数学/线性代数原题分析
+5. 2025数学一难度复盘及2026年难度反弹效应预测
+6. 概率论与统计最新考查变化
+每条：解法 + 章节 + 难度 + 考查概率(%)`,
 
-  '408': `[金库窃取令�?08计算机] 立即搜索�?1. 2026考研408——近30天最新趋�?2. 数据结构(45�?: B+�?红黑�?图算�?哈希 �?可变形为大题的具体算法题
-3. 王道/天勤最�?08辅导重点中的具体题目
-4. 计组(45�?: RISC-V/Cache组相�?�?最新可用于出题的真实参数和场景
-5. OS(35�?: PV操作/死锁/页面置换 �?最新的具体应用场景�?6. 网络(25�?: TCP拥塞/SDN/IPv6 �?可出题的具体网络场景
-7. 前沿交叉: 容器�?QUIC/布隆过滤�?�?是否出现�?026真题�?8. �?0天全�?08模拟�?押题的具体题目原�?每条给出：具体题�?算法 + 分值预�?+ 命中概率(%) + 备考优先级`
+  '408': `[情报采集·408计算机] 全面扫描：
+1. 2026年408最新30天命题趋势
+2. 数据结构(45分): B+树/图算法/排序/查找可能成为大题的算法原型
+3. ACM/IEEE最新操作系统408重点知识点中的精准母题
+4. 计组(45分): RISC-V/Cache映射/流水线最新考向与经典题型
+5. OS(35分): PV操作/进程调度/页面置换的最新经典应用场景出题
+6. 计网(25分): TCP拥塞/SDN/IPv6可能出现的精准网络设计场景
+7. 前沿交叉: QUIC/eBPF/容器化技术是否可能进入2026年408
+8. 30条全真408模拟题母题素材及精准算法原型
+每条：算法 + 考点预测 + 考查概率(%) + 优先级`
 };
 
-async function dailyIntelScan() {
-  const today = new Date().toISOString().slice(0, 10);
-  const lastScan = localStorage.getItem('vault_last_scan_date');
-  if (lastScan === today) {
-    console.log('[金库] 📋 今日情报已更新，跳过自动窃取�?);
-    return;
-  }
-  console.log('[金库] 🔴🔴🔴 每日自动窃取启动! 目标: 全科4�?| 日期:', today);
+// ========== API Key 管理 (sessionStorage) ==========
+function getKey(name) { return sessionStorage.getItem('vault_key_' + name) || ''; }
+function setKey(name, val) { sessionStorage.setItem('vault_key_' + name, val); }
 
-  // 浮动状态条
-  const banner = document.createElement('div');
-  banner.id = 'autoScanBanner';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#ff2e63,#9d4edd);padding:0;overflow:hidden;';
-  const inner = document.createElement('div');
-  inner.style.cssText = 'background:rgba(6,6,12,.92);padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;color:#e8e8f0;';
-  inner.innerHTML = '<span style="animation:spin .7s linear infinite;display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#ff2e63;border-radius:50%;"></span><span id="scanStatus">🔴 IRON PROTOCOL · 金库每日素材窃取启动�?..</span><span id="scanProgress" style="margin-left:auto;font-size:11px;color:#08f7fe;">0/4</span>';
-  banner.appendChild(inner);
-  document.body.prepend(banner);
+function saveKeys() {
+  const ppx = document.getElementById('ppxKey').value.trim();
+  const gem = document.getElementById('gemKey').value.trim();
+  if (ppx) setKey('perplexity', ppx);
+  if (gem) setKey('gemini', gem);
 
-  let completed = 0;
-  for (const sub of ['101','201','301','408']) {
-    const statusEl = document.getElementById('scanStatus');
-    const progEl = document.getElementById('scanProgress');
-    if (statusEl) statusEl.textContent = `🔴 窃取�? ${sub} ...`;
-    if (progEl) progEl.textContent = `${completed}/4`;
-    try {
-      const query = DAILY_INTEL_PROMPTS[sub];
-      const result = await fetchIntelligence(sub, query);
-      const ts = new Date().toLocaleString('zh-CN');
-      const cached = JSON.parse(localStorage.getItem('vault_daily_intel_' + sub) || '[]');
-      cached.unshift({ date: ts, content: result.content, source: result.source });
-      if (cached.length > 10) cached.length = 10;
-      localStorage.setItem('vault_daily_intel_' + sub, JSON.stringify(cached));
-      completed++;
-      console.log(`[金库] �?${sub} 窃取完成 via ${result.source}`);
-    } catch(e) {
-      console.error(`[金库] �?${sub} 窃取失败:`, e.message);
-      completed++;
-    }
-    if (completed < 4) await new Promise(r => setTimeout(r, 2000));
-  }
-
-  localStorage.setItem('vault_last_scan_date', today);
-  const statusEl = document.getElementById('scanStatus');
-  const progEl = document.getElementById('scanProgress');
-  if (statusEl) statusEl.textContent = `�?每日素材窃取完成! 4科全部更�?· ${new Date().toLocaleTimeString('zh-CN')}`;
-  if (progEl) progEl.textContent = '4/4 DONE';
-  setTimeout(() => { const b = document.getElementById('autoScanBanner'); if(b) { b.style.transition='opacity .5s'; b.style.opacity='0'; setTimeout(()=>b.remove(), 500); } }, 4000);
+  // 检测连接状态
+  checkPerplexityKey(ppx);
+  checkGeminiKey(gem);
 }
 
-// ========== AI 模型配置 (只保留双通道) ==========
-const MODELS = {
-  sonarReasoning:{url:'PPX',model:'sonar-reasoning-pro',name:'Sonar-Reasoning-Pro',icon:'🧠'},
-  gemini31pro:{url:'GEMINI_DIRECT',model:'gemini-3.1-pro-preview',name:'Gemini-3.1-Pro',icon:'💎'}
+function clearKeys() {
+  sessionStorage.removeItem('vault_key_perplexity');
+  sessionStorage.removeItem('vault_key_gemini');
+  sessionStorage.removeItem('vault_best_gemini_model');
+  document.getElementById('ppxKey').value = '';
+  document.getElementById('gemKey').value = '';
+  document.getElementById('ppxDot').className = 'key-dot off';
+  document.getElementById('gemDot').className = 'key-dot off';
+  document.getElementById('ppxStatus').textContent = '已清除';
+  document.getElementById('gemStatus').textContent = '已清除';
+  document.getElementById('gemModelInfo').style.display = 'none';
+}
+
+async function checkPerplexityKey(key) {
+  if (!key) { document.getElementById('ppxDot').className='key-dot off'; document.getElementById('ppxStatus').textContent='未输入'; return; }
+  document.getElementById('ppxStatus').textContent = '检测中...';
+  try {
+    const r = await fetch('https://api.perplexity.ai/chat/completions', {
+      method:'POST', headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'sonar',messages:[{role:'user',content:'ping'}],max_tokens:5})
+    });
+    if (r.ok || r.status === 200) {
+      document.getElementById('ppxDot').className='key-dot on';
+      document.getElementById('ppxStatus').textContent='✅ 已连接 Perplexity';
+    } else {
+      document.getElementById('ppxDot').className='key-dot off';
+      document.getElementById('ppxStatus').textContent='❌ Key 无效 ('+r.status+')';
+    }
+  } catch(e) {
+    document.getElementById('ppxDot').className='key-dot off';
+    document.getElementById('ppxStatus').textContent='❌ 连接失败: '+e.message;
+  }
+}
+
+// ========== Gemini 自动检测最高可用模型 ==========
+const GEMINI_MODEL_HIERARCHY = [
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-pro',
+  'gemini-1.5-flash'
+];
+
+async function checkGeminiKey(key) {
+  if (!key) { document.getElementById('gemDot').className='key-dot off'; document.getElementById('gemStatus').textContent='未输入'; return; }
+  document.getElementById('gemStatus').textContent = '检测最高可用模型...';
+  const infoEl = document.getElementById('gemModelInfo');
+
+  for (const model of GEMINI_MODEL_HIERARCHY) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}?key=${key}`);
+      if (r.ok) {
+        sessionStorage.setItem('vault_best_gemini_model', model);
+        document.getElementById('gemDot').className='key-dot on';
+        document.getElementById('gemStatus').textContent='✅ 已连接 Gemini';
+        infoEl.textContent = '🏆 最高可用: ' + model;
+        infoEl.style.display = 'inline';
+        return model;
+      }
+    } catch(e) { continue; }
+  }
+  document.getElementById('gemDot').className='key-dot off';
+  document.getElementById('gemStatus').textContent='❌ 无可用模型';
+  return null;
+}
+
+// ========== 直连 Perplexity (用户自己的 Key) ==========
+async function directPerplexity(query, preferModel='sonar-deep-research') {
+  const key = getKey('perplexity');
+  if (!key) throw new Error('未设置 Perplexity Key');
+
+  // 模型降级链: sonar-deep-research → sonar-reasoning-pro → sonar-pro → sonar
+  const models = preferModel === 'sonar-deep-research'
+    ? ['sonar-deep-research','sonar-reasoning-pro','sonar-pro','sonar']
+    : ['sonar-reasoning-pro','sonar-pro','sonar'];
+
+  for (const model of models) {
+    try {
+      const ctrl = new AbortController();
+      const tmout = setTimeout(() => ctrl.abort(), 120000);
+      const res = await fetch('https://api.perplexity.ai/chat/completions', {
+        method:'POST',
+        headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model,
+          messages:[
+            {role:'system',content:PERPLEXITY_SYSTEM_PROMPT},
+            {role:'user',content:query}
+          ],
+          max_tokens:8000
+        }),
+        signal:ctrl.signal
+      });
+      clearTimeout(tmout);
+      if (!res.ok) {
+        if (res.status === 403 || res.status === 422) continue; // 无权限，降级
+        const e = await res.json().catch(()=>({}));
+        throw new Error(`Perplexity ${model} ${res.status}: ${e.error?.message||''}`);
+      }
+      const data = await res.json();
+      let content = data.choices?.[0]?.message?.content || '';
+      content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      if (content.length < 50) continue;
+      return { source: model, content };
+    } catch(e) {
+      if (e.name === 'AbortError') continue;
+      if (models.indexOf(model) === models.length - 1) throw e;
+      continue;
+    }
+  }
+  throw new Error('Perplexity 所有模型均失败');
+}
+
+// ========== 直连 Gemini (用户自己的 Key) ==========
+async function directGemini(messages, maxTokens=12000) {
+  const key = getKey('gemini');
+  if (!key) throw new Error('未设置 Gemini Key');
+  const model = sessionStorage.getItem('vault_best_gemini_model') || 'gemini-2.5-flash';
+
+  // 转换 messages 为 Gemini 格式
+  const contents = [];
+  let systemInstruction = '';
+  for (const m of messages) {
+    if (m.role === 'system') { systemInstruction = m.content; continue; }
+    contents.push({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{text: m.content}]
+    });
+  }
+
+  const body = {
+    contents,
+    generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
+  };
+  if (systemInstruction) {
+    body.systemInstruction = { parts: [{text: systemInstruction}] };
+  }
+
+  const ctrl = new AbortController();
+  const tmout = setTimeout(() => ctrl.abort(), 180000);
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:ctrl.signal }
+  );
+  clearTimeout(tmout);
+
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({}));
+    throw new Error(`Gemini ${model} ${res.status}: ${e.error?.message||JSON.stringify(e)}`);
+  }
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+}
+
+// ========== Relay 通道 (原有的中转阁代理) ==========
+const RELAY_MODELS = {
+  sonarReasoning:{url:'PPX',model:'sonar-reasoning-pro',name:'Sonar-Reasoning-Pro',icon:'🟣'},
+  gemini31pro:{url:'GEMINI_DIRECT',model:'gemini-2.5-pro',name:'Gemini-2.5-Pro',icon:'🔵'}
 };
+
+async function callRelay(channel, messages) {
+  const m = RELAY_MODELS[channel];
+  let url, body;
+  const headers = { 'Content-Type': 'application/json' };
+  const ctrl = new AbortController();
+  const tmout = setTimeout(() => ctrl.abort(), 120000);
+
+  if (m.url === 'PPX') {
+    url = `${RELAY_URL}/perplexity/search`;
+    body = { model: m.model, messages, max_tokens: 12000 };
+  } else {
+    url = `${RELAY_URL}/gemini/generate`;
+    body = { model: m.model, messages, max_tokens: 12000 };
+  }
+
+  try {
+    const res = await fetch(url, { method:'POST', headers, body:JSON.stringify(body), signal:ctrl.signal });
+    clearTimeout(tmout);
+    if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(`${m.name} ${res.status}: ${err.error?.message||''}`) }
+    const data = await res.json();
+    let content = data.choices?.[0]?.message?.content || '';
+    return content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  } catch(e) { clearTimeout(tmout); if(e.name==='AbortError') throw new Error(`${m.name}: 120s超时`); throw e }
+}
+
+// ========== 智能情报采集 (直连优先 → relay 降级) ==========
+async function fetchIntelligence(subjectCode, query) {
+  const source = document.getElementById('paperSource').value;
+
+  if (source === 'direct' && getKey('perplexity')) {
+    try { return await directPerplexity(query); } catch(e) {
+      console.warn('直连Perplexity失败，尝试relay:', e.message);
+    }
+  }
+
+  // Relay fallback
+  try {
+    const ctrl = new AbortController();
+    const tmout = setTimeout(() => ctrl.abort(), 90000);
+    const res = await fetch(`${RELAY_URL}/perplexity/search`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'sonar-reasoning-pro',messages:[{role:'system',content:PERPLEXITY_SYSTEM_PROMPT},{role:'user',content:query}],max_tokens:4096}),
+      signal:ctrl.signal
+    });
+    clearTimeout(tmout);
+    if (!res.ok) throw new Error(`Relay ${res.status}`);
+    const data = await res.json();
+    let content = data.choices?.[0]?.message?.content || '';
+    content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    if (content.length < 50) throw new Error('情报内容过短');
+    return { source: 'Relay-Sonar', content };
+  } catch(e2) {
+    // Gemini fallback
+    try {
+      const ctrl = new AbortController();
+      const tmout = setTimeout(() => ctrl.abort(), 90000);
+      const res = await fetch(`${RELAY_URL}/gemini/generate`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'gemini-2.5-pro',messages:[{role:'system',content:PERPLEXITY_SYSTEM_PROMPT},{role:'user',content:query}],max_tokens:4096}),
+        signal:ctrl.signal
+      });
+      clearTimeout(tmout);
+      if (!res.ok) throw new Error(`Gemini Relay ${res.status}`);
+      const data = await res.json();
+      let content = data.choices?.[0]?.message?.content || '';
+      return { source: 'Relay-Gemini', content: content.replace(/<think>[\s\S]*?<\/think>/g, '').trim() };
+    } catch(e3) {
+      throw new Error(`全通道失败 | Perplexity: ${e2.message} | Gemini: ${e3.message}`);
+    }
+  }
+}
+
+// ========== 智能出卷 (直连优先 → relay 降级) ==========
+async function forgeExam(messages) {
+  const source = document.getElementById('paperSource').value;
+
+  if (source === 'direct' && getKey('gemini')) {
+    try { return { content: await directGemini(messages), engine: sessionStorage.getItem('vault_best_gemini_model') || 'Gemini-Direct' }; }
+    catch(e) { console.warn('直连Gemini失败，尝试relay:', e.message); }
+  }
+
+  // Relay fallback
+  const channels = ['gemini31pro','sonarReasoning'];
+  for (const ch of channels) {
+    try {
+      const content = await callRelay(ch, messages);
+      return { content, engine: RELAY_MODELS[ch].name };
+    } catch(e) { continue; }
+  }
+  throw new Error('所有出卷通道均失败');
+}
 
 // ========== Storage ==========
 function getVault(s){try{return JSON.parse(localStorage.getItem(`vault_${s}`)||'[]')}catch(e){return[]}}
@@ -336,118 +690,7 @@ function switchTab(tab){
   event.target.classList.add('active');
 }
 
-// ========== AI Call (全部走中转阁·防CORS) ==========
-async function callAI(channel, messages) {
-  const m = MODELS[channel];
-  let url, body;
-  const headers = { 'Content-Type': 'application/json' };
-  const ctrl = new AbortController();
-  const tmout = setTimeout(() => ctrl.abort(), 120000);
-
-  if (m.url === 'PPX') {
-    // Sonar-Reasoning-Pro �?走中转阁 /perplexity/search
-    url = `${RELAY_URL}/perplexity/search`;
-    body = { model: m.model, messages, max_tokens: 12000 };
-  } else {
-    // Gemini-3.1-Pro �?走中转阁 /gemini/generate
-    url = `${RELAY_URL}/gemini/generate`;
-    body = { model: m.model, messages, max_tokens: 12000 };
-  }
-
-  try {
-    const res = await fetch(url, { method:'POST', headers, body:JSON.stringify(body), signal:ctrl.signal });
-    clearTimeout(tmout);
-    if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(`${m.name} ${res.status}: ${err.error?.message||''}`) }
-    const data = await res.json();
-    let content = data.choices?.[0]?.message?.content || '';
-    return content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-  } catch(e) { clearTimeout(tmout); if(e.name==='AbortError') throw new Error(`${m.name}: 120s超时`); throw e }
-}
-
-// ========== 双通道情报窃取: Sonar-Reasoning-Pro + Gemini Grounding ==========
-
-// 通道1: Sonar-Reasoning-Pro (走中转阁·防CORS)
-async function fetchPerplexity(query, retries=3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const ctrl = new AbortController();
-      const tmout = setTimeout(() => ctrl.abort(), 90000);
-      const res = await fetch(`${RELAY_URL}/perplexity/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'sonar-reasoning-pro',
-          messages: [
-            { role: 'system', content: PERPLEXITY_SYSTEM_PROMPT },
-            { role: 'user', content: query }
-          ],
-          max_tokens: 4096
-        }),
-        signal: ctrl.signal
-      });
-      clearTimeout(tmout);
-      if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(`Sonar ${res.status}: ${e.error?.message||''}`) }
-      const data = await res.json();
-      let content = data.choices?.[0]?.message?.content || '';
-      content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      if (content.length < 50) throw new Error('情报过短，强制重�?);
-      return { source: 'Sonar-Reasoning-Pro', content };
-    } catch(e) {
-      if (attempt >= retries) throw e;
-      await new Promise(r => setTimeout(r, 2000 * attempt));
-    }
-  }
-}
-
-// 通道2: Gemini-3.1-Pro (走中转阁·防CORS)
-async function fetchGeminiGrounding(query, retries=2) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const ctrl = new AbortController();
-      const tmout = setTimeout(() => ctrl.abort(), 90000);
-      const res = await fetch(`${RELAY_URL}/gemini/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'gemini-3.1-pro-preview',
-          messages: [
-            { role: 'system', content: PERPLEXITY_SYSTEM_PROMPT },
-            { role: 'user', content: query }
-          ],
-          max_tokens: 4096
-        }),
-        signal: ctrl.signal
-      });
-      clearTimeout(tmout);
-      if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(`Gemini ${res.status}: ${e.error?.message||''}`) }
-      const data = await res.json();
-      let content = data.choices?.[0]?.message?.content || '';
-      content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-      if (content.length < 50) throw new Error('Gemini情报过短，强制重�?);
-      return { source: 'Gemini-3.1-Pro', content };
-    } catch(e) {
-      if (attempt >= retries) throw e;
-      await new Promise(r => setTimeout(r, 2000 * attempt));
-    }
-  }
-}
-
-// 双通道调度�? Sonar主攻 �?Gemini兜底
-async function fetchIntelligence(subjectCode, query) {
-  // 先尝�?Sonar-Reasoning-Pro
-  try {
-    return await fetchPerplexity(query);
-  } catch(e1) {
-    // Sonar 失败，切�?Gemini Grounding
-    try {
-      return await fetchGeminiGrounding(query);
-    } catch(e2) {
-      throw new Error(`双通道全灭 | Sonar: ${e1.message} | Gemini: ${e2.message}`);
-    }
-  }
-}
-
-// ========== JSON 修复�?==========
+// ========== JSON 修复器 ==========
 function repairJSON(raw) {
   let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
   s = s.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
@@ -471,21 +714,21 @@ function repairJSON(raw) {
   }
 }
 
-// ========== Phase 1+2: 情报窃取 + Genesis Loop 压铸 ==========
+// ========== Phase 1+2+3: 情报窃取 + Genesis Loop 压制 + 入库 ==========
 async function launchGenesisHeist() {
   const subj = document.getElementById('paperSubject').value;
-  const enginePref = document.getElementById('paperEngine').value;
   const btn = document.getElementById('btnHeist');
   const btn2 = document.getElementById('btnCollect');
   const pw = document.getElementById('progressWrap');
   const pt = document.getElementById('progressText');
+  const pp = document.getElementById('progressPct');
   const pf = document.getElementById('progressFill');
   const log = document.getElementById('collectLog');
   const pi = document.getElementById('phaseIndicator');
   const meta = TEMPLATES[subj];
 
   btn.disabled = btn2.disabled = true;
-  btn.textContent = '🕵�?窃取�?..';
+  btn.textContent = '⚡🔮 情报窃取中...';
   pw.classList.add('show');
   pi.style.display = 'flex';
   log.style.display = 'block';
@@ -494,7 +737,8 @@ async function launchGenesisHeist() {
 
   const p1d = document.getElementById('phase1Dot');
   const p2d = document.getElementById('phase2Dot');
-  p1d.className = 'phase-dot active'; p2d.className = 'phase-dot';
+  const p3d = document.getElementById('phase3Dot');
+  p1d.className = 'phase-dot active'; p2d.className = 'phase-dot'; p3d.className = 'phase-dot';
 
   function addLog(msg, cls='') {
     log.innerHTML += `<div class="log-entry ${cls}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
@@ -502,112 +746,114 @@ async function launchGenesisHeist() {
   }
 
   const paperNum = getVault(subj).length + 1;
-  addLog(`🕵�?启动 Genesis Heist · ${meta.name} �?{paperNum}�?| 双通道情报窃取`, 'intel');
-  addLog(`📡 主力: Sonar-Reasoning-Pro | 备用: Gemini-3.1-Pro+GoogleSearch`, 'info');
+  const srcMode = document.getElementById('paperSource').value;
+  addLog(`⚡ 启动 Genesis Heist · ${meta.name} 第${paperNum}卷 | 模式: ${srcMode==='direct'?'死忠直连':'中转代理'}`, 'intel');
 
-  // ---- Phase 1: 双通道情报窃取 ----
+  // ---- Phase 1: 情报窃取 ----
   let rawIntel = '';
   const queries = meta.intelQueries;
-  
+
   for (let i = 0; i < queries.length; i++) {
     try {
-      pf.style.width = `${((i+1)/queries.length*40)}%`;
+      const pct = Math.round((i+1)/queries.length*40);
+      pf.style.width = `${pct}%`;
+      pp.textContent = `${pct}%`;
       pt.textContent = `Phase 1: 窃取情报 ${i+1}/${queries.length}...`;
-      addLog(`🔍 双通道检�?[${i+1}/${queries.length}]: ${queries[i].substring(0,40)}...`, 'intel');
+      addLog(`🔍 情报采集 [${i+1}/${queries.length}]: ${queries[i].substring(0,50)}...`, 'intel');
       const result = await fetchIntelligence(subj, queries[i]);
       rawIntel += `\n\n=== 情报片段 ${i+1} [${result.source}] ===\n${result.content}`;
-      addLog(`�?情报片段 ${i+1} via ${result.source} (${result.content.length}字符)`, 'success');
+      addLog(`✅ 情报片段 ${i+1} via ${result.source} (${result.content.length}字符)`, 'success');
     } catch(e) {
-      addLog(`⚠️ 情报片段 ${i+1} 双通道全灭: ${e.message}`, 'warn');
+      addLog(`⚠ 情报片段 ${i+1} 失败: ${e.message}`, 'warn');
     }
   }
 
   if (rawIntel.length < 100) {
-    addLog('�?情报窃取全部失败，回退到直接出卷模�?, 'error');
-    p1d.className = 'phase-dot'; p2d.className = 'phase-dot';
+    addLog('⚠ 情报窃取不足，切换为直接出卷模式', 'warn');
+    p1d.className = 'phase-dot'; p2d.className = 'phase-dot'; p3d.className = 'phase-dot';
     pi.style.display = 'none';
     btn.disabled = btn2.disabled = false;
-    btn.textContent = '🕵�?启动情报窃取 + 压铸密卷';
+    btn.textContent = '⚡🔮 情报窃取 + 压制出卷';
     await collectPaper();
     return;
   }
 
-  addLog(`📦 情报汇总完�? ${rawIntel.length}字符 | 进入 Genesis Loop 压铸`, 'success');
+  addLog(`📊 情报汇总: ${rawIntel.length}字符 | 进入 Genesis Loop 压制`, 'success');
   p1d.className = 'phase-dot done';
   p2d.className = 'phase-dot active';
 
-  // ---- Phase 2: Genesis Loop 模具压铸 ----
+  // ---- Phase 2: Genesis Loop 模拟压制 ----
   pf.className = 'progress-fill pf-gold';
-  pt.textContent = 'Phase 2: Genesis Loop 模具压铸...';
-  pf.style.width = '50%';
+  pt.textContent = 'Phase 2: Genesis Loop 压制出卷...';
+  pf.style.width = '50%'; pp.textContent = '50%';
 
   const sectionsDesc = meta.sections.map(s =>
-    `�?${s.label}：严格生�?${s.count} 题，type="${s.type}"，每�?{s.score>0?s.score+'�?:'见分值分�?} (小计${s.total}�? �?${s.note}`
+    `【${s.label}】严格生成 ${s.count} 道题，type="${s.type}"，每题${s.score>0?s.score+'分':'分值不等'} (小计${s.total}分) — ${s.note}`
   ).join('\n');
 
-    // 融合每日自动窃取的素�?  const dailyCache = JSON.parse(localStorage.getItem('vault_daily_intel_' + subj) || '[]');
+  // 融入每日自动采集的情报
+  const dailyCache = JSON.parse(localStorage.getItem('vault_daily_intel_' + subj) || '[]');
   const dailyIntel = dailyCache.length > 0 ? dailyCache[0].content : '';
-  const combinedIntel = rawIntel + (dailyIntel ? `\n\n=== 每日自动窃取素材 [${dailyCache[0]?.source || 'cache'}] ===\n${dailyIntel}` : '');
+  const combinedIntel = rawIntel + (dailyIntel ? `\n\n=== 每日自动采集情报 ===\n${dailyIntel}` : '');
 
-  const genesisPrompt = `你是全国硕士研究生招生考试命题组核心专家。现在你收到了一批从学术深网窃取的最新情报素材，你必须基于这些情报，严格按真实试卷结构压铸出 ${meta.name}(${subj}) �?{paperNum}套完整模拟密卷�?
-【窃取到的情报素材（必须融入出题）�?${combinedIntel.substring(0, 12000)}
+  const genesisPrompt = `你是全国硕士研究生入学考试的出题专家。现在收到一批经过学术搜索引擎采集的真实情报素材，请根据这些情报严格按照实际考试结构压制 ${meta.name}(${subj}) 第${paperNum}号模拟卷·金库版。
 
-【试卷规格�?科目�?{meta.name}(${subj}) | 满分�?{meta.score}�?| 时长�?{meta.time}分钟
+【采集情报素材（重要）】：
+${combinedIntel.substring(0, 12000)}
 
-【分节出题要求（必须严格遵守题数和分值）�?${sectionsDesc}
+【考试规格】：科目：${meta.name}(${subj}) | 满分：${meta.score}分 | 时长：${meta.time}分钟
 
-【考点覆盖�?${meta.topics}
+【分节结构要求（必须严格遵循分值和题量）】：
+${sectionsDesc}
 
-【质量标准�?1. 必须将上述情报素材融入题目（作为出题背景/材料来源�?2. 每一节的题目数量必须精确（不多不少）
-3. 选择题有4个选项(ABCD)，多选题有≥2个正确答�?4. 难度分布：基础30% + 中等45% + 拔高25%
-5. 每题配专业级详细解析（含考点出处和解题思路�?6. 严格符合考研真题难度
+【覆盖考纲】：${meta.topics}
 
-【输出格式】纯JSON数组，第一个字符[，最后一个字符]，禁止多余文�?[{"id":"q001","section":"${meta.sections[0].label}","type":"${meta.sections[0].type}","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
+【出卷准则】：
+1. 务必将情报素材中的考点作为出题背景/素材
+2. 每一节的题目数量请精确且不多不少
+3. 选择题4个选项(ABCD)，多选题至少2个正确选项
+4. 难度分布：基础30% + 中等45% + 较高25%
+5. 每题提供专业详细解析和解题思路
+6. 严格贴合考研难度
 
-  const channels = enginePref === 'all'
-    ? ['gemini31pro','sonarReasoning']
-    : [enginePref];
+【输出格式】严格JSON数组，不含任何其他字符：
+[{"id":"q001","section":"${meta.sections[0].label}","type":"${meta.sections[0].type}","stem":"题干","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","analysis":"详细解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
 
   let questions = null;
   let usedEngine = '';
 
-  for (const ch of channels) {
-    try {
-      addLog(`${MODELS[ch].icon} ${MODELS[ch].name} Genesis Loop 压铸�?..`);
-      pf.style.width = '70%';
-      const content = await callAI(ch, [
-        { role:'system', content:'你是考研命题专家。严格基于提供的情报素材出题。输出纯JSON数组，第一个字符必须是[，最后一个字符必须是]。禁止任何多余文字�? },
-        { role:'user', content: genesisPrompt }
-      ]);
-      questions = repairJSON(content);
-      usedEngine = MODELS[ch].name;
-      addLog(`�?${MODELS[ch].name} 压铸成功! ${questions.length}题`, 'success');
-      break;
-    } catch(e) {
-      addLog(`�?${MODELS[ch].name}: ${e.message}`, 'error');
-    }
-  }
-
-  if (!questions || questions.length === 0) {
-    addLog('�?所有压铸通道均失�?, 'error');
-    pt.textContent = '�?压铸失败';
+  try {
+    addLog(`🔨 Genesis 压制引擎启动...`, 'info');
+    pf.style.width = '65%'; pp.textContent = '65%';
+    const result = await forgeExam([
+      { role:'system', content:'你是考研出题专家。严格按照情报素材出题。输出纯JSON数组，不含任何其他字符。不含```json标记。' },
+      { role:'user', content: genesisPrompt }
+    ]);
+    questions = repairJSON(result.content);
+    usedEngine = result.engine;
+    addLog(`✅ ${usedEngine} 压制成功! ${questions.length}题`, 'success');
+  } catch(e) {
+    addLog(`❌ 出卷失败: ${e.message}`, 'error');
+    pt.textContent = '❌ 压制失败';
     p2d.className = 'phase-dot';
-    btn.textContent = '🕵�?重新启动';
+    btn.textContent = '⚡🔮 重试';
     btn.disabled = btn2.disabled = false;
     return;
   }
 
-  // 组装完整试卷
-  pf.style.width = '90%';
-  pt.textContent = '📋 组装密卷...';
+  // ---- Phase 3: 装配入库 ----
+  p2d.className = 'phase-dot done';
+  p3d.className = 'phase-dot active';
+  pf.style.width = '90%'; pp.textContent = '90%';
+  pt.textContent = 'Phase 3: 装配入金库...';
 
   const paper = {
     id: `paper-${subj}-${Date.now()}`,
-    title: `${meta.name} · 情报密卷 #${paperNum}`,
+    title: `${meta.name} · 情报压制金库卷 #${paperNum}`,
     subject: subj, subjectName: meta.name,
     totalScore: meta.score, timeMinutes: meta.time,
-    structure: meta.sections.map(s=>`${s.label}${s.count}�?${s.total}�?`).join(' + '),
-    engine: usedEngine, source: 'Perplexity+Genesis',
+    structure: meta.sections.map(s=>`${s.label}${s.count}题·${s.total}分`).join(' + '),
+    engine: usedEngine, source: srcMode==='direct'?'死忠直连+Genesis':'Relay+Genesis',
     generatedAt: new Date().toISOString(),
     questionCount: questions.length,
     intelSize: rawIntel.length,
@@ -615,41 +861,40 @@ async function launchGenesisHeist() {
   };
 
   addPaper(subj, paper);
-  addLog(`📋 ${paper.title} (${paper.questionCount}题·情�?{paper.intelSize}字符) 已存入金库`, 'success');
+  addLog(`🏆 ${paper.title} (${paper.questionCount}题·情报${paper.intelSize}字符) 已入库`, 'success');
 
-  // 推送中转阁
+  // 中转阁同步
   try {
     const relayResp = await fetch(`${RELAY_URL}/vault/papers`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ paper:{questions:paper.questions}, subject:subj, source:`${usedEngine}+Perplexity`, paperNum, metadata:{title:paper.title,totalScore:paper.totalScore,timeMinutes:paper.timeMinutes,structure:paper.structure,generatedAt:paper.generatedAt} })
+      body: JSON.stringify({ paper:{questions:paper.questions}, subject:subj, source:usedEngine, paperNum, metadata:{title:paper.title,totalScore:paper.totalScore,timeMinutes:paper.timeMinutes,structure:paper.structure,generatedAt:paper.generatedAt} })
     });
     const rd = await relayResp.json();
-    if (rd.success) addLog(`📡 密卷已同步中转阁 | �?{rd.paperNum}�?| 全库${rd.totalPapers}套`, 'success');
-    else addLog('⚠️ 中转阁同步失�? '+(rd.error||''), 'warn');
-  } catch(e) { addLog('⚠️ 中转阁推送失�?本地已保�?', 'warn') }
+    if (rd.success) addLog(`📡 金库已同步中转阁 | 第${rd.paperNum}卷 | 全局${rd.totalPapers}卷`, 'success');
+  } catch(e) { addLog('📡 中转阁同步跳过（本地已保存）', 'warn') }
 
-  pf.style.width = '100%';
-  pt.textContent = `�?${paper.title} 压铸完成！`;
-  p2d.className = 'phase-dot done';
-  btn.textContent = '🕵�?启动情报窃取 + 压铸密卷';
+  pf.style.width = '100%'; pp.textContent = '100%';
+  pt.textContent = `🏆 ${paper.title} 压制完成！`;
+  p3d.className = 'phase-dot done';
+  btn.textContent = '⚡🔮 情报窃取 + 压制出卷';
   btn.disabled = btn2.disabled = false;
   updateStats();
 }
 
-// ========== 直接AI出卷 (跳过Perplexity) ==========
+// ========== 直接 AI 出卷 (无Perplexity情报) ==========
 async function collectPaper() {
   const subj = document.getElementById('paperSubject').value;
-  const enginePref = document.getElementById('paperEngine').value;
   const btn = document.getElementById('btnCollect');
   const btn2 = document.getElementById('btnHeist');
   const pw = document.getElementById('progressWrap');
   const pt = document.getElementById('progressText');
+  const pp = document.getElementById('progressPct');
   const pf = document.getElementById('progressFill');
   const log = document.getElementById('collectLog');
   const meta = TEMPLATES[subj];
 
   btn.disabled = btn2.disabled = true;
-  btn.textContent = '�?采集�?..';
+  btn.textContent = '📋 出卷中...';
   pw.classList.add('show');
   log.style.display = 'block';
   log.innerHTML = '';
@@ -661,66 +906,59 @@ async function collectPaper() {
   }
 
   const paperNum = getVault(subj).length + 1;
-  addLog(`📋 直接出卷 ${meta.name} �?{paperNum}套`, 'info');
+  addLog(`📋 直接出卷 ${meta.name} 第${paperNum}卷`, 'info');
 
   const sectionsDesc = meta.sections.map(s =>
-    `�?${s.label}：严�?${s.count} 题，type="${s.type}"，每�?{s.score>0?s.score+'�?:'见分�?} (小计${s.total}�? �?${s.note}`
+    `【${s.label}】${s.count} 道题，type="${s.type}"，每题${s.score>0?s.score+'分':'分值不等'} (小计${s.total}分) — ${s.note}`
   ).join('\n');
 
-  const prompt = `你是全国硕士研究生招生考试命题组核心专家。严格按真实试卷结构生成 ${meta.name}(${subj}) �?{paperNum}套模拟密卷�?
-【试卷规格】满分：${meta.score}�?| 时长�?{meta.time}分钟
-【分节要求�?${sectionsDesc}
-【考点�?{meta.topics}
-【标准】题数精确·难度分�?0/45/25·配详细解析·考研真题难度
+  const prompt = `你是全国硕士研究生入学考试出题专家。请严格按照实际考试结构生成 ${meta.name}(${subj}) 第${paperNum}号模拟卷·金库版。
+考试规格：满分${meta.score}分 | 时长${meta.time}分钟
+分节要求：
+${sectionsDesc}
+覆盖范围：${meta.topics}
+准则：精确题量、难度分布30/45/25、详细解析
 
-【输出】纯JSON数组 [{"id":"q001","section":"...","type":"${meta.sections[0].type}","stem":"题干","options":["A.","B.","C.","D."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
+输出纯JSON数组：[{"id":"q001","section":"...","type":"${meta.sections[0].type}","stem":"题干","options":["A.","B.","C.","D."],"answer":"A","analysis":"解析","chapter":"章节","difficulty":3,"score":${meta.sections[0].score}}]`;
 
-  const channels = enginePref==='all'?['gemini31pro','sonarReasoning']:[enginePref];
   let questions=null, usedEngine='';
 
-  for (const ch of channels) {
-    try {
-      addLog(`${MODELS[ch].icon} ${MODELS[ch].name} 正在出卷...`);
-      pf.style.width='40%'; pt.textContent=`${MODELS[ch].name} 生成�?..`;
-      const content = await callAI(ch, [
-        {role:'system',content:'你是考研命题专家。严格输出JSON数组，第一个字符必须是[，最后一个字符必须是]。禁止任何多余文字�?},
-        {role:'user',content:prompt}
-      ]);
-      questions = repairJSON(content);
-      usedEngine = MODELS[ch].name;
-      addLog(`�?${MODELS[ch].name} 出卷成功! ${questions.length}题`, 'success');
-      break;
-    } catch(e) { addLog(`�?${MODELS[ch].name}: ${e.message}`, 'error') }
-  }
-
-  if (!questions||questions.length===0) {
-    addLog('�?所有通道均失�?,'error');
-    pt.textContent='�?采集失败';
-    btn.textContent='�?重新采集'; btn.disabled=btn2.disabled=false;
+  try {
+    addLog(`🔨 出卷引擎启动...`, 'info');
+    pf.style.width='40%'; pp.textContent='40%'; pt.textContent='AI 出卷中...';
+    const result = await forgeExam([
+      {role:'system',content:'你是考研出题专家。输出纯JSON数组，不含任何其他字符。'},
+      {role:'user',content:prompt}
+    ]);
+    questions = repairJSON(result.content);
+    usedEngine = result.engine;
+    addLog(`✅ ${usedEngine} 出卷成功! ${questions.length}题`, 'success');
+  } catch(e) {
+    addLog(`❌ 出卷失败: ${e.message}`, 'error');
+    pt.textContent='❌ 出卷失败';
+    btn.textContent='📋 重试'; btn.disabled=btn2.disabled=false;
     return;
   }
 
-  pf.style.width='80%'; pt.textContent='📋 组装试卷...';
+  pf.style.width='80%'; pp.textContent='80%'; pt.textContent='📦 装配入库...';
   const paper = {
-    id:`paper-${subj}-${Date.now()}`, title:`${meta.name} · 密卷 #${paperNum}`,
+    id:`paper-${subj}-${Date.now()}`, title:`${meta.name} · 金库卷 #${paperNum}`,
     subject:subj, subjectName:meta.name, totalScore:meta.score, timeMinutes:meta.time,
-    structure:meta.sections.map(s=>`${s.label}${s.count}�?${s.total}�?`).join(' + '),
+    structure:meta.sections.map(s=>`${s.label}${s.count}题·${s.total}分`).join(' + '),
     engine:usedEngine, source:'DirectAI', generatedAt:new Date().toISOString(),
     questionCount:questions.length,
     questions:questions.map((q,i)=>({...q,id:q.id||`q${String(i+1).padStart(3,'0')}`,num:i+1}))
   };
 
   addPaper(subj, paper);
-  addLog(`📋 ${paper.title} (${paper.questionCount}�? 已存入金库`, 'success');
+  addLog(`🏆 ${paper.title} (${paper.questionCount}题) 已入库`, 'success');
 
   try {
-    const rr = await fetch(`${RELAY_URL}/vault/papers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paper:{questions:paper.questions},subject:subj,source:usedEngine,paperNum,metadata:{title:paper.title,totalScore:paper.totalScore,timeMinutes:paper.timeMinutes,structure:paper.structure,generatedAt:paper.generatedAt}})});
-    const rd = await rr.json();
-    if(rd.success) addLog(`📡 已同步中转阁 | �?{rd.paperNum}套`, 'success');
-  } catch(e) { addLog('⚠️ 中转阁推送失�?本地已保�?', 'warn') }
+    await fetch(`${RELAY_URL}/vault/papers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paper:{questions:paper.questions},subject:subj,source:usedEngine,paperNum,metadata:{title:paper.title,totalScore:paper.totalScore,timeMinutes:paper.timeMinutes,structure:paper.structure,generatedAt:paper.generatedAt}})});
+  } catch(e) {}
 
-  pf.style.width='100%'; pt.textContent=`�?${paper.title} 采集完成！`;
-  btn.textContent='�?采集下一�?; btn.disabled=btn2.disabled=false;
+  pf.style.width='100%'; pp.textContent='100%'; pt.textContent=`🏆 ${paper.title} 出卷完成！`;
+  btn.textContent='📋 直接 AI 出卷'; btn.disabled=btn2.disabled=false;
   updateStats();
 }
 
@@ -737,25 +975,26 @@ function renderVault() {
   let all = [];
   (currentFilter==='all'?['101','201','301','408']:[currentFilter]).forEach(s=>{getVault(s).forEach(p=>all.push(p))});
   all.sort((a,b)=>new Date(b.generatedAt)-new Date(a.generatedAt));
-  if(all.length===0){list.innerHTML='<p style="text-align:center;color:var(--dim);padding:30px">暂无试卷，去采集吧！</p>';return}
+  if(all.length===0){list.innerHTML='<p style="text-align:center;color:var(--dim);padding:40px;font-size:14px">📭 金库暂无试卷，去采集生成吧！</p>';return}
   list.innerHTML = all.map((p,i)=>`
     <div class="paper-card">
       <div class="paper-head">
         <div>
-          <div class="paper-title">${p.title}</div>
-          <div class="paper-meta">${p.questionCount||p.questions?.length||0}�?· ${p.totalScore||'?'}�?· ${p.engine||'AI'}${p.source==='Perplexity+Genesis'?' · 🕵️情�?:''} · ${new Date(p.generatedAt).toLocaleString('zh-CN')}</div>
+          <div class="paper-title">${p.title||'未命名试卷'}</div>
+          <div class="paper-meta">${p.questionCount||p.questions?.length||0}题 · ${p.totalScore||'?'}分 · ${p.engine||'AI'}${p.source&&p.source.includes('Genesis')?' · 🔮情报版':''} · ${new Date(p.generatedAt).toLocaleString('zh-CN')}</div>
         </div>
         <span class="paper-badge s${p.subject}">${p.subject}</span>
       </div>
-      <div style="margin-top:8px">
-        <button class="btn btn-outline" style="padding:8px;font-size:12px;margin:0" onclick="togglePreview(${i})">📖 展开试卷</button>
+      <div style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="togglePreview(${i})">📖 展开试卷</button>
+        <button class="btn btn-outline btn-sm" onclick="exportPaper(${i})" style="margin-left:4px">💾 导出</button>
       </div>
       <div class="paper-preview" id="preview-${i}">
         ${(p.questions||[]).map((q,qi)=>`
           <div class="paper-q">
             <div class="stem">${q.num||qi+1}. [${q.section||q.type||''}] ${q.stem||q.question||''}</div>
             <div class="opts">${(q.options||[]).join(' &nbsp; ')}</div>
-            <div class="ans">�?${q.answer||''} ${q.analysis?'| '+q.analysis.substring(0,80)+'...':''}</div>
+            <div class="ans">✅ ${q.answer||''} ${q.analysis?'| '+q.analysis.substring(0,120)+'...':''}</div>
           </div>
         `).join('')}
       </div>
@@ -764,6 +1003,17 @@ function renderVault() {
 }
 function togglePreview(i){document.getElementById('preview-'+i).classList.toggle('show')}
 
+function exportPaper(idx) {
+  let all = [];
+  (currentFilter==='all'?['101','201','301','408']:[currentFilter]).forEach(s=>{getVault(s).forEach(p=>all.push(p))});
+  all.sort((a,b)=>new Date(b.generatedAt)-new Date(a.generatedAt));
+  const p = all[idx];
+  if (!p) return;
+  const b = new Blob([JSON.stringify(p,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download=`${p.subject}_${p.title}_${new Date(p.generatedAt).toISOString().slice(0,10)}.json`; a.click();
+}
+
 function exportAll(){
   const d={};['101','201','301','408'].forEach(s=>{d[s]=getVault(s)});
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
@@ -771,13 +1021,49 @@ function exportAll(){
   a.download=`exam_vault_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function clearAll(){
-  if(!confirm('确认清空所有试卷？'))return;
+  if(!confirm('⚠ 确定清空所有试卷金库？此操作不可撤销！'))return;
   ['101','201','301','408'].forEach(s=>localStorage.removeItem(`vault_${s}`));
   updateStats();renderVault();
 }
 
+// ========== 每日自动情报扫描 ==========
+async function dailyIntelScan() {
+  const today = new Date().toISOString().slice(0, 10);
+  const lastScan = localStorage.getItem('vault_last_scan_date');
+  if (lastScan === today) return;
+
+  console.log('[金库] 每日自动情报采集启动 |', today);
+  let completed = 0;
+  for (const sub of ['101','201','301','408']) {
+    try {
+      const query = DAILY_INTEL_PROMPTS[sub];
+      const result = await fetchIntelligence(sub, query);
+      const cached = JSON.parse(localStorage.getItem('vault_daily_intel_' + sub) || '[]');
+      cached.unshift({ date: new Date().toLocaleString('zh-CN'), content: result.content, source: result.source });
+      if (cached.length > 10) cached.length = 10;
+      localStorage.setItem('vault_daily_intel_' + sub, JSON.stringify(cached));
+      completed++;
+    } catch(e) {
+      console.warn(`[金库] ${sub} 自动采集失败:`, e.message);
+      completed++;
+    }
+    if (completed < 4) await new Promise(r => setTimeout(r, 2000));
+  }
+  localStorage.setItem('vault_last_scan_date', today);
+}
+
 // ---- Init ----
 updateStats();
+
+// 恢复 Key 显示状态
+(function(){
+  const ppx = getKey('perplexity');
+  const gem = getKey('gemini');
+  if (ppx) { document.getElementById('ppxKey').value = ppx; checkPerplexityKey(ppx); }
+  if (gem) { document.getElementById('gemKey').value = gem; checkGeminiKey(gem); }
+})();
+
+// URL 参数
 (function(){
   const params=new URLSearchParams(window.location.search);
   const subj=params.get('subject'), tab=params.get('tab');
@@ -794,8 +1080,8 @@ updateStats();
   }
 })();
 
-// 启动每日自动窃取守护进程
-setTimeout(() => dailyIntelScan().catch(e => console.error('[金库] 自动窃取异常:', e)), 1500);
+// 启动每日自动采集（延迟2秒，不阻塞UI）
+setTimeout(() => dailyIntelScan().catch(e => console.error('[金库] 自动采集异常:', e)), 2000);
 </script>
 </body>
 </html>
