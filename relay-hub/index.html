@@ -276,9 +276,54 @@ body {
   color:var(--dim);font-size:10px;font-family:var(--font-d);
   letter-spacing:3px;border-top:1px solid var(--border);
 }
+
+/* ── API Key Modal ── */
+.key-overlay{position:fixed;inset:0;background:rgba(6,6,14,.95);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.key-overlay.hide{display:none}
+.key-box{width:92%;max-width:420px;background:rgba(14,14,32,.95);border:1px solid rgba(255,215,0,.12);border-radius:20px;padding:36px 28px;text-align:center;backdrop-filter:blur(20px)}
+.key-box .key-seal{width:64px;height:64px;margin:0 auto 14px;border:2px solid rgba(255,215,0,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;animation:float 4s ease-in-out infinite}
+.key-box h2{font-size:22px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.key-box .key-sub{font-family:var(--font-d);font-size:9px;color:var(--dim);letter-spacing:4px;margin-bottom:20px}
+.key-input{width:100%;padding:12px 14px;background:rgba(6,6,14,.8);border:1px solid rgba(255,215,0,.1);border-radius:10px;color:var(--text);font-size:13px;margin-bottom:8px;outline:none;font-family:var(--font-m);transition:border-color .3s}
+.key-input:focus{border-color:rgba(255,215,0,.35)}
+.key-input::placeholder{color:var(--dim);font-size:11px}
+.key-label{text-align:left;font-size:10px;color:var(--sub);margin-bottom:4px;font-family:var(--font-d);letter-spacing:2px}
+.key-group{margin-bottom:12px}
+.key-submit{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:transform .2s,box-shadow .2s;letter-spacing:3px}
+.key-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,215,0,.25)}
+.key-skip{display:block;margin-top:12px;color:var(--dim);font-size:11px;cursor:pointer;text-decoration:underline;border:none;background:none}
+.key-skip:hover{color:var(--sub)}
+.key-status{font-size:10px;margin-top:6px;min-height:14px;color:var(--green)}
+.key-badge-btn{position:fixed;top:12px;right:16px;padding:6px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;color:var(--dim);font-size:11px;cursor:pointer;z-index:100;transition:.3s;font-family:var(--font-d);letter-spacing:1px}
+.key-badge-btn:hover{color:var(--text);border-color:rgba(255,215,0,.3)}
 </style>
 </head>
 <body>
+<!-- API Key Modal -->
+<div class="key-overlay" id="keyOverlay">
+  <div class="key-box">
+    <div class="key-seal">🔑</div>
+    <h2>密钥注入</h2>
+    <div class="key-sub">API KEY INJECTION</div>
+    <div class="key-group">
+      <div class="key-label">GEMINI API KEY</div>
+      <input class="key-input" id="keyGemini" type="password" placeholder="AIza...（Gemini 2.5 Pro 出卷主力）">
+    </div>
+    <div class="key-group">
+      <div class="key-label">PERPLEXITY API KEY</div>
+      <input class="key-input" id="keyPerplexity" type="password" placeholder="pplx-...（情报窃取引擎）">
+    </div>
+    <div class="key-group">
+      <div class="key-label">OPENROUTER API KEY（可选）</div>
+      <input class="key-input" id="keyOpenRouter" type="password" placeholder="sk-or-...（Claude/DeepSeek 备用脑）">
+    </div>
+    <button class="key-submit" onclick="saveKeys()">🔓 注入密钥 · 启动中枢</button>
+    <button class="key-skip" onclick="skipKeys()">跳过（仅查看模式）</button>
+    <div class="key-status" id="keyStatus"></div>
+  </div>
+</div>
+<button class="key-badge-btn" id="keyBadgeBtn" onclick="showKeyModal()" style="display:none">🔑 KEY</button>
+
 <div class="bg-grid"></div>
 <div class="container">
   <a class="back-link" href="../index.html">← 返回应用集</a>
