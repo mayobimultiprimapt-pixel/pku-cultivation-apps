@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>九宫算阵 · 代码纪元 — 北大考研修仙应用集</title>
+  <meta name="description" content="408赛博黑客代码破阵 × 301太上炼炉符文降妖 · AI剑灵阶梯引导">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════
+   九宫算阵 · 代码纪元
+   Complete Game Stylesheet
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #04040c; --bg2: #0a0a18; --bg3: #10102a;
+  --panel: rgba(8,8,20,0.85);
+  --cyan: #08f7fe; --cyan-dim: rgba(8,247,254,0.15);
+  --purple: #a855f7; --purple-dim: rgba(168,85,247,0.15);
+  --pink: #ec4899; --gold: #ffd700; --amber: #ff8c00;
+  --red: #ff2e63; --green: #39ff14;
+  --text: #e8e8f0; --dim: #6b6b8a; --sub: #888;
+  --mono: 'Orbitron','Fira Code',monospace;
+  --serif: 'Noto Serif SC',serif;
+  --code: 'Fira Code',monospace;
+  --sans: 'Inter',sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.hidden{display:none!important}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(8,247,254,0.2);border-radius:2px}
+
+/* ── App Container ── */
+#app{width:100vw;height:100vh;position:relative;overflow:hidden}
+
+/* ── Background layers ── */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(8,247,254,0.03),transparent 50%),
+    radial-gradient(ellipse at 70% 80%,rgba(168,85,247,0.03),transparent 50%),
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(8,247,254,0.015) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(8,247,254,0.015) 60px);
+}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.35}
+
+/* ── Screen system ── */
+.screen{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;transition:opacity 0.4s}
+.screen.fade-out{opacity:0;pointer-events:none}
+
+/* ── Rotate overlay ── */
+.rotate-ovl{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:15px}
+@media(orientation:portrait){.rotate-ovl{display:flex!important}#app{display:none}}
+.rotate-ovl .r-icon{font-size:56px;animation:rSpin 2s ease infinite}
+@keyframes rSpin{0%{transform:rotate(0)}100%{transform:rotate(90deg)}}
+.rotate-ovl h2{font-family:var(--serif);font-size:20px;color:var(--gold)}
+.rotate-ovl p{color:var(--dim);font-size:13px}
+
+/* ── Top Bar (Currency) ── */
+.top-bar{position:absolute;top:20px;right:24px;display:flex;gap:15px;z-index:50}
+.currency{display:flex;align-items:center;gap:8px;background:rgba(8,247,254,0.1);border:1px solid var(--cyan);padding:4px 12px;border-radius:20px;color:var(--cyan);font-family:var(--mono);font-size:14px;font-weight:700;box-shadow:0 0 10px rgba(8,247,254,0.2)}
+.btn-shop{background:rgba(168,85,247,0.15);border:1px solid var(--purple);padding:4px 16px;border-radius:20px;color:var(--purple);font-family:var(--serif);font-size:13px;font-weight:700;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:6px}
+.btn-shop:hover{background:var(--purple);color:#fff;box-shadow:0 0 15px var(--purple)}
+
+/* ── Shop Modal ── */
+.shop-modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.3s;backdrop-filter:blur(8px)}
+.shop-modal.show{opacity:1;pointer-events:auto}
+.shop-panel{background:var(--panel);border:1px solid var(--gold);border-radius:16px;width:600px;max-width:90vw;padding:30px;box-shadow:0 10px 40px rgba(0,0,0,.8),0 0 30px rgba(255,215,0,0.1) inset;position:relative;transform:scale(0.95);transition:.3s}
+.shop-modal.show .shop-panel{transform:scale(1)}
+.shop-close{position:absolute;top:20px;right:20px;font-size:20px;color:var(--dim);cursor:pointer;transition:.2s}
+.shop-close:hover{color:var(--red)}
+.shop-title{font-family:var(--serif);font-size:24px;color:var(--gold);text-align:center;margin-bottom:20px;letter-spacing:4px}
+.shop-items{display:flex;gap:15px;justify-content:center;flex-wrap:wrap}
+.s-item{flex:1;min-width:140px;background:rgba(10,10,20,0.8);border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:16px;text-align:center;transition:.3s;display:flex;flex-direction:column;gap:8px;position:relative;}
+.s-item:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(255,215,0,0.15);border-color:var(--gold)}
+.s-icon{font-size:32px;margin-bottom:4px;filter:drop-shadow(0 0 10px rgba(255,255,255,0.3))}
+.s-name{font-family:var(--serif);font-size:14px;color:#fff;font-weight:700}
+.s-desc{font-size:10px;color:var(--dim);line-height:1.4}
+.s-price{margin-top:auto;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.1);font-family:var(--mono);color:var(--cyan);font-weight:700;font-size:12px}
+.btn-buy{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:4px 0;margin-top:8px;border-radius:4px;font-size:11px;cursor:pointer;transition:.2s;font-family:var(--mono)}
+.btn-buy:hover{background:var(--cyan);color:#000}
+.s-item.owned{border-color:var(--green);background:rgba(57,255,20,0.05)}
+.s-item.owned .btn-buy{background:var(--green);color:#000;border-color:var(--green);cursor:default}
+
+/* ═══ LOBBY ═══ */
+.lobby{align-items:center;justify-content:center;gap:50px}
+.lobby-head{text-align:center}
+.l-seal{font-size:48px;filter:drop-shadow(0 0 20px var(--cyan));animation:float 4s ease-in-out infinite;margin-bottom:12px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.l-title{font-family:var(--serif);font-size:clamp(28px,5vw,42px);font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px}
+.l-sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:8px;margin-top:8px;text-transform:uppercase}
+.l-back{position:absolute;top:20px;left:24px;color:var(--dim);text-decoration:none;font-size:14px;font-family:var(--serif);transition:.3s;z-index:10}
+.l-back:hover{color:var(--text);text-shadow:0 0 10px rgba(255,255,255,.4)}
+
+.portal-row{display:flex;gap:40px;flex-wrap:wrap;justify-content:center}
+
+.portal{
+  width:420px;height:280px;position:relative;overflow:hidden;
+  background:var(--panel);border:1px solid rgba(255,255,255,0.06);border-radius:20px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  transition:all .4s cubic-bezier(.23,1,.32,1);text-align:left;
+}
+.portal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.4s}
+.portal.p408::before{background:linear-gradient(90deg,var(--cyan),#3b82f6)}
+.portal.p301::before{background:linear-gradient(90deg,var(--purple),var(--pink))}
+.portal:hover{transform:translateY(-6px) scale(1.02)}
+.portal:hover::before{opacity:1}
+.portal.p408:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(8,247,254,0.1) inset;border-color:rgba(8,247,254,0.3)}
+.portal.p301:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(168,85,247,0.1) inset;border-color:rgba(168,85,247,0.3)}
+
+.portal .p-inner{position:relative;z-index:2;padding:30px;height:100%;display:flex;flex-direction:column}
+.portal .p-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.portal .p-code{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--dim)}
+.portal .p-badge{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:20px;font-weight:700;letter-spacing:1px}
+.badge-cyber{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(8,247,254,0.3)}
+.badge-forge{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
+
+.portal .p-icon{font-size:36px;margin-bottom:10px}
+.portal .p-name{font-family:var(--serif);font-size:22px;font-weight:900;margin-bottom:6px}
+.p408 .p-name{background:linear-gradient(135deg,var(--cyan),#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.p301 .p-name{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.portal .p-desc{font-size:12px;color:var(--dim);line-height:1.6;flex:1}
+.portal .p-stat{font-family:var(--mono);font-size:10px;margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);color:var(--sub)}
+.portal .p-stat b{margin-left:4px}
+.p408 .p-stat b{color:var(--cyan)}
+.p301 .p-stat b{color:var(--purple)}
+
+/* ═══ 408 HACK SCREEN ═══ */
+.hack-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;background:rgba(0,0,0,0.6);
+  border-bottom:1px solid rgba(8,247,254,0.15);backdrop-filter:blur(10px);
+  z-index:10;flex-shrink:0;
+}
+.hh-left{display:flex;align-items:center;gap:16px}
+.btn-abort{
+  padding:6px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;
+  font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;transition:.2s;
+}
+.btn-abort:hover{border-color:var(--red);color:var(--red);box-shadow:0 0 12px rgba(255,46,99,0.3)}
+.hh-target{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:2px}
+
+.hh-center{display:flex;align-items:center;gap:12px}
+.trace-label{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:2px;animation:tblink 1s infinite alternate}
+@keyframes tblink{from{opacity:1}to{opacity:0.4}}
+.trace-track{width:280px;height:6px;background:rgba(255,46,99,0.08);border:1px solid rgba(255,46,99,0.3);border-radius:3px;overflow:hidden}
+.trace-fill{height:100%;width:0%;background:var(--red);box-shadow:0 0 12px var(--red);transition:width 1s linear}
+.trace-time{font-family:var(--mono);font-size:14px;font-weight:900;color:var(--red);min-width:38px;text-align:right}
+
+.hh-right{display:flex;align-items:center;gap:20px}
+.hp-bar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px}
+.hp-bar .hp-lbl{color:var(--dim)}
+.hp-track{width:100px;height:6px;background:rgba(8,247,254,0.1);border-radius:3px;overflow:hidden}
+.hp-fill{height:100%;width:100%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transition:width .4s}
+.hp-fill.low{background:var(--red);box-shadow:0 0 8px var(--red)}
+.hp-val{font-weight:900;color:var(--cyan);min-width:30px;text-align:right}
+
+.level-badge{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:12px;background:rgba(8,247,254,0.08);color:var(--cyan);border:1px solid rgba(8,247,254,0.2)}
+
+/* Hack Body */
+.hack-body{flex:1;display:flex;flex-direction:column;padding:16px 24px;overflow-y:auto;gap:16px}
+.hack-desc{
+  font-family:var(--serif);font-size:14px;color:var(--text);
+  background:rgba(8,247,254,0.04);padding:14px 18px;border-left:3px solid var(--cyan);
+  border-radius:0 8px 8px 0;line-height:1.7;
+}
+
+.core-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;perspective:800px;
+}
+.code-panel{
+  background:rgba(4,4,12,0.9);border:1px solid rgba(8,247,254,0.2);border-radius:12px;
+  padding:28px 32px;width:90%;max-width:820px;
+  box-shadow:0 0 40px rgba(8,247,254,0.06) inset,0 20px 60px rgba(0,0,0,.7);
+  backdrop-filter:blur(20px);transform:rotateX(3deg);
+  font-family:var(--code);font-size:14px;line-height:2;color:var(--cyan);white-space:pre-wrap;
+  position:relative;overflow:hidden;
+}
+.code-panel::before{
+  content:'// 408_CORE_MATRIX — ICE FIREWALL';display:block;
+  color:rgba(8,247,254,0.25);font-size:11px;margin-bottom:12px;letter-spacing:1px;
+}
+.code-panel .line-num{color:rgba(8,247,254,0.2);user-select:none;margin-right:12px;min-width:20px;display:inline-block;text-align:right}
+.code-panel .kw{color:#f472b6} /* keywords */
+.code-panel .fn{color:#60a5fa} /* functions */
+.code-panel .cm{color:rgba(8,247,254,0.2);font-style:italic} /* comments */
+.code-panel .ty{color:#fbbf24} /* types */
+
+/* Droppable blank slots */
+.code-slot{
+  display:inline-block;min-width:180px;min-height:28px;
+  background:rgba(8,247,254,0.06);border:1.5px dashed rgba(8,247,254,0.4);border-radius:4px;
+  vertical-align:middle;margin:0 4px;padding:2px 8px;
+  transition:all .3s;cursor:default;position:relative;
+}
+.code-slot.drag-hover{background:rgba(8,247,254,0.2);border-color:var(--cyan);box-shadow:0 0 15px rgba(8,247,254,0.3);transform:scale(1.03)}
+.code-slot.filled{background:rgba(57,255,20,0.08);border-color:rgba(57,255,20,0.4);color:var(--green);cursor:pointer}
+.code-slot.wrong{background:rgba(255,46,99,0.15);border-color:var(--red);color:var(--red);animation:slotShake .4s}
+@keyframes slotShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Hack Footer */
+.hack-foot{
+  padding:16px 24px;border-top:1px solid rgba(8,247,254,0.12);
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;gap:12px;flex-shrink:0;z-index:10;
+}
+.dock-label{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:3px}
+.payload-dock{display:flex;gap:12px;flex-wrap:wrap;min-height:44px;align-items:center}
+
+.payload{
+  padding:8px 14px;background:rgba(4,4,12,0.95);border:1px solid rgba(8,247,254,0.4);
+  border-radius:6px;font-family:var(--code);font-size:13px;color:#e0e0ff;
+  cursor:grab;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:all .25s;
+  user-select:none;position:relative;
+}
+.payload::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan);opacity:0;transition:.2s}
+.payload:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(8,247,254,0.15)}
+.payload:hover::before{opacity:1}
+.payload:active{cursor:grabbing;opacity:.7}
+.payload.used{opacity:.3;pointer-events:none;border-style:dotted}
+
+.hack-actions{display:flex;justify-content:center;gap:20px}
+.btn-run{
+  padding:10px 36px;background:var(--cyan);color:#000;font-family:var(--mono);
+  font-weight:900;font-size:14px;border-radius:8px;letter-spacing:2px;transition:.3s;
+}
+.btn-run:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
+.btn-run:not(:disabled):hover{box-shadow:0 0 25px var(--cyan);transform:scale(1.05)}
+
+/* Glitch overlay */
+.glitch-ovl{position:absolute;inset:0;z-index:999;pointer-events:none;opacity:0;transition:opacity .1s}
+.glitch-ovl.active{opacity:1}
+
+/* Success overlay */
+.success-ovl{
+  position:absolute;inset:0;z-index:998;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;background:rgba(0,0,0,0.85);opacity:0;pointer-events:none;transition:opacity .5s;
+}
+.success-ovl.active{opacity:1;pointer-events:auto}
+.success-title{font-family:var(--mono);font-size:clamp(28px,5vw,48px);font-weight:900;letter-spacing:6px;text-transform:uppercase}
+.s408 .success-title{color:var(--green);text-shadow:0 0 30px var(--green),0 0 60px rgba(57,255,20,0.3)}
+.s301 .success-title{color:var(--gold);text-shadow:0 0 30px var(--gold),0 0 60px rgba(255,215,0,0.3)}
+.success-sub{font-family:var(--serif);font-size:16px;color:var(--dim)}
+.success-stats{display:flex;gap:30px;font-family:var(--mono);font-size:12px;color:var(--sub)}
+.success-stats span b{display:block;font-size:22px;margin-top:4px}
+.s408 .success-stats b{color:var(--cyan)}
+.s301 .success-stats b{color:var(--purple)}
+.btn-next{
+  padding:12px 40px;border-radius:10px;font-family:var(--mono);font-weight:700;
+  font-size:14px;letter-spacing:2px;transition:.3s;margin-top:10px;
+}
+.btn-next.c408{background:var(--cyan);color:#000}
+.btn-next.c301{background:var(--purple);color:#fff}
+.btn-next:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.5)}
+
+/* ═══ 301 FORGE SCREEN ═══ */
+.forge-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;background:rgba(0,0,0,0.7);
+  border-bottom:1px solid rgba(168,85,247,0.2);backdrop-filter:blur(10px);
+  z-index:10;flex-shrink:0;
+}
+.fh-left{display:flex;align-items:center;gap:16px}
+.fh-title{font-family:var(--serif);font-size:16px;font-weight:900;color:var(--purple);letter-spacing:2px}
+.fh-right{display:flex;align-items:center;gap:20px}
+.forge-hp .hp-fill{background:var(--purple);box-shadow:0 0 8px var(--purple)}
+.forge-hp .hp-val{color:var(--purple)}
+.step-badge{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:12px;background:rgba(168,85,247,0.08);color:var(--purple);border:1px solid rgba(168,85,247,0.2)}
+
+/* Forge Body */
+.forge-body{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+
+.furnace{
+  width:clamp(300px,50vw,550px);height:clamp(300px,50vw,550px);position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+/* Rotating rune circle */
+.furnace-ring{
+  position:absolute;inset:-30px;border:2px solid rgba(168,85,247,0.15);border-radius:50%;
+  animation:fSpin 20s linear infinite;
+}
+.furnace-ring::before,.furnace-ring::after{
+  content:'☯';position:absolute;font-size:18px;color:rgba(168,85,247,0.3);
+}
+.furnace-ring::before{top:-9px;left:50%;transform:translateX(-50%)}
+.furnace-ring::after{bottom:-9px;left:50%;transform:translateX(-50%)}
+@keyframes fSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.furnace-ring2{
+  position:absolute;inset:-60px;border:1px dashed rgba(168,85,247,0.08);border-radius:50%;
+  animation:fSpin 35s linear infinite reverse;
+}
+
+.furnace-glow{
+  position:absolute;inset:0;
+  background:radial-gradient(circle,rgba(168,85,247,0.15),transparent 70%);
+  animation:fPulse 3s ease-in-out infinite;pointer-events:none;
+}
+@keyframes fPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.05)}}
+
+/* Beast card / math equation display */
+.beast{
+  background:rgba(4,4,12,0.9);padding:40px 50px;border-radius:20px;
+  border:2px solid rgba(168,85,247,0.4);position:relative;z-index:2;
+  box-shadow:0 0 50px rgba(168,85,247,0.2) inset,0 20px 60px rgba(0,0,0,.6);
+  transition:all .5s cubic-bezier(.68,-.55,.265,1.55);
+  max-width:80vw;text-align:center;
+}
+.beast .katex{font-size:28px!important;color:#fff}
+.beast-hp-wrap{margin-top:16px;display:flex;align-items:center;gap:8px;justify-content:center}
+.beast-hp-track{width:200px;height:8px;background:rgba(168,85,247,0.1);border-radius:4px;overflow:hidden}
+.beast-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));box-shadow:0 0 8px var(--purple);transition:width .5s}
+.beast-hp-text{font-family:var(--mono);font-size:11px;color:var(--purple)}
+.beast.hit{animation:beastHit .5s}
+@keyframes beastHit{0%{transform:scale(1)}20%{transform:scale(0.9) rotate(3deg);filter:brightness(2)}60%{transform:scale(1.05) rotate(-1deg)}100%{transform:scale(1) rotate(0)}}
+.beast.dead{border-color:var(--gold)!important;box-shadow:0 0 80px rgba(255,215,0,0.4) inset!important}
+
+.forge-desc{
+  position:absolute;top:20px;left:24px;right:24px;
+  font-family:var(--serif);font-size:13px;color:var(--dim);
+  background:rgba(0,0,0,0.5);padding:10px 16px;border-radius:8px;
+  border-left:3px solid var(--purple);
+}
+
+/* Forge Footer — Rune dock */
+.forge-foot{
+  padding:16px 24px;border-top:1px solid rgba(168,85,247,0.15);
+  background:rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:12px;
+  flex-shrink:0;z-index:10;
+}
+.rune-label{font-family:var(--serif);font-size:12px;color:var(--purple);letter-spacing:3px;text-align:center;font-weight:700}
+.rune-dock{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+.rune{
+  width:110px;height:150px;background:rgba(10,5,20,0.95);
+  border:1.5px solid rgba(168,85,247,0.4);border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:all .3s cubic-bezier(.23,1,.32,1);
+  box-shadow:0 8px 20px rgba(0,0,0,.5),0 0 15px rgba(168,85,247,0.1) inset;
+  position:relative;overflow:hidden;
+}
+.rune::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple);opacity:0;transition:.3s}
+.rune:hover{transform:translateY(-14px) scale(1.08);box-shadow:0 16px 40px rgba(0,0,0,.7),0 0 30px rgba(168,85,247,0.3) inset}
+.rune:hover::before{opacity:1}
+.rune .r-icon{font-size:28px}
+.rune .r-name{font-family:var(--serif);font-size:12px;font-weight:700;text-align:center;color:var(--gold)}
+.rune .r-type{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:1px}
+.rune.used{opacity:.25;pointer-events:none;border-style:dotted}
+.rune.wrong-flash{animation:runeWrong .5s;border-color:var(--red)}
+@keyframes runeWrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* ═══ AI Sword Spirit ═══ */
+.spirit-wrap{
+  position:fixed;bottom:20px;right:20px;z-index:100;
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;
+}
+.spirit-btn{
+  width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  box-shadow:0 4px 20px rgba(168,85,247,0.4);transition:.3s;
+}
+.spirit-btn:hover{transform:scale(1.1);box-shadow:0 6px 30px rgba(168,85,247,0.6)}
+.spirit-btn.pulse{animation:sPulse 1.5s infinite}
+@keyframes sPulse{0%,100%{box-shadow:0 4px 20px rgba(168,85,247,0.4)}50%{box-shadow:0 4px 30px rgba(168,85,247,0.8),0 0 50px rgba(8,247,254,0.3)}}
+
+.spirit-panel{
+  width:320px;height:400px;background:rgba(8,8,20,0.95);border:1px solid rgba(168,85,247,0.3);
+  border-radius:12px;display:flex;flex-direction:column;
+  box-shadow:0 8px 30px rgba(0,0,0,.7);backdrop-filter:blur(15px);
+  opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;
+}
+.spirit-panel.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.sp-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.sp-who{font-family:var(--mono);font-size:12px;color:var(--cyan);font-weight:700}
+.sp-close{color:var(--dim);cursor:pointer}
+.sp-chat{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;padding:10px 14px;border-radius:10px;font-family:var(--serif);font-size:12px;line-height:1.5}
+.msg.spirit{align-self:flex-start;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);color:var(--text);border-bottom-left-radius:2px}
+.msg.user{align-self:flex-end;background:rgba(8,247,254,0.1);border:1px solid rgba(8,247,254,0.2);color:var(--cyan);border-bottom-right-radius:2px}
+.msg.sys{align-self:center;background:none;color:var(--dim);font-style:italic;text-align:center;font-size:10px}
+.sp-input{display:flex;padding:10px;border-top:1px solid rgba(255,255,255,0.06);gap:8px}
+.sp-input input{flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px;color:#fff;font-family:var(--sans);font-size:12px}
+.sp-input button{background:var(--purple);color:#fff;border-radius:6px;padding:0 14px;font-size:12px;font-weight:700}
+
+/* Game Over overlay */
+.gameover-ovl{
+  position:absolute;inset:0;z-index:997;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;background:rgba(20,0,0,0.9);opacity:0;pointer-events:none;transition:opacity .5s;
+}
+.gameover-ovl.active{opacity:1;pointer-events:auto}
+.gameover-ovl h2{font-family:var(--mono);font-size:32px;color:var(--red);text-shadow:0 0 20px var(--red);letter-spacing:4px}
+.gameover-ovl p{color:var(--dim);font-size:14px}
+
+@media(max-width:900px){
+  .portal-row{flex-direction:column;align-items:center}
+  .portal{width:90%;max-width:400px;height:auto;min-height:200px}
+  .code-panel{width:98%;padding:16px;font-size:12px}
+  .trace-track{width:150px}
+  .furnace{width:280px;height:280px}
+  .beast{padding:24px 20px}
+  .beast .katex{font-size:20px!important}
+}
+</style>
+</head>
+<body>
+
+<div class="rotate-ovl">
+  <div class="r-icon">📱↻</div>
+  <h2>请横屏解阵</h2>
+  <p>代码纪元需要横屏视野</p>
+</div>
+
+<div class="bg-grid"></div>
+<canvas id="bgCanvas"></canvas>
+
+<div id="app">
+  <!-- ═══ LOBBY ═══ -->
+  <section id="sLobby" class="screen lobby">
+    <a href="../index.html" class="l-back">🏠 返回门户</a>
+    
+    <div class="top-bar">
+      <div class="currency" title="通关结算获取">💎 <span id="crystalCount">0</span></div>
+      <button class="btn-shop" onclick="Shop.open()">🛒 天机阁</button>
+    </div>
+
+    <div class="lobby-head">
+      <div class="l-seal">💠</div>
+      <h1 class="l-title">九宫算阵 · 代码纪元</h1>
+      <p class="l-sub">大题化劫 · 赛博破阵</p>
+    </div>
+    <div class="portal-row">
+      <!-- 408 -->
+      <button class="portal p408" onclick="Game.start408()">
+        <div class="p-inner">
+          <div class="p-top">
+            <span class="p-code">408 专精</span>
+            <span class="p-badge badge-cyber">⚡ ICE BREAK</span>
+          </div>
+          <div class="p-icon">💻</div>
+          <div class="p-name">赛博黑客 · 冰墙突破</div>
+          <div class="p-desc">代码补全 · 拖拽注入 · 逻辑走线 · 限时潜入<br>将历年408算法大题变为黑客破阵挑战</div>
+          <div class="p-stat">待破解阵法: <b id="hackCount">4</b> 个</div>
+        </div>
+      </button>
+      <!-- 301 -->
+      <button class="portal p301" onclick="Game.start301()">
+        <div class="p-inner">
+          <div class="p-top">
+            <span class="p-code">301 专精</span>
+            <span class="p-badge badge-forge">🔥 ALCHEMY</span>
+          </div>
+          <div class="p-icon">🪬</div>
+          <div class="p-name">太上炼炉 · 符文降妖</div>
+          <div class="p-desc">公式化简 · 道法卡牌 · 连击斩杀 · 阶梯拆解<br>将301高数大题变为卡牌降妖挑战</div>
+          <div class="p-stat">混沌灵兽: <b id="forgeCount">3</b> 头</div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══ 408 HACK ═══ -->
+  <section id="sHack" class="screen hidden">
+    <header class="hack-hdr">
+      <div class="hh-left">
+        <button class="btn-abort" onclick="Game.backToLobby()">⏏ ABORT</button>
+        <span class="hh-target" id="hackTarget">TARGET: LOADING...</span>
+      </div>
+      <div class="hh-center">
+        <span class="trace-label">TRACE ROUTING</span>
+        <div class="trace-track"><div class="trace-fill" id="traceFill"></div></div>
+        <span class="trace-time" id="traceTime">90</span>
+      </div>
+      <div class="hh-right">
+        <span class="level-badge" id="hackLevel">LEVEL 1/4</span>
+        <div class="hp-bar">
+          <span class="hp-lbl">SYS</span>
+          <div class="hp-track"><div class="hp-fill" id="hackHpFill"></div></div>
+          <span class="hp-val" id="hackHpVal">100</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="hack-body">
+      <div class="hack-desc" id="hackDesc"></div>
+      <div class="core-wrap">
+        <div class="code-panel" id="codePanel"></div>
+      </div>
+    </div>
+
+    <div class="hack-foot">
+      <div class="dock-label">AVAILABLE PAYLOADS</div>
+      <div class="payload-dock" id="payloadDock"></div>
+      <div class="hack-actions">
+        <button class="btn-run" id="btnRun" disabled onclick="Hack.execute()">⚡ EXECUTE OVERRIDE</button>
+      </div>
+    </div>
+
+    <div class="glitch-ovl" id="glitchOvl"></div>
+    <div class="success-ovl s408" id="hackSuccess">
+      <div class="success-title">ACCESS GRANTED</div>
+      <div class="success-sub" id="hackSuccessSub">阵法已破</div>
+      <div class="success-stats" id="hackSuccessStats"></div>
+      <button class="btn-next c408" id="btnHackNext" onclick="Hack.next()">⚡ NEXT TARGET</button>
+    </div>
+    <div class="gameover-ovl" id="hackGameover">
+      <h2>SYSTEM CRASH</h2>
+      <p>系统完整性归零，精神断接</p>
+      <button class="btn-next c408" onclick="Game.backToLobby()">↩ 返回大厅</button>
+    </div>
+  </section>
+
+  <!-- ═══ 301 FORGE ═══ -->
+  <section id="sForge" class="screen hidden">
+    <header class="forge-hdr">
+      <div class="fh-left">
+        <button class="btn-abort" onclick="Game.backToLobby()">⏏ 退避</button>
+        <span class="fh-title">太上炼丹炉</span>
+      </div>
+      <div class="fh-right">
+        <span class="step-badge" id="forgeStep">第 1 阶</span>
+        <div class="hp-bar forge-hp">
+          <span class="hp-lbl">元晶</span>
+          <div class="hp-track"><div class="hp-fill" id="forgeHpFill"></div></div>
+          <span class="hp-val" id="forgeHpVal">100</span>
+        </div>
+        <span class="level-badge" id="forgeLevel">妖兽 1/3</span>
+      </div>
+    </header>
+
+    <div class="forge-body">
+      <div class="forge-desc" id="forgeDesc"></div>
+      <div class="furnace">
+        <div class="furnace-ring2"></div>
+        <div class="furnace-ring"></div>
+        <div class="furnace-glow"></div>
+        <div class="beast" id="beast">
+          <div id="beastMath"></div>
+          <div class="beast-hp-wrap">
+            <div class="beast-hp-track"><div class="beast-hp-fill" id="beastHpFill" style="width:100%"></div></div>
+            <span class="beast-hp-text" id="beastHpText">3/3</span>
+          </div>
+          <button id="btnForgeSkip" class="hidden" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:var(--red);color:#fff;font-family:var(--mono);font-weight:700;box-shadow:0 0 15px rgba(255,46,99,0.5);border:1px solid rgba(255,46,99,0.8);cursor:pointer;" onclick="Forge.useSkipBuff()">💥 发动雷霆一击</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="forge-foot">
+      <div class="rune-label">可用符文 · 道法卡牌</div>
+      <div class="rune-dock" id="runeDock"></div>
+    </div>
+
+    <div class="glitch-ovl" id="forgeGlitchOvl"></div>
+    <div class="success-ovl s301" id="forgeSuccess">
+      <div class="success-title">炼化成功</div>
+      <div class="success-sub" id="forgeSuccessSub">大题告破 · 灵兽已降</div>
+      <div class="success-stats" id="forgeSuccessStats"></div>
+      <button class="btn-next c301" id="btnForgeNext" onclick="Forge.next()">🔥 下一头灵兽</button>
+    </div>
+    <div class="gameover-ovl" id="forgeGameover">
+      <h2>元晶破裂</h2>
+      <p>混沌吞噬，炼化失败</p>
+      <button class="btn-next c301" onclick="Game.backToLobby()">↩ 返回大厅</button>
+    </div>
+  </section>
+
+  <!-- ═══ SHOP MODAL ═══ -->
+  <div class="shop-modal" id="shopModal">
+    <div class="shop-panel">
+      <div class="shop-close" onclick="Shop.close()">✕</div>
+      <h3 class="shop-title">天机阁 · 肉鸽法宝</h3>
+      <div class="shop-items">
+        <div class="s-item" id="item_time">
+          <div class="s-icon">⏳</div>
+          <div class="s-name">凝时秘符</div>
+          <div class="s-desc">下一局408冰墙破解挑战时间增加 30 秒</div>
+          <div class="s-price">10 💎</div>
+          <button class="btn-buy" onclick="Shop.buy('time', 10)">购买</button>
+        </div>
+        <div class="s-item" id="item_shield">
+          <div class="s-icon">🛡️</div>
+          <div class="s-name">太乙玄甲</div>
+          <div class="s-desc">下一局免疫一次填错或打错法则的血量扣除</div>
+          <div class="s-price">15 💎</div>
+          <button class="btn-buy" onclick="Shop.buy('shield', 15)">购买</button>
+        </div>
+        <div class="s-item" id="item_skip">
+          <div class="s-icon">💥</div>
+          <div class="s-name">雷霆一击</div>
+          <div class="s-desc">极度破坏。出牌阶段可直接斩毁当前妖兽当前形态（自动打出一次正确卡）</div>
+          <div class="s-price">30 💎</div>
+          <button class="btn-buy" onclick="Shop.buy('skip', 30)">购买</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Sword Spirit -->
+<div class="spirit-wrap" id="spiritWrap" style="display:none">
+  <div class="spirit-panel" id="spiritPanel">
+    <div class="sp-hdr">
+      <div class="sp-who">⚔ AI 剑灵 · 神识传音</div>
+      <div class="sp-close" onclick="Spirit.close()">✕</div>
+    </div>
+    <div class="sp-chat" id="spiritChat">
+      <div class="msg sys">剑灵已苏醒，只做点拨，忌透天机</div>
+    </div>
+    <div class="sp-input">
+      <input type="text" id="spInput" placeholder="向剑灵请教..." onkeydown="if(event.key==='Enter') Spirit.send()">
+      <button onclick="Spirit.send()">发送</button>
+    </div>
+  </div>
+  <button class="spirit-btn" id="spiritBtn" onclick="Spirit.toggle()" title="AI 剑灵">⚔️</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   九宫算阵 · 代码纪元 — Complete Game Engine
+   ═══════════════════════════════════════════════════════════════ */
+
+// ── Matrix / Universe / Forge Backgrounds ──
+(function(){
+  window.activeMode = 'sLobby';
+  const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d');
+  let W,H;const cols=[];const chars='01アイウエオカキクケコ九宫算阵代码纪元'.split('');
+  
+  // Universe Stars
+  const stars = [];
+  for(let i=0; i<200; i++) stars.push({x: Math.random()*2-1, y: Math.random()*2-1, z: Math.random()});
+
+  // Forge Embers
+  const embers = [];
+  for(let i=0; i<100; i++) embers.push({x: Math.random(), y: Math.random(), s: Math.random()*(3-1)+1, v: Math.random()*(2-0.5)+0.5});
+
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;cols.length=0;for(let i=0;i<W/16;i++)cols[i]=Math.random()*H}
+  addEventListener('resize',resize);resize();
+
+  (function draw(){
+    if (window.activeMode === 'sHack') {
+      // 408 Universe Dynamic
+      ctx.fillStyle='rgba(2,2,8,0.3)';ctx.fillRect(0,0,W,H);
+      stars.forEach(s => {
+        s.z -= 0.005; if(s.z <= 0) { s.z = 1; s.x = Math.random()*2-1; s.y = Math.random()*2-1; }
+        const px = s.x / s.z * W/2 + W/2;
+        const py = s.y / s.z * H/2 + H/2;
+        const r = (1-s.z) * 1.5;
+        if(px>0 && px<W && py>0 && py<H) {
+          ctx.fillStyle = `rgba(8, 247, 254, ${(1-s.z)})`;
+          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI*2); ctx.fill();
+        }
+      });
+    } else if (window.activeMode === 'sForge') {
+      // 301 Boss Rush Alchemy Furnace
+      ctx.fillStyle='rgba(15,5,5,0.2)';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(239,68,68,0.6)';
+      embers.forEach(e => {
+        e.y -= e.v * 0.005;
+        e.x += (Math.random()-0.5)*0.002;
+        if(e.y < 0) e.y = 1;
+        ctx.beginPath(); ctx.arc(e.x*W, e.y*H, e.s, 0, Math.PI*2); ctx.fill();
+      });
+      // add intense center glow
+      const g = ctx.createRadialGradient(W/2, H*0.4, W*0.1, W/2, H*0.4, W*0.6);
+      g.addColorStop(0, 'rgba(239,68,68,0.15)'); g.addColorStop(1, 'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    } else {
+      // Default Lobby Matrix
+      ctx.fillStyle='rgba(4,4,12,0.08)';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(8,247,254,0.25)';ctx.font='14px monospace';
+      for(let i=0;i<cols.length;i++){
+        ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*16,cols[i]);
+        if(cols[i]>H&&Math.random()>.98)cols[i]=0;else cols[i]+=16;
+      }
+    }
+    requestAnimationFrame(draw);
+  })();
+})();
+
+// ══════════════════════════════════════
+// QUESTION DATA
+// ══════════════════════════════════════
+
+const DB408 = [
+  {
+    id:'408_01', title:'数组奇偶分离',
+    desc:'已知数组 A[0..n-1]，请将所有奇数移到偶数前面。采用双指针 i, j 分别从两端向中间扫描，遇到不满足条件的元素交换。',
+    code:[
+      {t:'line',v:'void partition(int A[], int n) {'},
+      {t:'line',v:'  int i = 0, j = n - 1;'},
+      {t:'line',v:'  while (i < j) {'},
+      {t:'slot',id:'s1',hint:'让 i 跳过已经是奇数的元素'},
+      {t:'slot',id:'s2',hint:'让 j 跳过已经是偶数的元素'},
+      {t:'line',v:'    if (i < j) swap(&A[i], &A[j]);'},
+      {t:'line',v:'  }'},
+      {t:'line',v:'}'}
+    ],
+    payloads:[
+      {text:'while(i<j && A[i]%2!=0) i++;', correctFor:'s1'},
+      {text:'while(i<j && A[j]%2==0) j--;', correctFor:'s2'},
+      {text:'while(A[i]%2==0) i++;', correctFor:null},
+      {text:'if(A[j]>0) j--;', correctFor:null}
+    ],
+    time:90,
+    spirit:'这道题的核心是双指针对向扫描。i 从左找偶数，j 从右找奇数，然后交换。注意循环里要加 i<j 的保护条件！'
+  },
+  {
+    id:'408_02', title:'链表逆置',
+    desc:'给定带头结点的单链表 L，将其就地逆置。使用头插法——不断将后续节点摘下来插入到头结点之后。',
+    code:[
+      {t:'line',v:'void Reverse(LinkList &L) {'},
+      {t:'line',v:'  LNode *p = L->next, *r;'},
+      {t:'line',v:'  L->next = NULL;'},
+      {t:'line',v:'  while (p != NULL) {'},
+      {t:'slot',id:'s1',hint:'先保存 p 的后继'},
+      {t:'slot',id:'s2',hint:'将 p 插入到头结点后面'},
+      {t:'line',v:'    L->next = p;'},
+      {t:'slot',id:'s3',hint:'p 移动到原来的后继'},
+      {t:'line',v:'  }'},
+      {t:'line',v:'}'}
+    ],
+    payloads:[
+      {text:'r = p->next;', correctFor:'s1'},
+      {text:'p->next = L->next;', correctFor:'s2'},
+      {text:'p = r;', correctFor:'s3'},
+      {text:'p->next = NULL;', correctFor:null},
+      {text:'r = L->next;', correctFor:null}
+    ],
+    time:80,
+    spirit:'头插法关键三步：① 保存 p->next 到 r；② 把 p 插到 L 后面（p->next = L->next）；③ 修正 L->next = p 后移动 p = r。'
+  },
+  {
+    id:'408_03', title:'二叉排序树查找',
+    desc:'在二叉排序树 (BST) 中查找关键字 key。如果找到则返回该结点指针，否则返回 NULL。利用 BST 的性质进行递归/循环查找。',
+    code:[
+      {t:'line',v:'BSTNode* BST_Search(BSTree T, int key) {'},
+      {t:'line',v:'  while (T != NULL) {'},
+      {t:'slot',id:'s1',hint:'如果 key 等于当前结点的值...'},
+      {t:'slot',id:'s2',hint:'如果 key 小于当前结点的值...'},
+      {t:'line',v:'    else T = T->rchild;'},
+      {t:'line',v:'  }'},
+      {t:'line',v:'  return NULL;'},
+      {t:'line',v:'}'}
+    ],
+    payloads:[
+      {text:'if (key == T->data) return T;', correctFor:'s1'},
+      {text:'else if (key < T->data) T = T->lchild;', correctFor:'s2'},
+      {text:'if (key > T->data) return T;', correctFor:null},
+      {text:'else T = T->lchild->rchild;', correctFor:null}
+    ],
+    time:70,
+    spirit:'BST 查找的核心：等于就返回，小于就往左走，大于就往右走。循环结束了还没找到就是不存在！'
+  },
+  {
+    id:'408_04', title:'快速排序 Partition',
+    desc:'实现快速排序中的划分操作。以 A[low] 为基准(pivot)，将数组划分为两部分，使得左边元素 ≤ pivot，右边元素 ≥ pivot。',
+    code:[
+      {t:'line',v:'int Partition(int A[], int low, int high) {'},
+      {t:'line',v:'  int pivot = A[low];'},
+      {t:'line',v:'  while (low < high) {'},
+      {t:'slot',id:'s1',hint:'从右往左找比 pivot 小的'},
+      {t:'line',v:'    A[low] = A[high];'},
+      {t:'slot',id:'s2',hint:'从左往右找比 pivot 大的'},
+      {t:'line',v:'    A[high] = A[low];'},
+      {t:'line',v:'  }'},
+      {t:'line',v:'  A[low] = pivot;'},
+      {t:'line',v:'  return low;'},
+      {t:'line',v:'}'}
+    ],
+    payloads:[
+      {text:'while(low<high && A[high]>=pivot) high--;', correctFor:'s1'},
+      {text:'while(low<high && A[low]<=pivot) low++;', correctFor:'s2'},
+      {text:'while(A[high]>pivot) high--;', correctFor:null},
+      {text:'while(A[low]<pivot) low++;', correctFor:null},
+      {text:'if(low<high) swap(A,low,high);', correctFor:null}
+    ],
+    time:85,
+    spirit:'快排划分的经典模式：先从右找小的放到左边，再从左找大的放到右边，别忘了每个内层 while 都要有 low<high 的保护！'
+  }
+];
+
+const DB301 = [
+  {
+    id:'301_01', title:'深渊极限 · 泰勒展开',
+    desc:'运用泰勒展开求解复合极限式',
+    steps:[
+      {eq:'\\lim_{x \\to 0} \\frac{\\sin x - x}{x^3}', label:'原始形态'},
+      {eq:'\\lim_{x \\to 0} \\frac{(x - \\frac{x^3}{6} + \\cdots) - x}{x^3}', label:'泰勒展开'},
+      {eq:'\\lim_{x \\to 0} \\frac{-\\frac{x^3}{6}}{x^3}', label:'化简约分'},
+      {eq:'-\\frac{1}{6}', label:'最终答案'}
+    ],
+    runes:[
+      {id:'r1',icon:'🌀',name:'泰勒展开',desc:'TAYLOR',step:1,wrong:false},
+      {id:'r2',icon:'✂️',name:'同阶约分',desc:'CANCEL',step:2,wrong:false},
+      {id:'r3',icon:'🎯',name:'代入计算',desc:'EVALUATE',step:3,wrong:false},
+      {id:'r4',icon:'🔁',name:'洛必达',desc:'LHOPITAL',step:-1,wrong:true,dmg:25},
+      {id:'r5',icon:'♾️',name:'等价无穷小',desc:'EQUIVALENT',step:-1,wrong:true,dmg:15}
+    ],
+    spirit:'sinx 的泰勒展开是 x - x³/6 + ...，先展开再消去分子的 x，剩下 -x³/6！'
+  },
+  {
+    id:'301_02', title:'炼狱积分 · 分部积分',
+    desc:'运用分部积分法逐步化解复杂积分',
+    steps:[
+      {eq:'\\int x^2 e^x \\, dx', label:'原始形态'},
+      {eq:'x^2 e^x - \\int 2x e^x \\, dx', label:'第一次分部'},
+      {eq:'x^2 e^x - 2(xe^x - \\int e^x \\, dx)', label:'第二次分部'},
+      {eq:'x^2 e^x - 2xe^x + 2e^x + C', label:'最终结果'}
+    ],
+    runes:[
+      {id:'r1',icon:'⚔️',name:'分部积分',desc:'BY PARTS',step:1,wrong:false},
+      {id:'r2',icon:'⚔️',name:'再次分部',desc:'PARTS II',step:2,wrong:false},
+      {id:'r3',icon:'🎯',name:'直接积分',desc:'INTEGRATE',step:3,wrong:false},
+      {id:'r4',icon:'🔄',name:'换元法',desc:'SUBSTITUTION',step:-1,wrong:true,dmg:20},
+      {id:'r5',icon:'📐',name:'三角换元',desc:'TRIG SUB',step:-1,wrong:true,dmg:20}
+    ],
+    spirit:'x²eˣ 的分部积分，设 u=x²，dv=eˣdx。积分降幂两次就能化解！'
+  },
+  {
+    id:'301_03', title:'噩梦行列式 · 逐行展开',
+    desc:'运用行列式展开定理求值',
+    steps:[
+      {eq:'\\begin{vmatrix} 1 & 2 & 3 \\\\ 4 & 5 & 6 \\\\ 7 & 8 & 0 \\end{vmatrix}', label:'原始行列式'},
+      {eq:'1 \\cdot \\begin{vmatrix}5&6\\\\8&0\\end{vmatrix} - 2 \\cdot \\begin{vmatrix}4&6\\\\7&0\\end{vmatrix} + 3 \\cdot \\begin{vmatrix}4&5\\\\7&8\\end{vmatrix}', label:'按第一行展开'},
+      {eq:'1(0-48) - 2(0-42) + 3(32-35)', label:'计算各余子式'},
+      {eq:'-48 + 84 - 9 = 27', label:'最终答案'}
+    ],
+    runes:[
+      {id:'r1',icon:'📖',name:'按行展开',desc:'EXPAND',step:1,wrong:false},
+      {id:'r2',icon:'✂️',name:'余子式计算',desc:'COFACTOR',step:2,wrong:false},
+      {id:'r3',icon:'🎯',name:'代入求和',desc:'SUM UP',step:3,wrong:false},
+      {id:'r4',icon:'🔄',name:'行变换',desc:'ROW OP',step:-1,wrong:true,dmg:15},
+      {id:'r5',icon:'📐',name:'克拉默法则',desc:'CRAMER',step:-1,wrong:true,dmg:20}
+    ],
+    spirit:'3×3行列式按第一行展开：a₁₁M₁₁ - a₁₂M₁₂ + a₁₃M₁₃。注意符号交替！'
+  }
+];
+
+// ══════════════════════════════════════
+// GAME CONTROLLER
+// ══════════════════════════════════════
+
+const Game = {
+  crystals: parseInt(localStorage.getItem('ce_crystals')||'0'),
+  buffs: JSON.parse(localStorage.getItem('ce_buffs')||'{"time":false,"shield":false,"skip":false}'),
+  
+  saveData(){
+    localStorage.setItem('ce_crystals', this.crystals);
+    localStorage.setItem('ce_buffs', JSON.stringify(this.buffs));
+    document.getElementById('crystalCount').textContent = this.crystals;
+  },
+  addCrystals(amt){
+    this.crystals += amt;
+    this.saveData();
+    // visual feedback (simple)
+    const el=document.querySelector('.currency');
+    el.style.transform='scale(1.2)';el.style.color='#fff';
+    setTimeout(()=>{el.style.transform='scale(1)';el.style.color='var(--cyan)'},300);
+  },
+
+  show(id){
+    window.activeMode = id;
+    document.querySelectorAll('.screen').forEach(s=>{s.classList.add('hidden')});
+    document.getElementById(id).classList.remove('hidden');
+    const sw=document.getElementById('spiritWrap');
+    sw.style.display=(id==='sLobby')?'none':'flex';
+    Spirit.hide();
+    this.saveData(); // update UI on show
+  },
+  start408(){
+    this.show('sHack');
+    Hack.start();
+  },
+  start301(){
+    this.show('sForge');
+    Forge.start();
+  },
+  backToLobby(){
+    Hack.stop();
+    this.show('sLobby');
+  }
+};
+
+const Shop = {
+  open(){
+    document.getElementById('shopModal').classList.add('show');
+    this.renderState();
+  },
+  close(){document.getElementById('shopModal').classList.remove('show');},
+  renderState(){
+    ['time','shield','skip'].forEach(k=>{
+      const el=document.getElementById('item_'+k);
+      const btn=el.querySelector('.btn-buy');
+      if(Game.buffs[k]){
+        el.classList.add('owned');
+        btn.textContent='已装备';btn.disabled=true;
+      }else{
+        el.classList.remove('owned');
+        btn.textContent='购买';btn.disabled=false;
+      }
+    });
+  },
+  buy(item, price){
+    if(Game.buffs[item]) return;
+    if(Game.crystals < price){
+      alert('灵石结晶不足！需要多多破阵积累！');
+      return;
+    }
+    Game.crystals -= price;
+    Game.buffs[item] = true;
+    Game.saveData();
+    this.renderState();
+    // sound
+    try{const a=new AudioContext(),o=a.createOscillator();o.type='triangle';o.frequency.value=800;o.connect(a.destination);o.start();o.stop(a.currentTime+0.1)}catch(e){}
+  }
+};
+
+// ══════════════════════════════════════
+// 408 HACK ENGINE
+// ══════════════════════════════════════
+
+const Hack = {
+  qi:0, hp:100, timeLeft:90, timer:null, q:null, filled:{}, dragPid:null,
+
+  start(){
+    this.qi=0; this.loadQuestion();
+  },
+
+  async loadQuestion(){
+    document.getElementById('hackTarget').textContent='TARGET: 推演阵法中...';
+    document.getElementById('codePanel').innerHTML='<div style="text-align:center;padding:40px;color:var(--cyan);animation:sPulse 2s infinite">[ AI CORE GENERATING ]<br>正在链接虚空，抓取全新的 408 防火墙阵列，请稍候...</div>';
+    document.getElementById('payloadDock').innerHTML='';
+    document.getElementById('btnRun').disabled=true;
+    
+    let qData = null;
+    
+    if(window.PKUSDK && window.PKUSDK.Auth.isLoggedIn()){
+      try{
+        const sys = `你是一个考研408出题专家。请生成一道关于数据结构或算法的题目（类似二叉树、图、快排等）。
+1. 提供一段带有关键空白行注释的C语言代码段。挖出刚好 2 处核心逻辑空隙作为 slot。
+2. 给出至少 4 个选项（包含2个正确代码用于填空，2个错误混淆代码）。
+3. 必须返回纯 JSON 数据，绝对不要用 markdown 标签（不要写 \`\`\`json ）。直接返回 JSON 对象结构：
+{
+  "id": "408_ai", "title": "题目名字", "desc": "题目描述",
+  "code": [
+    {"t":"line", "v":"void myFunc(int A[]) {"},
+    {"t":"slot", "id":"s1", "hint":"单行提示1"},
+    {"t":"line", "v":"    A[i] = A[j];"},
+    {"t":"slot", "id":"s2", "hint":"单行提示2"},
+    {"t":"line", "v":"}"}
+  ],
+  "payloads": [
+    {"text":"while(A[i]%2!=0) i++;", "correctFor":"s1"},
+    {"text":"while(A[j]%2==0) j--;", "correctFor":"s2"},
+    {"text":"while(i<j) i--;", "correctFor":null},
+    {"text":"if(i!=j) break;", "correctFor":null}
+  ],
+  "time": 90,
+  "spirit": "剑灵的一句提示"
+}`;
+        const res = await window.PKUSDK.AI.chat(sys, "请给我生成一道新的408代码破阵题。", {temperature: 0.8});
+        let clean = res;
+        if(clean.includes('```json')) clean = clean.split('```json')[1].split('```')[0].trim();
+        else if(clean.includes('```')) clean = clean.split('```')[1].split('```')[0].trim();
+        qData = JSON.parse(clean);
+      }catch(e){
+        console.warn("Hack AI Fallback:", e);
+      }
+    }
+    
+    if(!qData) {
+      if(this.qi>=DB408.length) { Game.backToLobby(); return; }
+      qData = DB408[this.qi];
+    }
+    this.q = qData;
+    
+    this.hp=100; this.filled={}; this.dragPid=null;
+    document.getElementById('hackTarget').textContent='TARGET: '+this.q.title;
+    document.getElementById('hackLevel').textContent='LEVEL '+(this.qi+1);
+    document.getElementById('hackDesc').textContent=this.q.desc;
+    document.getElementById('hackSuccess').classList.remove('active');
+    document.getElementById('hackGameover').classList.remove('active');
+    document.getElementById('btnRun').disabled=true;
+    this.updateHp();
+    this.renderCode();
+    this.renderPayloads();
+    this.startTimer();
+    Spirit.setHint(this.q.spirit);
+  },
+
+  renderCode(){
+    const panel=document.getElementById('codePanel');
+    let html='';let ln=1;
+    this.q.code.forEach(c=>{
+      if(c.t==='line'){
+        html+='<div><span class="line-num">'+(ln++)+'</span>'+this.highlight(c.v)+'</div>';
+      } else if(c.t==='slot'){
+        html+='<div><span class="line-num">'+(ln++)+'</span>    <span class="code-slot" data-sid="'+c.id+'" title="'+c.hint+'"></span> <span class="cm">// '+c.hint+'</span></div>';
+      }
+    });
+    panel.innerHTML=html;
+    // Bind drop events
+    panel.querySelectorAll('.code-slot').forEach(slot=>{
+      slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('drag-hover')});
+      slot.addEventListener('dragleave',()=>slot.classList.remove('drag-hover'));
+      slot.addEventListener('drop',e=>{
+        e.preventDefault();slot.classList.remove('drag-hover');
+        const pid=e.dataTransfer.getData('text/plain');
+        this.fillSlot(slot,parseInt(pid));
+      });
+      // Click to clear
+      slot.addEventListener('click',()=>{
+        if(slot.classList.contains('filled')){
+          const oldPid=slot.dataset.filledPid;
+          delete this.filled[slot.dataset.sid];
+          slot.textContent='';slot.classList.remove('filled','wrong');slot.dataset.filledPid='';
+          // Restore payload
+          const pEl=document.querySelector('.payload[data-pid="'+oldPid+'"]');
+          if(pEl)pEl.classList.remove('used');
+          this.checkReady();
+        }
+      });
+    });
+  },
+
+  fillSlot(slot,pid){
+    const pay=this.q.payloads[pid];
+    if(!pay)return;
+    // un-used previous fill if any
+    if(slot.dataset.filledPid){
+      const oldP=document.querySelector('.payload[data-pid="'+slot.dataset.filledPid+'"]');
+      if(oldP)oldP.classList.remove('used');
+    }
+    slot.textContent=pay.text;
+    slot.classList.add('filled');
+    slot.classList.remove('wrong');
+    slot.dataset.filledPid=String(pid);
+    this.filled[slot.dataset.sid]=pay;
+    // Mark payload as used
+    const pEl=document.querySelector('.payload[data-pid="'+pid+'"]');
+    if(pEl)pEl.classList.add('used');
+    this.checkReady();
+  },
+
+  renderPayloads(){
+    const dock=document.getElementById('payloadDock');dock.innerHTML='';
+    let shuffled=[...this.q.payloads.map((p,i)=>({...p,oi:i}))];
+    for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+    shuffled.forEach(p=>{
+      const el=document.createElement('div');
+      el.className='payload';el.textContent=p.text;el.draggable=true;el.dataset.pid=p.oi;
+      el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',String(p.oi))});
+      // Touch support: click assigns to first empty slot
+      el.addEventListener('dblclick',()=>{
+        if(el.classList.contains('used'))return;
+        const emptySlot=document.querySelector('.code-slot:not(.filled)');
+        if(emptySlot)this.fillSlot(emptySlot,p.oi);
+      });
+      dock.appendChild(el);
+    });
+  },
+
+  highlight(s){
+    return s
+      .replace(/\b(void|int|while|if|else|return|NULL|for)\b/g,'<span class="kw">$1</span>')
+      .replace(/\b(swap|BSTNode|BSTree|Reverse|Partition|LinkList|LNode)\b/g,'<span class="fn">$1</span>')
+      .replace(/\/\/.*/g,m=>'<span class="cm">'+m+'</span>');
+  },
+
+  checkReady(){
+    const slots=document.querySelectorAll('.code-slot');
+    let allFilled=true;
+    slots.forEach(s=>{if(!s.classList.contains('filled'))allFilled=false});
+    document.getElementById('btnRun').disabled=!allFilled;
+  },
+
+  execute(){
+    let allCorrect=true;
+    const slots=document.querySelectorAll('.code-slot');
+    slots.forEach(s=>{
+      const pay=this.filled[s.dataset.sid];
+      if(!pay || pay.correctFor!==s.dataset.sid){
+        allCorrect=false;
+        s.classList.add('wrong');
+      }else{
+        s.classList.remove('wrong');
+      }
+    });
+    if(allCorrect){
+      this.stopTimer();
+      // Reward
+      Game.addCrystals(10);
+      this.showSuccess();
+    }else{
+      if(Game.buffs.shield){
+        Game.buffs.shield=false; Game.saveData();
+        Spirit.setHint("太乙玄甲触发！抵挡了一次错误的逻辑爆炸！"); Spirit.autoShow();
+      } else {
+        this.hp-=25;
+        this.updateHp();
+        this.glitch();
+        if(this.hp<=0){this.stopTimer();this.showGameover()}
+      }
+    }
+  },
+
+  showSuccess(){
+    const el=document.getElementById('hackSuccess');
+    el.classList.add('active');
+    document.getElementById('hackSuccessSub').textContent=this.q.title+' — 阵法已破';
+    document.getElementById('hackSuccessStats').innerHTML=
+      '<span>剩余时间<b>'+this.timeLeft+'s</b></span>'+
+      '<span>系统完整<b>'+this.hp+'%</b></span>'+
+      '<span>关卡<b>'+(this.qi+1)+'/'+DB408.length+'</b></span>';
+    document.getElementById('btnHackNext').textContent=
+      this.qi<DB408.length-1?'⚡ NEXT TARGET':'🏠 返回大厅';
+  },
+
+  showGameover(){
+    document.getElementById('hackGameover').classList.add('active');
+  },
+
+  next(){
+    this.qi++;
+    if(this.qi>=DB408.length){Game.backToLobby();return}
+    this.loadQuestion();
+  },
+
+  updateHp(){
+    const pct=Math.max(0,this.hp);
+    document.getElementById('hackHpVal').textContent=pct;
+    const fill=document.getElementById('hackHpFill');
+    fill.style.width=pct+'%';
+    fill.classList.toggle('low',pct<=30);
+  },
+
+  startTimer(){
+    this.stopTimer();
+    this.timeLeft=this.q.time||90;
+    
+    // Apply time buff
+    if(Game.buffs.time){
+      this.timeLeft += 30;
+      Game.buffs.time=false; Game.saveData();
+      Spirit.setHint("凝时秘符发动！你获得了额外的30秒破阵时间！"); Spirit.autoShow();
+    }
+
+    document.getElementById('traceTime').textContent=this.timeLeft;
+    document.getElementById('traceFill').style.width='0%';
+    const total=this.timeLeft;
+    this.timer=setInterval(()=>{
+      this.timeLeft--;
+      document.getElementById('traceTime').textContent=this.timeLeft;
+      document.getElementById('traceFill').style.width=(((total-this.timeLeft)/total)*100)+'%';
+      if(this.timeLeft<=0){
+        this.stopTimer();
+        this.hp-=30;this.updateHp();this.glitch();
+        if(this.hp<=0)this.showGameover();
+        else{this.timeLeft=30;this.startTimer()} // partial reset
+      }
+      // Auto-trigger spirit hint at 50% time
+      if(this.timeLeft===Math.floor(total*0.5))Spirit.autoShow();
+    },1000);
+  },
+  stopTimer(){if(this.timer){clearInterval(this.timer);this.timer=null}},
+  stop(){this.stopTimer()},
+
+  glitch(){
+    const el=document.getElementById('glitchOvl');
+    el.style.background='rgba(255,46,99,0.4)';el.classList.add('active');
+    let c=0;
+    const iv=setInterval(()=>{
+      document.body.style.transform='translate('+(Math.random()*12-6)+'px,'+(Math.random()*12-6)+'px)';
+      if(++c>6){clearInterval(iv);document.body.style.transform='';el.classList.remove('active')}
+    },50);
+    // Sound
+    try{const a=new AudioContext(),o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.value=120;g.gain.value=0.15;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.3);o.stop(a.currentTime+0.3)}catch(e){}
+  }
+};
+
+// ══════════════════════════════════════
+// 301 FORGE ENGINE
+// ══════════════════════════════════════
+
+const Forge = {
+  qi:0, hp:100, currentStep:0, q:null, totalSteps:0,
+
+  start(){
+    this.qi=0;this.loadQuestion();
+  },
+
+  async loadQuestion(){
+    document.getElementById('forgeStep').textContent='化阵中...';
+    document.getElementById('beastMath').innerHTML='<div style="text-align:center;font-size:16px;color:rgba(168,85,247,0.8);animation:sPulse 2s infinite">[ ALCHEMY INITIATING ]<br>正在利用大模型生成全新的 高数妖兽，请稍候...</div>';
+    document.getElementById('runeDock').innerHTML='';
+    document.getElementById('btnForgeSkip').classList.add('hidden');
+    
+    let qData = null;
+    
+    if(window.PKUSDK && window.PKUSDK.Auth.isLoggedIn()){
+      try{
+        const sys = `你是一个考研301数学出题专家。请生成一道复杂的微积分、极限或线性代数计算大题。
+1. 设计一个至少需要3步独立化简步骤（如泰勒展开-约分-代入，或者分部积分等）。
+2. eq 必须使用合法的 KaTeX 字符串。**注意必须正确双重转义，因为你是在输出JSON！例如：用 \\\\lim 代替 \\lim，\\\\frac 代替 \\frac，确保所有的反斜杠在被 JSON.parse 解析后仍是一个反斜杠**。
+3. 设计 3 个正确的对应步骤符文和 2 个错的混淆符文。
+必须返回纯 JSON 数据，绝对不要用 markdown 标签（不要写 \`\`\`json ）。直接返回 JSON 对象结构：
+{
+  "id": "301_ai", "title": "题目名字", "desc": "题目描述",
+  "steps": [
+    {"eq": "\\\\lim_{x \\\\to 0} ...", "label": "原始形态"},
+    {"eq": "...", "label": "第一步化简"},
+    {"eq": "...", "label": "第二步化简"},
+    {"eq": "...", "label": "最终答案"}
+  ],
+  "runes": [
+    {"id":"r1", "icon":"🌀", "name":"泰勒展开", "desc":"TAYLOR", "step":1, "wrong":false},
+    {"id":"r2", "icon":"✂️", "name":"约分", "desc":"CANCEL", "step":2, "wrong":false},
+    {"id":"r3", "icon":"🎯", "name":"代入", "desc":"EVAL", "step":3, "wrong":false},
+    {"id":"r4", "icon":"🔄", "name":"洛必达", "desc":"LHOPITAL", "step":-1, "wrong":true, "dmg":20},
+    {"id":"r5", "icon":"♾️", "name":"放缩", "desc":"SCALE", "step":-1, "wrong":true, "dmg":15}
+  ],
+  "spirit": "剑灵的一句提示"
+}`;
+        const res = await window.PKUSDK.AI.chat(sys, "请给我召唤一头全新的高数妖兽。", {temperature: 0.8});
+        let clean = res;
+        if(clean.includes('```json')) clean = clean.split('```json')[1].split('```')[0].trim();
+        else if(clean.includes('```')) clean = clean.split('```')[1].split('```')[0].trim();
+        qData = JSON.parse(clean);
+        // Correct potential single slashes in Katex strings if parsing somehow missed
+        qData.steps.forEach(s => { s.eq = s.eq.replace(/\\\\/g, '\\'); });
+      }catch(e){
+        console.warn("Forge AI Fallback:", e);
+      }
+    }
+    
+    if(!qData) {
+      if(this.qi>=DB301.length) { Game.backToLobby(); return; }
+      qData = DB301[this.qi];
+    }
+    this.q = qData;
+    this.hp=100; this.currentStep=0;
+    this.totalSteps=this.q.steps.length-1; 
+    document.getElementById('forgeLevel').textContent='妖兽 '+(this.qi+1);
+    document.getElementById('forgeDesc').textContent=this.q.desc;
+    document.getElementById('forgeSuccess').classList.remove('active');
+    document.getElementById('forgeGameover').classList.remove('active');
+    this.updateHp();
+    this.renderBeast();
+    this.renderRunes();
+    Spirit.setHint(this.q.spirit);
+  },
+
+  renderBeast(){
+    const target=this.q.steps[this.currentStep];
+    document.getElementById('forgeStep').textContent=target.label;
+    try{katex.render(target.eq,document.getElementById('beastMath'),{displayMode:true,throwOnError:false})}
+    catch(e){document.getElementById('beastMath').textContent=target.eq}
+    const b=document.getElementById('beastMath');
+    
+    // Skip buff UI
+    const btnSkip = document.getElementById('btnForgeSkip');
+    if(this.currentStep < this.totalSteps && Game.buffs.skip) {
+      btnSkip.classList.remove('hidden');
+    } else {
+      btnSkip.classList.add('hidden');
+    }
+    
+    if(this.currentStep>=this.totalSteps){
+      b.innerHTML='';
+      katex.render(this.q.steps[this.totalSteps].eq, b, {displayMode:true,throwOnError:false});
+      document.getElementById('beastHpFill').style.width='0%';
+      document.getElementById('beastHpText').textContent='0/'+this.totalSteps;
+      const bc=document.getElementById('beast');
+      bc.classList.remove('hit');
+    }else{
+      b.innerHTML='';
+      const target=this.q.steps[this.currentStep];
+      document.getElementById('forgeStep').textContent=target.label;
+      try{katex.render(target.eq,b,{displayMode:true,throwOnError:false})}
+      catch(e){b.textContent=target.eq}
+      // HP
+      const remaining=this.totalSteps-this.currentStep;
+      document.getElementById('beastHpText').textContent=remaining+'/'+this.totalSteps;
+      document.getElementById('beastHpFill').style.width=(remaining/this.totalSteps*100)+'%';
+      // Animate
+      const bc=document.getElementById('beast');
+      bc.classList.remove('hit','dead');
+    }
+  },
+
+  renderRunes(){
+    const dock=document.getElementById('runeDock');dock.innerHTML='';
+    let shuffled=[...this.q.runes];
+    for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+    shuffled.forEach(r=>{
+      const el=document.createElement('button');
+      el.className='rune';el.dataset.rid=r.id;
+      el.innerHTML='<span class="r-icon">'+r.icon+'</span><span class="r-name">'+r.name+'</span><span class="r-type">'+r.desc+'</span>';
+      el.addEventListener('click',()=>this.useRune(r,el));
+      dock.appendChild(el);
+    });
+  },
+
+  useRune(r,runeEl){
+    if(r.wrong){
+      // Wrong rune: damage player
+      if(Game.buffs.shield){
+        Game.buffs.shield=false; Game.saveData();
+        runeEl.classList.add('wrong-flash');
+        setTimeout(()=>runeEl.classList.remove('wrong-flash'),500);
+        Spirit.setHint("太乙玄甲触发！免疫了妖兽的混沌反噬！"); Spirit.autoShow();
+        return;
+      }
+      this.hp-=r.dmg;this.updateHp();
+      runeEl.classList.add('wrong-flash');
+      setTimeout(()=>runeEl.classList.remove('wrong-flash'),500);
+      this.glitch();
+      if(this.hp<=0)this.showGameover();
+      // Auto-trigger spirit
+      if(this.hp<=60)Spirit.autoShow();
+      return;
+    }
+    if(r.step!==this.currentStep+1)return; // Not the right step
+    this.triggerCorrectRune(runeEl);
+  },
+
+  triggerCorrectRune(runeEl){
+    if(runeEl) runeEl.classList.add('used');
+    this.currentStep++;
+    const beast=document.getElementById('beast');
+    beast.classList.add('hit');
+    // Sound
+    try{const a=new AudioContext(),o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=600+(this.currentStep*200);g.gain.value=0.1;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.2);o.stop(a.currentTime+0.2)}catch(e){}
+
+    if(this.currentStep>=this.totalSteps){
+      // Victory
+      Game.addCrystals(15);
+      setTimeout(()=>{
+        beast.classList.add('dead');
+        this.renderBeast();
+        setTimeout(()=>this.showSuccess(),600);
+      },500);
+    }else{
+      setTimeout(()=>this.renderBeast(),500);
+    }
+  },
+
+  useSkipBuff(){
+    if(!Game.buffs.skip) return;
+    Game.buffs.skip = false; Game.saveData();
+    Spirit.setHint("雷霆破穹！强行削去妖兽一层修为！"); Spirit.autoShow();
+    document.getElementById('btnForgeSkip').classList.add('hidden');
+    
+    // Find the correct rune and trigger it visually
+    const runes = document.querySelectorAll('.rune');
+    let correctEl = null;
+    runes.forEach(el => {
+      const rid = el.dataset.rid;
+      const r = this.q.runes.find(x => x.id === rid);
+      if(r && r.step === this.currentStep + 1) correctEl = el;
+    });
+    
+    // big flash
+    const ovl = document.createElement('div');
+    ovl.style.position='fixed';ovl.style.inset='0';ovl.style.background='#fff';ovl.style.zIndex='9999';ovl.style.transition='opacity .3s';
+    document.body.appendChild(ovl);
+    setTimeout(()=>{ovl.style.opacity='0';setTimeout(()=>ovl.remove(),300)}, 100);
+
+    this.triggerCorrectRune(correctEl);
+  },
+
+  showSuccess(){
+    const el=document.getElementById('forgeSuccess');
+    el.classList.add('active');
+    document.getElementById('forgeSuccessSub').textContent=this.q.title+' — 灵兽已降';
+    document.getElementById('forgeSuccessStats').innerHTML=
+      '<span>剩余元晶<b>'+this.hp+'%</b></span>'+
+      '<span>化简步数<b>'+this.totalSteps+'</b></span>'+
+      '<span>妖兽<b>'+(this.qi+1)+'/'+DB301.length+'</b></span>';
+    document.getElementById('btnForgeNext').textContent=
+      this.qi<DB301.length-1?'🔥 下一头灵兽':'🏠 返回大厅';
+  },
+  showGameover(){
+    document.getElementById('forgeGameover').classList.add('active');
+  },
+
+  next(){
+    this.qi++;
+    if(this.qi>=DB301.length){Game.backToLobby();return}
+    this.loadQuestion();
+  },
+
+  updateHp(){
+    const pct=Math.max(0,this.hp);
+    document.getElementById('forgeHpVal').textContent=pct;
+    const fill=document.getElementById('forgeHpFill');
+    fill.style.width=pct+'%';
+    fill.classList.toggle('low',pct<=30);
+  },
+
+  glitch(){
+    const el=document.getElementById('forgeGlitchOvl');
+    el.style.background='rgba(168,85,247,0.35)';el.classList.add('active');
+    let c=0;
+    const iv=setInterval(()=>{
+      document.body.style.transform='translate('+(Math.random()*8-4)+'px,'+(Math.random()*8-4)+'px) scale(0.99)';
+      if(++c>5){clearInterval(iv);document.body.style.transform='';el.classList.remove('active')}
+    },50);
+  }
+};
+
+// ══════════════════════════════════════
+// AI SWORD SPIRIT
+// ══════════════════════════════════════
+
+const Spirit = {
+  chatHistory: [],
+  defaultHint: '',
+  contextQ: null,
+  
+  setHint(text){
+    this.defaultHint=text;
+    if(Hack.q) this.contextQ=Hack.q;
+    else if(Forge.q) this.contextQ=Forge.q;
+    this.clearChat();
+    this.appendMsg('spirit', text);
+  },
+  clearChat(){
+    this.chatHistory=[];
+    const c=document.getElementById('spiritChat');
+    c.innerHTML='<div class="msg sys">剑灵已苏醒，只做点拨，忌透天机</div>';
+  },
+  appendMsg(role, text){
+    const c=document.getElementById('spiritChat');
+    const m=document.createElement('div');
+    m.className='msg '+role; m.textContent=text;
+    c.appendChild(m);
+    c.scrollTop=c.scrollHeight;
+  },
+  toggle(){
+    const b=document.getElementById('spiritPanel');
+    if(b.classList.contains('show')) this.close();
+    else this.open();
+  },
+  open(){
+    document.getElementById('spiritPanel').classList.add('show');
+    document.getElementById('spiritBtn').classList.remove('pulse');
+    setTimeout(()=>document.getElementById('spInput').focus(),100);
+  },
+  close(){
+    document.getElementById('spiritPanel').classList.remove('show');
+  },
+  hide(){this.close()},
+  autoShow(){
+    document.getElementById('spiritBtn').classList.add('pulse');
+  },
+  async send(){
+    const inp=document.getElementById('spInput');
+    const txt=inp.value.trim();
+    if(!txt)return;
+    inp.value='';
+    this.appendMsg('user', txt);
+    this.chatHistory.push({role:'user',content:txt});
+    
+    if(!window.PKUSDK || !window.PKUSDK.Auth.isLoggedIn()){
+      setTimeout(()=>this.appendMsg('spirit', '【经脉不通】你需要在大厅开启密钥核心，我才能真正与你对话...'), 500);
+      return;
+    }
+
+    const sysP = `你是一个栖息在考研阵法里的【修仙剑灵】。玩家正在挑战一道名为"${this.contextQ?.title||'未知'}"的关卡，题目大意是：${this.contextQ?.desc||'无'}。
+玩家向你请教，你需要给出提示启发他，但**绝对禁止直接给出答案/最终计算结果**！你只能用引导性的修仙/黑客话语点拨。每次回答必须在50字内。`;
+
+    const chatStr = this.chatHistory.map(m=>m.role+':'+m.content).join('\n');
+    
+    // Placeholder
+    const c=document.getElementById('spiritChat');
+    const p=document.createElement('div');p.className='msg spirit';p.innerHTML='...';c.appendChild(p);
+    c.scrollTop=c.scrollHeight;
+    
+    try {
+      const res = await window.PKUSDK.AI.chat(sysP, chatStr, {temperature:0.7, maxTokens: 200});
+      p.textContent = res;
+      this.chatHistory.push({role:'assistant',content:res});
+    }catch(e){
+      p.textContent = '【真灵溃散】'+e.message;
+    }
+    c.scrollTop=c.scrollHeight;
+  }
+};
+
+// Update lobby counts
+document.getElementById('hackCount').textContent=DB408.length;
+document.getElementById('forgeCount').textContent=DB301.length;
+</script>
+</body>
+</html>
