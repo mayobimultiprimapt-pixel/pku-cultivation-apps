@@ -17,10 +17,27 @@ const PKUAutoFetch = (() => {
   const BAOSI_KEY = 'sk-Wq6ZDfqGBUOMHN3DMeyccH8nqDzsiGJpfFmdY5RJujPk9E97';
   const BAOSI_MODEL = 'gemini-3.1-pro-high'; // 写死最高版，绝不降级
 
-  // ═══ API Key 管理 ═══
-  function getKey() { return sessionStorage.getItem('pku_pplx_key') || ''; }
-  function setKey(k) { sessionStorage.setItem('pku_pplx_key', k); }
+  // ═══ API Key 管理（持久化·登录即恢复） ═══
+  const _userNS = () => 'pku_keys_' + (localStorage.getItem('pku_pwd') || 'anon');
+  function getKey() {
+    // 优先 session（当次输入的），然后 localStorage（上次保存的）
+    return sessionStorage.getItem('pku_pplx_key')
+        || localStorage.getItem(_userNS() + '_pplx') || '';
+  }
+  function setKey(k) {
+    sessionStorage.setItem('pku_pplx_key', k);
+    // 同时持久化到 localStorage，绑定当前账号
+    if (k) localStorage.setItem(_userNS() + '_pplx', k);
+  }
   function hasKey() { return !!getKey(); }
+  // 页面加载时，自动从 localStorage 恢复到 session
+  (function _restoreKeys() {
+    const saved = localStorage.getItem(_userNS() + '_pplx');
+    if (saved && !sessionStorage.getItem('pku_pplx_key')) {
+      sessionStorage.setItem('pku_pplx_key', saved);
+      console.log('[📡] 已从中转阁恢复 Perplexity 密钥');
+    }
+  })();
 
   // ═══ 四科抓题 Prompt（考试大纲级） ═══
   const FETCH_PROMPTS = {
