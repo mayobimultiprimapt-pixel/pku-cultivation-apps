@@ -727,7 +727,79 @@
 每条附【完整题干+参考答案+命中概率%】`
   };
 
-  async function runIntel() {
+
+  // ── 直连 Perplexity API (绕过中转阁休眠) ──
+  async function directPerplexitySearch(sys, usr) {
+    const keys = window.PKU_KEYS || {};
+    const pplxKey = keys.PERPLEXITY_API_KEY;
+    if (!pplxKey) throw new Error('缺少 Perplexity Key，请点右上角 🔑 注入');
+
+    // 优先尝试直连 Perplexity
+    try {
+      const res = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
+        body: JSON.stringify({
+          model: 'sonar-pro',
+          messages: [{role:'system',content:sys},{role:'user',content:usr}],
+          temperature: 0.2, max_tokens: 4096
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+      const d = await res.json();
+      if (d.error) throw new Error(d.error.message || JSON.stringify(d.error));
+      return ((d.choices||[{}])[0]?.message?.content || '').trim();
+    } catch(directErr) {
+      // 降级：尝试中转阁
+      log('warn', '直连失败，尝试中转阁...', 'logIntel');
+      try {
+        return await PKUSDK.AI.search(sys, usr);
+      } catch(relayErr) {
+        throw new Error(directErr.message + ' (中转阁也失败: ' + relayErr.message + ')');
+      }
+    }
+  }
+
+  // ── 直连 Gemini API (绕过中转阁休眠) ──
+  async function directGeminiCall(sys, usr, opts = {}) {
+    const keys = window.PKU_KEYS || {};
+    const gKey = keys.GEMINI_API_KEY;
+    if (!gKey) throw new Error('缺少 Gemini Key，请点右上角 🔑 注入');
+
+    const model = opts.model || 'gemini-2.5-pro';
+    // 如果是 OpenRouter 模型格式，走 OpenRouter
+    if (model.includes('/')) {
+      const orKey = keys.OPENROUTER_API_KEY;
+      if (!orKey) throw new Error('该模型需要 OpenRouter Key');
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + orKey,
+          'HTTP-Referer': 'https://mayobimultiprimapt-pixel.github.io', 'X-Title': 'PKU Terminal' },
+        body: JSON.stringify({
+          model: model,
+          messages: [{role:'system',content:sys},{role:'user',content:usr}],
+          temperature: opts.temperature || 0.7, max_tokens: opts.maxTokens || 8192
+        }),
+        signal: AbortSignal.timeout(120000)
+      });
+      const d = await res.json();
+      if (d.error) throw new Error(d.error.message || JSON.stringify(d.error));
+      return ((d.choices||[{}])[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+    }
+
+    // Gemini 直连
+    const geminiModel = model.replace('google/', '');
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + geminiModel + ':generateContent?key=' + gKey;
+    const contents = [{role:'user', parts:[{text: usr}]}];
+    const body = { contents, generationConfig: { temperature: opts.temperature || 0.7, maxOutputTokens: opts.maxTokens || 8192 } };
+    if (sys) body.system_instruction = { parts: [{ text: sys }] };
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:AbortSignal.timeout(120000) });
+    const d = await res.json();
+    if (!res.ok) throw new Error('Gemini ' + res.status + ': ' + JSON.stringify(d).substring(0,200));
+    return (d.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+  }
+
+    async function runIntel() {
     if (intelSubjects.length === 0) {
       toast('请先选择要采集的科目', 'err');
       return;
