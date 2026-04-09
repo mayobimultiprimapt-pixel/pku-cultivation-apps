@@ -468,8 +468,9 @@ const CrushData = (() => {
 
   const COLORS = ['c0','c1','c2','c3','c4','c5'];
   const GRID_SIZE = 6;
-  const MOVES_PER_LEVEL = 25;
+  const MOVES_PER_LEVEL = 35;
   const TARGET_MATCHES = 3;
+  const QUESTIONS_PER_LEVEL = 5;
 
   // ═══ 动态关卡池（金库 + Perplexity 注入） ═══
   const _dynamicLevels = { english:[], math:[], politics:[], cs:[] };
@@ -485,15 +486,29 @@ const CrushData = (() => {
     return [..._getBuiltinPool(mode), ..._dynamicLevels[mode]];
   }
 
-  // ═══ 唯一的 getLevel (修复重复定义bug) ═══
+  // ═══ 唯一的 getLevel (多题束制) ═══
   function getLevel(mode, idx) {
     const pool = _getMergedPool(mode);
-    if(idx < 0 || idx >= pool.length) return null;
-    return {...pool[idx], index: idx, moves: MOVES_PER_LEVEL};
+    const startIdx = idx * QUESTIONS_PER_LEVEL;
+    if(startIdx >= pool.length) return null;
+    // 每关抽取 QUESTIONS_PER_LEVEL 题，不足则有多少用多少
+    const questions = pool.slice(startIdx, startIdx + QUESTIONS_PER_LEVEL);
+    if(questions.length === 0) return null;
+    // 第一题作为当前活动题，其余备用
+    const first = questions[0];
+    return {
+      ...first,
+      index: idx,
+      moves: MOVES_PER_LEVEL,
+      questions: questions,
+      questionIndex: 0,
+      totalQuestions: questions.length
+    };
   }
 
   function getTotalLevels(mode) {
-    return _getMergedPool(mode).length;
+    const pool = _getMergedPool(mode);
+    return Math.ceil(pool.length / QUESTIONS_PER_LEVEL);
   }
 
   function buildGrid(level) {

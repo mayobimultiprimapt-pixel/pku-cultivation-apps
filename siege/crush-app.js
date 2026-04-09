@@ -163,7 +163,8 @@ const CrushApp = (() => {
 
     document.getElementById('popLevel').textContent = `Level ${idx+1}`;
     document.getElementById('popSentence').textContent = level.sentence;
-    document.getElementById('popMoves').textContent = `📦 ${level.moves}步`;
+    const qCount = level.totalQuestions || 1;
+    document.getElementById('popMoves').textContent = `📦 ${level.moves}步 · ${qCount}题`;
     document.getElementById('lvPopup').classList.remove('hidden');
   }
 
@@ -184,7 +185,9 @@ const CrushApp = (() => {
     const S = CrushEngine.getState();
     if(!S) return;
 
-    document.getElementById('gameLevel').textContent = `Lv.${currentLevel+1}`;
+    // 显示题号进度
+    const qLabel = S.totalQuestions > 1 ? ` Q${S.questionsCompleted+1}/${S.totalQuestions}` : '';
+    document.getElementById('gameLevel').textContent = `Lv.${currentLevel+1}${qLabel}`;
     document.getElementById('gameScore').textContent = S.score;
     document.getElementById('gameMoves').textContent = S.moves;
 
@@ -207,10 +210,12 @@ const CrushApp = (() => {
         ? '✅ 填空完成!'
         : `找到并消除 "${S.level.answer}" × ${S.targetNeeded - filledCount}`;
 
-    // Progress
-    const pct = (filledCount / S.targetNeeded * 100);
+    // Progress (多题进度)
+    const totalTargets = S.totalQuestions * S.targetNeeded;
+    const completedTargets = S.questionsCompleted * S.targetNeeded + filledCount;
+    const pct = (completedTargets / totalTargets * 100);
     document.getElementById('progressFill').style.width = `${pct}%`;
-    document.getElementById('progressText').textContent = `${filledCount}/${S.targetNeeded}`;
+    document.getElementById('progressText').textContent = `${S.questionsCompleted}/${S.totalQuestions}题`;
 
     renderGrid();
   }
@@ -341,6 +346,18 @@ const CrushApp = (() => {
       }, delay);
       delay += 380;
     });
+
+    // 检查是否有题目进阶
+    if(result.questionAdvanced) {
+      setTimeout(() => {
+        showCombo(`✅ Q${result.questionsCompleted}/${result.totalQuestions} CLEAR!`, 4);
+        spawnBurstParticles(20);
+        if(navigator.vibrate) navigator.vibrate([100,50,100]);
+        // 短暂延迟后刷新棋盘显示新题
+        setTimeout(() => renderGame(), 600);
+      }, delay);
+      delay += 1200;
+    }
 
     setTimeout(() => {
       processing = false;

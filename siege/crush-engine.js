@@ -19,6 +19,11 @@ const CrushEngine = (() => {
       maxCombo: 0,
       targetMatched: 0,
       targetNeeded: CrushData.TARGET_MATCHES,
+      // 多题束状态
+      questionIndex: 0,
+      totalQuestions: level.totalQuestions || 1,
+      questionsCompleted: 0,
+      currentQuestion: level.questions ? level.questions[0] : level,
       wordsLearned: [level.meaning],
       finished: false,
       won: false,
@@ -74,13 +79,66 @@ const CrushEngine = (() => {
 
   function checkWinLose(result) {
     if(S.targetMatched >= S.targetNeeded) {
-      S.won = true;
-      S.finished = true;
+      S.questionsCompleted++;
+      // 检查是否还有下一题
+      if(S.level.questions && S.questionsCompleted < S.totalQuestions) {
+        // 切换到下一题
+        S.questionIndex = S.questionsCompleted;
+        const nextQ = S.level.questions[S.questionIndex];
+        S.currentQuestion = nextQ;
+        // 更新level的answer和distractors
+        S.level.answer = nextQ.answer;
+        S.level.distractors = nextQ.distractors;
+        S.level.sentence = nextQ.sentence;
+        S.level.meaning = nextQ.meaning;
+        S.wordsLearned.push(nextQ.meaning);
+        S.targetMatched = 0;
+        // 重新填充棋盘以包含新的答案词
+        reloadGridForNewQuestion();
+        result.questionAdvanced = true;
+        result.newQuestion = nextQ;
+      } else {
+        // 全部题目完成，通关
+        S.won = true;
+        S.finished = true;
+      }
     } else if(S.moves <= 0) {
       S.finished = true;
     }
     result.finished = S.finished;
     result.won = S.won;
+    result.questionsCompleted = S.questionsCompleted;
+    result.totalQuestions = S.totalQuestions;
+  }
+
+  // 切换题目后重新填充棋盘
+  function reloadGridForNewQuestion() {
+    const level = S.level;
+    const allWords = [level.answer, ...level.distractors];
+    // 将现有棋子随机替换为新词
+    for(let r=0; r<SIZE; r++) {
+      for(let c=0; c<SIZE; c++) {
+        const word = allWords[Math.floor(Math.random()*allWords.length)];
+        const colorIdx = allWords.indexOf(word) % CrushData.COLORS.length;
+        S.grid[r][c] = {
+          word, color: CrushData.COLORS[colorIdx],
+          isTarget: word === level.answer,
+          special: null, row: r, col: c, isNew: true
+        };
+      }
+    }
+    // 确保新目标词存在
+    const targets = S.grid.flat().filter(t => t.isTarget);
+    while(targets.length < CrushData.TARGET_MATCHES) {
+      const r = Math.floor(Math.random()*SIZE);
+      const c = Math.floor(Math.random()*SIZE);
+      if(!S.grid[r][c].isTarget) {
+        S.grid[r][c].word = level.answer;
+        S.grid[r][c].isTarget = true;
+        S.grid[r][c].color = CrushData.COLORS[0];
+        targets.push(S.grid[r][c]);
+      }
+    }
   }
 
   function doSwap(r1,c1,r2,c2) {
