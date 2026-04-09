@@ -3,148 +3,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中转�?· 数据中枢控制�?v6.0</title>
+<title>中转阁 · 数据中枢控制台 v6.0</title>
 <script src="../shared/pku-core-sdk.js"></script>
-<!-- Keys handled by relay server --><script src="../shared/exam-templates.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="../shared/exam-templates.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@300;400;700;900&family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#020617;--bg2:#0f172a;--bg3:#1e293b;
-  --panel:rgba(15,23,42,.85);--panel2:rgba(30,41,59,.7);
-  --border:rgba(56,189,248,.12);--border-hi:rgba(56,189,248,.35);
-  --text:#f1f5f9;--sub:#64748b;--dim:#475569;
-  --cyan:#38bdf8;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;
-  --gold:#fbbf24;--amber:#f59e0b;--purple:#a78bfa;--pink:#f472b6;
-  --font-d:'Orbitron',monospace;--font-b:'Noto Sans SC',sans-serif;--font-m:'JetBrains Mono',monospace;
+:root {
+  --bg: #06060e; --bg2: #0c0c1a; --bg3: #12122a;
+  --card: rgba(14, 14, 32, 0.9);
+  --gold: #ffd700; --amber: #ff8c00;
+  --cyan: #08f7fe; --red: #ff2e63;
+  --purple: #9d4edd; --green: #39ff14;
+  --blue: #3b82f6;
+  --text: #e8e8f0; --dim: #555578; --sub: #888;
+  --border: rgba(255,215,0,.08);
+  --border-hi: rgba(255,215,0,.2);
+  --font-d: 'Orbitron', monospace;
+  --font-b: 'Noto Serif SC', 'Inter', sans-serif;
+  --font-m: 'JetBrains Mono', monospace;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:
-  radial-gradient(ellipse at 10% 20%,rgba(56,189,248,.04),transparent 50%),
-  radial-gradient(ellipse at 90% 80%,rgba(244,63,94,.03),transparent 50%),
-  repeating-linear-gradient(0deg,transparent,transparent 99px,rgba(56,189,248,.02) 100px),
-  repeating-linear-gradient(90deg,transparent,transparent 99px,rgba(56,189,248,.02) 100px);
-  pointer-events:none;z-index:0}
-
-.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:16px}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--font-b);
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; overflow-x: hidden;
+}
+.bg-grid {
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(255,215,0,.03), transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(157,78,221,.03), transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.01) 50px),
+    repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.01) 50px);
+  pointer-events:none;z-index:0;
+}
+.container { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:30px 20px 60px; }
 
 /* ── Header ── */
-.hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
-.hdr-l h1{font-family:var(--font-d);font-size:18px;letter-spacing:3px;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hdr-l .ver{font-family:var(--font-d);font-size:9px;color:var(--sub);letter-spacing:4px;margin-top:2px}
-.hdr-r{display:flex;align-items:center;gap:12px}
-.net-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid}
-.net-badge.online{color:var(--green);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
-.net-badge.offline{color:var(--red);border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)}
-.net-badge.loading{color:var(--gold);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)}
-.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.back-link{color:var(--sub);font-size:11px;text-decoration:none;transition:.2s}.back-link:hover{color:var(--cyan)}
+.header { text-align:center;margin-bottom:36px; }
+.seal {
+  width:80px;height:80px;margin:0 auto 16px;
+  border:2px solid rgba(255,215,0,.25);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;animation:float 4s ease-in-out infinite;position:relative;
+}
+.seal::after {
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid rgba(255,215,0,.1);animation:float 4s ease-in-out infinite reverse;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.header h1 {
+  font-size:32px;font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--amber),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;letter-spacing:2px;
+}
+.header .sub-title {
+  font-family:var(--font-d);font-size:11px;color:var(--dim);
+  letter-spacing:6px;text-transform:uppercase;
+}
+.back-link {
+  position:absolute;top:20px;left:20px;
+  color:var(--sub);font-size:12px;text-decoration:none;
+  transition:.3s;display:flex;align-items:center;gap:6px;
+}
+.back-link:hover { color:var(--gold); }
+
+/* ── Net Badge ── */
+.net-badge-wrap { display:flex;justify-content:center;margin-top:14px; }
+.net-badge {
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 18px;border-radius:20px;
+  font-family:var(--font-d);font-size:10px;font-weight:700;
+  letter-spacing:2px;border:1px solid;
+}
+.net-badge.online { color:var(--green);border-color:rgba(57,255,20,.25);background:rgba(57,255,20,.04); }
+.net-badge.offline { color:var(--red);border-color:rgba(255,46,99,.25);background:rgba(255,46,99,.04); }
+.net-badge.loading { color:var(--gold);border-color:rgba(255,215,0,.25);background:rgba(255,215,0,.04); }
+.dot { width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 
 /* ── Stats Strip ── */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}}
-.st{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(8px)}
-.st::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
-.st-ico{font-size:20px;margin-bottom:6px}
-.st-val{font-family:var(--font-d);font-size:26px;font-weight:900}
-.st-lbl{font-size:9px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px;margin-top:2px}
+.stats {
+  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;
+}
+@media(max-width:700px){ .stats{grid-template-columns:repeat(3,1fr)} }
+.st {
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:18px 12px;text-align:center;position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);transition:.3s;
+}
+.st:hover { border-color:var(--border-hi);transform:translateY(-2px); }
+.st::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--purple),var(--gold));opacity:.6;
+}
+.st-ico { font-size:22px;margin-bottom:8px; }
+.st-val { font-family:var(--font-d);font-size:28px;font-weight:900;color:var(--gold); }
+.st-lbl { font-size:9px;color:var(--dim);font-family:var(--font-d);letter-spacing:3px;margin-top:4px; }
+
+/* ── Section Head ── */
+.section-head {
+  display:flex;align-items:center;gap:12px;
+  margin:28px 0 16px;padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+.section-icon { font-size:22px; }
+.section-title { font-family:var(--font-d);font-size:12px;letter-spacing:3px;font-weight:700;color:var(--gold); }
+.section-line { flex:1;height:1px;background:linear-gradient(90deg,rgba(255,215,0,.2),transparent);opacity:.5; }
 
 /* ── Main Grid ── */
-.main{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:800px){.main{grid-template-columns:1fr}}
+.main { display:grid;grid-template-columns:1fr 1fr;gap:20px; }
+@media(max-width:800px){ .main{grid-template-columns:1fr} }
 
-/* ── Panels ── */
-.pnl{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;backdrop-filter:blur(8px);display:flex;flex-direction:column}
-.pnl-t{font-family:var(--font-d);font-size:11px;color:var(--cyan);letter-spacing:2px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-.pnl-t .badge{font-size:8px;padding:2px 8px;border-radius:10px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+/* ── Card Panel ── */
+.card-panel {
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:20px;backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  transition:.3s;
+}
+.card-panel:hover { border-color:var(--border-hi); }
+.panel-title {
+  font-family:var(--font-d);font-size:11px;color:var(--gold);
+  letter-spacing:3px;font-weight:700;margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.panel-badge {
+  font-size:9px;padding:3px 10px;border-radius:12px;
+  background:rgba(57,255,20,.06);color:var(--green);
+  border:1px solid rgba(57,255,20,.15);font-family:var(--font-d);
+  letter-spacing:1px;
+}
 
-/* ── Subject Matrix ── */
-.subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sc{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:12px;transition:.25s;position:relative;overflow:hidden}
-.sc:hover{border-color:var(--border-hi)}
-.sc::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:0 3px 3px 0}
-.sc.s101::after{background:var(--red)}.sc.s201::after{background:var(--blue)}.sc.s301::after{background:var(--gold)}.sc.s408::after{background:var(--green)}
-.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.sc-code{font-family:var(--font-d);font-size:20px;font-weight:900}
-.s101 .sc-code{color:var(--red)}.s201 .sc-code{color:var(--blue)}.s301 .sc-code{color:var(--gold)}.s408 .sc-code{color:var(--green)}
-.sc-name{font-size:10px;color:var(--sub);font-family:var(--font-d)}
-.sc-rows{display:flex;flex-direction:column;gap:3px}
-.sc-row{display:flex;justify-content:space-between;font-size:10px;color:var(--sub)}
-.sc-row span{color:var(--text);font-family:var(--font-m);font-weight:700;font-size:11px}
-.sc-struct{font-size:8px;color:var(--dim);margin-top:6px;line-height:1.4;border-top:1px solid var(--border);padding-top:6px}
+/* ── Subject Cards ── */
+.subj-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.sc {
+  background:rgba(6,6,14,.6);border:1px solid var(--border);border-radius:14px;
+  padding:16px;transition:.3s;position:relative;overflow:hidden;
+}
+.sc:hover { border-color:var(--border-hi);transform:translateY(-2px); }
+.sc::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;
+}
+.sc.s101::before { background:linear-gradient(90deg,var(--red),transparent); }
+.sc.s201::before { background:linear-gradient(90deg,var(--blue),transparent); }
+.sc.s301::before { background:linear-gradient(90deg,var(--gold),transparent); }
+.sc.s408::before { background:linear-gradient(90deg,var(--green),transparent); }
+.sc-top { display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+.sc-code { font-family:var(--font-d);font-size:22px;font-weight:900; }
+.s101 .sc-code { color:var(--red); }
+.s201 .sc-code { color:var(--blue); }
+.s301 .sc-code { color:var(--gold); }
+.s408 .sc-code { color:var(--green); }
+.sc-name { font-size:11px;color:var(--sub);font-family:var(--font-d);letter-spacing:2px; }
+.sc-rows { display:flex;flex-direction:column;gap:4px; }
+.sc-row { display:flex;justify-content:space-between;font-size:11px;color:var(--sub); }
+.sc-row span { color:var(--text);font-family:var(--font-m);font-weight:700;font-size:12px; }
+.sc-struct {
+  font-size:9px;color:var(--dim);margin-top:8px;line-height:1.5;
+  border-top:1px solid var(--border);padding-top:8px;
+}
 
 /* ── Controls ── */
-.ctrl{display:flex;flex-direction:column;gap:8px}
-.sel{padding:10px 12px;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:var(--font-b);outline:none}
-.sel:focus{border-color:var(--cyan)}
-.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btn{padding:12px;border:none;border-radius:10px;font-size:12px;font-weight:700;font-family:var(--font-b);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;letter-spacing:1px}
-.btn:active{transform:scale(.96)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-cy{background:rgba(56,189,248,.08);color:var(--cyan);border:1px solid rgba(56,189,248,.25)}
-.btn-cy:hover:not(:disabled){background:var(--cyan);color:#000;box-shadow:0 0 20px rgba(56,189,248,.3)}
-.btn-gd{background:rgba(251,191,36,.08);color:var(--gold);border:1px solid rgba(251,191,36,.25)}
-.btn-gd:hover:not(:disabled){background:var(--gold);color:#000;box-shadow:0 0 20px rgba(251,191,36,.3)}
-.btn-fire{background:linear-gradient(135deg,#ef4444,#f43f5e);color:#fff;border:none;grid-column:1/-1;font-size:14px;padding:14px}
-.btn-fire:hover:not(:disabled){box-shadow:0 0 30px rgba(244,63,94,.4)}
-
-/* ── Feed List ── */
-.feeds{display:flex;flex-direction:column;gap:6px}
-.fd{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px}
-.fd-l{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600}
-.fd-ico{font-size:16px}
-.fd-st{font-family:var(--font-d);font-size:9px;padding:3px 8px;border-radius:6px;letter-spacing:1px}
-.fd-st.ok{color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
-.fd-st.wait{color:var(--gold);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)}
-
-/* ── Logs ── */
-.logs{flex:1;min-height:180px;max-height:300px;overflow-y:auto;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:10px;padding:10px;font-family:var(--font-m);font-size:10px;line-height:1.8}
-.logs::-webkit-scrollbar{width:3px}.logs::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px}
-.lg{word-break:break-all}
-.lg-t{color:var(--dim);margin-right:4px}
-.lg-info{color:var(--cyan)}.lg-ok{color:var(--green)}.lg-err{color:var(--red)}.lg-sys{color:var(--gold)}.lg-dim{color:var(--sub)}
-
-/* ── Template Viewer ── */
-.tmpl-section{margin-top:16px}
-.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
-@media(max-width:700px){.tmpl-grid{grid-template-columns:1fr}}
-.tmpl-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
-.tmpl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.tmpl-card.t101::before{background:var(--red)}.tmpl-card.t201::before{background:var(--blue)}
-.tmpl-card.t301::before{background:var(--gold)}.tmpl-card.t408::before{background:var(--green)}
-.tmpl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.tmpl-code{font-family:var(--font-d);font-size:18px;font-weight:900}
-.t101 .tmpl-code{color:var(--red)}.t201 .tmpl-code{color:var(--blue)}
-.t301 .tmpl-code{color:var(--gold)}.t408 .tmpl-code{color:var(--green)}
-.tmpl-score{font-family:var(--font-d);font-size:11px;color:var(--sub)}
-.tmpl-secs{display:flex;flex-direction:column;gap:4px}
-.tmpl-sec{font-size:10px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03)}
-.tmpl-sec-name{color:var(--text);font-weight:600}
-.tmpl-sec-det{color:var(--sub);font-family:var(--font-m)}
+.ctrl { display:flex;flex-direction:column;gap:10px; }
+.sel {
+  padding:12px 14px;background:rgba(6,6,14,.7);
+  border:1px solid var(--border);border-radius:12px;
+  color:var(--text);font-size:13px;font-family:var(--font-b);outline:none;
+  transition:.3s;
+}
+.sel:focus { border-color:rgba(255,215,0,.3); }
+.btn-row { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.btn {
+  padding:14px;border:none;border-radius:12px;
+  font-size:13px;font-weight:700;font-family:var(--font-b);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;transition:.25s;letter-spacing:1px;
+}
+.btn:active { transform:scale(.96); }
+.btn:disabled { opacity:.35;cursor:not-allowed; }
+.btn-gold {
+  background:rgba(255,215,0,.06);color:var(--gold);
+  border:1px solid rgba(255,215,0,.2);
+}
+.btn-gold:hover:not(:disabled) {
+  background:linear-gradient(135deg,var(--gold),var(--amber));
+  color:#000;box-shadow:0 0 24px rgba(255,215,0,.25);
+}
+.btn-purple {
+  background:rgba(157,78,221,.06);color:var(--purple);
+  border:1px solid rgba(157,78,221,.2);
+}
+.btn-purple:hover:not(:disabled) {
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  color:#fff;box-shadow:0 0 24px rgba(157,78,221,.25);
+}
+.btn-fire {
+  background:linear-gradient(135deg,var(--red),#f43f5e);
+  color:#fff;border:none;grid-column:1/-1;font-size:15px;padding:16px;
+  letter-spacing:3px;
+}
+.btn-fire:hover:not(:disabled) { box-shadow:0 0 36px rgba(255,46,99,.35);transform:translateY(-1px); }
 
 /* ── Progress ── */
-.prog{display:none;margin-top:8px}
-.prog.show{display:block}
-.prog-txt{font-size:10px;color:var(--sub);margin-bottom:4px}
-.prog-bar{width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:2px;transition:width .3s;width:0%}
+.prog { display:none;margin-top:10px; }
+.prog.show { display:block; }
+.prog-txt { font-size:11px;color:var(--amber);margin-bottom:6px;font-family:var(--font-m); }
+.prog-bar { height:4px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden; }
+.prog-fill { height:100%;background:linear-gradient(90deg,var(--gold),var(--amber));border-radius:4px;width:0;transition:width .5s; }
+
+/* ── Feed Links ── */
+.feeds { display:flex;flex-direction:column;gap:8px; }
+.fd {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;background:rgba(255,255,255,.02);
+  border:1px solid var(--border);border-radius:12px;
+  transition:.25s;
+}
+.fd:hover { border-color:var(--border-hi); }
+.fd-l { display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600; }
+.fd-ico { font-size:18px; }
+.fd-st {
+  font-family:var(--font-d);font-size:9px;
+  padding:4px 10px;border-radius:8px;letter-spacing:2px;
+}
+.fd-st.ok { color:var(--green);background:rgba(57,255,20,.05);border:1px solid rgba(57,255,20,.15); }
+.fd-st.src { color:var(--amber);background:rgba(255,140,0,.05);border:1px solid rgba(255,140,0,.15); }
+
+/* ── Logs ── */
+.logs {
+  flex:1;min-height:180px;max-height:300px;overflow-y:auto;
+  background:rgba(0,0,0,.3);border-radius:10px;padding:12px;
+  font-family:var(--font-m);font-size:11px;line-height:1.7;
+}
+.logs::-webkit-scrollbar { width:4px; }
+.logs::-webkit-scrollbar-thumb { background:rgba(255,215,0,.15);border-radius:4px; }
+.lg { display:flex;gap:8px;opacity:.9; }
+.lg-t { color:var(--dim);white-space:nowrap; }
+.lg-info { color:var(--sub); }
+.lg-ok { color:var(--green); }
+.lg-err { color:var(--red); }
+.lg-sys { color:var(--gold); }
+.lg-dim { color:var(--dim); }
+
+/* ── Template Cards ── */
+.tmpl-section { margin-top:24px; }
+.tmpl-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px; }
+.tmpl-card {
+  background:rgba(6,6,14,.6);border:1px solid var(--border);border-radius:14px;
+  padding:16px;transition:.3s;position:relative;overflow:hidden;
+}
+.tmpl-card:hover { border-color:var(--border-hi);transform:translateY(-2px); }
+.tmpl-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--purple));opacity:.5;
+}
+.tmpl-hdr { display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+.tmpl-code { font-family:var(--font-d);font-size:18px;font-weight:900;color:var(--gold); }
+.t101 .tmpl-code { color:var(--red); }
+.t201 .tmpl-code { color:var(--blue); }
+.t301 .tmpl-code { color:var(--gold); }
+.t408 .tmpl-code { color:var(--green); }
+.tmpl-score { font-size:9px;color:var(--dim);font-family:var(--font-d);letter-spacing:1px; }
+.tmpl-secs { display:flex;flex-direction:column;gap:4px; }
+.tmpl-sec { display:flex;justify-content:space-between;font-size:11px; }
+.tmpl-sec-name { color:var(--sub); }
+.tmpl-sec-det { color:var(--text);font-family:var(--font-m);font-size:10px; }
 
 /* ── Footer ── */
-.ftr{text-align:center;padding:20px 0;margin-top:20px;color:var(--dim);font-size:10px;font-family:var(--font-d);letter-spacing:2px;border-top:1px solid var(--border)}
+.ftr {
+  text-align:center;padding:24px 0;margin-top:28px;
+  color:var(--dim);font-size:10px;font-family:var(--font-d);
+  letter-spacing:3px;border-top:1px solid var(--border);
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <a class="back-link" href="../index.html">�?返回应用�?/a>
+<div class="bg-grid"></div>
+<div class="container">
+  <a class="back-link" href="../index.html">← 返回应用集</a>
 
   <!-- Header -->
-  <div class="hdr">
-    <div class="hdr-l">
-      <h1>NEXUS CONSOLE</h1>
-      <div class="ver">PKU DATA NEXUS · V6.0 TEMPLATE ENGINE</div>
-    </div>
-    <div class="hdr-r">
+  <div class="header">
+    <div class="seal">🔄</div>
+    <h1>中转阁</h1>
+    <div class="sub-title">PKU DATA NEXUS · V6.0 TEMPLATE ENGINE</div>
+    <div class="net-badge-wrap">
       <div class="net-badge loading" id="netBadge"><span class="dot"></span>LINKING...</div>
     </div>
   </div>
@@ -160,10 +304,11 @@ body::before{content:'';position:fixed;inset:0;background:
 
   <!-- Main 2-col -->
   <div class="main">
-    <!-- Left: Subject Matrix + Feeds -->
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="pnl">
-        <div class="pnl-t"><span>📊 SUBJECT DATABANKS</span><span class="badge" id="dbBadge">MEMORY</span></div>
+    <!-- Left Column -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- Subject Matrix -->
+      <div class="card-panel">
+        <div class="panel-title"><span>📊 科目数据库</span><span class="panel-badge" id="dbBadge">MEMORY</span></div>
         <div class="subj-grid" id="subjGrid">
           <div class="sc s101">
             <div class="sc-top"><span class="sc-code">101</span><span class="sc-name">政治</span></div>
@@ -172,7 +317,7 @@ body::before{content:'';position:fixed;inset:0;background:
               <div class="sc-row">Intel <span id="i101">0</span></div>
               <div class="sc-row">Papers <span id="p101">0</span></div>
             </div>
-            <div class="sc-struct">单�?6×1 + 多�?7×2 + 材料5×10 = 100�?/div>
+            <div class="sc-struct">单选6×1 + 多选7×2 + 材料5×10 = 100分</div>
           </div>
           <div class="sc s201">
             <div class="sc-top"><span class="sc-code">201</span><span class="sc-name">英语</span></div>
@@ -181,7 +326,7 @@ body::before{content:'';position:fixed;inset:0;background:
               <div class="sc-row">Intel <span id="i201">0</span></div>
               <div class="sc-row">Papers <span id="p201">0</span></div>
             </div>
-            <div class="sc-struct">完形20×0.5 + 阅读20×2 + 新题5×2 + 翻译5×2 + 写作30 = 100�?/div>
+            <div class="sc-struct">完形20×0.5 + 阅读20×2 + 新题5×2 + 翻译5×2 + 写作30 = 100分</div>
           </div>
           <div class="sc s301">
             <div class="sc-top"><span class="sc-code">301</span><span class="sc-name">数学</span></div>
@@ -190,60 +335,63 @@ body::before{content:'';position:fixed;inset:0;background:
               <div class="sc-row">Intel <span id="i301">0</span></div>
               <div class="sc-row">Papers <span id="p301">0</span></div>
             </div>
-            <div class="sc-struct">选择10×5 + 填空6×5 + 解答6�?70) = 150�?/div>
+            <div class="sc-struct">选择10×5 + 填空6×5 + 解答6道(70) = 150分</div>
           </div>
           <div class="sc s408">
-            <div class="sc-top"><span class="sc-code">408</span><span class="sc-name">计算�?/span></div>
+            <div class="sc-top"><span class="sc-code">408</span><span class="sc-name">计算机</span></div>
             <div class="sc-rows">
               <div class="sc-row">Raw <span id="r408">0</span></div>
               <div class="sc-row">Intel <span id="i408">0</span></div>
               <div class="sc-row">Papers <span id="p408">0</span></div>
             </div>
-            <div class="sc-struct">单�?0×2 + 综合应用7�?70) = 150�?/div>
+            <div class="sc-struct">单选40×2 + 综合应用7道(70) = 150分</div>
           </div>
         </div>
       </div>
 
-      <div class="pnl">
-        <div class="pnl-t">📡 GAME FEED LINKS</div>
+      <!-- Game Feed Links -->
+      <div class="card-panel">
+        <div class="panel-title">📡 游戏投喂通道</div>
         <div class="feeds">
-          <div class="fd"><div class="fd-l"><span class="fd-ico">🧩</span>北大消消�?/div><div class="fd-st ok">LINKED</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">🧩</span>北大消消乐</div><div class="fd-st ok">LINKED</div></div>
           <div class="fd"><div class="fd-l"><span class="fd-ico">🎯</span>北大刺激战场</div><div class="fd-st ok">LINKED</div></div>
           <div class="fd"><div class="fd-l"><span class="fd-ico">👻</span>猛鬼考研宿舍</div><div class="fd-st ok">LINKED</div></div>
-          <div class="fd"><div class="fd-l"><span class="fd-ico">📦</span>题库搜集�?/div><div class="fd-st ok">SOURCE</div></div>
-          <div class="fd"><div class="fd-l"><span class="fd-ico">🏯</span>天机�?/div><div class="fd-st ok">INTEL</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">📦</span>题库搜集站</div><div class="fd-st src">SOURCE</div></div>
+          <div class="fd"><div class="fd-l"><span class="fd-ico">🏯</span>天机阁</div><div class="fd-st src">INTEL</div></div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Controls + Logs -->
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="pnl">
-        <div class="pnl-t">�?COMMAND OVERRIDE</div>
+    <!-- Right Column -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- Command Override -->
+      <div class="card-panel">
+        <div class="panel-title">⚡ 指挥控制台</div>
         <div class="ctrl">
           <select class="sel" id="optSubj">
-            <option value="all">🌐 全维度运�?(ALL SUBJECTS)</option>
+            <option value="all">🌐 全维度运算 (ALL SUBJECTS)</option>
             <option value="101">🔴 101 思想政治理论</option>
             <option value="201">🔵 201 英语一</option>
             <option value="301">🟡 301 数学一</option>
-            <option value="408">🟢 408 计算机综�?/option>
+            <option value="408">🟢 408 计算机综合</option>
           </select>
           <div class="btn-row">
-            <button class="btn btn-cy" id="btnIntel" onclick="doIntel()">📡 窃取情报</button>
-            <button class="btn btn-gd" id="btnPaper" onclick="doPaper()">📝 合成密卷</button>
+            <button class="btn btn-gold" id="btnIntel" onclick="doIntel()">📡 窃取情报</button>
+            <button class="btn btn-purple" id="btnPaper" onclick="doPaper()">📝 合成密卷</button>
           </div>
           <button class="btn btn-fire" id="btnAuto" onclick="doAuto()">🔥 歼星模式 · 一键全流程</button>
           <div class="prog" id="prog">
-            <div class="prog-txt" id="progTxt">准备�?..</div>
+            <div class="prog-txt" id="progTxt">准备中...</div>
             <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
           </div>
         </div>
       </div>
 
-      <div class="pnl" style="flex:1">
-        <div class="pnl-t">
-          📜 SYSTEM LOGS
-          <button onclick="document.getElementById('cLog').innerHTML=''" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:9px;font-family:var(--font-d)">CLEAR</button>
+      <!-- System Logs -->
+      <div class="card-panel" style="flex:1">
+        <div class="panel-title">
+          📜 系统日志
+          <button onclick="document.getElementById('cLog').innerHTML=''" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:9px;font-family:var(--font-d);letter-spacing:2px;transition:.3s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--dim)'">CLEAR</button>
         </div>
         <div class="logs" id="cLog"></div>
       </div>
@@ -252,8 +400,13 @@ body::before{content:'';position:fixed;inset:0;background:
 
   <!-- Template Viewer -->
   <div class="tmpl-section">
-    <div class="pnl">
-      <div class="pnl-t">🏗�?HARDCODED TEMPLATES · SINGLE SOURCE OF TRUTH</div>
+    <div class="section-head">
+      <span class="section-icon">🏗️</span>
+      <span class="section-title">考卷模板引擎</span>
+      <span class="section-line"></span>
+    </div>
+    <div class="card-panel">
+      <div class="panel-title">HARDCODED TEMPLATES · SINGLE SOURCE OF TRUTH</div>
       <div class="tmpl-grid" id="tmplGrid"></div>
     </div>
   </div>
@@ -263,7 +416,7 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <script>
 // ============================================================================
-// NEXUS CONSOLE v6.0 �?中转阁数据中枢控制台
+// NEXUS CONSOLE v6.0 — 中转阁数据中枢控制台
 // ============================================================================
 
 const RELAY = 'https://pku-api-relay.onrender.com';
@@ -278,7 +431,7 @@ function log(msg, type = 'info') {
   box.scrollTop = box.scrollHeight;
 }
 
-// ── Auth Headers (把客户端 key 送到后端) ──
+// ── Auth Headers ──
 function authHeaders() {
   const keys = window.PKU_KEYS || {};
   return {
@@ -349,7 +502,7 @@ async function doIntel() {
   const subj = document.getElementById('optSubj').value;
   const btn = document.getElementById('btnIntel');
   btn.disabled = true;
-  log(`📡 下达情报窃取�?�?${subj === 'all' ? '全科' : subj}`, 'sys');
+  log(`📡 下达情报窃取指令 → ${subj === 'all' ? '全科' : subj}`, 'sys');
   showProg('正在窃取情报...', 30);
 
   try {
@@ -364,8 +517,8 @@ async function doIntel() {
     if (res.success) {
       const results = res.results || [];
       results.forEach(r => {
-        if (r.success) log(`�?${r.subject} 情报截获 ${r.length || '?'}字`, 'ok');
-        else log(`�?${r.subject} 失败: ${r.error}`, 'err');
+        if (r.success) log(`✅ ${r.subject} 情报截获 ${r.length || '?'}字`, 'ok');
+        else log(`❌ ${r.subject} 失败: ${r.error}`, 'err');
       });
     } else {
       log('情报窃取失败: ' + (res.error || ''), 'err');
@@ -384,9 +537,9 @@ async function doPaper() {
   const subj = document.getElementById('optSubj').value;
   const btn = document.getElementById('btnPaper');
   btn.disabled = true;
-  log(`📝 调度双脑出卷工厂 �?${subj === 'all' ? '全科' : subj}`, 'sys');
+  log(`📝 调度双脑出卷工厂 → ${subj === 'all' ? '全科' : subj}`, 'sys');
   log('🧠 Claude 4.6 + Gemini 3.1 Pro 并行出卷...', 'dim');
-  showProg('双脑合璧出卷�?..', 20);
+  showProg('双脑合璧出卷中...', 20);
 
   try {
     const r = await fetch(`${RELAY}/paper/generate`, {
@@ -399,16 +552,14 @@ async function doPaper() {
 
     if (res.success) {
       if (res.paper) {
-        // 单科
         const p = res.paper;
-        log(`�?${p.subject} ${p.subjectName || ''} 出卷完成! ${p.questions?.length || 0}题`, 'ok');
-        log(`   引擎: ${p.generator || 'AI'} | 情报�? ${p.intelSources || 0}条`, 'dim');
+        log(`✅ ${p.subject} ${p.subjectName || ''} 出卷完成! ${p.questions?.length || 0}题`, 'ok');
+        log(`   引擎: ${p.generator || 'AI'} | 情报源: ${p.intelSources || 0}条`, 'dim');
         validateClientSide(p);
       } else if (res.papers) {
-        // 全科
         for (const [code, p] of Object.entries(res.papers)) {
-          if (p.error) { log(`�?${code}: ${p.error}`, 'err'); continue; }
-          log(`�?${code} 出卷完成! ${p.questions?.length || 0}�?[${p.generator || 'AI'}]`, 'ok');
+          if (p.error) { log(`❌ ${code}: ${p.error}`, 'err'); continue; }
+          log(`✅ ${code} 出卷完成! ${p.questions?.length || 0}题 [${p.generator || 'AI'}]`, 'ok');
         }
       }
     } else {
@@ -427,11 +578,11 @@ async function doPaper() {
 async function doAuto() {
   const btn = document.getElementById('btnAuto');
   btn.disabled = true;
-  btn.textContent = '🔥 歼星打击�?..';
+  btn.textContent = '🔥 歼星打击中...';
   log('', 'info');
-  log('🔥🔥🔥 ══════════════════════════════════�?🔥🔥🔥', 'sys');
+  log('🔥🔥🔥 ══════════════════════════════════ 🔥🔥🔥', 'sys');
   log('🔥   歼星模式启动 · 全流程自动化   🔥', 'sys');
-  log('🔥🔥🔥 ══════════════════════════════════�?🔥🔥🔥', 'sys');
+  log('🔥🔥🔥 ══════════════════════════════════ 🔥🔥🔥', 'sys');
   log('', 'info');
 
   showProg('Phase 1: 情报窃取...', 10);
@@ -446,7 +597,7 @@ async function doAuto() {
     const intelD = await intelR.json();
     if (intelD.success) {
       (intelD.results || []).forEach(r => {
-        log(`  ${r.success ? '�? : '�?} ${r.subject}: ${r.success ? r.length + '�? : r.error}`, r.success ? 'ok' : 'err');
+        log(`  ${r.success ? '✅' : '❌'} ${r.subject}: ${r.success ? r.length + '字' : r.error}`, r.success ? 'ok' : 'err');
       });
     }
 
@@ -465,10 +616,10 @@ async function doAuto() {
       log(`[Phase 2 完成] 耗时 ${papD.elapsed || '?'}`, 'ok');
       const report = papD.report || {};
       (report.intel || []).forEach(r => {
-        log(`  📡 ${r.subject}: ${r.chars ? r.chars + '�? : r.error || '?'}`, r.error ? 'err' : 'dim');
+        log(`  📡 ${r.subject}: ${r.chars ? r.chars + '字' : r.error || '?'}`, r.error ? 'err' : 'dim');
       });
       (report.papers || []).forEach(r => {
-        log(`  📝 ${r.subject}: ${r.questions ? r.questions + '�?�? : '�?' + (r.error || '')}`, r.error ? 'err' : 'ok');
+        log(`  📝 ${r.subject}: ${r.questions ? r.questions + '题 ✅' : '❌ ' + (r.error || '')}`, r.error ? 'err' : 'ok');
       });
     } else {
       log('歼星打击失败: ' + (papD.error || ''), 'err');
@@ -478,16 +629,16 @@ async function doAuto() {
     showProg('Phase 3: 校验 & 投喂...', 85);
     log('[Phase 3/3] 🔍 模板校验 + 游戏投喂通道验证...', 'sys');
     await syncStatus();
-    log('  �?数据库同步完�?, 'ok');
-    log('  �?消消�?�?投喂通道就绪', 'ok');
-    log('  �?刺激战场 �?投喂通道就绪', 'ok');
-    log('  �?猛鬼宿舍 �?投喂通道就绪', 'ok');
+    log('  ✅ 数据库同步完成', 'ok');
+    log('  ✅ 消消乐 → 投喂通道就绪', 'ok');
+    log('  ✅ 刺激战场 → 投喂通道就绪', 'ok');
+    log('  ✅ 猛鬼宿舍 → 投喂通道就绪', 'ok');
 
     showProg('歼星打击完成!', 100);
     log('', 'info');
-    log('🎉 ══════════════════════════════════�?, 'sys');
+    log('🎉 ══════════════════════════════════', 'sys');
     log('🎉   歼星打击完毕 · 全线就绪', 'sys');
-    log('🎉 ══════════════════════════════════�?, 'sys');
+    log('🎉 ══════════════════════════════════', 'sys');
 
   } catch(e) {
     log('歼星模式异常: ' + e.message, 'err');
@@ -499,17 +650,16 @@ async function doAuto() {
   btn.textContent = '🔥 歼星模式 · 一键全流程';
 }
 
-// ── 客户端模板校�?(422 Guard) ──
+// ── 客户端模板校验 (422 Guard) ──
 function validateClientSide(paper) {
   if (typeof PaperValidator === 'undefined') return;
   try {
-    // 简易校�? 题数是否匹配模板
     const tmpl = EXAM_TEMPLATES[paper.subject];
     if (!tmpl) return;
     const expected = tmpl.totalQuestions;
     const actual = paper.questions?.length || 0;
     if (actual >= expected * 0.8) {
-      log(`  🔒 422 Guard: ${paper.subject} 通过 (${actual}/${expected}�?`, 'ok');
+      log(`  🔒 422 Guard: ${paper.subject} 通过 (${actual}/${expected}题)`, 'ok');
     } else {
       log(`  ⚠️ 422 Guard: ${paper.subject} 题数不足 (${actual}/${expected})`, 'err');
     }
@@ -526,7 +676,7 @@ function renderTemplates() {
     const cls = 't' + code;
     let secsHtml = '';
     tmpl.sections.forEach(sec => {
-      const det = sec.scorePerItem ? `${sec.count}×${sec.scorePerItem}=${sec.totalScore}` : `${sec.count}�?�?{sec.totalScore}分`;
+      const det = sec.scorePerItem ? `${sec.count}×${sec.scorePerItem}=${sec.totalScore}` : `${sec.count}题 ${sec.totalScore}分`;
       secsHtml += `<div class="tmpl-sec"><span class="tmpl-sec-name">${sec.name}</span><span class="tmpl-sec-det">${det}</span></div>`;
     });
 
@@ -534,7 +684,7 @@ function renderTemplates() {
       <div class="tmpl-card ${cls}">
         <div class="tmpl-hdr">
           <span class="tmpl-code">${code}</span>
-          <span class="tmpl-score">${tmpl.fullScore}�?· ${tmpl.timeMinutes}min · ${tmpl.totalQuestions}Q</span>
+          <span class="tmpl-score">${tmpl.fullScore}分 · ${tmpl.timeMinutes}min · ${tmpl.totalQuestions}Q</span>
         </div>
         <div class="tmpl-secs">${secsHtml}</div>
       </div>`;
@@ -544,25 +694,25 @@ function renderTemplates() {
 // ── Init ──
 (function init() {
   log('NEXUS CONSOLE v6.0 启动', 'sys');
-  log('加载 EXAM_TEMPLATES 硬编码结�?..', 'dim');
+  log('加载 EXAM_TEMPLATES 硬编码结构...', 'dim');
 
   if (typeof EXAM_TEMPLATES !== 'undefined') {
     const codes = Object.keys(EXAM_TEMPLATES);
-    log(`�?模板引擎就绪: ${codes.join('/')} (${codes.length}�?`, 'ok');
+    log(`✅ 模板引擎就绪: ${codes.join('/')} (${codes.length}科)`, 'ok');
     renderTemplates();
   } else {
-    log('⚠️ exam-templates.js 未加�?, 'err');
+    log('⚠️ exam-templates.js 未加载', 'err');
   }
 
   // Key detection
   if (window.PKU_KEYS) {
-    log('�?密钥矩阵已解�?, 'ok');
-    log(`  OR: ${window.PKU_KEYS.OPENROUTER_API_KEY ? '�? : '�?} | GE: ${window.PKU_KEYS.GEMINI_API_KEY ? '�? : '�?} | PP: ${window.PKU_KEYS.PERPLEXITY_API_KEY ? '�? : '�?}`, 'dim');
+    log('✅ 密钥矩阵已解锁', 'ok');
+    log(`  OR: ${window.PKU_KEYS.OPENROUTER_API_KEY ? '✅' : '❌'} | GE: ${window.PKU_KEYS.GEMINI_API_KEY ? '✅' : '❌'} | PP: ${window.PKU_KEYS.PERPLEXITY_API_KEY ? '✅' : '❌'}`, 'dim');
   } else {
-    log('⚠️ 未检测到密钥，部分功能受�?(请先在主页登�?', 'err');
+    log('⚠️ 未检测到密钥，部分功能受限 (请先在主页登录)', 'err');
   }
 
-  log('正在链接中枢数据�?..', 'info');
+  log('正在链接中枢数据库...', 'info');
   syncStatus();
   setInterval(syncStatus, 20000);
 })();
