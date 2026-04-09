@@ -54,8 +54,7 @@ body[data-mode="cs"]{--mode-glow:rgba(168,85,247,.3);--mode-accent:#a855f7}
 
 /* ═══ 蜿蜒关卡地图 ═══ */
 .lv-map{position:relative;z-index:10;padding:1.5rem 1rem;
-  display:flex;flex-wrap:wrap;justify-content:center;
-  gap:.8rem 1rem;max-width:480px;margin:0 auto}
+  overflow-y:auto;max-height:calc(100vh - 120px)}
 .lv-node{width:56px;height:56px;border-radius:50%;display:flex;
   flex-direction:column;align-items:center;justify-content:center;
   font-family:var(--ff-d);font-size:.7rem;cursor:pointer;
