@@ -7,7 +7,7 @@
   <meta name="description" content="赛博法庭 × 骗子酒馆 · 双轨四科全覆盖 · 金库实时投喂最新考题">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260409a">
+  <link rel="stylesheet" href="style.css?v=20260409v3">
 </head>
 <body>
   <!-- 竖屏提示 -->
@@ -189,6 +189,16 @@
       </div>
 
       <!-- 底部：手牌 + 操作 -->
+      <!-- 法槌 + 特效层 -->
+      <div class="gavel-strike" id="gavelStrike">🔨</div>
+      <div class="gavel-shockwave" id="gavelShockwave"></div>
+      <div class="verdict-flash" id="verdictFlash"></div>
+      <!-- 法庭灰尘粒子 -->
+      <div class="court-dust" style="left:10%;top:80%;animation-delay:0s"></div>
+      <div class="court-dust" style="left:30%;top:90%;animation-delay:2s"></div>
+      <div class="court-dust" style="left:55%;top:85%;animation-delay:4s"></div>
+      <div class="court-dust" style="left:75%;top:95%;animation-delay:1s"></div>
+      <div class="court-dust" style="left:90%;top:88%;animation-delay:6s"></div>
       <div class="court-footer" id="courtFooter">
         <div class="hand-zone" id="handZone">
           <div class="hand-label">你的手牌 <span class="hand-phase" id="handPhase"></span></div>

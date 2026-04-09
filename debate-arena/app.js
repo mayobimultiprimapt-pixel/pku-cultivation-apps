@@ -265,6 +265,7 @@ const CourtApp = (() => {
 
     const result = CourtEngine.submitBreak(S.breakSelected);
     updateStats();
+    triggerGavel(result.allCorrect);
 
     const battle = document.getElementById('panelBattle');
     battle.innerHTML = `
@@ -288,6 +289,7 @@ const CourtApp = (() => {
       </div>
     `;
 
+    if (result.allCorrect) showComboFly('破局完美!');
     setSpeech(result.allCorrect
       ? '"精彩！谬误全部击破。现在构建你的论证！"'
       : '"还差一些，但庭审继续。请构建论证！"');
@@ -371,6 +373,7 @@ const CourtApp = (() => {
 
     const result = CourtEngine.submitBuild(S.buildSelected);
     updateStats();
+    triggerGavel(result.allCorrect);
 
     const battle = document.getElementById('panelBattle');
     battle.innerHTML = `
@@ -394,6 +397,7 @@ const CourtApp = (() => {
       </div>
     `;
 
+    if (result.allCorrect) showComboFly('论证完美!');
     setSpeech(result.allCorrect
       ? '"论证严密！最后一步：完成论证链。"'
       : '"有瑕疵，但继续。完成论证链！"');
@@ -696,7 +700,53 @@ const CourtApp = (() => {
 
   function show(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+    const target = document.getElementById(id);
+    target.classList.remove('hidden');
+    target.classList.add('scene-enter-v3');
+    setTimeout(() => target.classList.remove('scene-enter-v3'), 600);
+  }
+
+  // ═══ 法槌敲击 · 视觉触发器 ═══
+  function triggerGavel(isCorrect) {
+    const gavel = document.getElementById('gavelStrike');
+    const wave = document.getElementById('gavelShockwave');
+    const flash = document.getElementById('verdictFlash');
+    const court = document.getElementById('courtScreen');
+
+    // 法槌动画
+    gavel.classList.remove('active');
+    wave.classList.remove('active');
+    flash.classList.remove('correct','wrong','glory','doom');
+    court.classList.remove('shaking');
+    void gavel.offsetHeight; // force reflow
+
+    gavel.classList.add('active');
+    setTimeout(() => {
+      wave.classList.add('active');
+      court.classList.add('shaking');
+    }, 200);
+
+    // 判决闪光
+    setTimeout(() => {
+      flash.classList.add(isCorrect ? 'glory' : 'doom');
+    }, 300);
+
+    // 清理
+    setTimeout(() => {
+      gavel.classList.remove('active');
+      wave.classList.remove('active');
+      flash.classList.remove('correct','wrong','glory','doom');
+      court.classList.remove('shaking');
+    }, 1200);
+  }
+
+  // ═══ 连击飞字 ═══
+  function showComboFly(text) {
+    const fly = document.createElement('div');
+    fly.className = 'combo-fly';
+    fly.textContent = `🔥 ${text}`;
+    document.body.appendChild(fly);
+    setTimeout(() => fly.remove(), 1200);
   }
 
   function restart() { startTrial(); }

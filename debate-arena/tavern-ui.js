@@ -320,9 +320,10 @@ const TavernUI = (() => {
     document.getElementById('tvChamberInfo').textContent = `弹仓: ${S.chamberIndex}/6 已空`;
 
     const inner = document.getElementById('tvCylinderInner');
+    inner.classList.remove('spinning');
     inner.style.animation = 'none';
     inner.offsetHeight;
-    inner.style.animation = 'cylinderSpin 1.5s cubic-bezier(.25,.46,.45,.94)';
+    inner.classList.add('spinning');
 
     document.querySelectorAll('.tv-chamber').forEach((ch, i) => {
       ch.className = `tv-chamber${i < S.chamberIndex ? ' spent' : ''}`;
@@ -330,7 +331,7 @@ const TavernUI = (() => {
 
     const btn = document.getElementById('tvTriggerBtn');
     btn.disabled = true;
-    setTimeout(() => { btn.disabled = false; }, 1500);
+    setTimeout(() => { btn.disabled = false; inner.classList.remove('spinning'); }, 2000);
   }
 
   function onPullTrigger() {

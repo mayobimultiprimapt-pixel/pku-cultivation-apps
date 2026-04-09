@@ -725,3 +725,1017 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--txt);
 .tv-learn-title{font-size:.7rem;font-weight:700;color:#22d3ee;margin-bottom:.3rem}
 .tv-learn-item{font-size:.65rem;color:var(--dim);line-height:1.5;margin-bottom:.2rem}
 .tv-result-btns{display:flex;gap:.5rem;justify-content:center}
+
+/* ════════════════════════════════════════════════════════
+   🔨 VISUAL UPGRADE v2 — 法庭沉浸 + 酒馆氛围
+   ════════════════════════════════════════════════════════ */
+
+/* ── 法庭木质背景 ── */
+.court-screen{
+  background:
+    /* 柱子纹理 */
+    repeating-linear-gradient(90deg,
+      transparent 0,transparent 18%,
+      rgba(139,90,43,.04) 18%,rgba(139,90,43,.04) 18.3%,
+      transparent 18.3%,transparent 82%,
+      rgba(139,90,43,.04) 82%,rgba(139,90,43,.04) 82.3%,
+      transparent 82.3%),
+    /* 木纹水平条 */
+    repeating-linear-gradient(0deg,
+      transparent 0,transparent 6px,
+      rgba(120,80,40,.025) 6px,rgba(120,80,40,.025) 7px),
+    /* 主体暗色 */
+    linear-gradient(180deg,#0d0806 0%,#120e0a 25%,#0f0b08 60%,#080604 100%)
+}
+.court-screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 15%,rgba(245,158,11,.06),transparent 50%),
+    radial-gradient(ellipse at 80% 80%,rgba(139,92,246,.04),transparent 40%);
+}
+.court-screen::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.3;z-index:1;
+}
+
+/* 顶部栏木质感 */
+.court-header{
+  background:linear-gradient(180deg,rgba(30,18,8,.85),rgba(15,10,5,.7))!important;
+  border-bottom:1px solid rgba(139,90,43,.25)!important;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+
+/* 法官面板 · 审判长席位 */
+.panel-judge{
+  background:linear-gradient(180deg,rgba(35,20,10,.92),rgba(18,12,6,.95))!important;
+  border-color:rgba(139,90,43,.2)!important;
+  box-shadow:inset 0 0 30px rgba(245,158,11,.03),0 0 15px rgba(0,0,0,.3);
+  position:relative;overflow:hidden;
+}
+.panel-judge::before{
+  content:'⚖️';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);font-size:5rem;opacity:.03;
+  pointer-events:none;
+}
+.judge-avatar{
+  font-size:3rem!important;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,.25))
+    drop-shadow(0 0 40px rgba(245,158,11,.1))!important;
+}
+/* 法槌就位图标 */
+.judge-verdict-area::before{
+  content:'🔨';display:block;font-size:1.5rem;opacity:.15;
+  margin-bottom:.3rem;
+  transition:all .3s var(--ease);
+}
+.judge-verdict-area:hover::before{
+  opacity:.4;transform:rotate(-15deg);
+}
+
+/* 卷宗面板 · 证人席风格 */
+.panel-dossier{
+  background:linear-gradient(180deg,rgba(25,18,35,.92),rgba(15,10,20,.95))!important;
+  border-color:rgba(139,92,246,.15)!important;
+  box-shadow:inset 0 0 20px rgba(139,92,246,.03);
+}
+.dossier-header{
+  padding-bottom:.3rem;
+  border-bottom:1px solid rgba(139,92,246,.1);
+}
+
+/* 战场面板底部木纹 */
+.panel-battle{
+  background:linear-gradient(180deg,rgba(13,18,32,.95),rgba(10,14,25,.98))!important;
+  border-color:rgba(100,80,60,.12)!important;
+  position:relative;
+}
+.panel-battle::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(139,90,43,.2),transparent);
+}
+
+/* ── 法槌敲击动画 ── */
+@keyframes gavelStrike{
+  0%{transform:rotate(0) scale(1);opacity:.6}
+  30%{transform:rotate(-35deg) scale(1.3);opacity:1}
+  50%{transform:rotate(5deg) scale(1);opacity:1}
+  70%{transform:rotate(-2deg) scale(1)}
+  100%{transform:rotate(0) scale(1);opacity:.6}
+}
+.gavel-strike{
+  position:fixed;top:15%;right:12%;font-size:4rem;z-index:200;
+  pointer-events:none;opacity:0;
+}
+.gavel-strike.active{
+  animation:gavelStrike .6s var(--ease) forwards;
+}
+/* 法槌冲击波 */
+@keyframes gavelShockwave{
+  0%{transform:scale(0);opacity:.6}
+  100%{transform:scale(3);opacity:0}
+}
+.gavel-shockwave{
+  position:fixed;top:20%;right:15%;width:60px;height:60px;
+  border-radius:50%;border:2px solid var(--gold);z-index:199;
+  pointer-events:none;opacity:0;
+}
+.gavel-shockwave.active{
+  animation:gavelShockwave .5s ease-out forwards;
+}
+
+/* ── 答对闪光 ── */
+@keyframes verdictCorrect{
+  0%{opacity:0}
+  15%{opacity:1}
+  100%{opacity:0}
+}
+.verdict-flash{
+  position:fixed;inset:0;z-index:180;pointer-events:none;opacity:0;
+}
+.verdict-flash.correct{
+  background:radial-gradient(ellipse at center,rgba(16,185,129,.15),transparent 70%);
+  animation:verdictCorrect .8s ease-out;
+}
+.verdict-flash.wrong{
+  background:radial-gradient(ellipse at center,rgba(239,68,68,.2),transparent 70%);
+  animation:verdictCorrect .6s ease-out;
+}
+
+/* ── 法庭底栏 · 辩护桌 ── */
+.court-footer{
+  background:linear-gradient(180deg,rgba(15,10,5,.6),rgba(25,16,8,.8))!important;
+  border-top:1px solid rgba(139,90,43,.15)!important;
+  box-shadow:0 -2px 12px rgba(0,0,0,.3);
+}
+
+/* 手牌法庭主题增强 */
+.hand-card{
+  background:linear-gradient(145deg,rgba(25,18,35,.9),rgba(18,12,25,.95))!important;
+  border-color:rgba(139,92,246,.12)!important;
+}
+.hand-card:hover{
+  box-shadow:0 6px 20px rgba(245,158,11,.15)!important;
+  border-color:rgba(245,158,11,.3)!important;
+}
+
+/* ═══ 酒馆氛围增强 ═══ */
+
+/* 烛光/壁灯闪烁 */
+.tv-bg::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 10% 20%,rgba(255,160,50,.04),transparent 25%),
+    radial-gradient(circle at 90% 15%,rgba(255,140,40,.03),transparent 20%),
+    radial-gradient(circle at 50% 90%,rgba(200,120,50,.03),transparent 30%);
+  animation:candleFlicker 3s ease-in-out infinite alternate;
+}
+@keyframes candleFlicker{
+  0%{opacity:.6}
+  25%{opacity:.9}
+  50%{opacity:.7}
+  75%{opacity:1}
+  100%{opacity:.5}
+}
+
+/* 酒馆桌面纹理 */
+.tv-table::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 60%,rgba(139,90,43,.08),transparent 50%),
+    repeating-linear-gradient(0deg,
+      transparent 0,transparent 3px,
+      rgba(100,70,30,.02) 3px,rgba(100,70,30,.02) 4px);
+}
+
+/* NPC 头像增强 · 动物面具光效 */
+.tv-npc-avatar{
+  background:radial-gradient(circle,rgba(40,25,12,.8),rgba(20,12,5,.9))!important;
+  border:2px solid rgba(139,90,43,.25)!important;
+  transition:all .4s var(--ease)!important;
+}
+.tv-npc.active .tv-npc-avatar{
+  border-color:var(--gold)!important;
+  box-shadow:
+    0 0 20px rgba(245,158,11,.25),
+    0 0 40px rgba(245,158,11,.1),
+    inset 0 0 12px rgba(245,158,11,.08)!important;
+}
+/* NPC 说话时的呼吸灯 */
+.tv-npc.speaking .tv-npc-avatar{
+  animation:npcSpeakGlow 1.5s ease-in-out infinite;
+}
+@keyframes npcSpeakGlow{
+  0%,100%{box-shadow:0 0 15px rgba(245,158,11,.15)}
+  50%{box-shadow:0 0 30px rgba(245,158,11,.3),0 0 50px rgba(245,158,11,.1)}
+}
+
+/* 左轮转盘增强 */
+.tv-cylinder{
+  width:140px!important;height:140px!important;
+}
+.tv-cylinder-inner{
+  background:
+    radial-gradient(circle at 50% 50%,rgba(50,20,10,.6) 20%,rgba(25,10,5,.9) 70%)!important;
+  border:3px solid rgba(180,130,80,.2)!important;
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,.5),
+    0 0 25px rgba(139,90,43,.15);
+}
+/* 已击发弹仓闪烁 */
+.tv-chamber.loaded{
+  background:rgba(239,68,68,.7)!important;
+  box-shadow:0 0 12px rgba(239,68,68,.5),0 0 25px rgba(239,68,68,.2)!important;
+  animation:bulletGlow 2s ease-in-out infinite;
+}
+@keyframes bulletGlow{
+  0%,100%{box-shadow:0 0 8px rgba(239,68,68,.4)}
+  50%{box-shadow:0 0 16px rgba(239,68,68,.7),0 0 30px rgba(239,68,68,.3)}
+}
+
+/* 开枪屏幕特效增强 */
+.tv-roulette-result.hit{
+  background:rgba(120,0,0,.9)!important;
+  animation:flashRed .5s ease-in-out,screenShake .3s ease-in-out!important;
+}
+@keyframes screenShake{
+  0%,100%{transform:translate(0)}
+  20%{transform:translate(-6px,3px)}
+  40%{transform:translate(5px,-4px)}
+  60%{transform:translate(-3px,5px)}
+  80%{transform:translate(4px,-2px)}
+}
+
+/* 存活 · 安全闪光 */
+.tv-roulette-result.survived{
+  background:rgba(0,0,0,.85)!important;
+}
+.tv-roulette-result.survived::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(16,185,129,.1),transparent 60%);
+  animation:surviveGlow .8s ease-out;
+}
+@keyframes surviveGlow{
+  0%{opacity:0;transform:scale(.5)}
+  50%{opacity:1}
+  100%{opacity:0;transform:scale(2)}
+}
+
+/* 气泡增强 · 酒馆对话框 */
+.tv-bubble{
+  background:linear-gradient(145deg,rgba(35,20,8,.9),rgba(20,12,5,.95))!important;
+  border:1.5px solid rgba(180,130,60,.2)!important;
+  box-shadow:0 4px 25px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,200,100,.04)!important;
+}
+.tv-bubble::before{
+  border-bottom-color:rgba(180,130,60,.2)!important;
+}
+
+/* ═══ 全局反馈动效 ═══ */
+
+/* 正确答案 · 绿色光波 */
+@keyframes correctPulse{
+  0%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}
+  70%{box-shadow:0 0 0 15px rgba(16,185,129,0)}
+  100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}
+}
+.feedback-correct{animation:correctPulse .6s ease-out!important}
+
+/* 错误答案 · 红色震动 */
+@keyframes wrongShake{
+  0%,100%{transform:translateX(0)}
+  10%{transform:translateX(-8px)}
+  30%{transform:translateX(7px)}
+  50%{transform:translateX(-5px)}
+  70%{transform:translateX(4px)}
+  90%{transform:translateX(-2px)}
+}
+.feedback-wrong{animation:wrongShake .5s ease-in-out!important}
+
+/* 连击计数飞字 */
+@keyframes comboFloat{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  50%{transform:translateY(-30px) scale(1.3)}
+  100%{opacity:0;transform:translateY(-60px) scale(.8)}
+}
+.combo-fly{
+  position:fixed;top:30%;left:50%;z-index:200;
+  font-family:var(--ff-d);font-weight:900;font-size:2rem;
+  color:var(--gold);text-shadow:0 0 20px rgba(245,158,11,.5);
+  pointer-events:none;
+  animation:comboFloat .8s ease-out forwards;
+}
+
+/* ═══ 粒子/灰尘 氛围层 ═══ */
+@keyframes dustFloat{
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  20%{opacity:.3}
+  80%{opacity:.2}
+  100%{transform:translateY(-100vh) translateX(30px);opacity:0}
+}
+.court-dust,.tavern-dust{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:rgba(245,200,120,.3);pointer-events:none;z-index:1;
+}
+.court-dust{animation:dustFloat 8s linear infinite}
+.tavern-dust{
+  background:rgba(255,180,80,.25);
+  animation:dustFloat 10s linear infinite;
+}
+
+/* ═══ 场景过渡 ═══ */
+@keyframes sceneEnter{
+  0%{opacity:0;filter:blur(8px)}
+  100%{opacity:1;filter:blur(0)}
+}
+.scene-enter{animation:sceneEnter .5s ease-out}
+
+/* ════════════════════════════════════════════════════════
+   🔨🦊 VISUAL OVERHAUL v3.0 — 法庭沉浸 + 酒馆极致氛围
+   全面升级：审判长高台 · 证人席 · 法槌震荡
+   狐狸庄家 · 左轮装弹 · 开枪裂屏
+   ════════════════════════════════════════════════════════ */
+
+/* ═══ 🏛️ 法庭模式 — 审判长高台 ═══ */
+
+/* 审判长台 · 高台浮雕感 */
+.panel-judge{
+  position:relative!important;
+  background:
+    linear-gradient(180deg,
+      rgba(50,30,12,.95) 0%,
+      rgba(35,20,8,.97) 40%,
+      rgba(22,14,5,.98) 100%)!important;
+  border:1px solid rgba(180,130,60,.2)!important;
+  box-shadow:
+    inset 0 2px 0 rgba(255,200,100,.06),
+    inset 0 -2px 0 rgba(0,0,0,.3),
+    0 8px 32px rgba(0,0,0,.6),
+    0 0 60px rgba(245,158,11,.04)!important;
+  overflow:visible!important;
+}
+/* 高台底座木纹 */
+.panel-judge::after{
+  content:'';position:absolute;bottom:-3px;left:10%;right:10%;height:6px;
+  background:linear-gradient(90deg,
+    transparent,rgba(180,130,60,.25),rgba(245,200,100,.15),rgba(180,130,60,.25),transparent);
+  border-radius:0 0 4px 4px;
+  box-shadow:0 2px 8px rgba(245,158,11,.1);
+}
+
+/* 审判长 龙武判官 · 超级BOSS感 */
+.judge-avatar{
+  font-size:3.5rem!important;
+  filter:
+    drop-shadow(0 0 25px rgba(245,158,11,.35))
+    drop-shadow(0 0 50px rgba(245,158,11,.15))
+    drop-shadow(0 4px 8px rgba(0,0,0,.5))!important;
+  animation:judgeThrone 4s ease-in-out infinite!important;
+}
+@keyframes judgeThrone{
+  0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 25px rgba(245,158,11,.3)) drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+  30%{transform:translateY(-4px) scale(1.02);filter:drop-shadow(0 0 35px rgba(245,158,11,.4)) drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+  60%{transform:translateY(-2px) scale(1.01)}
+}
+/* 审判长名牌 */
+.judge-title{
+  background:linear-gradient(90deg,rgba(245,158,11,.15),transparent)!important;
+  padding:.15rem .5rem!important;border-radius:4px;
+  border-left:2px solid var(--gold);
+  font-size:.75rem!important;letter-spacing:2px;
+  text-shadow:0 0 10px rgba(245,158,11,.3);
+}
+/* 法官发言 · 打字机卷轴感 */
+.judge-speech{
+  background:rgba(0,0,0,.2)!important;
+  border:1px solid rgba(180,130,60,.1)!important;
+  border-radius:8px!important;padding:.4rem!important;
+  font-size:.65rem!important;
+  position:relative;
+}
+.judge-speech::before{
+  content:'📜';position:absolute;top:-.3rem;left:-.3rem;font-size:.7rem;opacity:.4;
+}
+
+/* ═══ 证人席 · 卷宗面板增强 ═══ */
+.panel-dossier{
+  position:relative!important;
+  background:
+    linear-gradient(180deg,
+      rgba(30,20,40,.95) 0%,
+      rgba(20,14,28,.97) 50%,
+      rgba(12,8,18,.98) 100%)!important;
+  border:1px solid rgba(139,92,246,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(139,92,246,.08),
+    0 4px 20px rgba(0,0,0,.4)!important;
+}
+/* 证人席ICON */
+.panel-dossier::before{
+  content:'📋';position:absolute;top:.3rem;right:.3rem;font-size:1.5rem;opacity:.05;
+  pointer-events:none;z-index:0;
+}
+/* 卷宗标题 金箔感 */
+.dossier-title{
+  position:relative;z-index:1;
+  text-shadow:0 0 8px rgba(245,158,11,.2)!important;
+}
+
+/* ═══ 法槌敲击 · 全屏震荡 v3 ═══ */
+.gavel-strike{
+  font-size:5rem!important;
+  filter:drop-shadow(0 0 30px rgba(245,158,11,.5));
+  z-index:300!important;
+}
+@keyframes gavelStrikeV3{
+  0%{transform:rotate(0) scale(1) translateY(0);opacity:0}
+  15%{transform:rotate(-45deg) scale(1.4) translateY(-20px);opacity:1}
+  35%{transform:rotate(8deg) scale(1.1) translateY(5px);opacity:1}
+  45%{transform:rotate(-3deg) scale(1);opacity:1}
+  60%{transform:rotate(0) scale(1);opacity:.8}
+  100%{transform:rotate(0) scale(1);opacity:0}
+}
+.gavel-strike.active{
+  animation:gavelStrikeV3 .8s var(--ease) forwards!important;
+}
+/* 法槌冲击波 · 多层涟漪 */
+.gavel-shockwave{
+  width:80px!important;height:80px!important;
+  border:3px solid var(--gold)!important;
+}
+@keyframes gavelShockwaveV3{
+  0%{transform:scale(0);opacity:.8;border-width:3px}
+  50%{opacity:.4;border-width:2px}
+  100%{transform:scale(5);opacity:0;border-width:1px}
+}
+.gavel-shockwave.active{
+  animation:gavelShockwaveV3 .7s ease-out forwards!important;
+}
+/* 第二层冲击波(延时) */
+.gavel-shockwave::after{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  border:2px solid rgba(245,158,11,.3);
+  animation:gavelShockwaveV3 .7s ease-out .15s forwards;
+  opacity:0;
+}
+.gavel-shockwave.active::after{opacity:1}
+
+/* 法槌击桌 · 全屏震颤 */
+@keyframes courtShake{
+  0%,100%{transform:translate(0)}
+  10%{transform:translate(-3px,2px)}
+  20%{transform:translate(4px,-2px)}
+  30%{transform:translate(-2px,3px)}
+  40%{transform:translate(3px,-1px)}
+  50%{transform:translate(-1px,2px)}
+  60%{transform:translate(2px,-2px)}
+  70%{transform:translate(-2px,1px)}
+  80%{transform:translate(1px,-1px)}
+}
+.court-screen.shaking{animation:courtShake .4s ease-in-out}
+
+/* 判决正确 · 金光爆发 */
+@keyframes verdictGlory{
+  0%{opacity:0;background:radial-gradient(circle at 85% 20%,rgba(245,158,11,.4),transparent 60%)}
+  20%{opacity:1}
+  100%{opacity:0;background:radial-gradient(circle at 85% 20%,rgba(16,185,129,.2),transparent 70%)}
+}
+.verdict-flash.glory{
+  animation:verdictGlory 1s ease-out!important;
+}
+/* 判决错误 · 血色震裂 */
+@keyframes verdictDoom{
+  0%{opacity:0}
+  15%{opacity:1;background:radial-gradient(circle at 50% 50%,rgba(239,68,68,.3),transparent 60%)}
+  100%{opacity:0}
+}
+.verdict-flash.doom{
+  animation:verdictDoom .6s ease-out!important;
+}
+
+/* ═══ 法庭柱子 · 大理石纹柱 ═══ */
+.court-screen{
+  background:
+    /* 左右大理石柱 */
+    linear-gradient(90deg,
+      rgba(180,160,130,.04) 0%, rgba(180,160,130,.06) 1.5%,
+      rgba(180,160,130,.02) 2%, transparent 3%,
+      transparent 97%,
+      rgba(180,160,130,.02) 98%, rgba(180,160,130,.06) 98.5%,
+      rgba(180,160,130,.04) 100%),
+    /* 木纹横条 */
+    repeating-linear-gradient(0deg,
+      transparent 0,transparent 8px,
+      rgba(120,80,40,.02) 8px,rgba(120,80,40,.02) 9px),
+    /* 主体暗色 */
+    linear-gradient(180deg,#0d0806 0%,#120e0a 25%,#0f0b08 60%,#080604 100%)!important;
+}
+/* 顶部聚光灯 */
+.court-screen::before{
+  content:''!important;position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    /* 审判长聚光灯 */
+    radial-gradient(ellipse 120px 200px at 88% 35%,rgba(245,158,11,.08),transparent),
+    /* 卷宗区聚光灯 */
+    radial-gradient(ellipse 100px 180px at 12% 40%,rgba(139,92,246,.05),transparent),
+    /* 中央战场微光 */
+    radial-gradient(ellipse at 50% 50%,rgba(245,200,100,.02),transparent 60%)!important;
+}
+
+/* ═══ 法庭灰尘粒子 · 升级版 ═══ */
+@keyframes dustFloatV3{
+  0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+  10%{opacity:.4}
+  50%{opacity:.25;transform:translateY(-40vh) translateX(15px) scale(.8)}
+  90%{opacity:.1}
+  100%{transform:translateY(-100vh) translateX(30px) scale(.5);opacity:0}
+}
+.court-dust{
+  width:3px!important;height:3px!important;
+  background:rgba(245,200,120,.4)!important;
+  animation:dustFloatV3 10s linear infinite!important;
+  box-shadow:0 0 4px rgba(245,200,120,.2);
+}
+
+/* ═══ 手牌卡牌 · 法庭质感 ═══ */
+.hand-card{
+  background:
+    linear-gradient(145deg,rgba(30,22,40,.92),rgba(20,14,28,.96))!important;
+  border:1.5px solid rgba(139,92,246,.15)!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)!important;
+  transition:all .3s var(--ease)!important;
+}
+.hand-card::after{content:none!important}
+.hand-card:hover{
+  transform:translateY(-8px) scale(1.03)!important;
+  border-color:rgba(245,158,11,.35)!important;
+  box-shadow:
+    0 8px 24px rgba(245,158,11,.15),
+    0 0 30px rgba(245,158,11,.06)!important;
+}
+.hand-card.selected{
+  transform:translateY(-12px) scale(1.05)!important;
+  border-color:var(--gold)!important;
+  box-shadow:
+    0 12px 32px var(--gold-g),
+    0 0 40px rgba(245,158,11,.1),
+    inset 0 0 15px rgba(245,158,11,.03)!important;
+}
+/* 选中勾号 · 金光标记 */
+.hand-card.selected::after{
+  content:'✓'!important;display:flex!important;
+  position:absolute;top:-6px;right:-6px;
+  width:20px;height:20px;
+  background:linear-gradient(135deg,var(--gold),#d97706)!important;
+  color:#000;border-radius:50%;
+  font-size:.65rem;align-items:center;justify-content:center;font-weight:900;
+  box-shadow:0 2px 8px rgba(245,158,11,.4);
+}
+
+/* ═══ 按钮 · 法庭锤击感 ═══ */
+.act-btn.primary{
+  background:linear-gradient(135deg,#b45309,var(--gold),#d97706)!important;
+  background-size:200% 100%;
+  animation:btnShimmer 3s ease-in-out infinite;
+  box-shadow:0 4px 16px var(--gold-g),0 0 20px rgba(245,158,11,.08)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+@keyframes btnShimmer{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.act-btn.primary:hover:not(:disabled){
+  transform:scale(1.06) translateY(-2px)!important;
+  box-shadow:0 6px 24px var(--gold-g),0 0 40px rgba(245,158,11,.12)!important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   🍺🦊 酒馆模式 — 狐狸庄家 · 左轮装弹 · 裂屏特效
+   ═══════════════════════════════════════════════════════ */
+
+/* 酒馆整体 · 烟雾弥漫感 */
+.tv-bg{
+  background:
+    linear-gradient(180deg,
+      #1a0e05 0%,
+      #120a04 30%,
+      #0d0805 60%,
+      #080503 100%)!important;
+}
+/* 四角烛台光源 */
+.tv-bg::before{
+  background:
+    /* 左上烛台 */
+    radial-gradient(circle 80px at 8% 12%,rgba(255,160,50,.07),transparent),
+    /* 右上烛台 */
+    radial-gradient(circle 60px at 92% 8%,rgba(255,140,40,.05),transparent),
+    /* 中央吊灯 */
+    radial-gradient(ellipse 200px 150px at 50% 15%,rgba(255,180,60,.04),transparent),
+    /* 底部暗角 */
+    radial-gradient(ellipse at 50% 95%,rgba(160,100,40,.03),transparent)!important;
+  animation:barFlickerV3 5s ease-in-out infinite!important;
+}
+@keyframes barFlickerV3{
+  0%{opacity:.5}15%{opacity:.85}30%{opacity:.6}45%{opacity:.95}
+  60%{opacity:.7}75%{opacity:.9}90%{opacity:.55}100%{opacity:.5}
+}
+/* 酒馆烟雾层 */
+.tv-bg::after{
+  background:
+    radial-gradient(ellipse at 30% 50%,rgba(200,160,100,.025),transparent 40%),
+    radial-gradient(ellipse at 70% 40%,rgba(180,140,80,.02),transparent 35%),
+    radial-gradient(ellipse at 50% 70%,rgba(220,180,120,.015),transparent 45%)!important;
+  animation:smokeFloat 12s ease-in-out infinite alternate!important;
+}
+@keyframes smokeFloat{
+  0%{opacity:.3;transform:translateX(0)}
+  50%{opacity:.6;transform:translateX(10px)}
+  100%{opacity:.4;transform:translateX(-5px)}
+}
+
+/* ═══ 狐狸庄家 NPC · 面具光效 ═══ */
+.tv-npc-avatar{
+  width:68px!important;height:68px!important;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(60,35,15,.7),rgba(25,15,5,.95))!important;
+  border:2px solid rgba(180,120,50,.2)!important;
+  box-shadow:
+    inset 0 -4px 8px rgba(0,0,0,.4),
+    0 4px 12px rgba(0,0,0,.5)!important;
+  transition:all .4s var(--ease)!important;
+}
+.tv-npc-emoji{font-size:2.2rem!important}
+/* Active NPC · 面具发光 */
+.tv-npc.active .tv-npc-avatar{
+  border-color:rgba(245,180,60,.4)!important;
+  box-shadow:
+    0 0 25px rgba(245,158,11,.3),
+    0 0 50px rgba(245,158,11,.12),
+    inset 0 0 15px rgba(245,158,11,.08),
+    inset 0 -4px 8px rgba(0,0,0,.3)!important;
+}
+/* 说话时 · 嘴型波动 */
+.tv-npc.active .tv-npc-emoji{
+  animation:npcTalk .4s ease-in-out infinite alternate;
+}
+@keyframes npcTalk{
+  0%{transform:scale(1) translateY(0)}
+  100%{transform:scale(1.05) translateY(-2px)}
+}
+/* NPC名字 · 金字 */
+.tv-npc.active .tv-npc-name{
+  color:var(--gold)!important;
+  text-shadow:0 0 8px rgba(245,158,11,.3);
+  font-weight:800!important;
+}
+
+/* ═══ 酒馆对话泡泡 · 羊皮纸感 ═══ */
+.tv-bubble{
+  background:
+    linear-gradient(145deg,
+      rgba(45,28,12,.92),
+      rgba(30,18,8,.95),
+      rgba(20,12,5,.97))!important;
+  border:1.5px solid rgba(200,150,70,.2)!important;
+  box-shadow:
+    0 6px 30px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,200,100,.05),
+    inset 0 -1px 0 rgba(0,0,0,.2)!important;
+  border-radius:16px!important;
+  position:relative!important;
+}
+/* 泡泡顶部三角 */
+.tv-bubble::before{
+  border-bottom:10px solid rgba(200,150,70,.2)!important;
+  border-left:10px solid transparent!important;
+  border-right:10px solid transparent!important;
+}
+/* 羊皮纸纹理 */
+.tv-bubble::after{
+  content:'';position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0,transparent 4px,
+      rgba(180,140,80,.015) 4px,rgba(180,140,80,.015) 5px);
+}
+
+/* ═══ 左轮弹仓 · 豪华版 ═══ */
+.tv-cylinder{
+  width:160px!important;height:160px!important;
+  position:relative;
+}
+.tv-cylinder-inner{
+  background:
+    radial-gradient(circle at 40% 35%,rgba(80,50,25,.5) 10%,transparent 40%),
+    radial-gradient(circle at 50% 50%,rgba(60,30,15,.7) 20%,rgba(30,15,8,.95) 70%)!important;
+  border:3px solid rgba(200,150,80,.2)!important;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,.6),
+    inset 0 2px 0 rgba(255,200,100,.04),
+    0 0 40px rgba(139,90,43,.12),
+    0 8px 24px rgba(0,0,0,.5)!important;
+}
+/* 弹仓中心轴 */
+.tv-cylinder-inner::before{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:12px;height:12px;border-radius:50%;
+  background:radial-gradient(circle,rgba(180,130,70,.4),rgba(100,70,30,.6));
+  border:1px solid rgba(200,150,80,.3);
+  box-shadow:0 0 8px rgba(245,158,11,.15);
+  z-index:2;
+}
+/* 弹孔增大 */
+.tv-chamber{
+  width:20px!important;height:20px!important;
+  background:rgba(255,255,255,.12)!important;
+  border:2px solid rgba(255,255,255,.18)!important;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.5);
+  transition:all .3s ease!important;
+}
+/* 装弹 · 红色脉动 */
+.tv-chamber.loaded{
+  background:rgba(239,68,68,.7)!important;
+  border-color:rgba(239,68,68,.9)!important;
+  box-shadow:
+    0 0 15px rgba(239,68,68,.5),
+    0 0 30px rgba(239,68,68,.2),
+    inset 0 0 5px rgba(255,100,100,.3)!important;
+  animation:bulletGlowV3 1.5s ease-in-out infinite!important;
+}
+@keyframes bulletGlowV3{
+  0%,100%{box-shadow:0 0 10px rgba(239,68,68,.4),inset 0 0 3px rgba(255,100,100,.2)}
+  50%{box-shadow:0 0 25px rgba(239,68,68,.7),0 0 50px rgba(239,68,68,.2),inset 0 0 8px rgba(255,100,100,.4)}
+}
+/* 已击发 · 烧焦灰 */
+.tv-chamber.spent{
+  background:rgba(60,60,60,.4)!important;
+  border-color:rgba(80,80,80,.3)!important;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.3)!important;
+}
+
+/* 弹仓旋转动画增强 */
+@keyframes cylinderSpinV3{
+  0%{transform:rotate(0);filter:brightness(1)}
+  20%{filter:brightness(1.2)}
+  40%{filter:brightness(.9)}
+  100%{transform:rotate(1080deg);filter:brightness(1)}
+}
+.tv-cylinder-inner.spinning{
+  animation:cylinderSpinV3 2s cubic-bezier(.2,.6,.3,1)!important;
+}
+
+/* ═══ 开枪特效 · 裂屏 ═══ */
+/* 中弹 · 红色裂屏 */
+.tv-roulette-result.hit{
+  background:rgba(100,0,0,.92)!important;
+  animation:flashRedV3 .6s ease-in-out, screenCrack .5s ease-out!important;
+}
+@keyframes flashRedV3{
+  0%{background:rgba(255,50,50,.7)}
+  20%{background:rgba(200,0,0,.85)}
+  100%{background:rgba(100,0,0,.92)}
+}
+@keyframes screenCrack{
+  0%,100%{transform:translate(0) scale(1)}
+  10%{transform:translate(-8px,4px) scale(1.01)}
+  20%{transform:translate(6px,-5px) scale(.99)}
+  30%{transform:translate(-5px,6px) scale(1.01)}
+  40%{transform:translate(7px,-3px)}
+  50%{transform:translate(-4px,5px) scale(.99)}
+  60%{transform:translate(3px,-4px)}
+  70%{transform:translate(-3px,2px)}
+  80%{transform:translate(2px,-2px)}
+}
+/* 中弹屏幕裂纹 */
+.tv-roulette-result.hit::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(45deg,transparent 45%,rgba(255,50,50,.15) 45.5%,transparent 46%),
+    linear-gradient(-30deg,transparent 40%,rgba(255,50,50,.1) 40.5%,transparent 41%),
+    linear-gradient(60deg,transparent 55%,rgba(255,50,50,.08) 55.5%,transparent 56%);
+  animation:crackFade 2s ease-out forwards;
+}
+@keyframes crackFade{0%{opacity:1}100%{opacity:0}}
+
+/* 存活 · 安全光圈 */
+.tv-roulette-result.survived{
+  background:rgba(0,0,0,.88)!important;
+}
+.tv-roulette-result.survived::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(16,185,129,.15),transparent 55%);
+  animation:surviveBloom 1.2s ease-out forwards;
+}
+@keyframes surviveBloom{
+  0%{opacity:0;transform:scale(.3)}
+  40%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.5)}
+}
+
+/* ═══ 扣扳机按钮 · 危险脉动 ═══ */
+.tv-btn-danger{
+  background:linear-gradient(135deg,#b91c1c,#dc2626,#ef4444)!important;
+  background-size:200% 100%;
+  animation:dangerPulse 2s ease-in-out infinite!important;
+  box-shadow:
+    0 0 20px rgba(239,68,68,.3),
+    0 0 40px rgba(239,68,68,.1),
+    inset 0 1px 0 rgba(255,255,255,.1)!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.5);
+  border:2px solid rgba(255,100,100,.4)!important;
+}
+@keyframes dangerPulse{
+  0%,100%{background-position:0% 50%;box-shadow:0 0 20px rgba(239,68,68,.3),0 0 40px rgba(239,68,68,.1)}
+  50%{background-position:100% 50%;box-shadow:0 0 30px rgba(239,68,68,.5),0 0 60px rgba(239,68,68,.2)}
+}
+.tv-btn-danger:hover{
+  transform:scale(1.08)!important;
+  box-shadow:0 0 40px rgba(239,68,68,.5),0 0 80px rgba(239,68,68,.2)!important;
+}
+
+/* ═══ 酒馆介绍卡 · 钢铁深渊风 ═══ */
+.tv-intro-card{
+  background:
+    linear-gradient(160deg,
+      rgba(35,22,10,.95),
+      rgba(25,15,6,.97),
+      rgba(15,8,3,.98))!important;
+  border:2px solid rgba(180,120,50,.25)!important;
+  box-shadow:
+    0 0 60px rgba(245,158,11,.06),
+    0 20px 60px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,200,100,.04)!important;
+}
+.tv-intro-icon{
+  font-size:4rem!important;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,.3));
+  animation:foxDeal 3s ease-in-out infinite!important;
+}
+@keyframes foxDeal{
+  0%,100%{transform:scale(1) rotate(0)}
+  25%{transform:scale(1.05) rotate(-3deg)}
+  50%{transform:scale(1.08) rotate(0)}
+  75%{transform:scale(1.05) rotate(3deg)}
+}
+
+/* ═══ 酒馆结算卡 · 金币感 ═══ */
+.tv-result-card{
+  background:
+    linear-gradient(160deg,
+      rgba(35,22,10,.95),
+      rgba(25,15,6,.97))!important;
+  border:2px solid rgba(245,180,60,.25)!important;
+  box-shadow:
+    0 0 50px rgba(245,158,11,.08),
+    0 16px 48px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,200,100,.05)!important;
+}
+.tv-result-icon{
+  font-size:3.5rem!important;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,.3));
+}
+
+/* ═══ 场景切换 · 高级过渡 ═══ */
+@keyframes sceneEnterV3{
+  0%{opacity:0;filter:blur(12px) brightness(1.5);transform:scale(1.03)}
+  60%{filter:blur(2px) brightness(1.1)}
+  100%{opacity:1;filter:blur(0) brightness(1);transform:scale(1)}
+}
+.scene-enter-v3{animation:sceneEnterV3 .6s ease-out}
+
+/* 法庭→判决 · 暗幕降临 */
+@keyframes curtainFall{
+  0%{clip-path:inset(0 0 100% 0)}
+  100%{clip-path:inset(0)}
+}
+
+/* ═══ 连击飞字 · 法庭版 ═══ */
+.combo-fly{
+  font-size:2.5rem!important;
+  text-shadow:
+    0 0 20px rgba(245,158,11,.6),
+    0 0 40px rgba(245,158,11,.3),
+    0 2px 4px rgba(0,0,0,.5)!important;
+}
+@keyframes comboFloatV3{
+  0%{opacity:1;transform:translateY(0) scale(1) rotate(0)}
+  30%{transform:translateY(-20px) scale(1.4) rotate(-5deg)}
+  60%{transform:translateY(-40px) scale(1.2) rotate(3deg)}
+  100%{opacity:0;transform:translateY(-80px) scale(.7) rotate(0)}
+}
+.combo-fly{animation:comboFloatV3 1s ease-out forwards!important}
+
+/* ═══ 闪光反馈 · 增强版 ═══ */
+@keyframes correctBurst{
+  0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}
+  40%{box-shadow:0 0 0 12px rgba(16,185,129,.15)}
+  100%{box-shadow:0 0 0 20px rgba(16,185,129,0)}
+}
+.feedback-correct{animation:correctBurst .7s ease-out!important}
+@keyframes wrongBurst{
+  0%,100%{transform:translateX(0);box-shadow:none}
+  10%{transform:translateX(-8px);box-shadow:0 0 15px rgba(239,68,68,.3)}
+  30%{transform:translateX(7px)}
+  50%{transform:translateX(-5px)}
+  70%{transform:translateX(4px)}
+  90%{transform:translateX(-2px)}
+}
+.feedback-wrong{animation:wrongBurst .6s ease-in-out!important}
+
+/* ═══ 酒馆 NPC chips · 角色牌 ═══ */
+.tv-npc-chip{
+  background:
+    linear-gradient(145deg,rgba(40,25,10,.8),rgba(25,15,5,.9))!important;
+  border:1px solid rgba(180,120,50,.2)!important;
+  border-radius:24px!important;
+  padding:.35rem .7rem!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transition:all .3s;
+}
+.tv-npc-chip:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(245,158,11,.15);
+}
+
+/* ═══ 轮盘标题 · 死亡凝视 ═══ */
+.tv-roulette-title{
+  font-size:1.6rem!important;
+  text-shadow:
+    0 0 30px rgba(239,68,68,.5),
+    0 0 60px rgba(239,68,68,.2),
+    0 2px 4px rgba(0,0,0,.5)!important;
+  animation:deathGaze 2s ease-in-out infinite!important;
+}
+@keyframes deathGaze{
+  0%,100%{text-shadow:0 0 20px rgba(239,68,68,.4)}
+  50%{text-shadow:0 0 40px rgba(239,68,68,.7),0 0 80px rgba(239,68,68,.2)}
+}
+
+/* ═══ 信/骗 按钮增强 ═══ */
+.tv-btn-believe{
+  background:linear-gradient(135deg,#065f46,#047857,#059669)!important;
+  background-size:200% 100%;
+  box-shadow:0 4px 16px rgba(16,185,129,.2),0 0 20px rgba(16,185,129,.08)!important;
+  border:2px solid rgba(34,197,94,.35)!important;
+}
+.tv-btn-believe:hover{
+  transform:scale(1.06)!important;
+  box-shadow:0 6px 24px rgba(16,185,129,.3)!important;
+}
+.tv-btn-liar{
+  background:linear-gradient(135deg,#7f1d1d,#991b1b,#b91c1c)!important;
+  background-size:200% 100%;
+  box-shadow:0 4px 16px rgba(239,68,68,.2),0 0 20px rgba(239,68,68,.08)!important;
+  border:2px solid rgba(248,113,113,.3)!important;
+}
+.tv-btn-liar:hover{
+  transform:scale(1.06)!important;
+  box-shadow:0 6px 24px rgba(239,68,68,.3)!important;
+}
+
+/* ═══ 金光按钮增强 ═══ */
+.tv-btn-gold{
+  background:linear-gradient(135deg,#b45309,var(--gold),#d97706)!important;
+  background-size:200% 100%;
+  animation:btnShimmer 3s ease-in-out infinite;
+  box-shadow:0 4px 16px rgba(245,158,11,.25),0 0 20px rgba(245,158,11,.1)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+.tv-btn-gold:hover{
+  transform:scale(1.06) translateY(-2px)!important;
+  box-shadow:0 8px 28px rgba(245,158,11,.35)!important;
+}
+
+/* ═══ 开始界面 · 四科卡片氛围灯 ═══ */
+.subject-card.active{
+  animation:cardBreath 3s ease-in-out infinite;
+}
+@keyframes cardBreath{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+.subject-card.active .sc-main-icon{
+  animation:iconGlow 2.5s ease-in-out infinite!important;
+}
+@keyframes iconGlow{
+  0%,100%{filter:drop-shadow(0 0 12px var(--sc-glow))}
+  50%{filter:drop-shadow(0 0 25px var(--sc-glow)) drop-shadow(0 0 50px var(--sc-glow))}
+}
+
+/* ═══ 开始按钮 · 闪电脉动 ═══ */
+.start-btn{
+  position:relative!important;
+  overflow:hidden!important;
+}
+.start-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  transform:translateX(-100%);
+  animation:btnSweep 4s ease-in-out infinite;
+}
+@keyframes btnSweep{
+  0%,80%{transform:translateX(-100%)}
+  100%{transform:translateX(200%)}
+}
