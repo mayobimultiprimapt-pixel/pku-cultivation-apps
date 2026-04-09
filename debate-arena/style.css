@@ -1787,3 +1787,19 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--txt);
   0%,80%{transform:translateX(-100%)}
   100%{transform:translateX(200%)}
 }
+
+/* ═══ 酒馆模式全局背景 ═══ */
+.tv-bg {
+  position: absolute;
+  inset: 0;
+  background: url('assets/tavern-bg.png') center/cover no-repeat;
+  filter: brightness(0.3) saturate(0.8);
+  z-index: 0;
+  pointer-events: none;
+  animation: tvBreathe 8s ease-in-out infinite;
+}
+@keyframes tvBreathe {
+  0%, 100% { filter: brightness(0.3) saturate(0.8); }
+  50% { filter: brightness(0.4) saturate(1); }
+}
+
