@@ -136,7 +136,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <div class="stats"><div class="st"><div class="v" id="tC">0</div><div class="l">总卡片</div></div><div class="st"><div class="v d" id="duC">0</div><div class="l">待渡劫</div></div><div class="st"><div class="v w" id="wC">0</div><div class="l">煞气侵</div></div><div class="st"><div class="v m" id="maC">0</div><div class="l">已通灵</div></div></div>
 <div class="filters"><button class="chip on" data-s="all">全部</button><button class="chip" data-s="101">政治</button><button class="chip" data-s="201">英语</button><button class="chip" data-s="301">数学</button><button class="chip" data-s="408">408</button></div>
-<div class="btns"><button class="btn go" id="btnGo" onclick="A.start()">⚡ 开始渡劫</button><button class="btn add" onclick="A.showAdd()">✦ 刻碑</button></div>
+<div class="btns"><button class="btn go" id="btnGo" onclick="A.start()">⚡ 开始渡劫</button><button class="btn add" onclick="A.showAdd()">✦ 刻碑</button><button class="btn add" style="border-color:rgba(157,78,221,.4);color:#08f7fe;max-width:100px" onclick="PKUAutoFetch.showModal()">📡 抓题</button></div>
+<div style="display:flex;gap:8px;justify-content:center;max-width:500px;margin:12px auto 0">
+  <button onclick="A.genVocab()" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(0,204,255,.2);background:rgba(0,204,255,.06);color:#00ccff;font-size:.7rem;cursor:pointer;font-family:var(--fb);transition:.3s">🌍 懒人词汇生成</button>
+  <button onclick="A.genPolitics()" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,82,82,.2);background:rgba(255,82,82,.06);color:#ff5252;font-size:.7rem;cursor:pointer;font-family:var(--fb);transition:.3s">⚔️ 政治必背生成</button>
+  <button onclick="A.importVault()" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,215,0,.2);background:rgba(255,215,0,.06);color:#ffd700;font-size:.7rem;cursor:pointer;font-family:var(--fb);transition:.3s">📦 导入金库</button>
+</div>
 </main>
 
 <div class="rov" id="rov">
@@ -164,6 +169,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <nav class="bnav"><button class="ni on"><span class="ic">🌳</span>灵树</button><button class="ni" onclick="alert('论道殿·开发中')"><span class="ic">🏛️</span>论道</button><button class="ni" onclick="alert('九宫算阵·开发中')"><span class="ic">⚔️</span>算阵</button><button class="ni" onclick="alert('修仙档案·开发中')"><span class="ic">👤</span>道途</button></nav>
 
+<script src="../shared/pku-auto-fetch.js"></script>
 <script>
 // ═══ SM-2 Engine ═══
 const SM2=(()=>{
@@ -222,20 +228,134 @@ cx.beginPath();cx.fillStyle=gd;cx.arc(px,py,gr2,0,Math.PI*2);cx.fill();cx.beginP
 requestAnimationFrame(anim)}
 return{init,upd}})();
 
-// ═══ AI Service (Gemini native) ═══
+// ═══ AI Service (BaosiAPI gemini-3.1-pro-high · 写死最高版) ═══
 const AI=(()=>{
-const GK='AIzaSyBDQPwlixn8zedvE7hJYB9600I1nolutU4';
-const GB='https://generativelanguage.googleapis.com/v1beta/models';
-async function gem(p,m='gemini-3.1-flash-lite-preview',mt=512){const r=await fetch(`${GB}/${m}:generateContent?key=${GK}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{temperature:.7,maxOutputTokens:mt}})});if(!r.ok)throw new Error(`Gemini ${r.status}`);const d=await r.json();if(d.error)throw new Error(d.error.message);return d.candidates?.[0]?.content?.parts?.[0]?.text||''}
-async function hint(q,a){return gem(`你是考研导师顾枢。用一句话给出巧妙记忆提示（口诀/类比/谐音），帮记住:\n问：${q}\n答：${a}\n只输出提示。`)}
-async function explain(q,a,s){const sn={'101':'政治','201':'英语','301':'数学','408':'计算机'}[s]||s;return gem(`你是考研导师顾枢。用3-5句深入解释${sn}知识点，指出关联高频考点:\n问：${q}\n答：${a}\n用修仙比喻但知识准确。`,'gemini-3.1-pro-preview',800)}
-async function master(q,a){return gem(`你是顾枢上仙。学生反复答错此题，请进行"开窍讲解"：\n1.指出思维误区\n2.用生动比喻建立正确认知\n3.给3个关联高频考题方向\n4.一句"顾枢金句"总结\n\n问：${q}\n答：${a}`,'gemini-3.1-pro-preview',1200)}
-return{hint,explain,master}})();
+const BU='https://api.baosiapi.com/v1/chat/completions';
+const BK='sk-Wq6ZDfqGBUOMHN3DMeyccH8nqDzsiGJpfFmdY5RJujPk9E97';
+const BM='gemini-3.1-pro-high';
+async function call(p,mt=800){const r=await fetch(BU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+BK},body:JSON.stringify({model:BM,messages:[{role:'user',content:p}],temperature:.7,max_tokens:mt})});if(!r.ok)throw new Error(`API ${r.status}`);const d=await r.json();if(d.error)throw new Error(d.error.message);return(d.choices||[{}])[0]?.message?.content||''}
+async function hint(q,a){return call(`你是考研导师顾枢。用一句话给出巧妙记忆提示（口诀/类比/谐音），帮记住:\n问：${q}\n答：${a}\n只输出提示。`)}
+async function explain(q,a,s){const sn={'101':'政治','201':'英语','301':'数学','408':'计算机'}[s]||s;return call(`你是考研导师顾枢。用3-5句深入解释${sn}知识点，指出关联高频考点:\n问：${q}\n答：${a}\n用修仙比喻但知识准确。`,1200)}
+async function master(q,a){return call(`你是顾枢上仙。学生反复答错此题，请进行"开窍讲解"：\n1.指出思维误区\n2.用生动比喻建立正确认知\n3.给3个关联高频考题方向\n4.一句"顾枢金句"总结\n\n问：${q}\n答：${a}`,1500)}
+// ═══ 懒人英语词汇生成器 ═══
+async function genVocab(batch=1){return call(`你是考研英语词汇导师。生成第${batch}批考研英语高频词汇卡片（每批不同的词）。
+要求：
+- 从5500大纲词中抽取考研高频词，优先历年真题高频词
+- 每个词包含：英文、音标、中文释义、词性、构词法（前缀+词根+后缀）、真题例句、谐音/联想记忆法
+- 包含同义词/反义词/易混词辨析
+- 生成20个词的JSON数组
+
+格式(严格JSON数组，不要任何其他内容):
+[{"word":"英文单词","phonetic":"音标","pos":"词性","meaning":"中文","formation":"前缀pre(先前)+词根dict(说)+后缀ion(名词)=预言","example":"真题例句(The theory __ that...)","mnemonic":"谐音/联想记忆","similar":"易混词辨析","frequency":"A/B/C"}]`,8000)}
+// ═══ 政治必背生成器 ═══
+async function genPolitics(batch=1){return call(`你是考研政治命题专家。生成第${batch}批考研政治必背高频考点卡片。
+要求：
+- 覆盖马原、毛中特、思修、史纲、时政五大板块
+- 优先历年真题反复考查的核心考点
+- 每个卡片包含：考点名称、必背原文、理解要点、关联真题年份、记忆口诀
+- 包含习近平新时代思想、新发展理念等最新内容
+- 生成20个考点的JSON数组
+
+格式(严格JSON数组):
+[{"topic":"考点名称","chapter":"马原/毛中特/思修/史纲/时政","mustKnow":"必背原文(精简准确)","keyPoints":"理解要点(2-3句)","examYears":"历年出现(2020/2022/2024)","mnemonic":"口诀/助记"}]`,8000)}
+return{hint,explain,master,genVocab,genPolitics,call}})();
 
 // ═══ App Controller ═══
 const A=(()=>{let cards=[],logs=[],queue=[],ci=0,flipped=false,filter='all',ss={t:0,ok:0},t0=0;
 function init(){cards=SM2.load();logs=SM2.lLog();if(!cards.length){cards=SM2.seeds();SM2.save(cards)}cards.forEach(c=>SM2.upTree(c));SM2.save(cards);Tree.init(document.getElementById('treeCanvas'));
+_autoImportVault();
 document.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));ch.classList.add('on');filter=ch.dataset.s;ui()}));ui()}
+
+// ═══ 金库→卡片桥接（自动导入） ═══
+function _autoImportVault(){
+  const subs=['101','201','301','408'];
+  let imported=0;
+  const existQ=new Set(cards.map(c=>(c.content.question||'').substring(0,25)));
+  subs.forEach(sub=>{
+    try{
+      const raw=localStorage.getItem('Global_Vault_'+sub);
+      if(!raw)return;
+      const arr=JSON.parse(raw);
+      if(!Array.isArray(arr))return;
+      arr.forEach(q=>{
+        const stem=q.stem||q.q||'';
+        if(!stem||stem.length<8)return;
+        if(existQ.has(stem.substring(0,25)))return;
+        const opts=q.opts||q.options||q.o||[];
+        const ansIdx=q.ans||q.a||0;
+        const answer=`正确答案: ${opts[ansIdx]||'A'}\n${q.hint||q.analysis||''}`;
+        const c=SM2.mk({question:stem,answer,subject:sub,chapter:q.chapter||'',topic:'',tags:['vault']});
+        cards.push(c);
+        existQ.add(stem.substring(0,25));
+        imported++;
+      });
+    }catch(e){}
+  });
+  if(imported>0){SM2.save(cards);console.log(`[识海天碑] 自动导入金库 ${imported} 张卡片`)}
+}
+function importVault(){
+  _autoImportVault();
+  ui();
+  const stats=SM2.gStats(cards);
+  alert(`📦 金库导入完成！当前共 ${stats.total} 张卡片`);
+}
+
+// ═══ 懒人英语词汇生成 ═══
+async function genVocab(){
+  const batch=Math.floor(cards.filter(c=>c.meta.subject==='201').length/20)+1;
+  const btn=event.target;btn.textContent='🔴 生成中...';btn.disabled=true;
+  try{
+    const raw=await AI.genVocab(batch);
+    let arr;try{arr=JSON.parse(raw)}catch(e){const m=raw.match(/\[\s*\{[\s\S]*\}\s*\]/);if(m)arr=JSON.parse(m[0]);else throw new Error('解析失败')}
+    if(!Array.isArray(arr))throw new Error('格式错误');
+    let added=0;
+    const existQ=new Set(cards.map(c=>(c.content.question||'').substring(0,15)));
+    arr.forEach(w=>{
+      if(!w.word||existQ.has(w.word.substring(0,15)))return;
+      const q=`🌍 ${w.word}  ${w.phonetic||''}
+请回忆：中文释义、构词法、例句`;
+      const a=`【${w.pos||''}】${w.meaning||''}
+构词: ${w.formation||'无'}
+例句: ${w.example||'无'}
+记忆: ${w.mnemonic||'无'}
+辨析: ${w.similar||'无'}
+频率: ${w.frequency||'B'}级`;
+      cards.push(SM2.mk({question:q,answer:a,subject:'201',chapter:'词汇',topic:w.word,tags:['vocab','lazy']}));
+      existQ.add(w.word.substring(0,15));
+      added++;
+    });
+    SM2.save(cards);ui();
+    btn.textContent=`✅ +${added}词`;setTimeout(()=>{btn.textContent='🌍 懒人词汇生成';btn.disabled=false},2000);
+  }catch(e){btn.textContent='❌ '+e.message;setTimeout(()=>{btn.textContent='🌍 懒人词汇生成';btn.disabled=false},2000)}
+}
+
+// ═══ 政治必背生成 ═══
+async function genPolitics(){
+  const batch=Math.floor(cards.filter(c=>c.meta.subject==='101').length/20)+1;
+  const btn=event.target;btn.textContent='🔴 生成中...';btn.disabled=true;
+  try{
+    const raw=await AI.genPolitics(batch);
+    let arr;try{arr=JSON.parse(raw)}catch(e){const m=raw.match(/\[\s*\{[\s\S]*\}\s*\]/);if(m)arr=JSON.parse(m[0]);else throw new Error('解析失败')}
+    if(!Array.isArray(arr))throw new Error('格式错误');
+    let added=0;
+    const existQ=new Set(cards.map(c=>(c.content.question||'').substring(0,15)));
+    arr.forEach(p=>{
+      if(!p.topic||existQ.has(p.topic.substring(0,15)))return;
+      const q=`⚔️ ${p.topic}
+【${p.chapter||'政治'}】请背诵核心内容、理解要点、出题年份`;
+      const a=`必背: ${p.mustKnow||''}
+要点: ${p.keyPoints||''}
+真题: ${p.examYears||'待查'}
+口诀: ${p.mnemonic||'无'}`;
+      cards.push(SM2.mk({question:q,answer:a,subject:'101',chapter:p.chapter||'政治',topic:p.topic,tags:['politics','mustknow']}));
+      existQ.add(p.topic.substring(0,15));
+      added++;
+    });
+    SM2.save(cards);ui();
+    btn.textContent=`✅ +${added}考点`;setTimeout(()=>{btn.textContent='⚔️ 政治必背生成';btn.disabled=false},2000);
+  }catch(e){btn.textContent='❌ '+e.message;setTimeout(()=>{btn.textContent='⚔️ 政治必背生成';btn.disabled=false},2000)}
+}
+
 function flt(){return filter==='all'?cards:cards.filter(c=>c.meta.subject===filter)}
 function ui(){const f=flt(),s=SM2.gStats(f);document.getElementById('tC').textContent=s.total;document.getElementById('duC').textContent=s.due;document.getElementById('wC').textContent=s.wither;document.getElementById('maC').textContent=s.mastered;document.getElementById('dC').textContent=s.due;document.getElementById('nC').textContent=s.fresh;document.getElementById('mC').textContent=s.mastered;
 const ring=document.getElementById('rRing');ring.style.strokeDashoffset=263.9-(263.9*s.ret/100);document.getElementById('rPct').textContent=s.ret+'%';
@@ -264,7 +384,7 @@ function showAI(l,c){$('ahb').classList.add('on');$('ahL').textContent=l;const e
 function fmtI(d){return d<1?'<1天':d===1?'1天':d<30?d+'天':d<365?Math.round(d/30)+'月':(Math.round(d/365*10)/10)+'年'}
 function $(id){return document.getElementById(id)}
 document.addEventListener('DOMContentLoaded',init);
-return{start,flip,grade,exit,showAdd,hideAdd,saveCard,hint,explain,master}})();
+return{start,flip,grade,exit,showAdd,hideAdd,saveCard,hint,explain,master,genVocab,genPolitics,importVault}})();
 </script>
 </body>
 </html>

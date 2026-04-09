@@ -9,6 +9,20 @@ const BG = (() => {
   let minimapAnim = null;
   let aliveCount = 100;
   let aliveInterval = null;
+  let drinks = 2; // <==
+  let prones = 3; // <==
+  let drinkInterval = null; // <==
+  let isProning = false;
+
+  const ENEMY_IMAGES = [
+    'peace_elite_enemy_1775748004305.png',
+    'enemy_sniper_1775748145114.png',
+    'enemy_juggernaut_1775748163361.png',
+    'skin_mummy_1775748427927.png',
+    'skin_clown_1775748446522.png',
+    'skin_panda_1775748461563.png',
+    'skin_bear_1775748474780.png'
+  ];
 
   // AI player name pool
   const AI_NAMES = ['阿强','小明','大壮','铁柱','翠花','建国','秀芬','志强','美丽','国庆',
@@ -32,6 +46,7 @@ const BG = (() => {
   ];
 
   function init() {
+    setupJoystick();
     document.querySelectorAll('.map-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
@@ -56,6 +71,11 @@ const BG = (() => {
     if (!map) return;
     show('paraScreen');
     aliveCount = 100;
+    drinks = 2; prones = 3;
+    if(drinkInterval) clearInterval(drinkInterval);
+    document.getElementById('speedLines').classList.remove('active');
+    document.getElementById('battleTerrain').style.animationDuration = '1.5s';
+
     document.getElementById('paraMapName').textContent = `${map.icon} ${map.name} · 空降中...`;
     document.getElementById('paraAlive').textContent = `存活 100/100`;
     const paraBg = document.getElementById('paraBg');
@@ -98,6 +118,10 @@ const BG = (() => {
     document.getElementById('killTotal').textContent = S.totalEnemies;
     document.getElementById('killFeed').innerHTML = '';
     document.getElementById('hudAlive').textContent = `🟢 存活 ${aliveCount}`;
+    
+    document.getElementById('drinkCount').textContent = drinks;
+    document.getElementById('proneCount').textContent = prones;
+    document.getElementById('fpsWeapon').className = 'fps-weapon hidden';
 
     BGEngine.startTimers(onTick, onPoisonDamage);
     startMinimap();
@@ -119,6 +143,11 @@ const BG = (() => {
     document.getElementById('enemyWrap').style.display = 'none';
     document.getElementById('encounterAlert').classList.add('hidden');
     document.getElementById('crosshair').classList.remove('aiming');
+    document.getElementById('fpsWeapon').className = 'fps-weapon running'; // <== FPS
+
+    // Remove prone state
+    isProning = false;
+    document.getElementById('bushOverlay').classList.remove('active');
 
     // Show running overlay
     const runOvl = document.getElementById('runOverlay');
@@ -165,10 +194,14 @@ const BG = (() => {
 
     const fig = document.getElementById('enemyFigure');
     fig.className = 'enemy-figure';
-    fig.textContent = S.map.enemyEmoji;
+    
+    // Pick random 3D digital human image
+    const img = ENEMY_IMAGES[Math.floor(Math.random() * ENEMY_IMAGES.length)];
+    fig.src = img;
 
     // Crosshair aims
     document.getElementById('crosshair').classList.add('aiming');
+    document.getElementById('fpsWeapon').className = 'fps-weapon aiming'; // <== ADS
 
     // After 600ms → show question card
     setTimeout(() => {
@@ -184,6 +217,7 @@ const BG = (() => {
 
     selectedOpt = -1;
     document.getElementById('fireBtn').disabled = true;
+    document.getElementById('bandageBtn').disabled = true;
 
     // Question card
     const card = document.getElementById('questionCard');
@@ -216,9 +250,10 @@ const BG = (() => {
       o.classList.toggle('selected', i === idx);
     });
     document.getElementById('fireBtn').disabled = false;
+    document.getElementById('bandageBtn').disabled = false;
   }
 
-  function fire() {
+  function fire(isBandage = false) {
     if (selectedOpt < 0) return;
     const result = BGEngine.answer(selectedOpt);
     if (!result) return;
@@ -226,42 +261,55 @@ const BG = (() => {
     const opts = document.querySelectorAll('.q-opt');
 
     if (result.correct) {
-      // ─── KILL ───
-      opts[selectedOpt].classList.add('correct');
+      if (isBandage) {
+        // ─── BANDAGE ───
+        const S = BGEngine.getState();
+        S.hp = Math.min(S.maxHp || 100, S.hp + 20); // Heal
+        showFloatScore(`+20❤️ 绑带`, false);
+        S.score = Math.max(0, S.score - result.scoreGained); // Trade-off: Give up score
+        if (navigator.vibrate) navigator.vibrate(50);
+        
+        setTimeout(() => {
+          if (result.finished) { setTimeout(() => showResult(result), 400); }
+          else { showLootPopup(); setTimeout(() => startRunPhase(), 1000); }
+          updateHUD();
+        }, 700);
 
-      // Enemy hit animation
-      const fig = document.getElementById('enemyFigure');
-      fig.classList.add('hit');
+      } else {
+        // ─── KILL ───
+        const fig = document.getElementById('enemyFigure');
+        fig.classList.add('hit');
 
-      // Screen shake
-      document.getElementById('battleScreen').classList.add('shake');
-      setTimeout(() => document.getElementById('battleScreen').classList.remove('shake'), 300);
+        // Screen shake
+        document.getElementById('battleScreen').classList.add('shake');
+        setTimeout(() => document.getElementById('battleScreen').classList.remove('shake'), 300);
 
-      showFloatScore(`+${result.scoreGained}`, false);
-      if (navigator.vibrate) navigator.vibrate(50);
+        showFloatScore(`+${result.scoreGained}`, false);
+        if (navigator.vibrate) navigator.vibrate(50);
 
-      // Combo display
-      if (result.comboTitle) showCombo(result.comboTitle);
+        // Combo display
+        if (result.comboTitle) showCombo(result.comboTitle);
 
-      // Kill feed (self)
-      addKillFeedSelf();
+        // Kill feed (self)
+        addKillFeedSelf();
 
-      // Decrease alive
-      aliveCount = Math.max(1, aliveCount - 1);
-      document.getElementById('hudAlive').textContent = `🟢 存活 ${aliveCount}`;
+        // Decrease alive
+        aliveCount = Math.max(1, aliveCount - 1);
+        document.getElementById('hudAlive').textContent = `🟢 存活 ${aliveCount}`;
 
-      // After animation → loot → next
-      setTimeout(() => {
-        if (result.finished) {
-          setTimeout(() => showResult(result), 400);
-        } else if (result.airdrop) {
-          triggerAirdrop();
-        } else {
-          showLootPopup();
-          setTimeout(() => startRunPhase(), 1000);
-        }
-        updateHUD();
-      }, 700);
+        // After animation → loot → next
+        setTimeout(() => {
+          if (result.finished) {
+            setTimeout(() => showResult(result), 400);
+          } else if (result.airdrop) {
+            triggerAirdrop();
+          } else {
+            showLootPopup();
+            setTimeout(() => startRunPhase(), 1000);
+          }
+          updateHUD();
+        }, 700);
+      }
 
     } else {
       // ─── MISS ───
@@ -269,19 +317,27 @@ const BG = (() => {
       opts[result.correctAns].classList.add('correct');
 
       const fig = document.getElementById('enemyFigure');
-      fig.classList.add('dodge');
+      const S = BGEngine.getState();
 
-      // Red flash
-      const flash = document.getElementById('dmgFlash');
-      flash.classList.add('active');
-      setTimeout(() => flash.classList.remove('active'), 400);
+      if (isProning) {
+         // Dodged from bush
+         fig.classList.add('dodge');
+         showFloatScore('🌿 完美躲避!', false);
+         S.hp = Math.min(S.maxHp || 100, S.hp + result.damage); // Refund damage
+      } else {
+         fig.classList.add('dodge');
+         // Red flash
+         const flash = document.getElementById('dmgFlash');
+         flash.classList.add('active');
+         setTimeout(() => flash.classList.remove('active'), 400);
 
-      // Screen shake
-      document.getElementById('battleScreen').classList.add('shake');
-      setTimeout(() => document.getElementById('battleScreen').classList.remove('shake'), 300);
+         // Screen shake
+         document.getElementById('battleScreen').classList.add('shake');
+         setTimeout(() => document.getElementById('battleScreen').classList.remove('shake'), 300);
 
-      showFloatScore(`-${result.damage}❤️`, true);
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+         showFloatScore(`-${result.damage}❤️`, true);
+         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      }
 
       setTimeout(() => {
         if (result.finished) {
@@ -510,6 +566,55 @@ const BG = (() => {
     setTimeout(() => toast.remove(), 2500);
   }
 
+  // ═══ NEW TACTICS ═══
+  function useDrink() {
+    if (drinks <= 0) return;
+    const S = BGEngine.getState();
+    if (!S || S.finished) return;
+
+    drinks--;
+    document.getElementById('drinkCount').textContent = drinks;
+    document.getElementById('speedLines').classList.add('active');
+    document.getElementById('battleTerrain').style.animationDuration = '0.5s';
+    showFloatScore('⚡ 加速回血!', false);
+
+    let ticks = 10;
+    if (drinkInterval) clearInterval(drinkInterval);
+    drinkInterval = setInterval(() => {
+      if(S && S.hp > 0 && !S.finished) {
+        S.hp = Math.min(S.maxHp || 100, S.hp + 3);
+        updateHUD();
+      }
+      ticks--;
+      if (ticks <= 0) {
+        clearInterval(drinkInterval);
+        document.getElementById('speedLines').classList.remove('active');
+        document.getElementById('battleTerrain').style.animationDuration = '1.5s';
+      }
+    }, 1000);
+  }
+
+  function useProne() {
+    if (prones <= 0 || isProning) return;
+    const S = BGEngine.getState();
+    if (!S || S.finished) return;
+    
+    // Only if question card is shown
+    const card = document.getElementById('questionCard');
+    if (card.classList.contains('hidden')) return;
+
+    prones--;
+    document.getElementById('proneCount').textContent = prones;
+
+    // Prone action: Enter Safe Stance
+    isProning = true;
+    document.getElementById('fpsWeapon').className = 'fps-weapon proned';
+    document.getElementById('bushOverlay').classList.add('active');
+    
+    document.getElementById('battleScreen').classList.add('shake');
+    showFloatScore('🌿 掩体隐蔽就绪!', false);
+  }
+
   // ═══ RESULT ═══
   function showResult(result) {
     const S = BGEngine.getState() || { kills:0, totalEnemies:1, score:0, maxCombo:0, hp:0 };
@@ -540,6 +645,66 @@ const BG = (() => {
     document.getElementById('rQi').textContent = `+${qi}`;
   }
 
+  function setupJoystick() {
+    const zone = document.getElementById('joystickZone');
+    if (!zone) return;
+    const base = document.getElementById('joystickBase');
+    const knob = document.getElementById('joystickKnob');
+    const bScreen = document.getElementById('battleScreen');
+    
+    let active = false, origin = {x:0, y:0}, jId = null;
+
+    function onDown(e) {
+      e.preventDefault();
+      active = true; jId = e.pointerId; origin = {x:e.clientX, y:e.clientY};
+      base.style.left = origin.x + 'px';
+      base.style.top = origin.y + 'px';
+      base.classList.remove('hidden');
+    }
+    function onMove(e) {
+      if (!active || e.pointerId !== jId) return;
+      e.preventDefault();
+      const dx = e.clientX - origin.x; const dy = e.clientY - origin.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const maxR = 40;
+      let nx = dx, ny = dy;
+      if (dist > maxR) { nx = (dx/dist)*maxR; ny = (dy/dist)*maxR; }
+      
+      knob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+      bScreen.style.setProperty('--look-x', `${nx * -1.5}px`);
+
+      const terrain = document.getElementById('battleTerrain');
+      if (terrain && document.getElementById('fpsWeapon').classList.contains('running')) {
+        if (ny < -10) {
+           terrain.style.animationDuration = '0.5s';
+           terrain.style.animationDirection = 'normal';
+        } else if (ny > 10) {
+           terrain.style.animationDuration = '1.5s';
+           terrain.style.animationDirection = 'reverse';
+        } else {
+           terrain.style.animationDuration = '1.5s';
+           terrain.style.animationDirection = 'normal';
+        }
+      }
+    }
+    function onUp(e) {
+      if (e.pointerId !== jId) return;
+      active = false; jId = null;
+      base.classList.add('hidden');
+      knob.style.transform = `translate(-50%, -50%)`;
+      bScreen.style.setProperty('--look-x', `0px`);
+      const terrain = document.getElementById('battleTerrain');
+      if(terrain && document.getElementById('fpsWeapon').classList.contains('running')) {
+         terrain.style.animationDuration = '1.5s'; 
+         terrain.style.animationDirection = 'normal';
+      }
+    }
+    zone.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove, {passive:false});
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  }
+
   function restart() {
     BGEngine.destroy();
     stopMinimap();
@@ -560,6 +725,7 @@ const BG = (() => {
   document.addEventListener('DOMContentLoaded', init);
 
   return { selectZone, selectOption, fire, useHint,
+           useDrink, useProne,
            openAirdrop, pickAirdrop, closeAirdrop,
            restart, backToMap };
 })();

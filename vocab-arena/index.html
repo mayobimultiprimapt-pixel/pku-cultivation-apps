@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>灵语轮盘 · 英语修仙道场 — 北大考研修仙应用集</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08060e;--s1:#0e0a18;--s2:rgba(14,10,24,.92);--neon:#08f7fe;--neon2:#9d4edd;--gold:#ffd700;--red:#ff2e63;--green:#39ff14;--pink:#ff6b9d;--txt:#e8e8f0;--dim:#666;--muted:#444;--ff:'Orbitron',sans-serif;--fb:'Noto Sans SC',sans-serif;--r:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fb);background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(8,247,254,.04),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(157,78,221,.04),transparent 50%);pointer-events:none;z-index:0}
+
+/* ══ SCREENS ══ */
+.screen{position:fixed;inset:0;z-index:1;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* ══ MENU ══ */
+.menu{align-items:center;justify-content:center;text-align:center;padding:20px;overflow-y:auto}
+.menu-bg{position:absolute;inset:0;z-index:0}
+.menu-bg canvas{width:100%;height:100%}
+.menu-content{position:relative;z-index:1;max-width:600px;width:100%}
+.logo{font-size:48px;margin-bottom:4px;filter:drop-shadow(0 0 30px rgba(8,247,254,.4));animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.title{font-family:var(--ff);font-size:clamp(20px,5vw,32px);font-weight:900;background:linear-gradient(135deg,var(--neon),var(--neon2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;letter-spacing:3px}
+.subtitle{font-size:12px;color:var(--dim);letter-spacing:4px;margin-bottom:28px}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.mode-card{background:linear-gradient(160deg,rgba(14,10,24,.95),rgba(20,14,35,.9));border:1.5px solid rgba(255,255,255,.06);border-radius:var(--r);padding:18px 14px;cursor:pointer;transition:all .35s cubic-bezier(.34,1.56,.64,1);text-align:center;position:relative;overflow:hidden}
+.mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mc,var(--neon));opacity:0;transition:opacity .3s}
+.mode-card:hover{transform:translateY(-6px);border-color:rgba(255,255,255,.12);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.mode-card:hover::before{opacity:1}
+.mode-card.locked{opacity:.4;cursor:not-allowed;border-style:dashed}
+.mc-icon{font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 10px rgba(8,247,254,.2))}
+.mc-name{font-family:var(--ff);font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.mc-desc{font-size:11px;color:var(--dim);line-height:1.5}
+.mc-badge{position:absolute;top:8px;right:8px;font-size:9px;padding:2px 8px;border-radius:10px;font-family:var(--ff)}
+.mc-badge.hot{background:rgba(255,46,99,.15);color:var(--red);border:1px solid rgba(255,46,99,.3)}
+.mc-badge.wip{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid rgba(255,255,255,.08)}
+.menu-stats{display:flex;gap:12px;justify-content:center;margin-bottom:16px}
+.ms{padding:8px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;text-align:center}
+.ms .v{font-family:var(--ff);font-size:18px;font-weight:900;color:var(--neon)}
+.ms .l{font-size:10px;color:var(--dim);margin-top:2px}
+.back-home{color:var(--dim);text-decoration:none;font-size:12px;margin-top:12px;display:inline-block;transition:.3s}
+.back-home:hover{color:var(--neon)}
+
+/* ══ SHARED GAME UI ══ */
+.game-hud{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(0,0,0,.5);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;z-index:10}
+.hud-left{display:flex;align-items:center;gap:8px}
+.hud-back{background:none;border:1px solid rgba(255,255,255,.1);color:var(--dim);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;transition:.3s}
+.hud-back:hover{border-color:var(--neon);color:var(--neon)}
+.hud-title{font-family:var(--ff);font-size:12px;letter-spacing:2px;color:var(--neon)}
+.hud-right{display:flex;gap:10px;align-items:center}
+.hud-stat{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;font-size:12px}
+.hud-stat .icon{font-size:14px}
+.hud-stat .val{font-family:var(--ff);font-weight:700;color:var(--gold)}
+.combo-display{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;pointer-events:none;font-family:var(--ff);font-size:48px;font-weight:900;opacity:0;transition:all .3s}
+.combo-display.show{opacity:1;animation:comboIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes comboIn{from{transform:translate(-50%,-50%) scale(2);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+/* ══ 🎰 ROULETTE MODE ══ */
+.roulette-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}
+.roulette-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(157,78,221,.08),transparent 60%);pointer-events:none}
+.wheel-wrap{position:relative;width:260px;height:260px;margin-bottom:20px}
+.wheel-ring{width:100%;height:100%;border-radius:50%;border:4px solid rgba(8,247,254,.15);position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(14,10,24,.9),rgba(8,6,14,.95));box-shadow:0 0 40px rgba(8,247,254,.08),inset 0 0 40px rgba(157,78,221,.05);transition:transform 2s cubic-bezier(.17,.67,.12,.99)}
+.wheel-ring.spinning{animation:spin 1.5s cubic-bezier(.17,.67,.12,.99)}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(720deg)}}
+.wheel-center{text-align:center}
+.wc-word{font-family:var(--ff);font-size:clamp(20px,6vw,32px);font-weight:900;color:var(--neon);text-shadow:0 0 20px rgba(8,247,254,.4);margin-bottom:4px;letter-spacing:2px}
+.wc-phonetic{font-size:13px;color:var(--dim);font-style:italic;margin-bottom:8px}
+.wc-mnemonic{font-size:15px;color:var(--pink);font-weight:700;line-height:1.6;max-width:200px}
+.wheel-dots{position:absolute;inset:-8px}
+.wheel-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--neon);opacity:.3}
+.wheel-pointer{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:24px;filter:drop-shadow(0 0 8px rgba(255,215,0,.5));z-index:2}
+.spin-btn{padding:14px 40px;background:linear-gradient(135deg,var(--neon2),#7c3aed);border:none;border-radius:var(--r);color:#fff;font-family:var(--ff);font-size:15px;font-weight:700;cursor:pointer;letter-spacing:3px;transition:all .3s;box-shadow:0 0 20px rgba(157,78,221,.3);margin-bottom:16px}
+.spin-btn:hover{transform:scale(1.06);box-shadow:0 0 40px rgba(157,78,221,.4)}
+.spin-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.quiz-area{width:100%;max-width:420px;display:none}
+.quiz-area.show{display:block;animation:fadeUp .4s ease-out}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.quiz-q{text-align:center;font-size:14px;color:var(--dim);margin-bottom:12px;letter-spacing:1px}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quiz-opt{padding:14px 12px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;color:var(--txt);font-size:14px;cursor:pointer;transition:all .25s;text-align:center;font-family:var(--fb)}
+.quiz-opt:hover{border-color:var(--neon);transform:translateY(-2px)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(57,255,20,.1);color:var(--green);animation:optCorrect .4s}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(255,46,99,.1);color:var(--red);animation:shake .4s}
+@keyframes optCorrect{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.word-detail{display:none;margin-top:12px;padding:14px;background:rgba(8,247,254,.04);border:1px solid rgba(8,247,254,.1);border-radius:12px;font-size:12px;line-height:1.8;color:var(--dim)}
+.word-detail.show{display:block;animation:fadeUp .3s}
+.word-detail strong{color:var(--neon)}
+.roulette-loading{text-align:center;color:var(--dim);font-size:13px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ══ 🎯 BULLET HELL MODE ══ */
+.bullet-body{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#08060e 0%,#0e0818 50%,#12081e 100%)}
+.bullet-canvas{width:100%;height:100%}
+.bullet-target{position:absolute;bottom:0;left:0;right:0;padding:16px;text-align:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,.8) 40%);z-index:5}
+.bt-meaning{font-size:clamp(18px,5vw,28px);font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.3);margin-bottom:8px;letter-spacing:2px}
+.bt-hint{font-size:11px;color:var(--dim);letter-spacing:2px}
+.bullet-word{position:absolute;padding:8px 16px;background:rgba(14,10,24,.9);border:1.5px solid rgba(8,247,254,.2);border-radius:10px;font-family:var(--ff);font-size:14px;font-weight:700;color:var(--neon);cursor:pointer;transition:all .15s;white-space:nowrap;z-index:3;user-select:none;backdrop-filter:blur(4px)}
+.bullet-word:hover{border-color:var(--gold);transform:scale(1.1);box-shadow:0 0 15px rgba(8,247,254,.2)}
+.bullet-word.correct{background:rgba(57,255,20,.2)!important;border-color:var(--green)!important;color:var(--green)!important;animation:wordPop .3s}
+.bullet-word.wrong{background:rgba(255,46,99,.2)!important;border-color:var(--red)!important;color:var(--red)!important;animation:shake .3s}
+.bullet-word.missed{opacity:.2;border-style:dashed}
+@keyframes wordPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
+.bullet-particles{position:absolute;inset:0;pointer-events:none;z-index:1}
+.bullet-lane{position:absolute;top:0;bottom:80px;width:2px;background:linear-gradient(180deg,transparent,rgba(8,247,254,.03),transparent);pointer-events:none;z-index:0}
+
+/* ══ 🧩 BOMB MODE ══ */
+.bomb-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}
+.bomb-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 60%,rgba(255,46,99,.06),transparent 50%);pointer-events:none}
+.bomb-display{position:relative;width:180px;height:180px;margin-bottom:16px}
+.bomb-body-el{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#2a1a1a,#1a0a0a);border:4px solid rgba(255,46,99,.3);display:flex;align-items:center;justify-content:center;flex-direction:column;box-shadow:0 0 30px rgba(255,46,99,.15),inset 0 0 30px rgba(255,46,99,.05);transition:all .3s}
+.bomb-body-el.danger{border-color:var(--red);animation:bombPulse .5s ease-in-out infinite;box-shadow:0 0 50px rgba(255,46,99,.3)}
+.bomb-body-el.defused{border-color:var(--green);background:radial-gradient(circle,#0a2a1a,#051a0a);box-shadow:0 0 30px rgba(57,255,20,.15)}
+.bomb-body-el.exploded{animation:explode .5s ease-out forwards}
+@keyframes bombPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes explode{0%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0;filter:brightness(3)}}
+.bomb-timer{font-family:var(--ff);font-size:36px;font-weight:900;color:var(--red);text-shadow:0 0 15px rgba(255,46,99,.5)}
+.bomb-timer.safe{color:var(--green);text-shadow:0 0 15px rgba(57,255,20,.5)}
+.bomb-fuse{position:absolute;top:-20px;left:50%;width:4px;height:30px;background:linear-gradient(180deg,#ff6b00,#ff2e63);border-radius:2px;transform:translateX(-50%)}
+.bomb-fuse::after{content:'🔥';position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:16px;animation:fuseFlicker .3s ease-in-out infinite alternate}
+@keyframes fuseFlicker{from{opacity:.6;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1.1)}}
+.bomb-word{font-family:var(--ff);font-size:clamp(16px,5vw,24px);font-weight:900;color:var(--neon);text-shadow:0 0 15px rgba(8,247,254,.3);margin:16px 0 8px;letter-spacing:2px}
+.bomb-meaning{font-size:13px;color:var(--dim);margin-bottom:16px}
+.bomb-slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;min-height:50px}
+.bomb-slot{min-width:80px;padding:10px 14px;border:2px dashed rgba(8,247,254,.2);border-radius:10px;font-size:13px;color:var(--muted);text-align:center;transition:all .3s;font-family:var(--fb)}
+.bomb-slot.filled{border-style:solid;border-color:var(--neon);color:var(--neon);background:rgba(8,247,254,.06)}
+.bomb-slot.correct{border-color:var(--green);color:var(--green);background:rgba(57,255,20,.06)}
+.bomb-slot.wrong{border-color:var(--red);color:var(--red);background:rgba(255,46,99,.06);animation:shake .3s}
+.bomb-pieces{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:400px}
+.bomb-piece{padding:10px 16px;background:rgba(157,78,221,.08);border:1.5px solid rgba(157,78,221,.2);border-radius:10px;font-size:13px;color:var(--txt);cursor:pointer;transition:all .2s;font-family:var(--fb);user-select:none}
+.bomb-piece:hover{border-color:var(--neon2);transform:translateY(-3px);background:rgba(157,78,221,.15)}
+.bomb-piece.used{opacity:.25;pointer-events:none}
+.bomb-piece.correct{border-color:var(--green);color:var(--green)}
+.bomb-result{font-size:14px;margin-top:12px;padding:12px 20px;border-radius:10px;display:none;line-height:1.8}
+.bomb-result.show{display:block;animation:fadeUp .3s}
+.bomb-result.success{background:rgba(57,255,20,.06);border:1px solid rgba(57,255,20,.2);color:var(--green)}
+.bomb-result.fail{background:rgba(255,46,99,.06);border:1px solid rgba(255,46,99,.2);color:var(--red)}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:0}::-webkit-scrollbar-thumb{background:rgba(8,247,254,.15);border-radius:3px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:480px){.mode-grid{grid-template-columns:1fr 1fr}.wheel-wrap{width:200px;height:200px}.wc-word{font-size:22px}}
+</style>
+</head>
+<body>
+<script src="../shared/pku-auto-fetch.js"></script>
+
+<div id="comboDisp" class="combo-display"></div>
+
+<!-- ══════ MENU SCREEN ══════ -->
+<div id="menuScreen" class="screen menu active">
+  <div class="menu-content">
+    <div class="logo">🎰</div>
+    <div class="title">灵语轮盘</div>
+    <div class="subtitle">VOCAB ARENA · 英语修仙道场</div>
+
+    <div class="menu-stats">
+      <div class="ms"><div class="v" id="statWords">0</div><div class="l">已学单词</div></div>
+      <div class="ms"><div class="v" id="statStreak">0</div><div class="l">最长连击</div></div>
+      <div class="ms"><div class="v" id="statTotal">0</div><div class="l">总场次</div></div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" style="--mc:#9d4edd" onclick="Roulette.start()">
+        <span class="mc-badge hot">HOT</span>
+        <div class="mc-icon">🎰</div>
+        <div class="mc-name">谐音轮盘</div>
+        <div class="mc-desc">转一转就记住<br>超搞笑谐音梗</div>
+      </div>
+      <div class="mode-card" style="--mc:#08f7fe" onclick="Bullet.start()">
+        <span class="mc-badge hot">HOT</span>
+        <div class="mc-icon">🎯</div>
+        <div class="mc-name">弹幕闪避</div>
+        <div class="mc-desc">词汇雨从天降<br>精准点杀得分</div>
+      </div>
+      <div class="mode-card" style="--mc:#ff2e63" onclick="Bomb.start()">
+        <span class="mc-badge hot">HOT</span>
+        <div class="mc-icon">🧩</div>
+        <div class="mc-name">词根拆弹</div>
+        <div class="mc-desc">15秒倒计时<br>拼对构词法拆弹</div>
+      </div>
+      <div class="mode-card locked" style="--mc:#555">
+        <span class="mc-badge wip">SOON</span>
+        <div class="mc-icon">📖</div>
+        <div class="mc-name">鬼畜填词</div>
+        <div class="mc-desc">搞笑修仙故事<br>填空背单词</div>
+      </div>
+      <div class="mode-card locked" style="--mc:#555">
+        <span class="mc-badge wip">SOON</span>
+        <div class="mc-icon">🗣️</div>
+        <div class="mc-name">口语道场</div>
+        <div class="mc-desc">AI陪你练口语<br>语音打分</div>
+      </div>
+      <div class="mode-card locked" style="--mc:#555">
+        <span class="mc-badge wip">SOON</span>
+        <div class="mc-icon">🃏</div>
+        <div class="mc-name">表情猜词</div>
+        <div class="mc-desc">🏃💨→escape<br>Emoji解密</div>
+      </div>
+    </div>
+    <a class="back-home" href="../index.html">← 返回中转阁</a>
+  </div>
+</div>
+
+<!-- ══════ ROULETTE SCREEN ══════ -->
+<div id="rouletteScreen" class="screen">
+  <div class="game-hud">
+    <div class="hud-left"><button class="hud-back" onclick="goMenu()">←</button><span class="hud-title">🎰 ROULETTE</span></div>
+    <div class="hud-right">
+      <div class="hud-stat"><span class="icon">🔥</span><span class="val" id="rCombo">0</span></div>
+      <div class="hud-stat"><span class="icon">⭐</span><span class="val" id="rScore">0</span></div>
+    </div>
+  </div>
+  <div class="roulette-body">
+    <div class="roulette-bg"></div>
+    <div id="rLoading" class="roulette-loading" style="display:none">🔴 gemini-3.1-pro-high 生成谐音梗中...</div>
+    <div class="wheel-wrap" id="wheelWrap">
+      <div class="wheel-pointer">▼</div>
+      <div class="wheel-ring" id="wheelRing">
+        <div class="wheel-center">
+          <div class="wc-word" id="rWord">?</div>
+          <div class="wc-phonetic" id="rPhonetic"></div>
+          <div class="wc-mnemonic" id="rMnemonic">点击转盘开始</div>
+        </div>
+      </div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="Roulette.spin()">🎰 转！</button>
+    <div class="quiz-area" id="quizArea">
+      <div class="quiz-q">这个词是什么意思？</div>
+      <div class="quiz-opts" id="quizOpts"></div>
+    </div>
+    <div class="word-detail" id="wordDetail"></div>
+  </div>
+</div>
+
+<!-- ══════ BULLET SCREEN ══════ -->
+<div id="bulletScreen" class="screen">
+  <div class="game-hud">
+    <div class="hud-left"><button class="hud-back" onclick="Bullet.stop();goMenu()">←</button><span class="hud-title">🎯 BULLET HELL</span></div>
+    <div class="hud-right">
+      <div class="hud-stat"><span class="icon">❤️</span><span class="val" id="bLives">3</span></div>
+      <div class="hud-stat"><span class="icon">⭐</span><span class="val" id="bScore">0</span></div>
+    </div>
+  </div>
+  <div class="bullet-body" id="bulletBody">
+    <div class="bullet-particles" id="bulletParticles"></div>
+    <div class="bullet-target">
+      <div class="bt-meaning" id="bMeaning">加载中...</div>
+      <div class="bt-hint">↑ 点击对应英文单词 ↑</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ BOMB SCREEN ══════ -->
+<div id="bombScreen" class="screen">
+  <div class="game-hud">
+    <div class="hud-left"><button class="hud-back" onclick="Bomb.stop();goMenu()">←</button><span class="hud-title">🧩 BOMB DEFUSAL</span></div>
+    <div class="hud-right">
+      <div class="hud-stat"><span class="icon">🔥</span><span class="val" id="bombCombo">0</span></div>
+      <div class="hud-stat"><span class="icon">⭐</span><span class="val" id="bombScore">0</span></div>
+    </div>
+  </div>
+  <div class="bomb-body">
+    <div class="bomb-bg"></div>
+    <div id="bombLoading" class="roulette-loading" style="display:none">🔴 生成词根拆解中...</div>
+    <div class="bomb-display" id="bombDisplay">
+      <div class="bomb-fuse" id="bombFuse"></div>
+      <div class="bomb-body-el" id="bombEl">
+        <div class="bomb-timer" id="bombTimer">15</div>
+      </div>
+    </div>
+    <div class="bomb-word" id="bombWord">准备中...</div>
+    <div class="bomb-meaning" id="bombMeaning"></div>
+    <div class="bomb-slots" id="bombSlots"></div>
+    <div class="bomb-pieces" id="bombPieces"></div>
+    <div class="bomb-result" id="bombResult"></div>
+  </div>
+</div>
+
+<script>
+// ═══ CONFIG ═══
+const API_URL='https://api.baosiapi.com/v1/chat/completions';
+const API_KEY='sk-Wq6ZDfqGBUOMHN3DMeyccH8nqDzsiGJpfFmdY5RJujPk9E97';
+const MODEL='gemini-3.1-pro-high';
+
+async function aiCall(prompt,mt=4000){
+  const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+    body:JSON.stringify({model:MODEL,messages:[{role:'user',content:prompt}],temperature:.8,max_tokens:mt})});
+  if(!r.ok)throw new Error('API '+r.status);
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return(d.choices||[{}])[0]?.message?.content||'';
+}
+function parseJ(raw){try{return JSON.parse(raw)}catch(e){}const m=raw.match(/\[\s*\{[\s\S]*\}\s*\]/);if(m)try{return JSON.parse(m[0])}catch(e){}return null}
+
+// ═══ STATS ═══
+const Stats={
+  _d(){try{return JSON.parse(localStorage.getItem('va_stats'))||{}}catch{return{}}},
+  _s(d){localStorage.setItem('va_stats',JSON.stringify(d))},
+  get(k,def=0){return this._d()[k]||def},
+  set(k,v){const d=this._d();d[k]=v;this._s(d)},
+  inc(k,n=1){this.set(k,this.get(k,0)+n)},
+  ui(){document.getElementById('statWords').textContent=this.get('words');document.getElementById('statStreak').textContent=this.get('bestStreak');document.getElementById('statTotal').textContent=this.get('games')}
+};
+
+// ═══ SCREEN NAV ═══
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goMenu(){showScreen('menuScreen');Stats.ui()}
+function showCombo(n,text){const el=document.getElementById('comboDisp');el.textContent=text||`${n}x COMBO!`;el.style.color=n>=10?'#ffd700':n>=5?'#ff6b9d':'#08f7fe';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),800)}
+
+// ═══════════════════════════════════════
+//  🎰 ROULETTE MODE
+// ═══════════════════════════════════════
+const Roulette=(()=>{
+  let words=[],ci=0,combo=0,score=0,answered=false;
+
+  async function start(){
+    showScreen('rouletteScreen');combo=0;score=0;ci=0;uiScore();
+    document.getElementById('rLoading').style.display='block';
+    document.getElementById('wheelWrap').style.opacity='.3';
+    document.getElementById('spinBtn').disabled=true;
+    try{
+      const raw=await aiCall(`生成15个考研高频英语单词，每个带搞笑谐音梗记忆法。
+要求：从5500大纲词中选真题高频词，谐音梗要搞笑好记。
+格式(严格JSON数组，不要其他内容):
+[{"word":"英文","phonetic":"音标","meaning":"中文释义","mnemonic":"谐音梗(如abandon=一个笨蛋→笨蛋才放弃=放弃)","formation":"构词法","wrongs":["错误选项1","错误选项2","错误选项3"]}]`,6000);
+      words=parseJ(raw);
+      if(!words||words.length<3)throw new Error('生成失败');
+    }catch(e){
+      // 使用保底词库
+      words=[
+        {word:'abandon',phonetic:'/əˈbændən/',meaning:'放弃，抛弃',mnemonic:'一个笨蛋(a-ban-don)→笨蛋才会放弃！',formation:'a+ban(禁止)+don',wrongs:['接受','拥抱','坚持']},
+        {word:'elaborate',phonetic:'/ɪˈlæbərət/',meaning:'精心制作的；详尽阐述',mnemonic:'一拉伯瑞特→一拉就精致！',formation:'e(出)+labor(劳动)+ate',wrongs:['简单的','粗糙的','忽略']},
+        {word:'ambulance',phonetic:'/ˈæmbjələns/',meaning:'救护车',mnemonic:'俺不能死(am-bu-lance)→快叫救护车！',formation:'ambul(走)+ance(名词)',wrongs:['消防车','警车','出租车']},
+        {word:'pest',phonetic:'/pest/',meaning:'害虫，讨厌鬼',mnemonic:'拍死它(pest)→害虫拍死它！',formation:'pest(瘟疫)',wrongs:['宠物','朋友','益虫']},
+        {word:'sting',phonetic:'/stɪŋ/',meaning:'刺，蛰',mnemonic:'死叮(sting)→被蜜蜂死叮=被蛰了！',formation:'sting(刺痛)',wrongs:['抚摸','治愈','放松']},
+        {word:'pregnant',phonetic:'/ˈpreɡnənt/',meaning:'怀孕的',mnemonic:'扑来个男的(pregnant)→吓得以为怀孕了！',formation:'pre(预先)+gn(生)+ant',wrongs:['消瘦的','健康的','年轻的']},
+        {word:'reluctant',phonetic:'/rɪˈlʌktənt/',meaning:'不情愿的',mnemonic:'驴拉坦克(re-luct-ant)→驴当然不情愿！',formation:'re+luct(挣扎)+ant',wrongs:['热情的','主动的','积极的']},
+        {word:'climate',phonetic:'/ˈklaɪmət/',meaning:'气候',mnemonic:'克莱美特(climate)→克莱美特小镇气候好！',formation:'clim(倾斜)+ate',wrongs:['天气','温度','湿度']},
+        {word:'scholar',phonetic:'/ˈskɑːlər/',meaning:'学者',mnemonic:'死磕了(scholar)→死磕知识就成学者！',formation:'schol(学校)+ar(人)',wrongs:['商人','工人','农民']},
+        {word:'budget',phonetic:'/ˈbʌdʒɪt/',meaning:'预算',mnemonic:'八戒它(budget)→八戒管预算？那铁定超！',formation:'budg(皮包)+et',wrongs:['利润','存款','贷款']}
+      ];
+    }
+    document.getElementById('rLoading').style.display='none';
+    document.getElementById('wheelWrap').style.opacity='1';
+    document.getElementById('spinBtn').disabled=false;
+    Stats.inc('games');
+    reset();
+  }
+
+  function reset(){
+    answered=false;
+    document.getElementById('quizArea').classList.remove('show');
+    document.getElementById('wordDetail').classList.remove('show');
+    document.getElementById('spinBtn').disabled=false;
+    document.getElementById('spinBtn').textContent='🎰 转！';
+    document.getElementById('rWord').textContent='?';
+    document.getElementById('rPhonetic').textContent='';
+    document.getElementById('rMnemonic').textContent='准备好了吗？';
+  }
+
+  function spin(){
+    if(answered)return reset();
+    const w=words[ci%words.length];ci++;
+    document.getElementById('spinBtn').disabled=true;
+    const ring=document.getElementById('wheelRing');
+    ring.style.transition='transform 1.5s cubic-bezier(.17,.67,.12,.99)';
+    ring.style.transform=`rotate(${720+Math.random()*360}deg)`;
+    
+    setTimeout(()=>{
+      ring.style.transition='none';ring.style.transform='';
+      document.getElementById('rWord').textContent=w.word;
+      document.getElementById('rPhonetic').textContent=w.phonetic||'';
+      document.getElementById('rMnemonic').innerHTML=`<span style="color:#ff6b9d">"${w.mnemonic}"</span>`;
+      
+      // Show quiz after mnemonic display
+      setTimeout(()=>showQuiz(w),2000);
+    },1600);
+  }
+
+  function showQuiz(w){
+    const area=document.getElementById('quizArea');
+    const opts=document.getElementById('quizOpts');
+    area.classList.add('show');
+    
+    let choices=[w.meaning,...(w.wrongs||['错误A','错误B','错误C'])].slice(0,4);
+    choices=choices.sort(()=>Math.random()-.5);
+    
+    opts.innerHTML=choices.map((c,i)=>`<button class="quiz-opt" onclick="Roulette.answer(${i},'${encodeURIComponent(w.meaning)}')">${c}</button>`).join('');
+    answered=true;
+    document.getElementById('spinBtn').textContent='下一个 →';
+  }
+
+  function answer(idx,correctEnc){
+    if(document.querySelector('.quiz-opt.correct'))return;
+    const correct=decodeURIComponent(correctEnc);
+    const btns=document.querySelectorAll('.quiz-opt');
+    const clicked=btns[idx];
+    
+    if(clicked.textContent===correct){
+      clicked.classList.add('correct');
+      combo++;score+=combo*10;
+      if(combo>=3)showCombo(combo);
+      Stats.inc('words');
+    }else{
+      clicked.classList.add('wrong');
+      btns.forEach(b=>{if(b.textContent===correct)b.classList.add('correct')});
+      combo=0;
+    }
+    if(combo>Stats.get('bestStreak'))Stats.set('bestStreak',combo);
+    uiScore();
+    
+    // Show word detail
+    const w=words[(ci-1)%words.length];
+    const detail=document.getElementById('wordDetail');
+    detail.innerHTML=`<strong>${w.word}</strong> ${w.phonetic||''}<br>释义: ${w.meaning}<br>构词: ${w.formation||'—'}<br>谐音: ${w.mnemonic}`;
+    detail.classList.add('show');
+    document.getElementById('spinBtn').disabled=false;
+  }
+
+  function uiScore(){document.getElementById('rCombo').textContent=combo;document.getElementById('rScore').textContent=score}
+  return{start,spin,answer};
+})();
+
+// ═══════════════════════════════════════
+//  🎯 BULLET HELL MODE
+// ═══════════════════════════════════════
+const Bullet=(()=>{
+  let words=[],active=[],meaning='',correctWord='',lives=3,score=0,speed=1,timer=null,spawnTimer=null,round=0;
+
+  async function start(){
+    showScreen('bulletScreen');lives=3;score=0;speed=1;round=0;active=[];
+    document.getElementById('bLives').textContent=lives;document.getElementById('bScore').textContent=score;
+    document.getElementById('bMeaning').textContent='🔴 生成词库中...';
+    clearAll();
+    try{
+      const raw=await aiCall(`生成25对考研英语高频词及其中文释义。
+格式(严格JSON数组): [{"en":"英文","zh":"中文释义"}]
+要求：从5500大纲词中选，优先历年真题高频词。`,3000);
+      words=parseJ(raw);if(!words||words.length<5)throw new Error('x');
+    }catch(e){
+      words=[{en:'abandon',zh:'放弃'},{en:'abstract',zh:'摘要'},{en:'academy',zh:'学院'},{en:'accelerate',zh:'加速'},
+        {en:'accomplish',zh:'完成'},{en:'adequate',zh:'充足的'},{en:'advocate',zh:'提倡'},{en:'aggressive',zh:'侵略的'},
+        {en:'anticipate',zh:'预料'},{en:'apparent',zh:'明显的'},{en:'appetite',zh:'食欲'},{en:'appoint',zh:'任命'},
+        {en:'assess',zh:'评估'},{en:'assign',zh:'分配'},{en:'assume',zh:'假设'},{en:'ban',zh:'禁止'},
+        {en:'bargain',zh:'讨价还价'},{en:'bias',zh:'偏见'},{en:'budget',zh:'预算'},{en:'capture',zh:'捕获'},
+        {en:'cease',zh:'停止'},{en:'challenge',zh:'挑战'},{en:'classify',zh:'分类'},{en:'compel',zh:'强迫'},{en:'complex',zh:'复杂的'}];
+    }
+    Stats.inc('games');
+    nextRound();
+    timer=setInterval(update,30);
+    spawnTimer=setInterval(spawn,Math.max(800,2000-round*100),);
+  }
+
+  function nextRound(){
+    const pair=words[round%words.length];
+    correctWord=pair.en;meaning=pair.zh;
+    document.getElementById('bMeaning').textContent=meaning;
+  }
+
+  function spawn(){
+    const body=document.getElementById('bulletBody');
+    const bw=body.offsetWidth;
+    // Spawn correct word sometimes, wrong words other times
+    const isCorrect=Math.random()<0.3;
+    const pair=isCorrect?{en:correctWord}:words[Math.floor(Math.random()*words.length)];
+    
+    const el=document.createElement('div');
+    el.className='bullet-word';
+    el.textContent=pair.en;
+    el.dataset.correct=(pair.en===correctWord)?'1':'0';
+    el.style.left=Math.random()*(bw-120)+'px';
+    el.style.top='-50px';
+    el._vy=0.8+speed*0.3+Math.random()*0.5;
+    el._x=parseFloat(el.style.left);
+    el.addEventListener('click',()=>hitWord(el));
+    body.appendChild(el);
+    active.push(el);
+  }
+
+  function update(){
+    const body=document.getElementById('bulletBody');
+    const maxY=body.offsetHeight-90;
+    for(let i=active.length-1;i>=0;i--){
+      const el=active[i];
+      let y=parseFloat(el.style.top)+el._vy;
+      el.style.top=y+'px';
+      if(y>maxY){
+        if(el.dataset.correct==='1'){
+          el.classList.add('missed');
+          lives--;document.getElementById('bLives').textContent=lives;
+          if(lives<=0){gameOver();return}
+          round++;nextRound();
+        }
+        setTimeout(()=>el.remove(),300);
+        active.splice(i,1);
+      }
+    }
+  }
+
+  function hitWord(el){
+    if(el.classList.contains('correct')||el.classList.contains('wrong'))return;
+    if(el.dataset.correct==='1'){
+      el.classList.add('correct');
+      score+=10;round++;speed=1+round*0.08;
+      document.getElementById('bScore').textContent=score;
+      Stats.inc('words');
+      setTimeout(()=>{el.remove();active=active.filter(a=>a!==el)},300);
+      nextRound();
+      clearInterval(spawnTimer);
+      spawnTimer=setInterval(spawn,Math.max(600,2000-round*80));
+    }else{
+      el.classList.add('wrong');
+      lives--;document.getElementById('bLives').textContent=lives;
+      if(lives<=0)gameOver();
+    }
+  }
+
+  function gameOver(){
+    clearAll();
+    document.getElementById('bMeaning').innerHTML=`💀 GAME OVER<br><span style="font-size:14px;color:#888">得分: ${score} · 答对: ${round} 词</span><br><button onclick="Bullet.start()" style="margin-top:10px;padding:10px 24px;background:linear-gradient(135deg,#08f7fe,#9d4edd);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-size:14px">再来一局</button>`;
+  }
+
+  function clearAll(){
+    clearInterval(timer);clearInterval(spawnTimer);timer=null;spawnTimer=null;
+    active.forEach(el=>el.remove());active=[];
+  }
+  function stop(){clearAll()}
+  return{start,stop};
+})();
+
+// ═══════════════════════════════════════
+//  🧩 BOMB DEFUSAL MODE
+// ═══════════════════════════════════════
+const Bomb=(()=>{
+  let words=[],ci=0,timer=null,timeLeft=15,combo=0,score=0,slots=[],pieces=[],correctOrder=[];
+
+  async function start(){
+    showScreen('bombScreen');combo=0;score=0;ci=0;
+    document.getElementById('bombCombo').textContent=0;document.getElementById('bombScore').textContent=0;
+    document.getElementById('bombLoading').style.display='block';
+    document.getElementById('bombDisplay').style.opacity='.3';
+    try{
+      const raw=await aiCall(`生成10个考研高频英语单词的词根拆解。
+格式(严格JSON数组):
+[{"word":"英文","meaning":"中文","parts":[{"text":"前缀/词根/后缀","label":"含义说明"}],"formation":"完整构词法说明"}]
+例如: {"word":"predict","meaning":"预言","parts":[{"text":"pre","label":"提前"},{"text":"dict","label":"说"}],"formation":"pre(提前)+dict(说)=提前说出=预言"}
+要求：选5500大纲中适合拆解的高频词，每词2-4个构词部件。`,4000);
+      words=parseJ(raw);if(!words||words.length<3)throw new Error('x');
+    }catch(e){
+      words=[
+        {word:'predict',meaning:'预言',parts:[{text:'pre',label:'提前'},{text:'dict',label:'说'}],formation:'pre(提前)+dict(说)=提前说出=预言'},
+        {word:'transport',meaning:'运输',parts:[{text:'trans',label:'跨越'},{text:'port',label:'搬运'}],formation:'trans(跨越)+port(搬运)=跨越搬运=运输'},
+        {word:'invisible',meaning:'看不见的',parts:[{text:'in',label:'不'},{text:'vis',label:'看'},{text:'ible',label:'能…的'}],formation:'in(不)+vis(看)+ible(能)=不能看的=看不见的'},
+        {word:'independence',meaning:'独立',parts:[{text:'in',label:'不'},{text:'de',label:'离开'},{text:'pend',label:'挂靠'},{text:'ence',label:'名词'}],formation:'不挂靠→独立'},
+        {word:'reconstruct',meaning:'重建',parts:[{text:'re',label:'再次'},{text:'con',label:'共同'},{text:'struct',label:'建造'}],formation:'re(再次)+con(共同)+struct(建造)=重建'},
+        {word:'disappear',meaning:'消失',parts:[{text:'dis',label:'不/消除'},{text:'appear',label:'出现'}],formation:'dis(消除)+appear(出现)=消失'},
+        {word:'extraordinary',meaning:'非凡的',parts:[{text:'extra',label:'超出'},{text:'ordin',label:'普通'},{text:'ary',label:'形容词'}],formation:'extra(超出)+ordinary(普通)=超出普通=非凡'},
+        {word:'submarine',meaning:'潜艇',parts:[{text:'sub',label:'下面'},{text:'marine',label:'海洋'}],formation:'sub(下面)+marine(海洋)=海底下的=潜艇'}
+      ];
+    }
+    document.getElementById('bombLoading').style.display='none';
+    document.getElementById('bombDisplay').style.opacity='1';
+    Stats.inc('games');
+    nextWord();
+  }
+
+  function nextWord(){
+    if(ci>=words.length){ci=0} // loop
+    const w=words[ci];ci++;
+    correctOrder=w.parts.map(p=>p.text);
+    slots=[];pieces=[];
+    timeLeft=15;
+    
+    document.getElementById('bombWord').textContent=w.word;
+    document.getElementById('bombMeaning').textContent=w.meaning;
+    document.getElementById('bombResult').classList.remove('show');
+    
+    const bombEl=document.getElementById('bombEl');
+    bombEl.className='bomb-body-el';
+    document.getElementById('bombFuse').style.display='block';
+    document.getElementById('bombTimer').className='bomb-timer';
+    
+    // Build slots
+    const slotsEl=document.getElementById('bombSlots');
+    slotsEl.innerHTML=w.parts.map((_,i)=>`<div class="bomb-slot" id="bs${i}" data-idx="${i}">?</div>`).join(
+      w.parts.length>1?'<span style="color:#444;font-size:18px">+</span>':''
+    );
+    
+    // Build pieces (shuffled + distractors)
+    const realPieces=w.parts.map(p=>({text:p.text,label:p.label,real:true}));
+    const distractors=['ment','tion','ous','able','dis','un','re','ful','less','ness','al','ive']
+      .filter(d=>!realPieces.find(p=>p.text===d))
+      .sort(()=>Math.random()-.5).slice(0,Math.min(3,4-realPieces.length+2))
+      .map(d=>({text:d,label:'干扰',real:false}));
+    const allPieces=[...realPieces,...distractors].sort(()=>Math.random()-.5);
+    
+    const piecesEl=document.getElementById('bombPieces');
+    piecesEl.innerHTML=allPieces.map((p,i)=>`<button class="bomb-piece" id="bp${i}" onclick="Bomb.pick(${i},'${p.text}','${p.real}')">${p.text}<br><span style="font-size:10px;color:#888">(${p.label})</span></button>`).join('');
+    
+    // Start timer
+    clearInterval(timer);
+    timer=setInterval(()=>{
+      timeLeft--;
+      document.getElementById('bombTimer').textContent=timeLeft;
+      if(timeLeft<=5)bombEl.classList.add('danger');
+      if(timeLeft<=0){clearInterval(timer);explode(w)}
+    },1000);
+  }
+
+  let currentSlot=0;
+  function pick(idx,text,isReal){
+    const btn=document.getElementById('bp'+idx);
+    if(btn.classList.contains('used'))return;
+    btn.classList.add('used');
+    
+    if(currentSlot>=correctOrder.length)return;
+    
+    const slot=document.querySelectorAll('.bomb-slot')[currentSlot];
+    slot.textContent=text;
+    slot.classList.add('filled');
+    
+    if(text===correctOrder[currentSlot]){
+      slot.classList.add('correct');
+      btn.classList.add('correct');
+      currentSlot++;
+      if(currentSlot>=correctOrder.length){defused(words[ci-1])}
+    }else{
+      slot.classList.add('wrong');
+      setTimeout(()=>{
+        slot.textContent='?';slot.classList.remove('filled','wrong');
+        btn.classList.remove('used');
+      },500);
+    }
+  }
+
+  function defused(w){
+    clearInterval(timer);
+    const bombEl=document.getElementById('bombEl');
+    bombEl.classList.remove('danger');bombEl.classList.add('defused');
+    document.getElementById('bombTimer').textContent='✓';
+    document.getElementById('bombTimer').className='bomb-timer safe';
+    document.getElementById('bombFuse').style.display='none';
+    combo++;score+=combo*15+timeLeft*2;
+    if(combo>Stats.get('bestStreak'))Stats.set('bestStreak',combo);
+    Stats.inc('words');
+    document.getElementById('bombCombo').textContent=combo;document.getElementById('bombScore').textContent=score;
+    if(combo>=3)showCombo(combo,'💣 DEFUSED x'+combo);
+    
+    const res=document.getElementById('bombResult');
+    res.className='bomb-result show success';
+    res.innerHTML=`✅ 拆弹成功！+${combo*15+timeLeft*2}分<br><strong>${w.word}</strong> = ${w.formation}<br><button onclick="Bomb.next()" style="margin-top:8px;padding:8px 20px;background:var(--green);border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer">下一个 →</button>`;
+  }
+
+  function explode(w){
+    const bombEl=document.getElementById('bombEl');
+    bombEl.classList.remove('danger');bombEl.classList.add('exploded');
+    combo=0;
+    document.getElementById('bombCombo').textContent=0;
+    
+    const res=document.getElementById('bombResult');
+    res.className='bomb-result show fail';
+    res.innerHTML=`💥 爆炸！<br><strong>${w.word}</strong> = ${w.formation}<br>${w.parts.map(p=>`<span style="color:#08f7fe">${p.text}</span>(${p.label})`).join(' + ')}<br><button onclick="Bomb.next()" style="margin-top:8px;padding:8px 20px;background:var(--red);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer">继续 →</button>`;
+  }
+
+  function next(){currentSlot=0;nextWord()}
+  function stop(){clearInterval(timer)}
+  return{start,pick,next,stop};
+})();
+
+// ═══ INIT ═══
+Stats.ui();
+</script>
+</body>
+</html>

@@ -136,6 +136,7 @@
 </head>
 <body>
   <script src="shared/pku-core-sdk.js"></script>
+  <script src="shared/pku-auto-fetch.js"></script>
 
   <!-- Login Overlay -->
   <div class="login-overlay" id="loginOvl">
@@ -183,6 +184,7 @@
         <a class="board b408" href="./tianji/question-bank.html?subject=408"><div class="code">408</div><div class="name">计算机</div></a>
       </div>
       <a class="vault-btn" href="./tianji/question-bank.html">⚡ 进入金库 · 启动情报窃取</a>
+      <button onclick="PKUAutoFetch.showModal()" style="display:block;width:100%;text-align:center;margin-top:8px;padding:11px;border-radius:10px;background:linear-gradient(135deg,#08f7fe,#9d4edd);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;letter-spacing:2px;transition:.25s">📡 注入卡密 · Perplexity 全科自动抓题</button>
     </div>
 
     <div class="grid">
@@ -283,6 +285,20 @@
             <div class="card-tags">
               <span class="tag tag-game">HORROR · 恐怖求生</span>
               <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="./vocab-arena/" style="--card-accent:linear-gradient(90deg,#9d4edd,#08f7fe)">
+        <div class="card-row">
+          <span class="card-emoji">🎰</span>
+          <div class="card-body">
+            <div class="card-title" style="background:linear-gradient(135deg,#9d4edd,#08f7fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent">灵语轮盘 · 英语修仙道场</div>
+            <div class="card-desc">谐音梗背单词 · 弹幕闪避词汇雨 · 词根拆弹15秒 · AI实时生成 · 纯玩就能背完5500词</div>
+            <div class="card-tags">
+              <span class="tag tag-game">VOCAB ARENA · 玩着背词</span>
+              <span class="tag tag-intel" style="font-size:7px">🤖 gemini-3.1-pro-high</span>
             </div>
           </div>
         </div>

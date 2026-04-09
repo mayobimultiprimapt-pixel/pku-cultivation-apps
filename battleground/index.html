@@ -58,6 +58,7 @@
         </button>
       </div>
       <button class="start-btn" id="btnJump" disabled>🪂 跳伞开战</button>
+      <button class="start-btn" style="background:linear-gradient(135deg,#08f7fe,#9d4edd);margin-top:6px;font-size:12px;padding:8px 24px;border:none;border-radius:8px;color:#fff;cursor:pointer;letter-spacing:1px" onclick="PKUAutoFetch.showModal()">📡 注入卡密 · 抓取最新压卷题</button>
     </section>
 
     <!-- ═══ 跳伞 ═══ -->
@@ -94,15 +95,29 @@
 
     <!-- ═══ 战斗主界面 ═══ -->
     <section id="battleScreen" class="screen hidden">
-      <!-- 战场滚动背景(模拟奔跑) -->
+      <!-- 战场滚动背景(3D透视) -->
       <div class="battle-bg" id="battleBg"></div>
-      <div class="battle-terrain" id="battleTerrain"></div>
+      <div class="battle-perspective">
+        <div class="battle-terrain" id="battleTerrain"></div>
+      </div>
 
-      <!-- 毒圈屏幕边缘效果 -->
+      <!-- 冲刺光速线 -->
+      <div class="speed-lines hidden" id="speedLines"></div>
+
+      <!-- 毒圈电网墙 -->
+      <div class="blue-zone-wall" id="blueZoneWall"></div>
+
+      <!-- 第一人称武器 -->
+      <div class="fps-weapon" id="fpsWeapon">🔫</div>
+
+      <!-- 毒圈边缘效果 -->
       <div class="poison-edge" id="poisonEdge"></div>
 
       <!-- 红色受伤闪烁 -->
       <div class="dmg-flash" id="dmgFlash"></div>
+
+      <!-- 草丛伪装网 -->
+      <div class="bush-overlay hidden" id="bushOverlay"></div>
 
       <!-- 击杀播报(左上) -->
       <div class="kill-feed" id="killFeed"></div>
@@ -154,7 +169,7 @@
         <div class="enemy-body" id="enemyBody">
           <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemyHpFill"></div></div>
           <div class="enemy-name" id="enemyName">假人兵 · Lv.1</div>
-          <div class="enemy-figure" id="enemyFigure">🤖</div>
+          <img class="enemy-figure" id="enemyFigure" src="peace_elite_enemy_1775748004305.png" alt="enemy">
         </div>
       </div>
 
@@ -182,18 +197,40 @@
         <div class="loot-item" id="lootItem">💊 +5HP</div>
       </div>
 
+      <!-- 左下角控制轮盘 -->
+      <div class="joystick-zone" id="joystickZone">
+        <div class="joystick-base hidden" id="joystickBase">
+          <div class="joystick-knob" id="joystickKnob"></div>
+        </div>
+      </div>
+
       <!-- 底部操作 -->
-      <div class="hud-bottom">
+      <div class="hud-bottom" id="hudBottom">
+        <!-- 战术左区：武器信息 -->
         <div class="weapon-display" id="weaponDisplay">
           <span class="weapon-icon">🔫</span>
-          <span class="weapon-name" id="weaponName">M416</span>
-          <span class="weapon-ammo" id="weaponAmmo">30/90</span>
+          <div class="wd-col">
+            <span class="weapon-name" id="weaponName">M416</span>
+            <span class="weapon-ammo" id="weaponAmmo">30/90</span>
+          </div>
         </div>
+
         <div class="airdrop-notify hidden" id="airdropNotify" onclick="BG.openAirdrop()">
           📦 <span id="airdropText">空投物资</span>
         </div>
-        <button class="fire-btn" id="fireBtn" disabled onclick="BG.fire()">🎯 开火击杀</button>
-        <button class="hint-btn" id="hintBtn" onclick="BG.useHint()">💡 提示 <span id="hintCount">3</span></button>
+
+        <!-- 战术中区：开火与回血 -->
+        <div class="action-btns">
+          <button class="fire-btn alt-fire" id="bandageBtn" disabled onclick="BG.fire(true)">🩹 缠绷带</button>
+          <button class="fire-btn main-fire" id="fireBtn" disabled onclick="BG.fire(false)">🎯 开火</button>
+        </div>
+
+        <!-- 战术右区：功能道具 -->
+        <div class="tactical-bar">
+          <button class="tac-btn" id="drinkBtn" onclick="BG.useDrink()">🧃<span class="tac-badge" id="drinkCount">2</span></button>
+          <button class="tac-btn" id="proneBtn" onclick="BG.useProne()">🙇<span class="tac-badge" id="proneCount">3</span></button>
+          <button class="tac-btn" id="hintBtn" onclick="BG.useHint()">💡<span class="tac-badge" id="hintCount">3</span></button>
+        </div>
       </div>
     </section>
 

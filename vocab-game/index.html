@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>词汇仙途 · 考研英语修炼场</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg-deep: #0a0a1a;
+  --bg-card: rgba(20,20,50,0.85);
+  --bg-glass: rgba(255,255,255,0.04);
+  --accent-purple: #a855f7;
+  --accent-blue: #6366f1;
+  --accent-cyan: #22d3ee;
+  --accent-green: #34d399;
+  --accent-amber: #fbbf24;
+  --accent-rose: #fb7185;
+  --accent-orange: #f97316;
+  --text-primary: #f0f0ff;
+  --text-secondary: rgba(240,240,255,0.6);
+  --text-dim: rgba(240,240,255,0.35);
+  --glow-purple: 0 0 30px rgba(168,85,247,0.3);
+  --glow-cyan: 0 0 30px rgba(34,211,238,0.3);
+  --glow-green: 0 0 30px rgba(52,211,153,0.3);
+  --glow-amber: 0 0 30px rgba(251,191,36,0.3);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === BACKGROUND PARTICLES === */
+.bg-particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(34,211,238,0.05) 0%, transparent 50%);
+}
+
+.floating-orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+  animation: floatOrb 8s ease-in-out infinite;
+}
+.floating-orb:nth-child(1) { width:300px;height:300px;top:-50px;left:-80px;background:radial-gradient(circle,rgba(168,85,247,0.08),transparent 70%);animation-duration:10s; }
+.floating-orb:nth-child(2) { width:200px;height:200px;bottom:10%;right:-40px;background:radial-gradient(circle,rgba(34,211,238,0.06),transparent 70%);animation-duration:12s;animation-delay:-3s; }
+.floating-orb:nth-child(3) { width:250px;height:250px;top:40%;left:50%;background:radial-gradient(circle,rgba(99,102,241,0.05),transparent 70%);animation-duration:14s;animation-delay:-6s; }
+
+@keyframes floatOrb {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-20px) scale(1.1); }
+  66% { transform: translate(-20px,30px) scale(0.9); }
+}
+
+/* === MAIN CONTAINER === */
+.app-container {
+  position: relative; z-index: 1;
+  max-width: 520px; margin: 0 auto; padding: 16px;
+  min-height: 100vh;
+}
+
+/* === HEADER === */
+.header {
+  text-align: center; padding: 24px 0 16px;
+}
+.header h1 {
+  font-size: 28px; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 4px;
+  text-shadow: none;
+}
+.header .subtitle {
+  font-size: 13px; color: var(--text-secondary); margin-top: 6px; letter-spacing: 2px;
+}
+
+/* === PLAYER STATS BAR === */
+.stats-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); padding: 14px 18px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+.stat-item { text-align: center; flex: 1; }
+.stat-item .stat-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
+.stat-item .stat-value {
+  font-size: 20px; font-weight: 700; margin-top: 2px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-item .stat-value.level-text {
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-size: 16px;
+}
+
+/* === XP BAR === */
+.xp-bar-container {
+  margin-bottom: 20px;
+}
+.xp-bar-bg {
+  height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+  transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+  box-shadow: 0 0 12px rgba(168,85,247,0.4);
+}
+.xp-bar-text {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-dim); margin-top: 4px;
+}
+
+/* === MODE CARDS === */
+.mode-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 20px;
+}
+.mode-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); padding: 20px 14px;
+  text-align: center; cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative; overflow: hidden;
+}
+.mode-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.02));
+  transition: opacity 0.3s;
+}
+.mode-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,0.12);
+}
+.mode-card:active { transform: translateY(-1px); }
+.mode-card .mode-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+.mode-card .mode-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.mode-card .mode-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.mode-card .mode-badge {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; padding: 2px 8px; border-radius: 20px;
+  background: rgba(168,85,247,0.2); color: var(--accent-purple);
+  font-weight: 500;
+}
+
+.mode-card.mode-roots { border-color: rgba(168,85,247,0.15); }
+.mode-card.mode-roots:hover { box-shadow: var(--glow-purple); border-color: rgba(168,85,247,0.3); }
+.mode-card.mode-familiar { border-color: rgba(34,211,238,0.15); }
+.mode-card.mode-familiar:hover { box-shadow: var(--glow-cyan); border-color: rgba(34,211,238,0.3); }
+.mode-card.mode-journal { border-color: rgba(52,211,153,0.15); }
+.mode-card.mode-journal:hover { box-shadow: var(--glow-green); border-color: rgba(52,211,153,0.3); }
+.mode-card.mode-spelling { border-color: rgba(251,191,36,0.15); }
+.mode-card.mode-spelling:hover { box-shadow: var(--glow-amber); border-color: rgba(251,191,36,0.3); }
+
+/* === SCREENS === */
+.screen {
+  display: none;
+  animation: fadeSlideIn 0.4s ease;
+}
+.screen.active { display: block; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === GAME SCREEN === */
+.game-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.back-btn {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary); border-radius: var(--radius-sm);
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.game-title {
+  font-size: 16px; font-weight: 700;
+}
+.game-progress {
+  font-size: 13px; color: var(--text-secondary);
+}
+
+/* Score/Lives */
+.game-info-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  margin-bottom: 16px; font-size: 13px;
+}
+.game-score { color: var(--accent-cyan); font-weight: 700; }
+.game-streak { color: var(--accent-amber); }
+.game-lives span { color: var(--accent-rose); }
+
+/* Question Card */
+.question-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); padding: 28px 22px;
+  margin-bottom: 16px;
+  text-align: center;
+  min-height: 160px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  position: relative;
+  transition: border-color 0.3s;
+}
+.question-card.correct-flash {
+  border-color: var(--accent-green) !important;
+  box-shadow: var(--glow-green);
+}
+.question-card.wrong-flash {
+  border-color: var(--accent-rose) !important;
+  box-shadow: 0 0 30px rgba(251,113,133,0.3);
+  animation: shakeX 0.4s ease;
+}
+@keyframes shakeX {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.question-word {
+  font-size: 32px; font-weight: 900; letter-spacing: 2px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff, rgba(255,255,255,0.8));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.question-roots {
+  font-size: 14px; color: var(--accent-purple); margin-bottom: 12px;
+  letter-spacing: 1px; font-weight: 500;
+}
+.question-hint {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  max-width: 90%;
+}
+.question-sentence {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.8;
+  margin-top: 10px; font-style: italic;
+}
+.question-sentence .blank {
+  display: inline-block; min-width: 80px;
+  border-bottom: 2px dashed var(--accent-cyan);
+  color: var(--accent-cyan); font-style: normal; font-weight: 600;
+  padding: 0 4px;
+}
+.question-label {
+  font-size: 11px; color: var(--text-dim); letter-spacing: 2px;
+  margin-bottom: 12px; text-transform: uppercase;
+}
+
+/* Choices */
+.choices-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 16px;
+}
+.choice-btn {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px; font-size: 14px;
+  color: var(--text-primary); cursor: pointer;
+  transition: all 0.25s; font-family: inherit;
+  text-align: center; line-height: 1.4;
+}
+.choice-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+.choice-btn.selected-correct {
+  background: rgba(52,211,153,0.15) !important;
+  border-color: var(--accent-green) !important;
+  color: var(--accent-green) !important;
+  box-shadow: var(--glow-green);
+}
+.choice-btn.selected-wrong {
+  background: rgba(251,113,133,0.15) !important;
+  border-color: var(--accent-rose) !important;
+  color: var(--accent-rose) !important;
+}
+.choice-btn.reveal-correct {
+  background: rgba(52,211,153,0.1) !important;
+  border-color: rgba(52,211,153,0.4) !important;
+  color: var(--accent-green) !important;
+}
+.choice-btn:disabled { pointer-events: none; }
+
+/* Spelling Input */
+.spelling-input-area {
+  margin-bottom: 16px; text-align: center;
+}
+.spelling-input {
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px; font-size: 20px; font-weight: 600;
+  color: var(--text-primary); text-align: center;
+  width: 100%; max-width: 300px; font-family: inherit;
+  letter-spacing: 3px; outline: none;
+  transition: border-color 0.3s;
+}
+.spelling-input:focus {
+  border-color: var(--accent-amber);
+  box-shadow: var(--glow-amber);
+}
+.spelling-input.correct { border-color: var(--accent-green) !important; box-shadow: var(--glow-green); }
+.spelling-input.wrong { border-color: var(--accent-rose) !important; animation: shakeX 0.4s; }
+.spelling-submit {
+  margin-top: 12px;
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-orange));
+  border: none; border-radius: var(--radius-sm);
+  padding: 12px 32px; font-size: 15px; font-weight: 600;
+  color: #fff; cursor: pointer; font-family: inherit;
+  transition: all 0.3s;
+}
+.spelling-submit:hover { transform: translateY(-2px); box-shadow: var(--glow-amber); }
+
+.hint-btn {
+  background: none; border: 1px solid rgba(251,191,36,0.3);
+  color: var(--accent-amber); border-radius: 20px;
+  padding: 6px 16px; font-size: 12px; cursor: pointer;
+  font-family: inherit; margin-top: 8px; transition: all 0.2s;
+}
+.hint-btn:hover { background: rgba(251,191,36,0.1); }
+
+/* Explanation Banner */
+.explanation {
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.15);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.7; color: var(--text-secondary);
+  animation: fadeSlideIn 0.3s ease;
+}
+.explanation strong { color: var(--accent-cyan); }
+.explanation .exp-word { color: var(--accent-purple); font-weight: 700; }
+
+/* Next Button */
+.next-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  border: none; border-radius: var(--radius-sm);
+  padding: 14px; font-size: 15px; font-weight: 600;
+  color: #fff; cursor: pointer; font-family: inherit;
+  transition: all 0.3s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: var(--glow-purple); }
+
+/* === RESULT SCREEN === */
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius); padding: 32px 24px;
+  text-align: center; margin-bottom: 16px;
+}
+.result-icon { font-size: 56px; margin-bottom: 16px; display: block; }
+.result-title { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+.result-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+.result-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;
+}
+.result-stat {
+  background: var(--bg-glass); border-radius: var(--radius-sm); padding: 14px 8px;
+}
+.result-stat .rs-val { font-size: 24px; font-weight: 900; }
+.result-stat .rs-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.result-stat.stat-correct .rs-val { color: var(--accent-green); }
+.result-stat.stat-wrong .rs-val { color: var(--accent-rose); }
+.result-stat.stat-xp .rs-val {
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.result-xp-gain {
+  font-size: 14px; color: var(--accent-amber); margin-bottom: 20px; font-weight: 600;
+}
+
+/* Review List */
+.review-section { margin-top: 20px; text-align: left; }
+.review-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
+.review-item {
+  background: var(--bg-glass); border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; border-left: 3px solid var(--accent-green);
+}
+.review-item.wrong { border-left-color: var(--accent-rose); }
+.review-item .ri-word { font-weight: 700; min-width: 90px; }
+.review-item .ri-meaning { color: var(--text-secondary); }
+
+/* === LEVEL UP MODAL === */
+.level-up-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.7);
+  display: none; justify-content: center; align-items: center;
+  animation: fadeIn 0.3s;
+}
+.level-up-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+.level-up-card {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-amber);
+  border-radius: var(--radius); padding: 40px 32px;
+  text-align: center; max-width: 340px;
+  box-shadow: 0 0 60px rgba(251,191,36,0.2);
+  animation: levelPop 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes levelPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.level-up-card .lu-icon { font-size: 64px; margin-bottom: 16px; }
+.level-up-card .lu-text {
+  font-size: 14px; color: var(--accent-amber); letter-spacing: 3px; margin-bottom: 8px;
+}
+.level-up-card .lu-level { font-size: 28px; font-weight: 900; margin-bottom: 16px; }
+.level-up-card .lu-btn {
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-orange));
+  border: none; border-radius: var(--radius-sm);
+  padding: 12px 32px; font-size: 14px; font-weight: 600;
+  color: #fff; cursor: pointer; font-family: inherit;
+}
+
+/* === FOOTER === */
+.footer {
+  text-align: center; padding: 20px 0;
+  font-size: 11px; color: var(--text-dim);
+}
+
+/* === COMBO ANIMATION === */
+.combo-popup {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 48px; font-weight: 900; z-index: 50;
+  pointer-events: none; opacity: 0;
+  text-shadow: 0 0 30px rgba(251,191,36,0.5);
+}
+.combo-popup.show {
+  animation: comboPop 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes comboPop {
+  0% { transform: translate(-50%,-50%) scale(0); opacity:0; }
+  30% { transform: translate(-50%,-50%) scale(1.3); opacity:1; }
+  100% { transform: translate(-50%,-80%) scale(0.8); opacity:0; }
+}
+
+/* === XP FLOAT === */
+.xp-float {
+  position: fixed; z-index: 50;
+  font-size: 18px; font-weight: 700; color: var(--accent-amber);
+  pointer-events: none;
+  animation: xpFloat 1s ease forwards;
+}
+@keyframes xpFloat {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-60px); }
+}
+
+/* === DAILY STATS === */
+.daily-section {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); padding: 18px;
+  margin-bottom: 16px;
+}
+.daily-title {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.daily-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;
+}
+.daily-item { text-align: center; }
+.daily-item .di-val { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.daily-item .di-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 380px) {
+  .question-word { font-size: 26px; }
+  .choices-grid { gap: 8px; }
+  .choice-btn { padding: 12px 10px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-particles"></div>
+<div class="floating-orb"></div>
+<div class="floating-orb"></div>
+<div class="floating-orb"></div>
+
+<div class="combo-popup" id="comboPopup"></div>
+
+<div class="app-container">
+
+  <!-- ============ HOME SCREEN ============ -->
+  <div class="screen active" id="homeScreen">
+    <div class="header">
+      <h1>词 汇 仙 途</h1>
+      <div class="subtitle">考研英语 · 201 · 修炼场</div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-label">境界</div>
+        <div class="stat-value level-text" id="levelText">练气期</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">词力</div>
+        <div class="stat-value" id="totalXp">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">已修</div>
+        <div class="stat-value" id="totalWords">0</div>
+      </div>
+    </div>
+
+    <div class="xp-bar-container">
+      <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div></div>
+      <div class="xp-bar-text">
+        <span id="xpCurrent">0</span>
+        <span>下一境界: <span id="xpNext">100</span></span>
+      </div>
+    </div>
+
+    <div class="daily-section">
+      <div class="daily-title">📊 今日修炼</div>
+      <div class="daily-grid">
+        <div class="daily-item"><div class="di-val" id="todayRounds">0</div><div class="di-label">闯关</div></div>
+        <div class="daily-item"><div class="di-val" id="todayCorrect">0</div><div class="di-label">正确</div></div>
+        <div class="daily-item"><div class="di-val" id="todayStreak">0</div><div class="di-label">最高连击</div></div>
+        <div class="daily-item"><div class="di-val" id="todayXp">0</div><div class="di-label">获得词力</div></div>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card mode-roots" onclick="startGame('roots')">
+        <span class="mode-icon">🔮</span>
+        <div class="mode-name">词根炼丹</div>
+        <div class="mode-desc">拆解词根词缀<br>推断超纲词义</div>
+        <span class="mode-badge" id="rootsBadge">0 已修</span>
+      </div>
+      <div class="mode-card mode-familiar" onclick="startGame('familiar')">
+        <span class="mode-icon">👻</span>
+        <div class="mode-name">熟词幻变</div>
+        <div class="mode-desc">熟悉的单词<br>陌生的含义</div>
+        <span class="mode-badge" id="familiarBadge">0 已修</span>
+      </div>
+      <div class="mode-card mode-journal" onclick="startGame('journal')">
+        <span class="mode-icon">📜</span>
+        <div class="mode-name">外刊秘境</div>
+        <div class="mode-desc">经济学人同源<br>学术词汇修炼</div>
+        <span class="mode-badge" id="journalBadge">0 已修</span>
+      </div>
+      <div class="mode-card mode-spelling" onclick="startGame('spelling')">
+        <span class="mode-icon">✍️</span>
+        <div class="mode-name">笔试炼狱</div>
+        <div class="mode-desc">听写拼写<br>精准运用</div>
+        <span class="mode-badge" id="spellingBadge">0 已修</span>
+      </div>
+    </div>
+
+    <div class="footer">北大考研 · 修仙应用集 · 词汇仙途 v1.0</div>
+  </div>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <div class="screen" id="gameScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <div class="game-title" id="gameTitle"></div>
+      <div class="game-progress" id="gameProgress"></div>
+    </div>
+
+    <div class="game-info-bar">
+      <div class="game-score">词力 <span id="roundScore">0</span></div>
+      <div class="game-streak">🔥 连击 <span id="roundStreak">0</span></div>
+      <div class="game-lives">❤️ <span id="roundLives">3</span></div>
+    </div>
+
+    <div class="question-card" id="questionCard">
+      <div class="question-label" id="questionLabel"></div>
+      <div class="question-word" id="questionWord"></div>
+      <div class="question-roots" id="questionRoots"></div>
+      <div class="question-hint" id="questionHint"></div>
+      <div class="question-sentence" id="questionSentence"></div>
+    </div>
+
+    <div class="choices-grid" id="choicesGrid"></div>
+
+    <div class="spelling-input-area" id="spellingArea" style="display:none">
+      <input class="spelling-input" id="spellingInput" placeholder="输入英文单词..." autocomplete="off" autocapitalize="off" spellcheck="false">
+      <br>
+      <button class="spelling-submit" id="spellingSubmit" onclick="checkSpelling()">确认提交</button>
+      <br>
+      <button class="hint-btn" id="hintBtn" onclick="showSpellingHint()">💡 提示</button>
+    </div>
+
+    <div class="explanation" id="explanation" style="display:none"></div>
+
+    <button class="next-btn" id="nextBtn" style="display:none" onclick="nextQuestion()">下一题 →</button>
+  </div>
+
+  <!-- ============ RESULT SCREEN ============ -->
+  <div class="screen" id="resultScreen">
+    <div class="result-card">
+      <span class="result-icon" id="resultIcon">🎉</span>
+      <div class="result-title" id="resultTitle">修炼完成</div>
+      <div class="result-subtitle" id="resultSubtitle">又精进了一层</div>
+
+      <div class="result-stats">
+        <div class="result-stat stat-correct">
+          <div class="rs-val" id="resultCorrect">0</div>
+          <div class="rs-label">正确</div>
+        </div>
+        <div class="result-stat stat-wrong">
+          <div class="rs-val" id="resultWrong">0</div>
+          <div class="rs-label">错误</div>
+        </div>
+        <div class="result-stat stat-xp">
+          <div class="rs-val" id="resultXp">0</div>
+          <div class="rs-label">词力</div>
+        </div>
+      </div>
+
+      <div class="result-xp-gain" id="resultXpGain"></div>
+
+      <div class="review-section" id="reviewSection"></div>
+    </div>
+
+    <button class="next-btn" onclick="goHome()" style="margin-bottom:8px">🏠 返回主界面</button>
+    <button class="next-btn" onclick="startGame(currentMode)" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-cyan))">🔄 再来一轮</button>
+  </div>
+
+</div>
+
+<!-- ======== LEVEL UP MODAL ======== -->
+<div class="level-up-overlay" id="levelUpOverlay" onclick="closeLevelUp()">
+  <div class="level-up-card">
+    <div class="lu-icon">⚡</div>
+    <div class="lu-text">— 突 破 —</div>
+    <div class="lu-level" id="luLevel"></div>
+    <button class="lu-btn" onclick="closeLevelUp()">继续修炼</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  WORD BANKS
+// ============================================================
+
+const WORD_ROOTS = [
+  { word:"predict", roots:"pre（前）+ dict（说）", meaning:"预言，预测", choices:["预言","预防","偏好","准备"], answer:0 },
+  { word:"contradict", roots:"contra（反）+ dict（说）", meaning:"反驳，矛盾", choices:["对比","反驳","收缩","贡献"], answer:1 },
+  { word:"unprecedented", roots:"un（不）+ pre（前）+ ced（走）", meaning:"史无前例的", choices:["不确定的","史无前例的","不必要的","不可预见的"], answer:1 },
+  { word:"circumscribe", roots:"circum（围绕）+ scribe（写）", meaning:"限制，约束", choices:["描述","订阅","限制","环绕"], answer:2 },
+  { word:"malevolent", roots:"mal（坏）+ vol（意愿）", meaning:"恶意的", choices:["善良的","恶意的","杰出的","无关的"], answer:1 },
+  { word:"benevolent", roots:"bene（好）+ vol（意愿）", meaning:"仁慈的，善意的", choices:["仁慈的","有害的","无聊的","勇敢的"], answer:0 },
+  { word:"ambiguous", roots:"ambi（两边）+ ig（驱动）", meaning:"模棱两可的", choices:["有野心的","模棱两可的","充足的","古老的"], answer:1 },
+  { word:"incredulous", roots:"in（不）+ cred（信）", meaning:"不轻信的，怀疑的", choices:["不可思议的","怀疑的","增长的","令人难以置信的"], answer:1 },
+  { word:"preclude", roots:"pre（前）+ clude（关）", meaning:"排除，阻止", choices:["包含","前进","排除","引导"], answer:2 },
+  { word:"conspicuous", roots:"con（共同）+ spic（看）", meaning:"显眼的，引人注目的", choices:["隐秘的","显眼的","有意识的","持续的"], answer:1 },
+  { word:"retrospect", roots:"retro（回）+ spect（看）", meaning:"回顾", choices:["展望","回顾","尊重","怀疑"], answer:1 },
+  { word:"intervene", roots:"inter（之间）+ ven（来）", meaning:"干预，介入", choices:["发明","干预","投资","邀请"], answer:1 },
+  { word:"disseminate", roots:"dis（散）+ semin（种子）", meaning:"传播，散布", choices:["区分","歧视","传播","消灭"], answer:2 },
+  { word:"autonomous", roots:"auto（自己）+ nom（法则）", meaning:"自治的，自主的", choices:["自动的","自主的","匿名的","反常的"], answer:1 },
+  { word:"philanthropy", roots:"phil（爱）+ anthrop（人）", meaning:"慈善事业", choices:["哲学","慈善","人类学","恐惧"], answer:1 },
+  { word:"eradicate", roots:"e（出）+ radic（根）", meaning:"根除，消灭", choices:["辐射","激进","根除","侵蚀"], answer:2 },
+  { word:"protagonist", roots:"proto（第一）+ agon（竞争）", meaning:"主角，主要人物", choices:["对手","抗议者","主角","保护者"], answer:2 },
+  { word:"synchronize", roots:"syn（共同）+ chron（时间）", meaning:"同步", choices:["综合","同步","象征","同情"], answer:1 },
+  { word:"transcend", roots:"trans（越过）+ scend（爬）", meaning:"超越", choices:["转移","交易","超越","透明"], answer:2 },
+  { word:"omnipotent", roots:"omni（全部）+ pot（力量）", meaning:"全能的", choices:["无所不知的","全能的","无处不在的","最理想的"], answer:1 },
+  { word:"equivocal", roots:"equi（相等）+ voc（声音）", meaning:"含糊的，模棱两可的", choices:["平等的","含糊的","等价的","公平的"], answer:1 },
+  { word:"complacent", roots:"com（完全）+ plac（满意）", meaning:"自满的", choices:["复杂的","自满的","顺从的","补充的"], answer:1 },
+  { word:"gregarious", roots:"greg（群）+ arious", meaning:"爱交际的，群居的", choices:["贪婪的","爱交际的","优雅的","感恩的"], answer:1 },
+  { word:"delineate", roots:"de（完全）+ line（线）", meaning:"描绘，勾勒", choices:["删除","描绘","拒绝","推迟"], answer:1 },
+  { word:"recapitulate", roots:"re（再）+ capit（头）", meaning:"概括，总结", choices:["重新夺回","概括","恢复","计算"], answer:1 },
+  { word:"permeate", roots:"per（穿过）+ mea（走）", meaning:"渗透，弥漫", choices:["允许","渗透","永久","执行"], answer:1 },
+  { word:"exacerbate", roots:"ex（出）+ acerb（尖锐）", meaning:"使恶化，加剧", choices:["夸张","使恶化","精确的","检查"], answer:1 },
+  { word:"proliferate", roots:"proli（后代）+ fer（带来）", meaning:"激增，扩散", choices:["盈利","激增","深刻","保护"], answer:1 },
+  { word:"juxtapose", roots:"juxta（旁边）+ pose（放）", meaning:"并列，并置", choices:["对立","并列","正当","赞美"], answer:1 },
+  { word:"vicarious", roots:"vic（代替）+ arious", meaning:"替代的，间接感受的", choices:["邪恶的","替代的","胜利的","有活力的"], answer:1 },
+];
+
+const WORD_FAMILIAR = [
+  { word:"address", common:"地址 n.", rare:"解决，处理 v.", sentence:"We must address this issue before the deadline.", choices:["寄信给","解决","居住在","标注"], answer:1 },
+  { word:"mean", common:"意思 v.", rare:"刻薄的；吝啬的 adj.", sentence:"She was too mean to share anything with others.", choices:["有意义的","平均的","刻薄的","打算"], answer:2 },
+  { word:"novel", common:"小说 n.", rare:"新颖的 adj.", sentence:"The researcher proposed a novel approach to the problem.", choices:["小说般的","新颖的","著名的","复杂的"], answer:1 },
+  { word:"fashion", common:"时尚 n.", rare:"方式 n.", sentence:"They completed the task in a timely fashion.", choices:["时尚","潮流","方式","服装"], answer:2 },
+  { word:"sound", common:"声音 n.", rare:"合理的，健全的 adj.", sentence:"He gave us some sound advice on investment.", choices:["响亮的","悦耳的","合理的","发出声音的"], answer:2 },
+  { word:"spell", common:"拼写 v.", rare:"一段时间 n.", sentence:"After a brief spell of sunshine, it rained again.", choices:["魔咒","拼写","一段时间","字母"], answer:2 },
+  { word:"check", common:"检查 v.", rare:"遏制，控制 v.", sentence:"We need to check the spread of the disease.", choices:["检查","核实","遏制","打勾"], answer:2 },
+  { word:"game", common:"游戏 n.", rare:"猎物；花招 n.", sentence:"The hunter was tracking big game in the forest.", choices:["比赛","游戏","猎物","策略"], answer:2 },
+  { word:"scale", common:"规模 n.", rare:"攀登 v.", sentence:"The climbers scaled the mountain in three days.", choices:["称重","缩放","攀登","衡量"], answer:2 },
+  { word:"meet", common:"遇见 v.", rare:"满足 v.", sentence:"The company failed to meet the deadline.", choices:["遇见","会面","满足","适合"], answer:2 },
+  { word:"weather", common:"天气 n.", rare:"经受住 v.", sentence:"The firm managed to weather the economic crisis.", choices:["天气","风化","经受住","预报"], answer:2 },
+  { word:"figure", common:"数字 n.", rare:"认为 v.", sentence:"I figure we should start as early as possible.", choices:["计算","描绘","认为","雕像"], answer:2 },
+  { word:"draw", common:"画 v.", rare:"吸引 v.", sentence:"The exhibition is expected to draw large crowds.", choices:["画画","拉扯","吸引","提取"], answer:2 },
+  { word:"cover", common:"覆盖 v.", rare:"报道；涉及 v.", sentence:"The article covers a wide range of topics.", choices:["遮盖","覆盖","涉及","保护"], answer:2 },
+  { word:"coach", common:"教练 n.", rare:"辅导 v.", sentence:"She coached him through the difficult exam.", choices:["乘车","教练","辅导","劝说"], answer:2 },
+  { word:"appreciate", common:"感激 v.", rare:"理解；增值 v.", sentence:"I appreciate the complexity of the situation.", choices:["感激","欣赏","理解","赞美"], answer:2 },
+  { word:"spring", common:"春天 n.", rare:"涌出；突然出现 v.", sentence:"New businesses have sprung up across the city.", choices:["弹跳","泉水","涌现","春天"], answer:2 },
+  { word:"harbor", common:"港口 n.", rare:"心怀（想法）v.", sentence:"He still harbors resentment against his former boss.", choices:["停泊","庇护","心怀","港口"], answer:2 },
+  { word:"stem", common:"茎 n.", rare:"阻止；源于 v.", sentence:"The crisis stems from poor policy decisions.", choices:["茎干","压制","源于","干细胞"], answer:2 },
+  { word:"engage", common:"从事 v.", rare:"吸引（注意力）v.", sentence:"The book engages readers with its vivid language.", choices:["雇佣","从事","吸引","订婚"], answer:2 },
+  { word:"observe", common:"观察 v.", rare:"遵守 v.", sentence:"All visitors must observe the park rules.", choices:["观察","评论","遵守","注意到"], answer:2 },
+  { word:"coin", common:"硬币 n.", rare:"创造（新词）v.", sentence:"The term was first coined in the 1990s.", choices:["铸造","硬币","创造","巧合"], answer:2 },
+  { word:"yield", common:"产出 v.", rare:"屈服；让步 v.", sentence:"The government refused to yield to public pressure.", choices:["产生","收益","屈服","田地"], answer:2 },
+  { word:"stock", common:"库存 n.", rare:"储备；常见的 adj.", sentence:"He gave me a stock response without thinking.", choices:["存货","股票","老套的","养殖"], answer:2 },
+  { word:"minute", common:"分钟 n.", rare:"微小的 adj.", sentence:"There were minute differences between the two samples.", choices:["分钟","即刻","微小的","详细的"], answer:2 },
+  { word:"subject", common:"主题 n.", rare:"使遭受 v.", sentence:"The prisoners were subjected to harsh treatment.", choices:["科目","主观","使遭受","服从"], answer:2 },
+  { word:"deliver", common:"递送 v.", rare:"发表（演讲）v.", sentence:"She delivered a powerful speech at the conference.", choices:["运送","释放","发表","实现"], answer:2 },
+  { word:"interest", common:"兴趣 n.", rare:"利益；利息 n.", sentence:"They acted out of pure self-interest.", choices:["兴趣","有趣","利益","关注"], answer:2 },
+  { word:"credit", common:"信用 n.", rare:"归功于 v.", sentence:"The discovery is credited to a young scientist.", choices:["信贷","学分","归功于","信任"], answer:2 },
+  { word:"promise", common:"承诺 v.", rare:"前景，希望 n.", sentence:"The young artist shows great promise.", choices:["承诺","答应","前景","保证"], answer:2 },
+];
+
+const WORD_JOURNAL = [
+  { word:"deteriorate", meaning:"恶化", sentence:"The economic situation continued to ___ rapidly.", choices:["deteriorate","demonstrate","determine","deliberate"], answer:0 },
+  { word:"scrutinize", meaning:"仔细审查", sentence:"The committee will ___ every detail of the proposal.", choices:["summarize","scrutinize","subsidize","supervise"], answer:1 },
+  { word:"exacerbate", meaning:"使恶化", sentence:"The new policy may ___ existing social inequalities.", choices:["elaborate","exacerbate","exaggerate","excavate"], answer:1 },
+  { word:"undermine", meaning:"削弱，破坏", sentence:"Corruption continues to ___ public trust in government.", choices:["understand","undertake","undermine","undergo"], answer:2 },
+  { word:"unprecedented", meaning:"史无前例的", sentence:"The pandemic led to ___ levels of unemployment.", choices:["unexpected","unprecedented","unpleasant","unpredictable"], answer:1 },
+  { word:"paradigm", meaning:"范式，典范", sentence:"This discovery represents a major ___ shift in physics.", choices:["paradise","paradigm","paradox","parameter"], answer:1 },
+  { word:"proliferate", meaning:"激增", sentence:"Fake news continues to ___ on social media.", choices:["procrastinate","proliferate","predominate","propagate"], answer:1 },
+  { word:"resilient", meaning:"有韧性的", sentence:"The economy proved remarkably ___ despite the shocks.", choices:["resistant","resilient","relevant","reluctant"], answer:1 },
+  { word:"ubiquitous", meaning:"无处不在的", sentence:"Smartphones have become ___ in modern life.", choices:["unanimous","ubiquitous","ambiguous","unique"], answer:1 },
+  { word:"consolidate", meaning:"巩固，合并", sentence:"The company sought to ___ its market position.", choices:["compensate","consolidate","contaminate","contemplate"], answer:1 },
+  { word:"speculation", meaning:"推测；投机", sentence:"There is growing ___ about the CEO's resignation.", choices:["specialization","speculation","specification","stabilization"], answer:1 },
+  { word:"demographics", meaning:"人口统计", sentence:"Shifting ___ are reshaping the labor market.", choices:["democracies","demographics","dimensions","diagnostics"], answer:1 },
+  { word:"infrastructure", meaning:"基础设施", sentence:"The government pledged to invest in ___ development.", choices:["information","infrastructure","interference","inheritance"], answer:1 },
+  { word:"sustainable", meaning:"可持续的", sentence:"The report calls for more ___ development policies.", choices:["substantial","sustainable","susceptible","successive"], answer:1 },
+  { word:"consensus", meaning:"共识", sentence:"There is a growing ___ among scientists on this issue.", choices:["consequence","consciousness","consensus","consistency"], answer:2 },
+  { word:"stringent", meaning:"严格的", sentence:"The EU has imposed ___ regulations on data privacy.", choices:["strategic","stringent","subsequent","sufficient"], answer:1 },
+  { word:"rhetoric", meaning:"修辞；华丽的辞藻", sentence:"Political ___ often masks the real issues.", choices:["rhetoric","republic","retrieve","revenue"], answer:0 },
+  { word:"incentive", meaning:"激励，动机", sentence:"Tax breaks serve as an ___ for investment.", choices:["initiative","incentive","incident","instrument"], answer:1 },
+  { word:"disparity", meaning:"差距，不平等", sentence:"The wealth ___ between rich and poor continues to grow.", choices:["disability","discipline","disparity","disposition"], answer:2 },
+  { word:"pragmatic", meaning:"务实的", sentence:"The new leader has taken a more ___ approach.", choices:["pragmatic","problematic","programmatic","systematic"], answer:0 },
+  { word:"articulate", meaning:"清晰表达", sentence:"She was able to ___ her views clearly.", choices:["accelerate","articulate","anticipate","accumulate"], answer:1 },
+  { word:"culminate", meaning:"达到顶点", sentence:"Years of research ___ in this groundbreaking finding.", choices:["calculate","culminate","cultivate","circulate"], answer:1 },
+  { word:"alleviate", meaning:"减轻，缓解", sentence:"The aid package aims to ___ poverty in the region.", choices:["alienate","alleviate","allocate","alternate"], answer:1 },
+  { word:"volatile", meaning:"易变的，动荡的", sentence:"Oil prices remain extremely ___ amid geopolitical tension.", choices:["valuable","versatile","volatile","voluntary"], answer:2 },
+  { word:"stagnant", meaning:"停滞的", sentence:"Wages have remained ___ for over a decade.", choices:["standard","stagnant","strategic","startling"], answer:1 },
+  { word:"plausible", meaning:"貌似合理的", sentence:"His excuse was barely ___ to the investigators.", choices:["possible","plausible","pleasant","practical"], answer:1 },
+  { word:"catalyst", meaning:"催化剂，促进因素", sentence:"The event served as a ___ for social change.", choices:["category","casualty","catalyst","capacity"], answer:2 },
+  { word:"contentious", meaning:"有争议的", sentence:"The new bill remains one of the most ___ issues.", choices:["continuous","contentious","conscious","conspicuous"], answer:1 },
+  { word:"bolster", meaning:"增强，支撑", sentence:"The data was used to ___ the government's argument.", choices:["boycott","bolster","bother","border"], answer:1 },
+  { word:"erode", meaning:"侵蚀，削弱", sentence:"Public confidence in the system is gradually being ___.", choices:["erased","eroded","erupted","evolved"], answer:1 },
+];
+
+const WORD_SPELLING = [
+  { chinese:"偏见", word:"prejudice", hint:"pre(前) + judice(判断)", sentence:"There is widespread ___ against this community." },
+  { chinese:"独立", word:"independence", hint:"in + depend + ence", sentence:"The country gained ___ in 1947." },
+  { chinese:"环境", word:"environment", hint:"environ(围绕) + ment", sentence:"We must protect the natural ___." },
+  { chinese:"技术", word:"technology", hint:"techno(技艺) + logy(学)", sentence:"Modern ___ has transformed our lives." },
+  { chinese:"显著的", word:"significant", hint:"sign(标记) + ific + ant", sentence:"There has been a ___ change in policy." },
+  { chinese:"意识到", word:"conscious", hint:"con + sci(知道) + ous", sentence:"He was barely ___ of what was happening." },
+  { chinese:"后果", word:"consequence", hint:"con + sequ(跟随) + ence", sentence:"He suffered the ___ of his actions." },
+  { chinese:"必要的", word:"essential", hint:"ess(存在) + ent + ial", sentence:"Sleep is ___ for good health." },
+  { chinese:"政府", word:"government", hint:"govern(治理) + ment", sentence:"The ___ announced new reforms." },
+  { chinese:"影响", word:"influence", hint:"in + flu(流) + ence", sentence:"Media has a strong ___ on public opinion." },
+  { chinese:"现象", word:"phenomenon", hint:"来自希腊语 phainomenon", sentence:"Global warming is a well-documented ___." },
+  { chinese:"充分的", word:"sufficient", hint:"suf(下面) + fic(做) + ient", sentence:"We have ___ evidence to proceed." },
+  { chinese:"立刻", word:"immediately", hint:"im(不) + medi(中间) + ately", sentence:"Please respond to this letter ___." },
+  { chinese:"策略", word:"strategy", hint:"strat(军队) + egy", sentence:"We need a new marketing ___." },
+  { chinese:"竞争", word:"competition", hint:"com(共同) + pet(追求) + ition", sentence:"The ___ for this position is fierce." },
+  { chinese:"机会", word:"opportunity", hint:"op + port(港口) + unity", sentence:"This is a golden ___ for growth." },
+  { chinese:"推荐", word:"recommend", hint:"re + com + mend(委托)", sentence:"I ___ this book to all students." },
+  { chinese:"成就", word:"achievement", hint:"achieve + ment", sentence:"Winning the prize was a great ___." },
+  { chinese:"评估", word:"assessment", hint:"assess + ment", sentence:"A thorough ___ of the situation is needed." },
+  { chinese:"沟通", word:"communication", hint:"com + muni(公共) + cation", sentence:"Effective ___ is key to teamwork." },
+  { chinese:"适应", word:"accommodate", hint:"ac + com + mod(方式) + ate", sentence:"The hotel can ___ up to 200 guests." },
+  { chinese:"认可", word:"acknowledge", hint:"ac + knowledge(知道)", sentence:"He refused to ___ his mistakes." },
+  { chinese:"矛盾", word:"contradiction", hint:"contra(反) + dict(说) + ion", sentence:"There is a ___ in his statement." },
+  { chinese:"多样性", word:"diversity", hint:"di(分开) + vers(转) + ity", sentence:"Cultural ___ enriches our society." },
+  { chinese:"偶尔", word:"occasionally", hint:"occasion + ally", sentence:"She ___ visits her hometown." },
+  { chinese:"参与", word:"participate", hint:"parti(部分) + cip(抓) + ate", sentence:"Everyone is encouraged to ___ in the event." },
+  { chinese:"专业的", word:"professional", hint:"pro + fess(声称) + ional", sentence:"He handled it in a very ___ manner." },
+  { chinese:"责任", word:"responsibility", hint:"response + ibility", sentence:"You must take ___ for your actions." },
+  { chinese:"敏感的", word:"sensitive", hint:"sens(感觉) + itive", sentence:"This is a very ___ topic." },
+  { chinese:"词汇", word:"vocabulary", hint:"voc(声音/叫) + abul + ary", sentence:"You need to expand your ___." },
+];
+
+// ============================================================
+//  GAME STATE
+// ============================================================
+
+const LEVELS = [
+  { name:"练气期", xp:0 },
+  { name:"筑基期", xp:100 },
+  { name:"金丹期", xp:300 },
+  { name:"元婴期", xp:600 },
+  { name:"化神期", xp:1000 },
+  { name:"合体期", xp:1600 },
+  { name:"大乘期", xp:2500 },
+  { name:"渡劫期", xp:4000 },
+  { name:"仙人境", xp:6000 },
+  { name:"大罗金仙", xp:10000 },
+];
+
+const QUESTIONS_PER_ROUND = 10;
+
+let state = loadState();
+let currentMode = '';
+let currentQuestions = [];
+let currentIndex = 0;
+let roundScore = 0;
+let roundStreak = 0;
+let maxStreak = 0;
+let roundCorrect = 0;
+let roundWrong = 0;
+let roundLives = 3;
+let answered = false;
+let roundReview = [];
+let hintUsed = false;
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('vocabXiantu'));
+    if (s && s.xp !== undefined) return s;
+  } catch(e) {}
+  return {
+    xp: 0,
+    totalWords: 0,
+    modeStats: { roots:0, familiar:0, journal:0, spelling:0 },
+    daily: { date:'', rounds:0, correct:0, streak:0, xp:0 }
+  };
+}
+
+function saveState() {
+  localStorage.setItem('vocabXiantu', JSON.stringify(state));
+}
+
+function getLevel(xp) {
+  let lv = LEVELS[0];
+  for (const l of LEVELS) {
+    if (xp >= l.xp) lv = l;
+    else break;
+  }
+  return lv;
+}
+
+function getNextLevel(xp) {
+  for (const l of LEVELS) {
+    if (xp < l.xp) return l;
+  }
+  return null;
+}
+
+function updateHomeUI() {
+  const lv = getLevel(state.xp);
+  const nlv = getNextLevel(state.xp);
+  document.getElementById('levelText').textContent = lv.name;
+  document.getElementById('totalXp').textContent = state.xp;
+  document.getElementById('totalWords').textContent = state.totalWords;
+
+  if (nlv) {
+    const progress = ((state.xp - lv.xp) / (nlv.xp - lv.xp)) * 100;
+    document.getElementById('xpBarFill').style.width = progress + '%';
+    document.getElementById('xpCurrent').textContent = state.xp + ' 词力';
+    document.getElementById('xpNext').textContent = nlv.name + ' (' + nlv.xp + ')';
+  } else {
+    document.getElementById('xpBarFill').style.width = '100%';
+    document.getElementById('xpCurrent').textContent = '已达巅峰';
+    document.getElementById('xpNext').textContent = '—';
+  }
+
+  document.getElementById('rootsBadge').textContent = state.modeStats.roots + ' 已修';
+  document.getElementById('familiarBadge').textContent = state.modeStats.familiar + ' 已修';
+  document.getElementById('journalBadge').textContent = state.modeStats.journal + ' 已修';
+  document.getElementById('spellingBadge').textContent = state.modeStats.spelling + ' 已修';
+
+  // daily
+  const today = new Date().toDateString();
+  if (state.daily.date !== today) {
+    state.daily = { date: today, rounds:0, correct:0, streak:0, xp:0 };
+    saveState();
+  }
+  document.getElementById('todayRounds').textContent = state.daily.rounds;
+  document.getElementById('todayCorrect').textContent = state.daily.correct;
+  document.getElementById('todayStreak').textContent = state.daily.streak;
+  document.getElementById('todayXp').textContent = state.daily.xp;
+}
+
+// ============================================================
+//  SCREEN MANAGEMENT
+// ============================================================
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  updateHomeUI();
+  showScreen('homeScreen');
+}
+
+// ============================================================
+//  GAME LOGIC
+// ============================================================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length -1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame(mode) {
+  currentMode = mode;
+  let bank;
+  let title;
+  switch(mode) {
+    case 'roots': bank = WORD_ROOTS; title = '🔮 词根炼丹'; break;
+    case 'familiar': bank = WORD_FAMILIAR; title = '👻 熟词幻变'; break;
+    case 'journal': bank = WORD_JOURNAL; title = '📜 外刊秘境'; break;
+    case 'spelling': bank = WORD_SPELLING; title = '✍️ 笔试炼狱'; break;
+  }
+
+  currentQuestions = shuffle(bank).slice(0, QUESTIONS_PER_ROUND);
+  currentIndex = 0;
+  roundScore = 0;
+  roundStreak = 0;
+  maxStreak = 0;
+  roundCorrect = 0;
+  roundWrong = 0;
+  roundLives = 3;
+  roundReview = [];
+
+  document.getElementById('gameTitle').textContent = title;
+  showScreen('gameScreen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (currentIndex >= currentQuestions.length || roundLives <= 0) {
+    endRound();
+    return;
+  }
+
+  answered = false;
+  hintUsed = false;
+  const q = currentQuestions[currentIndex];
+  const card = document.getElementById('questionCard');
+  card.className = 'question-card';
+
+  document.getElementById('gameProgress').textContent = (currentIndex+1) + '/' + currentQuestions.length;
+  document.getElementById('roundScore').textContent = roundScore;
+  document.getElementById('roundStreak').textContent = roundStreak;
+  document.getElementById('roundLives').textContent = '❤️'.repeat(roundLives);
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  const choicesGrid = document.getElementById('choicesGrid');
+  const spellingArea = document.getElementById('spellingArea');
+
+  if (currentMode === 'spelling') {
+    // Spelling mode
+    choicesGrid.style.display = 'none';
+    spellingArea.style.display = 'block';
+    document.getElementById('questionLabel').textContent = '请拼写以下单词';
+    document.getElementById('questionWord').textContent = q.chinese;
+    document.getElementById('questionRoots').textContent = '';
+    document.getElementById('questionHint').textContent = '';
+    document.getElementById('questionSentence').innerHTML = '例句：' + q.sentence.replace('___', '<span class="blank">???</span>');
+    const input = document.getElementById('spellingInput');
+    input.value = '';
+    input.className = 'spelling-input';
+    input.disabled = false;
+    input.focus();
+    document.getElementById('spellingSubmit').disabled = false;
+    document.getElementById('hintBtn').style.display = '';
+  } else {
+    // Multiple choice modes
+    choicesGrid.style.display = 'grid';
+    spellingArea.style.display = 'none';
+
+    if (currentMode === 'roots') {
+      document.getElementById('questionLabel').textContent = '词根推断';
+      document.getElementById('questionWord').textContent = q.word;
+      document.getElementById('questionRoots').textContent = q.roots;
+      document.getElementById('questionHint').textContent = '根据词根词缀，推断该词含义：';
+      document.getElementById('questionSentence').textContent = '';
+    } else if (currentMode === 'familiar') {
+      document.getElementById('questionLabel').textContent = '熟词僻义';
+      document.getElementById('questionWord').textContent = q.word;
+      document.getElementById('questionRoots').textContent = '常见义：' + q.common;
+      document.getElementById('questionHint').textContent = '';
+      document.getElementById('questionSentence').innerHTML = '在以下语境中，它的意思是？<br><em>"' + q.sentence + '"</em>';
+    } else if (currentMode === 'journal') {
+      document.getElementById('questionLabel').textContent = '外刊填空';
+      document.getElementById('questionWord').textContent = '（' + q.meaning + '）';
+      document.getElementById('questionRoots').textContent = '';
+      document.getElementById('questionHint').textContent = '选择正确的英文单词填入空格：';
+      document.getElementById('questionSentence').innerHTML = q.sentence.replace('___', '<span class="blank">???</span>');
+    }
+
+    // render choices
+    choicesGrid.innerHTML = '';
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c;
+      btn.onclick = () => selectChoice(i);
+      choicesGrid.appendChild(btn);
+    });
+  }
+}
+
+function selectChoice(idx) {
+  if (answered) return;
+  answered = true;
+
+  const q = currentQuestions[currentIndex];
+  const btns = document.querySelectorAll('.choice-btn');
+  const card = document.getElementById('questionCard');
+  const isCorrect = idx === q.answer;
+
+  btns.forEach((b,i) => {
+    b.disabled = true;
+    if (i === q.answer) b.classList.add('reveal-correct');
+    if (i === idx && !isCorrect) b.classList.add('selected-wrong');
+    if (i === idx && isCorrect) b.classList.add('selected-correct');
+  });
+
+  processAnswer(isCorrect, q);
+}
+
+function checkSpelling() {
+  if (answered) return;
+  const q = currentQuestions[currentIndex];
+  const input = document.getElementById('spellingInput');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+
+  answered = true;
+  input.disabled = true;
+  document.getElementById('spellingSubmit').disabled = true;
+
+  const isCorrect = val === q.word.toLowerCase();
+  input.classList.add(isCorrect ? 'correct' : 'wrong');
+  processAnswer(isCorrect, q);
+}
+
+function showSpellingHint() {
+  if (hintUsed) return;
+  hintUsed = true;
+  const q = currentQuestions[currentIndex];
+  document.getElementById('questionRoots').textContent = '💡 ' + q.hint;
+  document.getElementById('hintBtn').style.display = 'none';
+}
+
+function processAnswer(isCorrect, q) {
+  const card = document.getElementById('questionCard');
+  const expEl = document.getElementById('explanation');
+
+  if (isCorrect) {
+    card.classList.add('correct-flash');
+    roundStreak++;
+    if (roundStreak > maxStreak) maxStreak = roundStreak;
+    let pts = 10;
+    if (roundStreak >= 3) pts += Math.min(roundStreak * 2, 20);
+    if (currentMode === 'spelling' && !hintUsed) pts += 5;
+    roundScore += pts;
+    roundCorrect++;
+    roundReview.push({ word: q.word, meaning: getMeaning(q), correct: true });
+
+    showXpFloat('+' + pts);
+    if (roundStreak >= 3) showCombo(roundStreak);
+  } else {
+    card.classList.add('wrong-flash');
+    roundStreak = 0;
+    roundLives--;
+    roundWrong++;
+    roundReview.push({ word: q.word, meaning: getMeaning(q), correct: false });
+    document.getElementById('roundLives').textContent = '❤️'.repeat(Math.max(0,roundLives));
+  }
+
+  // Show explanation
+  let expHTML = '';
+  if (currentMode === 'roots') {
+    expHTML = `<span class="exp-word">${q.word}</span>：${q.meaning}<br><strong>词根解析</strong>：${q.roots}`;
+  } else if (currentMode === 'familiar') {
+    expHTML = `<span class="exp-word">${q.word}</span><br>常见义：${q.common}<br><strong>考研义</strong>：${q.rare}<br>例：${q.sentence}`;
+  } else if (currentMode === 'journal') {
+    expHTML = `<span class="exp-word">${q.word}</span>：${q.meaning}<br>例：${q.sentence.replace('___', '<strong>' + q.word + '</strong>')}`;
+  } else if (currentMode === 'spelling') {
+    expHTML = `正确拼写：<span class="exp-word">${q.word}</span><br>含义：${q.chinese}<br>记忆：${q.hint}`;
+  }
+  expEl.innerHTML = expHTML;
+  expEl.style.display = 'block';
+
+  document.getElementById('roundScore').textContent = roundScore;
+  document.getElementById('roundStreak').textContent = roundStreak;
+
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function getMeaning(q) {
+  if (currentMode === 'roots') return q.meaning;
+  if (currentMode === 'familiar') return q.rare;
+  if (currentMode === 'journal') return q.meaning;
+  if (currentMode === 'spelling') return q.chinese;
+  return '';
+}
+
+function nextQuestion() {
+  currentIndex++;
+  renderQuestion();
+}
+
+function endRound() {
+  const oldLevel = getLevel(state.xp);
+
+  // update state
+  state.xp += roundScore;
+  state.totalWords += roundCorrect;
+  state.modeStats[currentMode] += roundCorrect;
+
+  const today = new Date().toDateString();
+  if (state.daily.date !== today) {
+    state.daily = { date: today, rounds:0, correct:0, streak:0, xp:0 };
+  }
+  state.daily.rounds++;
+  state.daily.correct += roundCorrect;
+  if (maxStreak > state.daily.streak) state.daily.streak = maxStreak;
+  state.daily.xp += roundScore;
+
+  saveState();
+
+  // Check level up
+  const newLevel = getLevel(state.xp);
+  if (newLevel.name !== oldLevel.name) {
+    setTimeout(() => {
+      document.getElementById('luLevel').textContent = newLevel.name;
+      document.getElementById('levelUpOverlay').classList.add('show');
+    }, 500);
+  }
+
+  // Render result
+  const rate = currentQuestions.length > 0 ? Math.round((roundCorrect / (roundCorrect + roundWrong)) * 100) : 0;
+  let icon='🎉', title='修炼完成', subtitle='';
+  if (rate >= 90) { icon='🌟'; title='完美修炼！'; subtitle='距离飞升又近了一步'; }
+  else if (rate >= 70) { icon='✨'; title='修炼有成'; subtitle='继续精进'; }
+  else if (rate >= 50) { icon='💪'; title='尚需磨练'; subtitle='多加复习即可突破'; }
+  else { icon='📖'; title='道阻且长'; subtitle='建议回顾错题再战'; }
+
+  document.getElementById('resultIcon').textContent = icon;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSubtitle').textContent = subtitle;
+  document.getElementById('resultCorrect').textContent = roundCorrect;
+  document.getElementById('resultWrong').textContent = roundWrong;
+  document.getElementById('resultXp').textContent = '+' + roundScore;
+  document.getElementById('resultXpGain').textContent = '连击最高 ' + maxStreak + ' · 正确率 ' + rate + '%';
+
+  // Review list
+  const reviewSection = document.getElementById('reviewSection');
+  let reviewHTML = '<div class="review-title">📝 本轮回顾</div>';
+  roundReview.forEach(r => {
+    reviewHTML += `<div class="review-item ${r.correct?'':'wrong'}">
+      <span class="ri-word">${r.word}</span>
+      <span class="ri-meaning">${r.meaning}</span>
+    </div>`;
+  });
+  reviewSection.innerHTML = reviewHTML;
+
+  showScreen('resultScreen');
+}
+
+function closeLevelUp() {
+  document.getElementById('levelUpOverlay').classList.remove('show');
+}
+
+// ============================================================
+//  EFFECTS
+// ============================================================
+
+function showXpFloat(text) {
+  const el = document.createElement('div');
+  el.className = 'xp-float';
+  el.textContent = text;
+  el.style.left = (window.innerWidth / 2 - 20) + 'px';
+  el.style.top = (window.innerHeight / 2 - 40) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function showCombo(n) {
+  const el = document.getElementById('comboPopup');
+  el.textContent = '🔥 ' + n + '连击！';
+  el.className = 'combo-popup show';
+  setTimeout(() => { el.className = 'combo-popup'; }, 800);
+}
+
+// ============================================================
+//  KEYBOARD SUPPORT
+// ============================================================
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('gameScreen').classList.contains('active')) {
+    if (currentMode === 'spelling') {
+      if (e.key === 'Enter') {
+        if (answered) nextQuestion();
+        else checkSpelling();
+      }
+    } else {
+      if (!answered && e.key >= '1' && e.key <= '4') {
+        selectChoice(parseInt(e.key) - 1);
+      }
+      if (answered && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        nextQuestion();
+      }
+    }
+  }
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+
+updateHomeUI();
+</script>
+</body>
+</html>

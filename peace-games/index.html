@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>和平运动会 · 考研特训版 — 北大考研修仙应用集</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="../shared/pku-auto-fetch.js"></script>
+    <script src="../siege/crush-data.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --primary-glow: #00ffcc;
+            --secondary-glow: #ff00ff;
+            --danger-glow: #ff4444;
+            --success-glow: #44ff88;
+            --text-main: #ffffff;
+            --text-dim: #88aaee;
+        }
+        
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Noto Sans SC', sans-serif;
+            overflow: hidden;
+            width: 100vw; height: 100vh;
+        }
+
+        h1, h2, h3 { font-family: 'Orbitron', 'Noto Sans SC', sans-serif; margin: 0; }
+
+        #game-container {
+            position: relative;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas {
+            display: block;
+            width: 100%; height: 100%;
+            max-width: 800px;
+            box-shadow: 0 0 50px rgba(0,255,204,0.1);
+            background: #111;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: rgba(10,10,12,0.9);
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.3s;
+        }
+
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+
+        /* Titles and Buttons */
+        .title-glitch {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0,255,204,0.5);
+            animation: pulse-title 2s infinite alternate;
+        }
+
+        @keyframes pulse-title {
+            0% { filter: drop-shadow(0 0 5px var(--primary-glow)); }
+            100% { filter: drop-shadow(0 0 20px var(--secondary-glow)); }
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--primary-glow);
+            font-family: 'Orbitron', 'Noto Sans SC', sans-serif;
+            font-size: 1.2rem; font-weight: bold;
+            padding: 15px 40px;
+            border: 2px solid var(--primary-glow);
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(0,255,204,0.2), inset 0 0 10px rgba(0,255,204,0.1);
+            margin: 10px 0;
+        }
+        .btn:hover {
+            background: var(--primary-glow);
+            color: var(--bg-color);
+            box-shadow: 0 0 30px var(--primary-glow), inset 0 0 20px rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            max-width: 800px;
+            margin: 0 auto;
+            z-index: 5;
+        }
+        .top-bar {
+            position: absolute; top: 10px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between;
+            font-family: 'Orbitron', sans-serif; font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
+        }
+        .info-badge {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--primary-glow);
+            padding: 5px 15px; border-radius: 20px;
+            color: var(--primary-glow);
+        }
+        
+        #question-box {
+            position: absolute; top: 60px; left: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-left: 4px solid var(--secondary-glow);
+            padding: 15px 20px;
+            border-radius: 4px;
+            font-size: 1.1rem; line-height: 1.5;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            text-shadow: 1px 1px 0 #000;
+            transition: transform 0.3s;
+        }
+        .q-subject { font-size: 0.8rem; color: var(--secondary-glow); margin-bottom: 5px; font-weight: bold; }
+        
+        /* Options HUD (For some modes like Shooter/Tap) */
+        #options-container {
+            position: absolute; bottom: 20px; left: 10px; right: 10px;
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            pointer-events: auto; /* Only options are clickable */
+        }
+        .option-btn {
+            background: rgba(10,10,20,0.8);
+            border: 1px solid var(--text-dim);
+            color: #fff; padding: 12px; border-radius: 8px;
+            font-size: 0.95rem; font-weight: bold;
+            flex: 1 1 40%; max-width: 48%; text-align: center;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .option-btn:active { transform: scale(0.95); }
+        .option-btn.correct { background: var(--success-glow); color: #000; border-color: #fff; }
+        .option-btn.wrong { background: var(--danger-glow); color: #fff; border-color: #fff; }
+
+        .progress-bar {
+            position: absolute; bottom: 0; left: 0; height: 6px;
+            background: var(--primary-glow); transition: width 0.3s;
+        }
+
+        /* Result Popup */
+        .toast {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9); padding: 20px 40px;
+            border: 2px solid var(--primary-glow); border-radius: 10px;
+            text-align: center; font-weight: bold; font-size: 1.5rem;
+            box-shadow: 0 0 30px rgba(0,255,204,0.3);
+            z-index: 20;
+        }
+        .toast.success { border-color: var(--success-glow); color: var(--success-glow); }
+        .toast.error { border-color: var(--danger-glow); color: var(--danger-glow); font-size: 1.2rem; }
+        
+        /* Grid Preview */
+        .level-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; max-width: 600px; width: 90%;
+        }
+        .level-card {
+            background: rgba(20,20,30,0.6);
+            border: 1px solid var(--text-dim);
+            padding: 15px; border-radius: 8px; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .level-card .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .level-card .name { font-weight: bold; color: var(--primary-glow); margin-bottom: 5px; }
+        .level-card .subject { font-size: 0.8rem; background: #333; padding: 2px 8px; border-radius: 10px; }
+        
+        .floating-controls {
+            position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 0.8rem; color: #888;
+        }
+        
+        /* Control hints */
+        .joystick-hint {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            opacity: 0.5; color: white; display: flex; flex-direction: column; align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    
+    <div id="hud" class="hidden">
+        <div class="top-bar">
+            <div class="info-badge">关卡 <span id="hud-level">1/4</span></div>
+            <div class="info-badge" style="color:var(--danger-glow); border-color:var(--danger-glow)">❤ <span id="hud-hp">3</span></div>
+        </div>
+        <div id="question-box">
+            <div class="q-subject" id="hud-subject">101 政治</div>
+            <div id="hud-q">载入中...</div>
+        </div>
+        
+        <div id="options-container" class="hidden">
+            <!-- Populated by JS for Tap modes -->
+        </div>
+        <div class="progress-bar" id="hud-progress" style="width: 0%"></div>
+        
+        <div class="joystick-hint" id="hud-hint">滑动/点击控制</div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="menu" class="overlay">
+        <div class="title-glitch">和平运动会<br><span style="font-size:1.5rem; color:var(--text-main)">考研特训版</span></div>
+        <p style="color: var(--text-dim); max-width: 400px; text-align: center; margin-bottom: 30px; line-height: 1.6;">
+            9 大极限运动模式完美复刻！<br>
+            答题即闯关，知识即武器。<br>
+            涵盖 101政治 / 201英语 / 301数学 / 408计算机
+        </p>
+        <button class="btn" onclick="GameApp.startMatch()">匹配发车</button>
+        <button class="btn" style="border-color:#9d4edd;color:#08f7fe;font-size:0.9rem;padding:10px 24px;margin-top:6px" onclick="PKUAutoFetch.showModal()">📡 注入卡密 · 抓最新题</button>
+        <a href="../index.html" style="color:#555; text-decoration:none; margin-top:20px; font-size:0.9rem;">← 返回中转阁</a>
+    </div>
+
+    <!-- Pre-Match Preview -->
+    <div id="preview" class="overlay hidden">
+        <h2>🔥 今日航线已确认 🔥</h2>
+        <div class="level-grid" id="preview-grid">
+            <!-- Cards -->
+        </div>
+        <button class="btn" onclick="GameApp.enterNextLevel()">开始跳伞</button>
+    </div>
+
+    <!-- Transition / Post Match -->
+    <div id="result" class="overlay hidden">
+        <h1 id="res-title" class="title-glitch" style="font-size:2.5rem">WINNER WINNER</h1>
+        <div id="res-stats" style="margin:20px; font-size:1.2rem; text-align:center; line-height:1.8"></div>
+        <button class="btn" onclick="GameApp.resetToMenu()">返回大厅</button>
+    </div>
+</div>
+
+<script>
+/**
+ * ------------------------------------------------------------------
+ * 和平运动会 · 考研特训版
+ * 包含 9 大游戏引擎
+ * ------------------------------------------------------------------
+ */
+
+const MODES = [
+    { id: 1, name: '毒沼浮桥', icon: '🌊', type: 'lanes', desc: '选对浮桥安全通过' },
+    { id: 2, name: '障碍赛跑', icon: '🏃', type: 'lanes', desc: '穿过正确的知识门' },
+    { id: 3, name: '屋顶跑酷', icon: '🏗️', type: 'tap', desc: '跳向正确答案平台' },
+    { id: 4, name: '杂技飞车', icon: '🎪', type: 'lanes', desc: '飞车穿越正确圆环' },
+    { id: 5, name: '射击比赛', icon: '🎯', type: 'tap', desc: '射击正确答案气球' },
+    { id: 6, name: '巅峰蹦床', icon: '🤸', type: 'lanes', desc: '落入正确答案蹦床' },
+    { id: 7, name: '勇气之桥', icon: '🌉', type: 'lanes', desc: '踩对石板不断前行' },
+    { id: 8, name: '滑雪速降', icon: '⛷️', type: 'lanes', desc: '撞击正确答案旗帜' },
+    { id: 9, name: '小人国', icon: '🔬', type: 'tap', desc: '解开巨大物品上的知识锁' }
+];
+
+const SUBJECTS = [
+    { code: '101', name: '政治', key: 'politics', color: '#ff4444' },
+    { code: '201', name: '英语', key: 'english', color: '#44aaff' },
+    { code: '301', name: '数学', key: 'math', color: '#44ff88' },
+    { code: '408', name: '计算机', key: 'cs', color: '#aa44ff' }
+];
+
+// Utilities
+const utils = {
+    rand: (min, max) => Math.random() * (max - min) + min,
+    randInt: (min, max) => Math.floor(Math.random() * (max - min) + min),
+    shuffle: (arr) => {
+        let array = [...arr];
+        for(let i = array.length - 1; i > 0; i--){
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    },
+    fillDistractors: (answer, allDistractors, count=3) => {
+        let pool = allDistractors.filter(d => d !== answer);
+        pool = utils.shuffle(pool);
+        return pool.slice(0, count);
+    }
+};
+
+/** 
+ * Data Manager
+ * Fetches questions from CrushData (global variables exposed in crush-data.js)
+ */
+const DataMgr = {
+    getQuestions(subjectKey, count=5) {
+        // Find pool
+        let pool = [];
+        if(typeof CrushData !== 'undefined' && CrushData._dynamicLevels) {
+            pool = [...CrushData._dynamicLevels[subjectKey]];
+            // Fallback to builtin if empty or to mix
+            if(pool.length < count) {
+                // Need to extract from internal arrays if exposed, but CrushData hides them behind getLevel.
+                // We'll generate via getLevel repeatedly until we have enough.
+                for(let i=0; i<100; i++) {
+                    let lvl = CrushData.getLevel(subjectKey, i);
+                    if(!lvl) break;
+                    if(lvl.questions) pool.push(...lvl.questions);
+                }
+            }
+        }
+        // Deduplicate
+        let unique = [];
+        let usedStems = new Set();
+        for(let q of pool) {
+            if(!usedStems.has(q.sentence)) {
+                unique.push(q);
+                usedStems.add(q.sentence);
+            }
+        }
+        // Shuffle & pick
+        unique = utils.shuffle(unique);
+        if(unique.length === 0) {
+            // Dummy fallback
+            return Array(count).fill(0).map((_,i) => ({
+                sentence: `Dummy Test Question ${i} for ${subjectKey}`,
+                answer: 'A',
+                distractors: ['B', 'C', 'D'],
+                meaning: 'Dummy analysis'
+            }));
+        }
+        return unique.slice(0, count);
+    }
+};
+
+/**
+ * Global Graphics Context 
+ */
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let cw, ch;
+function resize() {
+    // 保持高宽比适应
+    const container = document.getElementById('game-container');
+    const maxWidth = 800; // PC端最大宽度
+    const w = Math.min(window.innerWidth, maxWidth);
+    const h = window.innerHeight;
+    canvas.width = w;
+    canvas.height = h;
+    cw = w; ch = h;
+}
+window.addEventListener('resize', resize);
+resize();
+
+
+/** 
+ * Engine Core
+ */
+const Engine = {
+    running: false,
+    lastTime: 0,
+    particles: [],
+    
+    start() {
+        this.running = true;
+        this.lastTime = performance.now();
+        requestAnimationFrame(t => this.loop(t));
+    },
+    stop() {
+        this.running = false;
+    },
+    loop(time) {
+        if(!this.running) return;
+        const dt = (time - this.lastTime) / 1000;
+        this.lastTime = time;
+        
+        ctx.clearRect(0, 0, cw, ch);
+        
+        if(GameApp.currentModeInstance) {
+            GameApp.currentModeInstance.update(dt);
+            GameApp.currentModeInstance.draw(ctx);
+        }
+        
+        this.updateParticles(dt);
+        this.drawParticles(ctx);
+        
+        requestAnimationFrame(t => this.loop(t));
+    },
+    
+    spawnParticles(x, y, color, count=10) {
+        for(let i=0; i<count; i++) {
+            this.particles.push({
+                x, y,
+                vx: utils.rand(-100, 100),
+                vy: utils.rand(-100, 100),
+                life: utils.rand(0.5, 1.2),
+                maxLife: 1.2,
+                color: color,
+                size: utils.rand(2, 6)
+            });
+        }
+    },
+    updateParticles(dt) {
+        for(let i=this.particles.length-1; i>=0; i--) {
+            let p = this.particles[i];
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.life -= dt;
+            if(p.life <= 0) this.particles.splice(i, 1);
+        }
+    },
+    drawParticles(ctx) {
+        for(let p of this.particles) {
+            ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+};
+
+/**
+ * ------------------------------------------------------------------
+ * GAME MODE TEMPLATES
+ * ------------------------------------------------------------------
+ */
+
+// 1. Lanes Game Base (Used by 毒沼浮桥, 障碍赛跑, 杂技飞车, 巅峰蹦床, 勇气之桥, 滑雪速降)
+class LaneGame {
+    constructor(modeDef, subject) {
+        this.modeDef = modeDef;
+        this.subject = subject;
+        this.lanes = 4;
+        this.playerLane = 1; // 0 to 3
+        this.playerY = ch * 0.85;
+        this.speed = ch * 0.3; // scrolling speed
+        
+        this.targets = []; // options coming down
+        this.targetCooldown = 0;
+        
+        this.state = 'waiting'; // waiting, scrolling, hit
+        this.flashEffect = 0;
+        
+        // Mode specific visuals
+        this.setupVisuals();
+    }
+    
+    setupVisuals() {
+        if(this.modeDef.id === 1) { // 毒沼浮桥
+            this.bgCol = '#1a2211'; this.playerCol = '#ccc'; this.targetShp = 'rect'; this.isVertical = true;
+        } else if(this.modeDef.id === 2) { // 障碍赛跑
+            this.bgCol = '#222'; this.playerCol = '#ffa500'; this.targetShp = 'door'; this.isVertical = true;
+        } else if(this.modeDef.id === 4) { // 杂技飞车
+            this.bgCol = '#113'; this.playerCol = '#f00'; this.targetShp = 'ring'; this.isVertical = true;
+        } else if(this.modeDef.id === 6) { // 巅峰蹦床
+            this.bgCol = '#023'; this.playerCol = '#0ff'; this.targetShp = 'pad'; this.isVertical = true;
+        } else if(this.modeDef.id === 7) { // 勇气之桥
+            this.bgCol = '#111'; this.playerCol = '#fff'; this.targetShp = 'tile'; this.isVertical = true;
+        } else if(this.modeDef.id === 8) { // 滑雪速降
+            this.bgCol = '#ddd'; this.playerCol = '#333'; this.targetShp = 'flag'; this.isVertical = true;
+        }
+    }
+    
+    loadQuestion(qData) {
+        this.currentQ = qData;
+        let opts = [qData.answer, ...utils.fillDistractors(qData.answer, qData.distractors, 3)];
+        opts = utils.shuffle(opts);
+        
+        this.options = opts;
+        this.correctIdx = opts.indexOf(qData.answer);
+        
+        // Spawn targets
+        this.targets = [];
+        const laneWidth = cw / this.lanes;
+        for(let i=0; i<this.lanes; i++) {
+            this.targets.push({
+                lane: i,
+                y: -100 - (i%2)*50, // Stagger slightly
+                text: opts[i],
+                isCorrect: (i === this.correctIdx),
+                active: true
+            });
+        }
+        
+        this.state = 'scrolling';
+    }
+    
+    handleInput(type, pos) {
+        if(this.state !== 'scrolling') return;
+        
+        // Move lane
+        if(type === 'click') {
+            const clickedLane = Math.floor(pos.x / (cw / this.lanes));
+            if(clickedLane >= 0 && clickedLane < this.lanes) {
+                this.playerLane = clickedLane;
+            }
+        } else if(type === 'swipe_left' && this.playerLane > 0) {
+            this.playerLane--;
+        } else if(type === 'swipe_right' && this.playerLane < this.lanes - 1) {
+            this.playerLane++;
+        }
+    }
+    
+    update(dt) {
+        if(this.flashEffect > 0) this.flashEffect -= dt;
+        
+        if(this.state !== 'scrolling') return;
+        
+        // Move targets down
+        for(let t of this.targets) {
+            if(!t.active) continue;
+            t.y += this.speed * dt;
+            
+            // Collision check
+            const laneWidth = cw / this.lanes;
+            const px = this.playerLane * laneWidth + laneWidth/2;
+            const py = this.playerY;
+            const tx = t.lane * laneWidth + laneWidth/2;
+            const ty = t.y;
+            
+            // If passed player Y
+            if(t.y > this.playerY - 20 && t.y < this.playerY + 20 && t.lane === this.playerLane) {
+                this.hitTarget(t);
+                break;
+            }
+            
+            // If missed entirely
+            if(t.y > ch + 100) {
+                t.active = false;
+                // If player missed all, auto hit the one in their lane or fail
+                if(this.targets.every(x => !x.active)) {
+                    GameApp.onAnswerResult(false, "未踩中任何选项");
+                    this.state = 'waiting';
+                }
+            }
+        }
+    }
+    
+    hitTarget(t) {
+        this.state = 'hit';
+        t.active = false;
+        
+        const laneWidth = cw / this.lanes;
+        Engine.spawnParticles(t.lane * laneWidth + laneWidth/2, t.y, t.isCorrect ? '#4f8' : '#f44', 30);
+        
+        if(t.isCorrect) {
+            this.flashEffect = 0.5; // green flash
+            setTimeout(() => GameApp.onAnswerResult(true), 500);
+        } else {
+            this.flashEffect = -0.5; // red flash
+            setTimeout(() => GameApp.onAnswerResult(false, `错！正确区域是: ${this.options[this.correctIdx]}`), 1000);
+        }
+    }
+    
+    draw(ctx) {
+        if(this.modeDef.id === 8) ctx.fillStyle = '#ebf5fc'; // ski 
+        else ctx.fillStyle = this.bgCol;
+        ctx.fillRect(0,0,cw,ch);
+        
+        // Draw flashes
+        if(this.flashEffect > 0) {
+            ctx.fillStyle = `rgba(0,255,100,${this.flashEffect})`;
+            ctx.fillRect(0,0,cw,ch);
+        } else if(this.flashEffect < 0) {
+            ctx.fillStyle = `rgba(255,0,0,${-this.flashEffect})`;
+            ctx.fillRect(0,0,cw,ch);
+        }
+        
+        const laneWidth = cw / this.lanes;
+        
+        // Draw lanes
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 2;
+        for(let i=1; i<this.lanes; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i*laneWidth, 0);
+            ctx.lineTo(i*laneWidth, ch);
+            ctx.stroke();
+        }
+        
+        // Draw Targets
+        ctx.font = '16px Noto Sans SC';
+        ctx.textAlign = 'center';
+        for(let t of this.targets) {
+            if(!t.active) continue;
+            let tx = t.lane * laneWidth + laneWidth/2;
+            let ty = t.y;
+            
+            ctx.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))';
+            
+            if(this.targetShp === 'rect' || this.targetShp === 'pad' || this.targetShp === 'tile') {
+                ctx.fillStyle = this.subject.color;
+                ctx.fillRect(tx - laneWidth*0.4, ty - 30, laneWidth*0.8, 60);
+                
+                ctx.fillStyle = '#fff';
+                this.wrapText(ctx, t.text, tx, ty - 5, laneWidth*0.7);
+                
+            } else if (this.targetShp === 'ring') {
+                ctx.strokeStyle = this.subject.color;
+                ctx.lineWidth = 8;
+                ctx.beginPath(); ctx.ellipse(tx, ty, laneWidth*0.4, 30, 0, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = '#fff';
+                this.wrapText(ctx, t.text, tx, ty+5, laneWidth*0.7);
+            } else if (this.targetShp === 'door') {
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(tx - laneWidth*0.4, ty - 80, laneWidth*0.8, 160);
+                ctx.strokeStyle = this.subject.color; ctx.lineWidth=4;
+                ctx.strokeRect(tx - laneWidth*0.4, ty - 80, laneWidth*0.8, 160);
+                ctx.fillStyle = '#fff';
+                this.wrapText(ctx, t.text, tx, ty, laneWidth*0.7);
+            } else if (this.targetShp === 'flag') {
+                ctx.fillStyle = this.subject.color;
+                ctx.beginPath(); ctx.moveTo(tx, ty-40); ctx.lineTo(tx+40, ty-20); ctx.lineTo(tx, ty); ctx.fill();
+                ctx.fillStyle = '#333'; ctx.fillRect(tx-3, ty-40, 6, 80); // pole
+                ctx.fillStyle = '#000';
+                this.wrapText(ctx, t.text, tx + laneWidth*0.4, ty+60, laneWidth*0.7); // text below
+            }
+            ctx.filter = 'none';
+        }
+        
+        // Draw Player
+        let px = this.playerLane * laneWidth + laneWidth/2;
+        let py = this.playerY;
+        
+        ctx.filter = `drop-shadow(0 0 10px ${this.playerCol})`;
+        ctx.fillStyle = this.playerCol;
+        if(this.modeDef.id === 4) { // car
+            ctx.fillRect(px - 20, py - 40, 40, 80);
+        } else if(this.modeDef.id === 8) { // ski
+            ctx.beginPath(); ctx.moveTo(px-15, py-20); ctx.lineTo(px+15, py+20); ctx.stroke(); 
+            ctx.beginPath(); ctx.arc(px, py, 15, 0, Math.PI*2); ctx.fill();
+        } else { // default person/box
+            ctx.beginPath();
+            ctx.arc(px, py - 10, 15, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillRect(px - 10, py, 20, 20);
+        }
+        ctx.filter = 'none';
+    }
+    
+    wrapText(ctx, text, x, y, maxWidth) {
+        if(!text) return;
+        const words = text.split('');
+        let line = '';
+        let lines = [];
+        for(let n = 0; n < words.length; n++) {
+            let testLine = line + words[n];
+            let metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+                lines.push(line);
+                line = words[n];
+            } else { line = testLine; }
+        }
+        lines.push(line);
+        let startY = y - (lines.length-1)*10;
+        for(let i=0; i<lines.length; i++) {
+            ctx.fillText(lines[i], x, startY + (i*20));
+        }
+    }
+}
+
+// 2. Tap/Select Game Base (Used by 屋顶跑酷, 射击比赛, 小人国)
+class TapGame {
+    constructor(modeDef, subject) {
+        this.modeDef = modeDef;
+        this.subject = subject;
+        this.state = 'waiting';
+        
+        // Set HUD options on
+        document.getElementById('options-container').classList.remove('hidden');
+        this.flashEffect = 0;
+        
+        this.nodes = []; // Floating elements in background
+        for(let i=0; i<20; i++) {
+            this.nodes.push({
+                x: utils.rand(0, cw), y: utils.rand(0, ch),
+                s: utils.rand(10, 50),
+                vx: utils.rand(-20, 20), vy: utils.rand(-20, 20)
+            });
+        }
+    }
+    
+    loadQuestion(qData) {
+        this.currentQ = qData;
+        let opts = [qData.answer, ...utils.fillDistractors(qData.answer, qData.distractors, 3)];
+        opts = utils.shuffle(opts);
+        
+        this.options = opts;
+        this.correctIdx = opts.indexOf(qData.answer);
+        
+        // Render HUD buttons
+        const cont = document.getElementById('options-container');
+        cont.innerHTML = '';
+        opts.forEach((opt, idx) => {
+            let btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => this.hitTarget(idx, btn);
+            cont.appendChild(btn);
+        });
+        
+        this.state = 'active';
+    }
+    
+    handleInput(type, pos) {
+        // Pure HUD based interaction
+    }
+    
+    hitTarget(idx, btnElement) {
+        if(this.state !== 'active') return;
+        this.state = 'hit';
+        
+        let isCorrect = (idx === this.correctIdx);
+        btnElement.classList.add(isCorrect ? 'correct' : 'wrong');
+        
+        // Find correct button if wrong
+        if(!isCorrect) {
+            let btns = document.getElementById('options-container').children;
+            if(btns[this.correctIdx]) btns[this.correctIdx].classList.add('correct');
+        }
+        
+        if(isCorrect) {
+            this.flashEffect = 0.5;
+            setTimeout(() => {
+                document.getElementById('options-container').innerHTML = '';
+                GameApp.onAnswerResult(true);
+            }, 800);
+        } else {
+            this.flashEffect = -0.5;
+            setTimeout(() => {
+                document.getElementById('options-container').innerHTML = '';
+                GameApp.onAnswerResult(false, `正解：\n${this.currentQ.meaning}`);
+            }, 1500);
+        }
+    }
+    
+    update(dt) {
+        if(this.flashEffect > 0) this.flashEffect -= dt;
+        
+        // Move bg nodes
+        for(let n of this.nodes) {
+            n.x += n.vx * dt; n.y += n.vy * dt;
+            if(n.x < -50) n.x = cw+50; if(n.x > cw+50) n.x = -50;
+            if(n.y < -50) n.y = ch+50; if(n.y > ch+50) n.y = -50;
+        }
+    }
+    
+    draw(ctx) {
+        // Draw thematic bg
+        if(this.modeDef.id === 5) { // Shooter
+            ctx.fillStyle = '#2b1b3d';
+            ctx.fillRect(0,0,cw,ch);
+            // Draw crosshair
+            ctx.strokeStyle = 'rgba(0,255,204,0.5)'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.moveTo(cw/2 - 40, ch/2); ctx.lineTo(cw/2 + 40, ch/2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cw/2, ch/2 - 40); ctx.lineTo(cw/2, ch/2 + 40); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cw/2, ch/2, 20, 0, Math.PI*2); ctx.stroke();
+        } else if(this.modeDef.id === 9) { // Lilliput
+            ctx.fillStyle = '#e8dccb'; // desk color
+            ctx.fillRect(0,0,cw,ch);
+            // Giant grid lines (notebook)
+            ctx.strokeStyle = '#a4d4e6'; ctx.lineWidth=2;
+            for(let i=0; i<ch; i+=60) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(cw, i); ctx.stroke();
+            }
+        } else { // Rooftop
+            ctx.fillStyle = '#111820';
+            ctx.fillRect(0,0,cw,ch);
+            // Draw buildings
+            for(let n of this.nodes) {
+                ctx.fillStyle = '#223';
+                ctx.fillRect(n.x, n.y, n.s*3, n.s*5);
+            }
+        }
+        
+        // Draw flashes
+        if(this.flashEffect > 0) {
+            ctx.fillStyle = `rgba(0,255,100,${this.flashEffect})`;
+            ctx.fillRect(0,0,cw,ch);
+        } else if(this.flashEffect < 0) {
+            ctx.fillStyle = `rgba(255,0,0,${-this.flashEffect})`;
+            ctx.fillRect(0,0,cw,ch);
+        }
+    }
+}
+
+
+/**
+ * Main Application Logic
+ */
+const GameApp = {
+    state: 'menu', // menu, preview, playing, result
+    runConfig: [], // array of 4 {mode, subject}
+    currentStageIdx: 0,
+    
+    currentModeInstance: null,
+    
+    playerHP: 3,
+    questionsCompleted: 0, // out of 5 per stage
+    
+    setup() {
+        // Init listeners
+        const canvas = document.getElementById('game-canvas');
+        canvas.addEventListener('mousedown', e => this.handlePoint(e.clientX, e.clientY));
+        canvas.addEventListener('touchstart', e => {
+            if(e.touches.length>0) this.handlePoint(e.touches[0].clientX, e.touches[0].clientY);
+        });
+        
+        // Touch swipes
+        let touchStartX = 0;
+        canvas.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        canvas.addEventListener('touchend', e => {
+            let dx = e.changedTouches[0].screenX - touchStartX;
+            if(dx > 50) this.handleSwipe('right');
+            else if(dx < -50) this.handleSwipe('left');
+        });
+        window.addEventListener('keydown', e => {
+            if(e.key === 'ArrowLeft' || e.key === 'a') this.handleSwipe('left');
+            if(e.key === 'ArrowRight' || e.key === 'd') this.handleSwipe('right');
+        });
+        
+        Engine.start();
+    },
+    
+    handlePoint(x, y) {
+        // Adjust for canvas position if needed
+        const rect = canvas.getBoundingClientRect();
+        const px = x - rect.left;
+        const py = y - rect.top;
+        if(this.currentModeInstance && this.state === 'playing') {
+            this.currentModeInstance.handleInput('click', {x:px, y:py});
+        }
+    },
+    
+    handleSwipe(dir) {
+        if(this.currentModeInstance && this.state === 'playing') {
+            this.currentModeInstance.handleInput('swipe_'+dir, null);
+        }
+    },
+    
+    startMatch() {
+        // Pick 4 modes, map to 4 subjects
+        let shufModes = utils.shuffle(MODES).slice(0, 4);
+        let shufSubj = [...SUBJECTS]; // already 4
+        
+        this.runConfig = shufModes.map((m, i) => ({
+            mode: m,
+            subject: shufSubj[i]
+        }));
+        
+        this.currentStageIdx = 0;
+        this.playerHP = 3;
+        
+        this.showPreview();
+    },
+    
+    showPreview() {
+        this.state = 'preview';
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('result').classList.add('hidden');
+        document.getElementById('preview').classList.remove('hidden');
+        
+        const grid = document.getElementById('preview-grid');
+        grid.innerHTML = '';
+        this.runConfig.forEach((cfg, idx) => {
+            let card = document.createElement('div');
+            card.className = 'level-card';
+            card.style.borderColor = cfg.subject.color;
+            card.innerHTML = `
+                <div class="icon">${cfg.mode.icon}</div>
+                <div class="name">${cfg.mode.name}</div>
+                <div class="subject" style="color:${cfg.subject.color}">${cfg.subject.code} ${cfg.subject.name}</div>
+            `;
+            grid.appendChild(card);
+        });
+    },
+    
+    enterNextLevel() {
+        if(this.currentStageIdx >= 4) {
+            this.showResult(true);
+            return;
+        }
+        
+        document.getElementById('preview').classList.add('hidden');
+        this.state = 'playing';
+        this.questionsCompleted = 0;
+        this.updateHUD();
+        document.getElementById('hud').classList.remove('hidden');
+        
+        let cfg = this.runConfig[this.currentStageIdx];
+        
+        // Fetch questions
+        this.levelQuestions = DataMgr.getQuestions(cfg.subject.key, 5);
+        
+        // Init Engine
+        document.getElementById('options-container').classList.add('hidden'); // default off
+        
+        if(cfg.mode.type === 'lanes') {
+            this.currentModeInstance = new LaneGame(cfg.mode, cfg.subject);
+        } else {
+            this.currentModeInstance = new TapGame(cfg.mode, cfg.subject);
+        }
+        
+        this.loadNextQuestion();
+    },
+    
+    loadNextQuestion() {
+        if(this.questionsCompleted >= 5) {
+            // Level cleared!
+            this.showToast('✅ 关卡突破！', 'success');
+            setTimeout(() => {
+                this.currentStageIdx++;
+                document.getElementById('hud').classList.add('hidden');
+                this.currentModeInstance = null;
+                
+                if(this.currentStageIdx < 4) {
+                    this.state = 'preview';
+                    document.getElementById('preview').classList.remove('hidden');
+                } else {
+                    this.showResult(true);
+                }
+            }, 1500);
+            return;
+        }
+        
+        let q = this.levelQuestions[this.questionsCompleted];
+        
+        // Update HUD
+        document.getElementById('hud-q').innerText = q.sentence;
+        document.getElementById('hud-subject').innerText = 
+            `${this.runConfig[this.currentStageIdx].subject.code} ${this.runConfig[this.currentStageIdx].subject.name}`;
+        
+        this.currentModeInstance.loadQuestion(q);
+    },
+    
+    onAnswerResult(isCorrect, msg="") {
+        if(isCorrect) {
+            this.questionsCompleted++;
+            this.updateHUD();
+            this.loadNextQuestion();
+        } else {
+            this.playerHP--;
+            this.updateHUD();
+            
+            if(this.playerHP <= 0) {
+                this.showToast('💥 血量耗尽，淘汰出局', 'error');
+                setTimeout(() => this.showResult(false), 2000);
+            } else {
+                this.showToast(msg || '❌ 答案错误', 'error');
+                // retry same question
+                setTimeout(() => {
+                    this.currentModeInstance.loadQuestion(this.levelQuestions[this.questionsCompleted]);
+                }, 2500);
+            }
+        }
+    },
+    
+    updateHUD() {
+        document.getElementById('hud-level').innerText = `${this.currentStageIdx + 1}/4`;
+        document.getElementById('hud-hp').innerText = this.playerHP;
+        document.getElementById('hud-progress').style.width = `${(this.questionsCompleted / 5) * 100}%`;
+    },
+    
+    showToast(text, type) {
+        let t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.innerText = text;
+        document.getElementById('game-container').appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    },
+    
+    showResult(won) {
+        this.state = 'result';
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('options-container').classList.add('hidden');
+        this.currentModeInstance = null;
+        
+        const res = document.getElementById('result');
+        res.classList.remove('hidden');
+        
+        const t = document.getElementById('res-title');
+        const s = document.getElementById('res-stats');
+        
+        if(won) {
+            t.innerText = "🏆 大吉大利 顺利吃鸡";
+            t.style.color = 'var(--success-glow)';
+            s.innerHTML = `
+                <div style="color:var(--primary-glow)">全科目精英考核通过！</div>
+                <div>剩余血量：${this.playerHP} / 3</div>
+                <div>完成挑战：4大关卡，20道真题</div>
+            `;
+        } else {
+            t.innerText = "💀 落地成盒";
+            t.style.color = 'var(--danger-glow)';
+            s.innerHTML = `
+                <div style="color:var(--text-dim)">在第 ${this.currentStageIdx + 1} 关被淘汰...</div>
+                <div>请重新复习知识点后再来挑战！</div>
+            `;
+        }
+    },
+    
+    resetToMenu() {
+        document.getElementById('result').classList.add('hidden');
+        document.getElementById('menu').classList.remove('hidden');
+        this.state = 'menu';
+    }
+};
+
+window.onload = () => GameApp.setup();
+
+</script>
+</body>
+</html>

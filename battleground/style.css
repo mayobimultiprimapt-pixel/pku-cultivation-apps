@@ -99,17 +99,41 @@ body{font-family:var(--ff-c);background:#000;color:var(--txt);
 /* ════════════════════════════════════════════════════════
    BATTLE SCREEN — FPS IMMERSIVE
    ════════════════════════════════════════════════════════ */
-#battleScreen{overflow:hidden}
+#battleScreen{overflow:hidden;}
 
-/* Scrolling terrain background */
-.battle-bg{position:absolute;inset:0;background-size:cover;background-position:center;
-  opacity:.5;transition:transform .5s}
-.battle-terrain{position:absolute;bottom:0;left:0;width:300%;height:30%;
-  background:repeating-linear-gradient(90deg,
-    rgba(255,255,255,.02) 0px, transparent 2px, transparent 60px);
-  animation:terrainScroll 4s linear infinite;pointer-events:none;z-index:1;
-  opacity:.3}
-@keyframes terrainScroll{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
+/* Scrolling terrain background 3D FPS */
+.battle-bg{position:absolute;inset:0;background:linear-gradient(to bottom, #050b14 0%, #0d1627 40%, transparent 100%);
+  opacity:.8; transform: translateX(calc(var(--look-x, 0px) * -0.3)) scale(1.2); transition: transform 0.1s linear;}
+.battle-perspective{position:absolute;bottom:-10%;left:0;width:100%;height:60%;
+  perspective:1000px;opacity:.6;z-index:1;pointer-events:none;}
+.battle-terrain{position:absolute;top:0;left:-50%;width:200%;height:150%;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0px, transparent 2px, transparent 60px),
+             repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px, transparent 2px, transparent 60px);
+  transform: rotateX(75deg) translateX(calc(var(--look-x, 0px) * 1.5)); transform-origin:top center;
+  animation:terrainFps 1.5s linear infinite; transition: transform 0.1s linear;}
+@keyframes terrainFps{from{background-position:0 0;}to{background-position:0 60px;}}
+
+/* Speed Lines (Drink/Sprint) */
+.speed-lines{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(ellipse at center, transparent 30%, rgba(255,255,255,.08) 80%, rgba(255,255,255,.15) 100%);}
+.speed-lines.active{opacity:1;animation:speedZoom .4s linear infinite;}
+@keyframes speedZoom{0%{transform:scale(1);}100%{transform:scale(1.1);}}
+
+/* Blue Zone Wall */
+.blue-zone-wall{position:absolute;inset:0;z-index:11;pointer-events:none;opacity:0;
+  background:linear-gradient(to top, rgba(168,85,247,.4) 0%, rgba(168,85,247,.1) 50%, transparent 100%);
+  backdrop-filter:blur(4px);transition:opacity 2s;}
+.blue-zone-wall.active{opacity:1;}
+
+/* FPS Weapon Hand */
+.fps-weapon{position:absolute;bottom:-20px;right:-10px;font-size:5rem;z-index:14;pointer-events:none;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(-5px 10px 15px rgba(0,0,0,.6));
+  transform-origin:bottom right;}
+.fps-weapon.running{animation:weaponBob .6s ease-in-out infinite;}
+@keyframes weaponBob{0%,100%{transform:translateY(0) rotate(-15deg);}50%{transform:translateY(-15px) rotate(-8deg);}}
+.fps-weapon.aiming{bottom:150px;right:50%;transform:translateX(50%) rotate(0deg);font-size:6rem;}
+.fps-weapon.proned{transform:translateY(120px) rotate(45deg);opacity:0;}
+.fps-weapon.hidden{display:none;}
 
 /* Poison edge overlay (purple vignette) */
 .poison-edge{position:absolute;inset:0;pointer-events:none;z-index:15;
@@ -124,6 +148,13 @@ body{font-family:var(--ff-c);background:#000;color:var(--txt);
   transition:opacity .1s}
 .dmg-flash.active{opacity:1;animation:dmgPulse .4s ease-out}
 @keyframes dmgPulse{from{opacity:1}to{opacity:0}}
+
+/* Bush overlay */
+.bush-overlay{position:absolute;inset:0;pointer-events:none;z-index:17;opacity:0;
+  box-shadow:inset 0 0 100px rgba(21,128,61,.5),inset 0 0 200px rgba(22,163,74,.3);
+  background:radial-gradient(ellipse at center, transparent 40%, rgba(20,83,45,.4) 100%);
+  transition:opacity .4s; backdrop-filter: sepia(30%) hue-rotate(80deg) saturate(120%);}
+.bush-overlay.active{opacity:1;}
 
 /* Kill feed (top-left) */
 .kill-feed{position:absolute;top:3rem;left:.5rem;z-index:25;
@@ -213,24 +244,28 @@ body{font-family:var(--ff-c);background:#000;color:var(--txt);
 @keyframes encounterPop{from{transform:translateX(-50%) scale(0);opacity:0}
   to{transform:translateX(-50%) scale(1);opacity:1}}
 
+/* Enemy approach (from far to near) */
+.enemy-wrap.approaching{animation:enemyApproach .8s ease-out forwards}
+@keyframes enemyApproach{from{transform:translateX(calc(-50% + var(--look-x, 0px))) scale(.2);opacity:0;top:40%}
+  to{transform:translateX(calc(-50% + var(--look-x, 0px))) scale(1);opacity:1;top:20%}}
+
 /* Enemy (approaching from distance) */
-.enemy-wrap{position:absolute;top:18%;left:50%;transform:translateX(-50%);z-index:10;
-  text-align:center;transition:all .3s}
+.enemy-wrap{position:absolute;top:20%;left:50%;transform:translateX(calc(-50% + var(--look-x, 0px)));z-index:10;
+  text-align:center;transition:transform 0.1s linear, top 0.3s;}
 .enemy-body{display:flex;flex-direction:column;align-items:center}
 .enemy-hp-bar{width:80px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;
   overflow:hidden;margin-bottom:.2rem}
 .enemy-hp-fill{height:100%;background:linear-gradient(90deg,var(--ruby),#f97316);
   border-radius:2px;width:100%;transition:width .3s}
 .enemy-name{font-family:var(--ff-d);font-size:.5rem;color:var(--ruby);letter-spacing:1px;
-  margin-bottom:.3rem}
-.enemy-figure{font-size:4rem;filter:drop-shadow(0 0 15px rgba(239,68,68,.3));
-  animation:enemyIdle 3s ease-in-out infinite}
-@keyframes enemyIdle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.02)}}
-
-/* Enemy approach (from far to near) */
-.enemy-wrap.approaching{animation:enemyApproach .8s ease-out forwards}
-@keyframes enemyApproach{from{transform:translateX(-50%) scale(.2);opacity:0;top:30%}
-  to{transform:translateX(-50%) scale(1);opacity:1;top:18%}}
+  margin-bottom:.3rem; text-shadow:0 0 5px #000;}
+.enemy-figure{width:220px;height:auto;filter:drop-shadow(0 20px 15px rgba(0,0,0,.6));
+  mix-blend-mode: screen; pointer-events: none; transform-origin: bottom center;
+  animation:enemyLive 2s ease-in-out infinite}
+@keyframes enemyLive{
+  0%,100%{transform:scale(1) rotate(-2deg); filter:drop-shadow(0 20px 10px rgba(0,0,0,.8));}
+  50%{transform:scale(1.02) rotate(2deg); filter:drop-shadow(0 30px 20px rgba(0,0,0,.4));}
+}
 
 /* Enemy hit/kill */
 .enemy-figure.hit{animation:enemyHit .5s ease-out!important}
@@ -288,30 +323,47 @@ body{font-family:var(--ff-c);background:#000;color:var(--txt);
   to{transform:translate(-50%,-50%) scale(1);opacity:1}}
 
 /* HUD Bottom */
-.hud-bottom{position:absolute;bottom:0;left:0;right:0;z-index:20;
-  display:flex;align-items:center;justify-content:center;gap:.4rem;
+.hud-bottom{position:absolute;bottom:0;left:0;right:0;z-index:20; pointer-events:none;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:.4rem;
   padding:.4rem .6rem calc(env(safe-area-inset-bottom,.3rem) + .3rem);
-  background:linear-gradient(0deg,rgba(0,0,0,.8),transparent)}
+  background:linear-gradient(0deg,rgba(0,0,0,.8),rgba(0,0,0,0));}
+.hud-bottom > * { pointer-events: auto; }
+
+/* Joystick UI */
+.joystick-zone { position:absolute; bottom:0; left:0; width:45%; height:50%; z-index:40; touch-action:none; }
+.joystick-base { position:absolute; width:110px; height:110px; border-radius:50%; background:radial-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.02)); border:1.5px solid rgba(255,255,255,0.3); transform:translate(-50%, -50%); pointer-events:none; }
+.joystick-knob { position:absolute; top:50%; left:50%; width:45px; height:45px; border-radius:50%; background:rgba(255,255,255,0.7); box-shadow:0 0 15px rgba(255,255,255,0.6); transform:translate(-50%, -50%); }
 
 /* Weapon display */
-.weapon-display{display:flex;align-items:center;gap:.3rem;padding:.3rem .6rem;
+.weapon-display{display:flex;align-items:center;gap:.3rem;padding:.3rem .5rem;
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
-  border-radius:var(--rs);font-size:.65rem;color:var(--dim)}
-.weapon-icon{font-size:1.2rem}
-.weapon-name{font-family:var(--ff-d);font-size:.55rem;font-weight:700;color:var(--txt)}
-.weapon-ammo{font-family:var(--ff-d);font-size:.55rem;color:var(--gold)}
+  border-radius:var(--rs);font-size:.65rem;color:var(--dim);}
+.wd-col{display:flex;flex-direction:column;line-height:1.2;}
+.weapon-icon{font-size:1.2rem;}
+.weapon-name{font-family:var(--ff-d);font-size:.6rem;font-weight:700;color:var(--txt);}
+.weapon-ammo{font-family:var(--ff-d);font-size:.5rem;color:var(--gold);}
 
-.fire-btn{padding:.55rem 1.5rem;background:linear-gradient(135deg,var(--gold),#b45309);
-  border:none;border-radius:var(--rs);color:#000;font-weight:900;font-size:.85rem;
+/* Tactical & Actions */
+.action-btns{display:flex;gap:.3rem;}
+.fire-btn{padding:.5rem 1rem;background:linear-gradient(135deg,var(--gold),#b45309);
+  border:none;border-radius:var(--rs);color:#000;font-weight:900;font-size:.8rem;
   font-family:var(--ff-c);cursor:pointer;letter-spacing:1px;
-  box-shadow:0 0 15px var(--gold-g);transition:all .2s}
-.fire-btn:disabled{opacity:.3;box-shadow:none}
-.fire-btn:not(:disabled):active{transform:scale(.95)}
-.hint-btn{padding:.4rem .6rem;background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);border-radius:var(--rs);
-  color:var(--dim);font-size:.7rem;font-family:var(--ff-c);cursor:pointer;
-  transition:all .2s}
-.hint-btn:active{border-color:var(--cyan)}
+  box-shadow:0 0 15px var(--gold-g);transition:all .2s;}
+.fire-btn:disabled{opacity:.4;box-shadow:none;}
+.fire-btn:not(:disabled):active{transform:scale(.95);}
+.alt-fire{padding:.5rem .6rem;background:linear-gradient(135deg,var(--emerald),#059669);
+  box-shadow:0 0 15px var(--emerald-g);}
+.main-fire{padding:.5rem 1.2rem;}
+
+.tactical-bar{display:flex;gap:.4rem;}
+.tac-btn{position:relative;width:38px;height:38px;border-radius:var(--rs);
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  font-size:1.1rem;color:#fff;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;}
+.tac-btn:active{transform:scale(.9);background:rgba(255,255,255,.2);}
+.tac-badge{position:absolute;top:-6px;right:-6px;background:var(--ruby);
+  font-family:var(--ff-d);font-size:.55rem;padding:2px 5px;border-radius:10px;
+  font-weight:bold;border:1px solid #000;color:#fff;}
 .airdrop-notify{padding:.35rem .6rem;background:rgba(245,158,11,.1);
   border:1px solid var(--gold);border-radius:20px;font-size:.65rem;
   color:var(--gold);cursor:pointer;animation:airdropBounce 1s infinite}
