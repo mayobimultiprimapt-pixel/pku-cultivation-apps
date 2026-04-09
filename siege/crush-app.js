@@ -100,7 +100,7 @@ const CrushApp = (() => {
     animate();
   }
 
-  // ═══ LEVEL MAP ═══
+  // ═══ 蜿蜒关卡地图 (Candy Crush风) ═══
   function renderLevelMap() {
     const map = document.getElementById('lvMap');
     const total = CrushData.getTotalLevels(mode);
@@ -112,9 +112,53 @@ const CrushApp = (() => {
     }
 
     map.innerHTML = '';
-    for(let i=0;i<total;i++){
+    const COLS = 4, NW = 56, NH = 56, GX = 20, GY = 28;
+    const rowH = NH + GY;
+    const totalRows = Math.ceil(total / COLS);
+    const mapW = COLS * (NW + GX);
+    map.style.cssText = `position:relative;z-index:10;padding:1rem 0;max-width:${mapW}px;margin:0 auto;height:${totalRows * rowH + 40}px`;
+
+    // 计算蛇形坐标
+    const positions = [];
+    for(let i=0; i<total; i++) {
+      const row = Math.floor(i / COLS);
+      const posInRow = i % COLS;
+      const col = row % 2 === 0 ? posInRow : (COLS - 1 - posInRow);
+      positions.push({
+        x: col * (NW + GX) + GX/2,
+        y: row * rowH + 10
+      });
+    }
+
+    // SVG连线
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible';
+    svg.setAttribute('viewBox', `0 0 ${mapW} ${totalRows*rowH+40}`);
+    map.appendChild(svg);
+
+    for(let i=0; i<positions.length-1; i++) {
+      const a = positions[i], b = positions[i+1];
+      const ax = a.x+NW/2, ay = a.y+NH/2, bx = b.x+NW/2, by = b.y+NH/2;
+      const done = (prog[i] && prog[i].stars > 0);
+      const path = document.createElementNS(svgNS, 'path');
+      // 贝塞尔曲线让转弯更自然
+      const mx = (ax+bx)/2, my = (ay+by)/2;
+      path.setAttribute('d', `M${ax},${ay} Q${mx},${ay} ${bx},${by}`);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', done ? 'var(--mode-accent)' : 'rgba(255,255,255,.1)');
+      path.setAttribute('stroke-width', done ? '3' : '2');
+      if(!done) path.setAttribute('stroke-dasharray', '5,4');
+      if(done) path.style.filter = 'drop-shadow(0 0 6px var(--mode-glow))';
+      svg.appendChild(path);
+    }
+
+    // 渲染节点
+    for(let i=0; i<total; i++) {
+      const pos = positions[i];
       const node = document.createElement('div');
       node.className = 'lv-node';
+      node.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:${NW}px;height:${NH}px;z-index:2`;
       const stars = prog[i] ? prog[i].stars : 0;
 
       if(stars > 0) {
@@ -134,21 +178,11 @@ const CrushApp = (() => {
       map.appendChild(node);
     }
 
-    // 特殊标记: 金库关卡 / Perplexity关卡
-    const builtinCount = {english:20, math:10, politics:10, cs:10};
-    const bc = builtinCount[mode] || 10;
-    const nodes = map.querySelectorAll('.lv-node');
-    nodes.forEach((n, i) => {
-      if(i >= bc) {
-        n.classList.add('dynamic-level');
-        // 添加金库/AI标记
-        const badge = document.createElement('span');
-        badge.className = 'lv-source-badge';
-        badge.textContent = '📡';
-        badge.title = '金库/AI动态关卡';
-        n.appendChild(badge);
-      }
-    });
+    // 滚动到当前关卡
+    const currentIdx = Math.min(highest + 1, total - 1);
+    if(currentIdx > 0 && positions[currentIdx]) {
+      setTimeout(() => map.parentElement.scrollTo({top: Math.max(0, positions[currentIdx].y - 200), behavior:'smooth'}), 300);
+    }
 
     // Total stars
     let totalStars = 0;
