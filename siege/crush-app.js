@@ -289,30 +289,57 @@ const CrushApp = (() => {
 
     result.chains.forEach((chain, idx) => {
       setTimeout(() => {
-        // Show combo
+        // ═══ 5级Combo反馈 ═══
+        const comboLevel = Math.min(chain.chain, 5);
         if(chain.chain >= 2) {
-          showCombo(`COMBO x${chain.chain}!`);
+          const comboTexts = {2:'GOOD!', 3:'GREAT!', 4:'AMAZING!', 5:'LEGENDARY!'};
+          showCombo(comboTexts[comboLevel] || `COMBO x${chain.chain}!`, comboLevel);
         }
         // Special tile creation feedback
         if(chain.specialCreated) {
           if(chain.specialCreated.type === 'bomb') {
-            showCombo('💣 炸弹生成!');
+            showCombo('💣 BOMB!', 3);
           } else if(chain.specialCreated.type === 'rainbow') {
-            showCombo('🌈 彩虹生成!');
+            showCombo('🌈 RAINBOW!', 5);
           } else if(chain.specialCreated.type === 'rainbow_activated') {
-            showCombo('🌈 彩虹消除!');
+            showCombo('🌈 UNLEASHED!', 5);
           }
         }
-        showFloat(`+${chain.score}`, false);
-        if(chain.targetHits > 0) {
-          showFloat(`✅ 目标词 ×${chain.targetHits}`, false);
-          if(navigator.vibrate) navigator.vibrate(100);
-          // Spawn celebration particles
-          spawnBurstParticles();
+
+        // ═══ 分级屏震 ═══
+        const grid = document.getElementById('gameGrid');
+        if(comboLevel >= 4) {
+          grid.classList.add('shake-heavy');
+          setTimeout(() => grid.classList.remove('shake-heavy'), 450);
+          if(navigator.vibrate) navigator.vibrate([50,30,80]);
+        } else if(comboLevel >= 3) {
+          grid.classList.add('shake-medium');
+          setTimeout(() => grid.classList.remove('shake-medium'), 350);
+          if(navigator.vibrate) navigator.vibrate([50,30,50]);
+        } else if(comboLevel >= 2) {
+          grid.classList.add('shake-light');
+          setTimeout(() => grid.classList.remove('shake-light'), 250);
         }
+
+        // ═══ 分数飘字(大消大字) ═══
+        showFloat(`+${chain.score}`, false, chain.score >= 100);
+        if(chain.targetHits > 0) {
+          showFloat(`⭐ 目标词 ×${chain.targetHits}`, false, true);
+          if(navigator.vibrate) navigator.vibrate(100);
+          spawnBurstParticles(chain.targetHits * 8);
+        } else {
+          spawnBurstParticles(Math.min(comboLevel * 4, 20));
+        }
+
+        // ═══ 分数弹跳 ═══
+        const scoreEl = document.getElementById('gameScore');
+        scoreEl.classList.remove('bounce');
+        void scoreEl.offsetWidth;
+        scoreEl.classList.add('bounce');
+
         renderGame();
       }, delay);
-      delay += 350;
+      delay += 380;
     });
 
     setTimeout(() => {
@@ -325,47 +352,53 @@ const CrushApp = (() => {
     }, delay + 200);
   }
 
-  // ═══ 消除粒子爆发 ═══
-  function spawnBurstParticles() {
+  // ═══ 消除粒子爆发(增强版) ═══
+  function spawnBurstParticles(count = 12) {
     const burst = document.createElement('div');
     burst.className = 'burst-container';
     document.body.appendChild(burst);
+    const colors = ['#f59e0b','#10b981','#3b82f6','#ef4444','#a855f7','#22d3ee','#ec4899','#f97316'];
 
-    for(let i=0; i<12; i++) {
+    for(let i=0; i<count; i++) {
       const p = document.createElement('div');
       p.className = 'burst-particle';
-      const angle = (i/12) * Math.PI * 2;
-      const dist = 40 + Math.random()*60;
+      const angle = (i/count) * Math.PI * 2 + (Math.random()-0.5)*0.5;
+      const dist = 30 + Math.random()*80;
       p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
       p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
-      p.style.background = ['#f59e0b','#10b981','#3b82f6','#ef4444','#a855f7','#22d3ee'][i%6];
+      p.style.background = colors[i % colors.length];
+      const size = 4 + Math.random()*6;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.animationDelay = (Math.random()*0.1) + 's';
       burst.appendChild(p);
     }
 
-    setTimeout(() => burst.remove(), 800);
+    setTimeout(() => burst.remove(), 1000);
   }
 
-  // ═══ EFFECTS ═══
-  function showCombo(text) {
+  // ═══ EFFECTS (增强版) ═══
+  function showCombo(text, level = 2) {
     const el = document.getElementById('comboDisplay');
-    document.getElementById('comboText').textContent = text;
-    el.classList.remove('hidden');
     const inner = document.getElementById('comboText');
+    inner.textContent = text;
+    inner.className = 'combo-text combo-' + Math.min(level, 5);
+    el.classList.remove('hidden');
     inner.style.animation = 'none';
-    inner.offsetHeight;
-    inner.style.animation = 'comboIn .6s cubic-bezier(.34,1.56,.64,1)';
-    setTimeout(() => el.classList.add('hidden'), 1200);
+    void inner.offsetHeight;
+    inner.style.animation = 'comboSlam .5s cubic-bezier(.34,1.56,.64,1)';
+    const duration = level >= 4 ? 1800 : 1200;
+    setTimeout(() => el.classList.add('hidden'), duration);
   }
 
-  function showFloat(text, negative) {
-    const el = document.getElementById('floatScore');
+  function showFloat(text, negative, big = false) {
+    const el = document.createElement('div');
     el.textContent = text;
-    el.className = `float-score${negative?' negative':''}`;
-    el.classList.remove('hidden');
-    el.style.animation = 'none';
-    el.offsetHeight;
-    el.style.animation = 'floatUp 1s ease-out forwards';
-    setTimeout(() => el.classList.add('hidden'), 1000);
+    el.className = `float-score${negative ? ' negative' : ''}${big ? ' big' : ''}`;
+    el.style.left = (30 + Math.random()*40) + '%';
+    el.style.top = (25 + Math.random()*15) + '%';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1300);
   }
 
   // ═══ RESULT ═══
