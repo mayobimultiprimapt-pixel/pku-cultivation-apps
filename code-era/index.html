@@ -52,6 +52,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.35}
 
+/* ── Screen Backgrounds ── */
+.lobby{background:url('assets/bg-lobby.png') center/cover no-repeat, var(--bg)}
+#sHack{background:url('assets/bg-hack.png') center/cover no-repeat, var(--bg)}
+#sForge{background:url('assets/bg-forge.png') center/cover no-repeat, var(--bg)}
+
 /* ── Screen system ── */
 .screen{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;transition:opacity 0.4s}
 .screen.fade-out{opacity:0;pointer-events:none}
@@ -91,54 +96,66 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .s-item.owned .btn-buy{background:var(--green);color:#000;border-color:var(--green);cursor:default}
 
 /* ═══ LOBBY ═══ */
-.lobby{align-items:center;justify-content:center;gap:50px}
-.lobby-head{text-align:center}
-.l-seal{font-size:48px;filter:drop-shadow(0 0 20px var(--cyan));animation:float 4s ease-in-out infinite;margin-bottom:12px}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.l-title{font-family:var(--serif);font-size:clamp(28px,5vw,42px);font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px}
-.l-sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:8px;margin-top:8px;text-transform:uppercase}
+.lobby{align-items:center;justify-content:center;gap:50px;position:relative}
+.lobby::before{content:'';position:absolute;inset:0;background:rgba(4,4,12,0.55);pointer-events:none}
+.lobby-head{text-align:center;position:relative;z-index:2}
+.l-seal{width:120px;height:120px;border-radius:50%;object-fit:contain;filter:drop-shadow(0 0 30px var(--cyan)) drop-shadow(0 0 60px rgba(168,85,247,0.4));animation:float 4s ease-in-out infinite;margin:0 auto 16px}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
+.l-title{font-family:var(--serif);font-size:clamp(28px,5vw,42px);font-weight:900;background:linear-gradient(135deg,#fff,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:5px;text-shadow:none;filter:drop-shadow(0 2px 8px rgba(8,247,254,0.3))}
+.l-sub{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:10px;margin-top:10px;text-transform:uppercase}
 .l-back{position:absolute;top:20px;left:24px;color:var(--dim);text-decoration:none;font-size:14px;font-family:var(--serif);transition:.3s;z-index:10}
 .l-back:hover{color:var(--text);text-shadow:0 0 10px rgba(255,255,255,.4)}
 
-.portal-row{display:flex;gap:40px;flex-wrap:wrap;justify-content:center}
+.portal-row{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2}
 
 .portal{
-  width:420px;height:280px;position:relative;overflow:hidden;
-  background:var(--panel);border:1px solid rgba(255,255,255,0.06);border-radius:20px;
+  width:440px;min-height:320px;position:relative;overflow:hidden;
+  background:rgba(4,4,16,0.75);border-radius:16px;
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   transition:all .4s cubic-bezier(.23,1,.32,1);text-align:left;
 }
+/* Themed border glow */
+.portal.p408{border:2px solid rgba(8,247,254,0.45);box-shadow:0 0 20px rgba(8,247,254,0.1),inset 0 0 30px rgba(8,247,254,0.05)}
+.portal.p301{border:2px solid rgba(168,85,247,0.45);box-shadow:0 0 20px rgba(168,85,247,0.1),inset 0 0 30px rgba(168,85,247,0.05)}
 .portal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:.4s}
 .portal.p408::before{background:linear-gradient(90deg,var(--cyan),#3b82f6)}
 .portal.p301::before{background:linear-gradient(90deg,var(--purple),var(--pink))}
-.portal:hover{transform:translateY(-6px) scale(1.02)}
+.portal:hover{transform:translateY(-8px) scale(1.03)}
 .portal:hover::before{opacity:1}
-.portal.p408:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(8,247,254,0.1) inset;border-color:rgba(8,247,254,0.3)}
-.portal.p301:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(168,85,247,0.1) inset;border-color:rgba(168,85,247,0.3)}
+.portal.p408:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 50px rgba(8,247,254,0.2) inset,0 0 60px rgba(8,247,254,0.15);border-color:var(--cyan)}
+.portal.p301:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 50px rgba(168,85,247,0.2) inset,0 0 60px rgba(168,85,247,0.15);border-color:var(--purple)}
 
-.portal .p-inner{position:relative;z-index:2;padding:30px;height:100%;display:flex;flex-direction:column}
-.portal .p-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.portal .p-code{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--dim)}
+.portal .p-inner{position:relative;z-index:2;padding:0;height:100%;display:flex;flex-direction:column}
+.portal .p-top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.portal .p-code{font-family:var(--serif);font-size:13px;font-weight:700}
+.p408 .p-code{color:var(--cyan)}
+.p301 .p-code{color:var(--purple)}
 .portal .p-badge{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:20px;font-weight:700;letter-spacing:1px}
-.badge-cyber{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(8,247,254,0.3)}
-.badge-forge{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
+.badge-cyber{background:rgba(8,247,254,0.15);color:var(--cyan);border:1px solid rgba(8,247,254,0.4)}
+.badge-forge{background:rgba(168,85,247,0.15);color:var(--purple);border:1px solid rgba(168,85,247,0.4)}
 
-.portal .p-icon{font-size:36px;margin-bottom:10px}
-.portal .p-name{font-family:var(--serif);font-size:22px;font-weight:900;margin-bottom:6px}
+/* Portal icon image */
+.portal .p-icon-wrap{width:100%;height:110px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+.portal .p-icon-wrap img{height:100px;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(0,0,0,0.6));transition:transform .4s}
+.portal:hover .p-icon-wrap img{transform:scale(1.1)}
+.portal .p-content{padding:16px 20px;flex:1;display:flex;flex-direction:column}
+.portal .p-name{font-family:var(--serif);font-size:22px;font-weight:900;margin-bottom:8px}
 .p408 .p-name{background:linear-gradient(135deg,var(--cyan),#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .p301 .p-name{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.portal .p-desc{font-size:12px;color:var(--dim);line-height:1.6;flex:1}
-.portal .p-stat{font-family:var(--mono);font-size:10px;margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);color:var(--sub)}
+.portal .p-desc{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;flex:1}
+.portal .p-stat{font-family:var(--mono);font-size:11px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);color:var(--sub)}
 .portal .p-stat b{margin-left:4px}
 .p408 .p-stat b{color:var(--cyan)}
 .p301 .p-stat b{color:var(--purple)}
 
 /* ═══ 408 HACK SCREEN ═══ */
+#sHack{position:relative}
+#sHack::before{content:'';position:absolute;inset:0;background:rgba(2,4,12,0.5);pointer-events:none}
 .hack-hdr{
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 24px;background:rgba(0,0,0,0.6);
-  border-bottom:1px solid rgba(8,247,254,0.15);backdrop-filter:blur(10px);
-  z-index:10;flex-shrink:0;
+  padding:12px 24px;background:rgba(0,0,0,0.7);
+  border-bottom:1px solid rgba(8,247,254,0.2);backdrop-filter:blur(12px);
+  z-index:10;flex-shrink:0;position:relative;
 }
 .hh-left{display:flex;align-items:center;gap:16px}
 .btn-abort{
@@ -146,7 +163,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;transition:.2s;
 }
 .btn-abort:hover{border-color:var(--red);color:var(--red);box-shadow:0 0 12px rgba(255,46,99,0.3)}
-.hh-target{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:2px}
+.hh-target{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--pink);letter-spacing:2px;text-shadow:0 0 10px rgba(236,72,153,0.3)}
 
 .hh-center{display:flex;align-items:center;gap:12px}
 .trace-label{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:2px;animation:tblink 1s infinite alternate}
@@ -166,32 +183,32 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .level-badge{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:12px;background:rgba(8,247,254,0.08);color:var(--cyan);border:1px solid rgba(8,247,254,0.2)}
 
 /* Hack Body */
-.hack-body{flex:1;display:flex;flex-direction:column;padding:16px 24px;overflow-y:auto;gap:16px}
+.hack-body{flex:1;display:flex;flex-direction:column;padding:16px 24px;overflow-y:auto;gap:16px;position:relative;z-index:2}
 .hack-desc{
-  font-family:var(--serif);font-size:14px;color:var(--text);
-  background:rgba(8,247,254,0.04);padding:14px 18px;border-left:3px solid var(--cyan);
-  border-radius:0 8px 8px 0;line-height:1.7;
+  font-family:var(--serif);font-size:14px;color:rgba(255,255,255,0.85);
+  background:rgba(0,0,0,0.5);padding:14px 18px;border-left:3px solid var(--pink);
+  border-radius:0 8px 8px 0;line-height:1.7;backdrop-filter:blur(6px);
 }
 
 .core-wrap{
   flex:1;display:flex;align-items:center;justify-content:center;perspective:800px;
 }
 .code-panel{
-  background:rgba(4,4,12,0.9);border:1px solid rgba(8,247,254,0.2);border-radius:12px;
+  background:rgba(4,4,12,0.85);border:1px solid rgba(8,247,254,0.25);border-radius:12px;
   padding:28px 32px;width:90%;max-width:820px;
-  box-shadow:0 0 40px rgba(8,247,254,0.06) inset,0 20px 60px rgba(0,0,0,.7);
-  backdrop-filter:blur(20px);transform:rotateX(3deg);
+  box-shadow:0 0 50px rgba(8,247,254,0.08) inset,0 20px 60px rgba(0,0,0,.7),0 0 80px rgba(8,247,254,0.04);
+  backdrop-filter:blur(20px);transform:rotateX(2deg);
   font-family:var(--code);font-size:14px;line-height:2;color:var(--cyan);white-space:pre-wrap;
   position:relative;overflow:hidden;
 }
 .code-panel::before{
   content:'// 408_CORE_MATRIX — ICE FIREWALL';display:block;
-  color:rgba(8,247,254,0.25);font-size:11px;margin-bottom:12px;letter-spacing:1px;
+  color:rgba(8,247,254,0.3);font-size:11px;margin-bottom:12px;letter-spacing:1px;
 }
-.code-panel .line-num{color:rgba(8,247,254,0.2);user-select:none;margin-right:12px;min-width:20px;display:inline-block;text-align:right}
+.code-panel .line-num{color:rgba(8,247,254,0.25);user-select:none;margin-right:12px;min-width:20px;display:inline-block;text-align:right}
 .code-panel .kw{color:#f472b6} /* keywords */
 .code-panel .fn{color:#60a5fa} /* functions */
-.code-panel .cm{color:rgba(8,247,254,0.2);font-style:italic} /* comments */
+.code-panel .cm{color:rgba(8,247,254,0.25);font-style:italic} /* comments */
 .code-panel .ty{color:#fbbf24} /* types */
 
 /* Droppable blank slots */
@@ -208,15 +225,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 /* Hack Footer */
 .hack-foot{
-  padding:16px 24px;border-top:1px solid rgba(8,247,254,0.12);
-  background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);
-  display:flex;flex-direction:column;gap:12px;flex-shrink:0;z-index:10;
+  padding:16px 24px;border-top:1px solid rgba(8,247,254,0.15);
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;gap:12px;flex-shrink:0;z-index:10;position:relative;
 }
 .dock-label{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:3px}
 .payload-dock{display:flex;gap:12px;flex-wrap:wrap;min-height:44px;align-items:center}
 
 .payload{
-  padding:8px 14px;background:rgba(4,4,12,0.95);border:1px solid rgba(8,247,254,0.4);
+  padding:8px 14px;background:rgba(4,4,12,0.9);border:1px solid rgba(8,247,254,0.4);
   border-radius:6px;font-family:var(--code);font-size:13px;color:#e0e0ff;
   cursor:grab;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:all .25s;
   user-select:none;position:relative;
@@ -229,11 +246,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 .hack-actions{display:flex;justify-content:center;gap:20px}
 .btn-run{
-  padding:10px 36px;background:var(--cyan);color:#000;font-family:var(--mono);
+  padding:10px 36px;background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#000;font-family:var(--mono);
   font-weight:900;font-size:14px;border-radius:8px;letter-spacing:2px;transition:.3s;
+  box-shadow:0 4px 15px rgba(8,247,254,0.3);
 }
 .btn-run:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
-.btn-run:not(:disabled):hover{box-shadow:0 0 25px var(--cyan);transform:scale(1.05)}
+.btn-run:not(:disabled):hover{box-shadow:0 0 30px var(--cyan),0 4px 20px rgba(8,247,254,0.4);transform:scale(1.05)}
 
 /* Glitch overlay */
 .glitch-ovl{position:absolute;inset:0;z-index:999;pointer-events:none;opacity:0;transition:opacity .1s}
@@ -262,21 +280,26 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .btn-next:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.5)}
 
 /* ═══ 301 FORGE SCREEN ═══ */
+#sForge{position:relative}
+#sForge::before{content:'';position:absolute;inset:0;background:rgba(10,2,15,0.45);pointer-events:none}
 .forge-hdr{
   display:flex;align-items:center;justify-content:space-between;
   padding:12px 24px;background:rgba(0,0,0,0.7);
-  border-bottom:1px solid rgba(168,85,247,0.2);backdrop-filter:blur(10px);
-  z-index:10;flex-shrink:0;
+  border-bottom:1px solid rgba(168,85,247,0.25);backdrop-filter:blur(12px);
+  z-index:10;flex-shrink:0;position:relative;
 }
 .fh-left{display:flex;align-items:center;gap:16px}
-.fh-title{font-family:var(--serif);font-size:16px;font-weight:900;color:var(--purple);letter-spacing:2px}
+.fh-title{font-family:var(--serif);font-size:16px;font-weight:900;color:var(--purple);letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)}
 .fh-right{display:flex;align-items:center;gap:20px}
 .forge-hp .hp-fill{background:var(--purple);box-shadow:0 0 8px var(--purple)}
 .forge-hp .hp-val{color:var(--purple)}
 .step-badge{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:12px;background:rgba(168,85,247,0.08);color:var(--purple);border:1px solid rgba(168,85,247,0.2)}
 
 /* Forge Body */
-.forge-body{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.forge-body{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;z-index:2}
+
+/* Cauldron image (left side) */
+.forge-cauldron{position:absolute;left:5%;bottom:0;width:clamp(250px,30vw,400px);pointer-events:none;z-index:3;filter:drop-shadow(0 0 40px rgba(168,85,247,0.5))}
 
 .furnace{
   width:clamp(300px,50vw,550px);height:clamp(300px,50vw,550px);position:relative;
@@ -284,18 +307,18 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 /* Rotating rune circle */
 .furnace-ring{
-  position:absolute;inset:-30px;border:2px solid rgba(168,85,247,0.15);border-radius:50%;
+  position:absolute;inset:-30px;border:2px solid rgba(168,85,247,0.2);border-radius:50%;
   animation:fSpin 20s linear infinite;
 }
 .furnace-ring::before,.furnace-ring::after{
-  content:'☯';position:absolute;font-size:18px;color:rgba(168,85,247,0.3);
+  content:'☯';position:absolute;font-size:18px;color:rgba(168,85,247,0.35);
 }
 .furnace-ring::before{top:-9px;left:50%;transform:translateX(-50%)}
 .furnace-ring::after{bottom:-9px;left:50%;transform:translateX(-50%)}
 @keyframes fSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
 .furnace-ring2{
-  position:absolute;inset:-60px;border:1px dashed rgba(168,85,247,0.08);border-radius:50%;
+  position:absolute;inset:-60px;border:1px dashed rgba(168,85,247,0.1);border-radius:50%;
   animation:fSpin 35s linear infinite reverse;
 }
 
@@ -308,16 +331,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 /* Beast card / math equation display */
 .beast{
-  background:rgba(4,4,12,0.9);padding:40px 50px;border-radius:20px;
-  border:2px solid rgba(168,85,247,0.4);position:relative;z-index:2;
-  box-shadow:0 0 50px rgba(168,85,247,0.2) inset,0 20px 60px rgba(0,0,0,.6);
+  background:rgba(4,4,12,0.85);padding:40px 50px;border-radius:20px;
+  border:2px solid rgba(168,85,247,0.5);position:relative;z-index:2;
+  box-shadow:0 0 60px rgba(168,85,247,0.2) inset,0 20px 60px rgba(0,0,0,.6),0 0 80px rgba(168,85,247,0.08);
   transition:all .5s cubic-bezier(.68,-.55,.265,1.55);
-  max-width:80vw;text-align:center;
+  max-width:80vw;text-align:center;backdrop-filter:blur(10px);
 }
 .beast .katex{font-size:28px!important;color:#fff}
 .beast-hp-wrap{margin-top:16px;display:flex;align-items:center;gap:8px;justify-content:center}
 .beast-hp-track{width:200px;height:8px;background:rgba(168,85,247,0.1);border-radius:4px;overflow:hidden}
-.beast-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));box-shadow:0 0 8px var(--purple);transition:width .5s}
+.beast-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));box-shadow:0 0 12px var(--purple);transition:width .5s}
 .beast-hp-text{font-family:var(--mono);font-size:11px;color:var(--purple)}
 .beast.hit{animation:beastHit .5s}
 @keyframes beastHit{0%{transform:scale(1)}20%{transform:scale(0.9) rotate(3deg);filter:brightness(2)}60%{transform:scale(1.05) rotate(-1deg)}100%{transform:scale(1) rotate(0)}}
@@ -325,34 +348,34 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 .forge-desc{
   position:absolute;top:20px;left:24px;right:24px;
-  font-family:var(--serif);font-size:13px;color:var(--dim);
+  font-family:var(--serif);font-size:13px;color:rgba(255,255,255,0.7);
   background:rgba(0,0,0,0.5);padding:10px 16px;border-radius:8px;
-  border-left:3px solid var(--purple);
+  border-left:3px solid var(--purple);backdrop-filter:blur(6px);z-index:5;
 }
 
 /* Forge Footer — Rune dock */
 .forge-foot{
-  padding:16px 24px;border-top:1px solid rgba(168,85,247,0.15);
+  padding:16px 24px;border-top:1px solid rgba(168,85,247,0.2);
   background:rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:12px;
-  flex-shrink:0;z-index:10;
+  flex-shrink:0;z-index:10;backdrop-filter:blur(10px);position:relative;
 }
-.rune-label{font-family:var(--serif);font-size:12px;color:var(--purple);letter-spacing:3px;text-align:center;font-weight:700}
+.rune-label{font-family:var(--serif);font-size:12px;color:var(--purple);letter-spacing:3px;text-align:center;font-weight:700;text-shadow:0 0 10px rgba(168,85,247,0.3)}
 .rune-dock{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
 .rune{
-  width:110px;height:150px;background:rgba(10,5,20,0.95);
-  border:1.5px solid rgba(168,85,247,0.4);border-radius:14px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  width:120px;height:110px;background:rgba(10,5,20,0.9);
+  border:1.5px solid rgba(168,85,247,0.45);border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
   cursor:pointer;transition:all .3s cubic-bezier(.23,1,.32,1);
-  box-shadow:0 8px 20px rgba(0,0,0,.5),0 0 15px rgba(168,85,247,0.1) inset;
-  position:relative;overflow:hidden;
+  box-shadow:0 8px 20px rgba(0,0,0,.5),0 0 20px rgba(168,85,247,0.1) inset;
+  position:relative;overflow:hidden;padding:8px;
 }
-.rune::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple);opacity:0;transition:.3s}
-.rune:hover{transform:translateY(-14px) scale(1.08);box-shadow:0 16px 40px rgba(0,0,0,.7),0 0 30px rgba(168,85,247,0.3) inset}
+.rune::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--pink));opacity:0;transition:.3s}
+.rune:hover{transform:translateY(-12px) scale(1.08);box-shadow:0 16px 40px rgba(0,0,0,.7),0 0 35px rgba(168,85,247,0.3) inset}
 .rune:hover::before{opacity:1}
-.rune .r-icon{font-size:28px}
-.rune .r-name{font-family:var(--serif);font-size:12px;font-weight:700;text-align:center;color:var(--gold)}
-.rune .r-type{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:1px}
+.rune .r-icon{font-size:26px;filter:drop-shadow(0 0 8px rgba(168,85,247,0.4))}
+.rune .r-name{font-family:var(--serif);font-size:13px;font-weight:700;text-align:center;color:#fff}
+.rune .r-type{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
 .rune.used{opacity:.25;pointer-events:none;border-style:dotted}
 .rune.wrong-flash{animation:runeWrong .5s;border-color:var(--red)}
 @keyframes runeWrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
@@ -402,12 +425,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 @media(max-width:900px){
   .portal-row{flex-direction:column;align-items:center}
-  .portal{width:90%;max-width:400px;height:auto;min-height:200px}
+  .portal{width:90%;max-width:400px;min-height:auto}
   .code-panel{width:98%;padding:16px;font-size:12px}
   .trace-track{width:150px}
   .furnace{width:280px;height:280px}
   .beast{padding:24px 20px}
   .beast .katex{font-size:20px!important}
+  .forge-cauldron{display:none}
+  .rune{width:100px;height:95px}
 }
 </style>
 </head>
@@ -433,7 +458,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </div>
 
     <div class="lobby-head">
-      <div class="l-seal">💠</div>
+      <img src="assets/sigil.png" alt="九宫算阵" class="l-seal">
       <h1 class="l-title">九宫算阵 · 代码纪元</h1>
       <p class="l-sub">大题化劫 · 赛博破阵</p>
     </div>
@@ -442,26 +467,34 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <button class="portal p408" onclick="Game.start408()">
         <div class="p-inner">
           <div class="p-top">
-            <span class="p-code">408 专精</span>
+            <span class="p-code">九宫算阵·代码纪元 - 408专精</span>
             <span class="p-badge badge-cyber">⚡ ICE BREAK</span>
           </div>
-          <div class="p-icon">💻</div>
-          <div class="p-name">赛博黑客 · 冰墙突破</div>
-          <div class="p-desc">代码补全 · 拖拽注入 · 逻辑走线 · 限时潜入<br>将历年408算法大题变为黑客破阵挑战</div>
-          <div class="p-stat">待破解阵法: <b id="hackCount">4</b> 个</div>
+          <div class="p-icon-wrap">
+            <img src="assets/icon-408.png" alt="赛博黑客">
+          </div>
+          <div class="p-content">
+            <div class="p-name">赛博黑客 · 冰墙突破</div>
+            <div class="p-desc">代码补全 · 拖拽注入 · 逻辑走线 · 限时潜入<br>将历年408算法大题变为黑客破阵挑战</div>
+            <div class="p-stat">将破解算法: <b id="hackCount">4</b> 个</div>
+          </div>
         </div>
       </button>
       <!-- 301 -->
       <button class="portal p301" onclick="Game.start301()">
         <div class="p-inner">
           <div class="p-top">
-            <span class="p-code">301 专精</span>
+            <span class="p-code">九宫算阵·代码纪元 - 301专精</span>
             <span class="p-badge badge-forge">🔥 ALCHEMY</span>
           </div>
-          <div class="p-icon">🪬</div>
-          <div class="p-name">太上炼炉 · 符文降妖</div>
-          <div class="p-desc">公式化简 · 道法卡牌 · 连击斩杀 · 阶梯拆解<br>将301高数大题变为卡牌降妖挑战</div>
-          <div class="p-stat">混沌灵兽: <b id="forgeCount">3</b> 头</div>
+          <div class="p-icon-wrap">
+            <img src="assets/icon-301.png" alt="太上炼炉">
+          </div>
+          <div class="p-content">
+            <div class="p-name">太上炼炉 · 符文降妖</div>
+            <div class="p-desc">公式化简 · 道法卡牌 · 连击斩杀 · 阶梯拆解<br>将301高数大题变为卡牌降妖挑战</div>
+            <div class="p-stat">混沌灵兽: <b id="forgeCount">3</b> 头</div>
+          </div>
         </div>
       </button>
     </div>
@@ -537,6 +570,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </header>
 
     <div class="forge-body">
+      <img src="assets/icon-301.png" alt="太上炼丹炉" class="forge-cauldron">
       <div class="forge-desc" id="forgeDesc"></div>
       <div class="furnace">
         <div class="furnace-ring2"></div>

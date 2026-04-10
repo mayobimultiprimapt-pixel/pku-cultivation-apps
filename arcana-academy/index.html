@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="奥秘学院 - 赛博塔罗占卜×考研刷题 — 北大考研修仙应用集">
+    <title>奥秘学院 · 塔罗考研战 — 北大考研修仙应用集</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Matrix Rain Canvas -->
+    <canvas id="particle-canvas"></canvas>
+    <!-- Scanline -->
+    <div class="scanline-overlay"></div>
+
+    <!-- ═══ TOP BAR ═══ -->
+    <header id="top-bar">
+        <a href="../" class="back-btn" title="返回应用集">◀ <span>应用集</span></a>
+        <div class="top-center">
+            <h1 class="logo-text">ARCANA<span class="logo-dot">✦</span>ACADEMY</h1>
+            <p class="logo-sub">奥 秘 学 院</p>
+        </div>
+        <div class="streak-display" id="streak-display">
+            <span class="streak-fire" id="streak-fire">🔥</span>
+            <span class="streak-num" id="streak-num">0</span>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN: The Card Stage ═══ -->
+    <main id="card-stage">
+        <!-- Card Glow Ring -->
+        <div class="card-glow" id="card-glow"></div>
+
+        <!-- 3D Card -->
+        <div class="card-container" id="card-container">
+            <div class="card-3d" id="card-3d">
+                <!-- BACK -->
+                <div class="card-face card-back" id="card-back">
+                    <div class="back-border">
+                        <div class="back-circle">
+                            <div class="back-star">✦</div>
+                        </div>
+                        <div class="back-text">ARCANA</div>
+                        <div class="back-sub">点击占卜</div>
+                    </div>
+                </div>
+                <!-- FRONT -->
+                <div class="card-face card-front" id="card-front">
+                    <div class="front-numeral" id="front-numeral">XIII</div>
+                    <div class="front-icon" id="front-icon">💀</div>
+                    <div class="front-name-en" id="front-name-en">DEATH</div>
+                    <div class="front-name-cn" id="front-name-cn">死神</div>
+                    <div class="front-position" id="front-position">UPRIGHT 正位</div>
+                    <div class="front-subject" id="front-subject">408 计算机</div>
+                    <div class="front-topic" id="front-topic">计算机组成原理</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card meaning whisper -->
+        <div class="card-whisper" id="card-whisper"></div>
+
+        <!-- Result flash overlay -->
+        <div class="result-flash" id="result-flash"></div>
+    </main>
+
+    <!-- ═══ STATS BAR ═══ -->
+    <div id="stats-bar">
+        <div class="stat-item">
+            <span class="stat-icon">📊</span>
+            <span class="stat-val" id="stat-total">0</span>
+            <span class="stat-label">已答</span>
+        </div>
+        <div class="stat-item stat-accent">
+            <span class="stat-icon">✅</span>
+            <span class="stat-val" id="stat-rate">0%</span>
+            <span class="stat-label">正确率</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-icon">📖</span>
+            <span class="stat-val" id="stat-karma">0</span>
+            <span class="stat-label">业力录</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-icon">⚡</span>
+            <span class="stat-val" id="stat-max-streak">0</span>
+            <span class="stat-label">最高连击</span>
+        </div>
+    </div>
+
+    <!-- ═══ BOTTOM: Subject + Divine Button ═══ -->
+    <footer id="bottom-bar">
+        <div class="subject-row" id="subject-row">
+            <button class="subj-pill active" data-subject="0" onclick="game.setSubject(0)">🌀 随机</button>
+            <button class="subj-pill" data-subject="101" onclick="game.setSubject(101)">🗡️ 政治</button>
+            <button class="subj-pill" data-subject="201" onclick="game.setSubject(201)">🏆 英语</button>
+            <button class="subj-pill" data-subject="301" onclick="game.setSubject(301)">⭐ 数学</button>
+            <button class="subj-pill" data-subject="408" onclick="game.setSubject(408)">⚔️ 计算机</button>
+        </div>
+        <button class="divine-btn" id="divine-btn" onclick="game.divine()">
+            <span class="divine-glow"></span>
+            <span class="divine-icon">🔮</span>
+            <span class="divine-text">占 卜 抽 签</span>
+        </button>
+    </footer>
+
+    <!-- ═══ QUESTION MODAL ═══ -->
+    <div class="q-overlay" id="q-overlay">
+        <div class="q-panel">
+            <div class="q-header">
+                <div class="q-subject" id="q-subject">⚔️ 408 - 计算机</div>
+                <div class="q-card-info" id="q-card-info">死神 · 计算机组成原理</div>
+                <div class="q-timer">
+                    <svg class="timer-ring" viewBox="0 0 44 44">
+                        <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+                        <circle cx="22" cy="22" r="18" fill="none" stroke="#00d4ff" stroke-width="3" id="timer-circle"
+                            stroke-dasharray="113.1" stroke-dashoffset="0" stroke-linecap="round"/>
+                    </svg>
+                    <span class="timer-num" id="timer-num">30</span>
+                </div>
+            </div>
+            <div class="q-body">
+                <div class="q-diff" id="q-diff">★★★☆☆ MEDIUM</div>
+                <p class="q-text" id="q-text">加载中...</p>
+                <div class="q-options" id="q-options"></div>
+            </div>
+            <div class="q-result" id="q-result" style="display:none">
+                <div class="qr-icon" id="qr-icon">✓</div>
+                <div class="qr-text" id="qr-text"></div>
+                <div class="qr-explain" id="qr-explain"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TITLE SCREEN ═══ -->
+    <div class="title-overlay active" id="title-screen">
+        <div class="title-content">
+            <div class="title-star">✦</div>
+            <h1 class="title-main glitch-text" data-text="ARCANA ACADEMY">ARCANA ACADEMY</h1>
+            <h2 class="title-sub">奥 秘 学 院</h2>
+            <p class="title-tag">赛博塔罗占卜 × 考研刷题系统</p>
+            <button class="title-btn" onclick="game.start()">
+                <span class="divine-glow"></span>
+                🔮 开始占卜
+            </button>
+            <div class="title-subjects">
+                <span>🗡️ 101政治</span>
+                <span>🏆 201英语</span>
+                <span>⭐ 301数学</span>
+                <span>⚔️ 408计算机</span>
+            </div>
+            <div class="title-ver" id="title-ver">v2.0 | 78 ARCANA</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="particles.js"></script>
+    <script src="cards.js"></script>
+    <script src="questions.js"></script>
+    <script src="vault-bridge.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
