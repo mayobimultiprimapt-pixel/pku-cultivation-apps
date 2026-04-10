@@ -44,23 +44,21 @@
     body {
       font-family: var(--font-body);
       color: var(--text-main);
-      background: var(--bg-deep);
+      background: url('assets/bg-palace.png') center/cover no-repeat, var(--bg-deep);
       display: flex; flex-direction: column;
       overflow: hidden; position: relative;
     }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: rgba(3,3,10,0.4);
+    }
 
     /* ══════════════════════════════════════════════════
-       COSMIC BACKGROUND — Deep space + nebulae + energy grid
+       COSMIC BACKGROUND — Overlay effects
        ══════════════════════════════════════════════════ */
     .cosmos-bg {
       position: absolute; inset: 0; z-index: 0;
       overflow: hidden; pointer-events: none;
-      background:
-        radial-gradient(ellipse at 25% 20%, rgba(0, 100, 200, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 75% 80%, rgba(136, 68, 255, 0.04) 0%, transparent 45%),
-        radial-gradient(ellipse at 60% 10%, rgba(255, 215, 0, 0.03) 0%, transparent 40%),
-        radial-gradient(ellipse at 15% 85%, rgba(255, 34, 68, 0.03) 0%, transparent 40%),
-        linear-gradient(180deg, #030308 0%, #080818 40%, #0a0a1e 70%, #050510 100%);
     }
     /* Energy grid overlay */
     .energy-grid {
@@ -347,16 +345,17 @@
       align-items: center; justify-content: center;
       background:
         radial-gradient(ellipse at 50% 40%, rgba(255,34,68,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.3) 0%, transparent 60%),
-        var(--bg-panel);
+        radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.2) 0%, transparent 60%),
+        rgba(8,10,28,0.55);
       border: 1px solid var(--border-rune); border-radius: 4px;
       overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.2);
+      backdrop-filter: blur(3px);
     }
     .boss-chamber::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, transparent, var(--crimson-dim), var(--gold), var(--crimson-dim), transparent);
-      opacity: 0.4;
+      opacity: 0.5;
     }
     /* Arena energy rings */
     .arena-ring {
@@ -406,7 +405,7 @@
       text-shadow: 0 0 6px var(--crimson-glow);
     }
 
-    /* Dragon Avatar — Enhanced with fire/smoke effects */
+    /* Dragon Avatar — Image-based boss art */
     .dragon-container {
       position: relative; z-index: 3; margin-top: 10px;
     }
@@ -416,6 +415,17 @@
       animation: dragonFloat 5s ease-in-out infinite;
       transition: filter 0.3s;
       position: relative; z-index: 2;
+      display: none; /* hide emoji */
+    }
+    .boss-img {
+      width: 260px; height: auto;
+      filter: drop-shadow(0 0 30px rgba(255,34,68,0.25)) drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+      animation: dragonFloat 5s ease-in-out infinite;
+      transition: filter 0.3s;
+      position: relative; z-index: 2;
+    }
+    .boss-img.hit {
+      filter: drop-shadow(0 0 50px rgba(255,215,0,0.5)) drop-shadow(0 10px 20px rgba(0,0,0,0.4)) brightness(1.5) saturate(1.8);
     }
     .boss-avatar.hit {
       filter: drop-shadow(0 0 40px rgba(255,215,0,0.5)) drop-shadow(0 10px 20px rgba(0,0,0,0.4)) brightness(1.5) saturate(1.8);
@@ -721,6 +731,23 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.1); border-radius: 3px; }
 
+    /* Mascot */
+    .mascot {
+      position: fixed; bottom: 15px; right: 15px; z-index: 50;
+      width: 100px; height: auto; pointer-events: none;
+      filter: drop-shadow(0 0 12px rgba(0,212,255,0.25));
+      animation: mascotBob 4s ease-in-out infinite;
+    }
+    @keyframes mascotBob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+
+    /* Rune panel backdrop */
+    .rune-panel {
+      backdrop-filter: blur(8px);
+    }
+
     /* Responsive */
     @media (max-width: 1050px) { .main-grid { grid-template-columns: 240px 1fr 240px; gap: 8px; padding: 8px; } }
     @media (max-width: 850px) {
@@ -728,12 +755,14 @@
       body { overflow-y: auto; height: auto; min-height: 100vh; }
       .boss-chamber { min-height: 380px; }
       .arena-ring, .arena-ring-2 { display: none; }
+      .mascot { width: 70px; }
     }
     @media (max-width: 500px) {
       .header { padding: 6px 10px; }
       .currency-pill { font-size: 9px; padding: 3px 8px; }
-      .boss-avatar { font-size: 80px; }
+      .boss-img { width: 180px; }
       .btn-raid { font-size: 14px; padding: 10px 24px; letter-spacing: 3px; }
+      .mascot { display: none; }
     }
   </style>
 </head>
@@ -807,6 +836,7 @@
         <div class="smoke-wisp"></div>
         <div class="smoke-wisp"></div>
         <div class="boss-avatar" id="bossAv">🐲</div>
+        <img src="assets/boss-dragon.png" alt="龙武判官" class="boss-img" id="bossImg">
       </div>
       <div class="boss-hp-area">
         <div class="hp-frame">
@@ -855,6 +885,9 @@
   </div>
 
   <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Mascot -->
+  <img src="assets/mascot.png" alt="精灵助手" class="mascot">
 
   <script src="../shared/pku-core-sdk.js"></script>
   <script src="../shared/question-bank.js"></script>
@@ -1124,6 +1157,7 @@
       this.bossHp=Math.max(0,this.bossHp-d);this.todayDmg+=d;
       document.getElementById('bossPanel').style.animation='screenShake 0.45s ease-out';setTimeout(()=>document.getElementById('bossPanel').style.animation='',450);
       const ba=document.getElementById('bossAv');ba.classList.add('hit');setTimeout(()=>ba.classList.remove('hit'),350);
+      const bi=document.getElementById('bossImg');if(bi){bi.classList.add('hit');setTimeout(()=>bi.classList.remove('hit'),350);}
       const p=t==='crit'?'💥 CRIT! -':'-',s=t==='crit'?' 弱点识破！':' HIT!';
       this.showDmgText(`${p}${d.toLocaleString()}${s}`,t==='crit'?'crit':'normal');
       const qg=Math.floor(d/50);this.qi+=qg;
