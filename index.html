@@ -6,87 +6,184 @@
   <title>北大考研 · 修仙应用集</title>
   <meta name="description" content="大漠经算·赛博修仙 — 北大考研全链路修仙备考生态系统">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0a14">
+  <meta name="theme-color" content="#04040c">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #06060e; --bg2: #0c0c1a; --bg3: #12122a;
-      --card: rgba(14, 14, 32, 0.9);
+      --bg: #04040c; --bg2: #08081a; --bg3: #10102a;
+      --card: rgba(10, 12, 28, 0.85);
       --gold: #ffd700; --amber: #ff8c00;
       --cyan: #08f7fe; --red: #ff2e63;
       --purple: #9d4edd; --green: #39ff14;
       --text: #e8e8f0; --dim: #555578; --sub: #888;
       --border: rgba(255,215,0,.08);
+      --serif: 'Noto Serif SC',serif;
+      --mono: 'Orbitron',monospace;
+      --sans: 'Inter',sans-serif;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: 'Noto Serif SC','Inter',sans-serif;
+      font-family: var(--serif), var(--sans);
       background: var(--bg); color: var(--text);
       min-height: 100vh; overflow-x: hidden;
     }
+
+    /* ══ Background ══ */
     .bg-grid {
       position:fixed;inset:0;
       background:
-        radial-gradient(ellipse at 20% 30%, rgba(255,215,0,.03), transparent 60%),
-        radial-gradient(ellipse at 80% 70%, rgba(157,78,221,.03), transparent 60%),
-        repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,215,0,.01) 50px),
-        repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,215,0,.01) 50px);
+        radial-gradient(ellipse at 20% 30%, rgba(0,212,255,.02), transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(157,78,221,.02), transparent 60%),
+        repeating-linear-gradient(0deg,transparent,transparent 79px,rgba(0,212,255,.008) 80px),
+        repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(0,212,255,.008) 80px);
       pointer-events:none;z-index:0;
     }
-    .container { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 20px 80px; }
 
-    /* ── Header ── */
-    .header { text-align:center;margin-bottom:50px; }
-    .seal { width:90px;height:90px;margin:0 auto 20px;border:2px solid rgba(255,215,0,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;animation:float 4s ease-in-out infinite;position:relative; }
-    .seal::after { content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(255,215,0,.1);animation:float 4s ease-in-out infinite reverse; }
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    .header h1 { font-size:38px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--amber),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;letter-spacing:2px; }
-    .header .sub { font-family:'Orbitron',monospace;font-size:11px;color:var(--dim);letter-spacing:6px;text-transform:uppercase; }
-    .header .realm { margin-top:12px;font-size:12px;color:var(--amber);font-weight:600; }
+    /* ════ HERO — Palace Header ══════ */
+    .hero {
+      position: relative; overflow: hidden;
+      min-height: 380px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 50px 20px 30px;
+      background: url('assets/bg-portal.png') center 30%/cover no-repeat, var(--bg);
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, rgba(4,4,12,0.3) 0%, rgba(4,4,12,0.15) 40%, rgba(4,4,12,0.5) 80%, var(--bg) 100%),
+        radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(4,4,12,0.4) 70%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 2; }
+    .hero-seal {
+      width: 72px; height: 72px; margin: 0 auto 16px;
+      border: 2px solid rgba(0,212,255,0.35); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; animation: sealFloat 4s ease-in-out infinite;
+      background: rgba(4,4,12,0.4); backdrop-filter: blur(8px);
+      box-shadow: 0 0 25px rgba(0,212,255,0.15);
+    }
+    .hero-seal::after {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%;
+      border: 1px solid rgba(0,212,255,0.12); animation: sealFloat 4s ease-in-out infinite reverse;
+    }
+    @keyframes sealFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 46px); font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), var(--cyan), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 4px; margin-bottom: 8px;
+      filter: drop-shadow(0 0 12px rgba(255,215,0,0.25));
+    }
+    .hero .sub-en {
+      font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.5);
+      letter-spacing: 6px; text-transform: uppercase;
+    }
+    .hero .sub-cn {
+      font-size: 13px; color: var(--amber); margin-top: 6px; font-weight: 600;
+      letter-spacing: 3px;
+    }
 
-    /* ── Login ── */
-    .login-overlay { position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center }
-    .login-overlay.hide { display:none }
-    .login-box { width:90%;max-width:380px;background:rgba(14,14,32,.95);border:1px solid rgba(255,215,0,.12);border-radius:20px;padding:40px 30px;text-align:center;backdrop-filter:blur(20px); }
-    .login-box .seal2 { width:70px;height:70px;margin:0 auto 14px;border:2px solid rgba(255,215,0,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;animation:float 4s ease-in-out infinite }
-    .login-box h2 { font-size:26px;background:linear-gradient(135deg,var(--gold),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px }
-    .login-box .lsub { font-family:'Orbitron',monospace;font-size:10px;color:var(--dim);letter-spacing:4px;margin-bottom:24px }
-    .login-input { width:100%;padding:14px 16px;background:rgba(6,6,14,.8);border:1px solid rgba(255,215,0,.1);border-radius:10px;color:var(--text);font-size:14px;margin-bottom:10px;outline:none;font-family:inherit;transition:border-color .3s }
-    .login-input:focus { border-color:rgba(255,215,0,.35) }
-    .login-input::placeholder { color:var(--dim) }
-    .login-btn { width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:transform .2s,box-shadow .2s;letter-spacing:3px }
-    .login-btn:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,215,0,.25) }
-    .login-err { color:var(--red);font-size:12px;margin-top:8px;min-height:16px }
-    .logout-btn { position:fixed;top:12px;right:16px;padding:6px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;color:var(--dim);font-size:11px;cursor:pointer;z-index:100;transition:.3s }
-    .logout-btn:hover { color:var(--text);border-color:rgba(255,215,0,.2) }
+    /* ══ Subject Bar ══ */
+    .subject-bar {
+      position: relative; z-index: 2;
+      display: flex; justify-content: center; align-items: stretch;
+      margin-top: -30px; padding: 0 20px; max-width: 800px; margin-left: auto; margin-right: auto;
+    }
+    .subject-item {
+      flex: 1; text-align: center; padding: 18px 10px;
+      text-decoration: none; color: inherit; transition: all 0.3s;
+      position: relative; cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+    .subject-item:hover { transform: translateY(-3px); }
+    .subject-item .s-code {
+      font-family: var(--mono); font-size: clamp(24px,4vw,36px); font-weight: 900;
+      letter-spacing: 1px; margin-bottom: 2px;
+    }
+    .subject-item .s-name { font-size: 11px; font-weight: 600; letter-spacing: 2px; }
+    .s101 .s-code { color: var(--red); } .s101 { border-color: var(--red); }
+    .s201 .s-code { color: #3b82f6; } .s201 { border-color: #3b82f6; }
+    .s301 .s-code { color: var(--gold); } .s301 { border-color: var(--gold); }
+    .s408 .s-code { color: var(--green); } .s408 { border-color: var(--green); }
+    /* Dividers */
+    .subject-item + .subject-item::before {
+      content: ''; position: absolute; left: 0; top: 20%; height: 60%;
+      width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
 
-    /* ── Section ── */
+    /* ══ Container ══ */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto; padding: 30px 20px 80px;
+    }
+
+    /* ══ Section ══ */
     .section-head {
       display:flex;align-items:center;gap:12px;
       margin:36px 0 16px;padding-bottom:10px;
       border-bottom:1px solid var(--border);
     }
     .section-icon { font-size:22px; }
-    .section-title { font-family:'Orbitron',monospace;font-size:13px;letter-spacing:3px;font-weight:700; }
+    .section-title { font-family:var(--mono);font-size:13px;letter-spacing:3px;font-weight:700; }
     .section-line { flex:1;height:1px;background:linear-gradient(90deg,currentColor,transparent);opacity:.2; }
 
-    /* ── Grid ── */
+    /* ══ Vault Hero ══ */
+    .vault-hero {
+      background: linear-gradient(135deg, rgba(255,215,0,.04), rgba(255,46,99,.02));
+      border: 1px solid rgba(255,215,0,.12); border-radius: 16px;
+      padding: 24px; margin-bottom: 14px;
+      position: relative; overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
+    .vault-hero::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+      opacity: .7;
+    }
+    .vault-boards { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px; }
+    @media(max-width:600px){ .vault-boards{grid-template-columns:repeat(2,1fr)} }
+    .board {
+      background:rgba(6,6,14,.6);border:1px solid var(--border);border-radius:12px;
+      padding:14px 10px;text-align:center;cursor:pointer;text-decoration:none;color:inherit;
+      display:block;transition:.3s;position:relative;overflow:hidden;
+    }
+    .board::before { content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:0 3px 3px 0; }
+    .board:hover { transform:translateY(-3px);border-color:rgba(255,215,0,.2); }
+    .board .code { font-family:var(--mono);font-size:22px;font-weight:900;margin-bottom:2px; }
+    .board .name { font-size:10px;color:var(--sub);font-weight:600; }
+    .b101::before{background:var(--red)} .b101 .code{color:var(--red)}
+    .b201::before{background:#3b82f6} .b201 .code{color:#3b82f6}
+    .b301::before{background:var(--gold)} .b301 .code{color:var(--gold)}
+    .b408::before{background:var(--green)} .b408 .code{color:var(--green)}
+
+    .vault-btn {
+      display:block;text-align:center;margin-top:12px;padding:11px;border-radius:10px;
+      background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;
+      font-weight:700;font-size:13px;text-decoration:none;transition:.25s;letter-spacing:2px;
+    }
+    .vault-btn:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,.25); }
+
+    /* ══ Grid ══ */
     .grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px; }
     @media(max-width:700px){ .grid{grid-template-columns:1fr} }
 
-    /* ── Card ── */
+    /* ══ Cards ══ */
     .card {
-      background:var(--card);border:1px solid var(--border);border-radius:16px;
-      padding:22px;cursor:pointer;text-decoration:none;color:inherit;display:block;
-      position:relative;overflow:hidden;
-      transition:all .35s cubic-bezier(.23,1,.32,1);
+      background: var(--card); border:1px solid var(--border); border-radius:14px;
+      padding:22px; cursor:pointer; text-decoration:none; color:inherit; display:block;
+      position:relative; overflow:hidden; backdrop-filter: blur(4px);
+      transition: all .35s cubic-bezier(.23,1,.32,1);
     }
     .card::before {
-      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
       background:var(--card-accent,linear-gradient(90deg,var(--gold),var(--amber)));
-      opacity:0;transition:opacity .3s;
+      opacity:0; transition:opacity .3s;
     }
-    .card:hover { border-color:rgba(255,215,0,.25);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 30px rgba(255,215,0,.04); }
+    .card:hover {
+      border-color: rgba(0,212,255,0.2); transform:translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.5), 0 0 30px rgba(0,212,255,.04);
+    }
     .card:hover::before { opacity:1; }
     .card.wip { opacity:.55;cursor:default;border-style:dashed; }
     .card.wip:hover { transform:none;box-shadow:none; }
@@ -99,39 +196,46 @@
     .card-tags { display:flex;gap:6px;flex-wrap:wrap;margin-top:10px; }
     .tag {
       display:inline-block;padding:3px 10px;border-radius:20px;
-      font-family:'Orbitron',monospace;font-size:8px;font-weight:700;letter-spacing:1px;
+      font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1px;
     }
-
-    /* ── Vault Hero ── */
-    .vault-hero {
-      background:linear-gradient(135deg,rgba(255,215,0,.03),rgba(255,46,99,.03));
-      border:1px solid rgba(255,215,0,.12);border-radius:20px;padding:24px;margin-bottom:14px;
-      position:relative;overflow:hidden;
-    }
-    .vault-hero::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold),var(--green));opacity:.7; }
-    .vault-boards { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px; }
-    @media(max-width:600px){ .vault-boards{grid-template-columns:repeat(2,1fr)} }
-    .board { background:rgba(6,6,14,.6);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;text-decoration:none;color:inherit;display:block;transition:.3s;position:relative;overflow:hidden; }
-    .board::before { content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:0 3px 3px 0; }
-    .board:hover { transform:translateY(-3px);border-color:rgba(255,215,0,.2); }
-    .board .code { font-family:'Orbitron',monospace;font-size:22px;font-weight:900;margin-bottom:2px; }
-    .board .name { font-size:10px;color:var(--sub);font-weight:600; }
-    .b101::before{background:var(--red)} .b101 .code{color:var(--red)}
-    .b201::before{background:#3b82f6} .b201 .code{color:#3b82f6}
-    .b301::before{background:var(--gold)} .b301 .code{color:var(--gold)}
-    .b408::before{background:var(--green)} .b408 .code{color:var(--green)}
-
-    .vault-btn { display:block;text-align:center;margin-top:12px;padding:11px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--amber));color:#000;font-weight:700;font-size:13px;text-decoration:none;transition:.25s;letter-spacing:2px; }
-    .vault-btn:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,.25); }
-
-    /* ── Footer ── */
-    .footer { text-align:center;margin-top:50px;padding:20px;color:var(--dim);font-size:11px;letter-spacing:2px;border-top:1px solid var(--border); }
-
-    /* ── Tag colors ── */
     .tag-intel { background:linear-gradient(135deg,rgba(8,247,254,.08),rgba(157,78,221,.08));color:var(--cyan);border:1px solid rgba(8,247,254,.15); }
     .tag-game { background:rgba(255,46,99,.08);color:var(--red);border:1px solid rgba(255,46,99,.15); }
     .tag-study { background:rgba(57,255,20,.08);color:var(--green);border:1px solid rgba(57,255,20,.15); }
     .tag-wip { background:rgba(255,255,255,.04);color:#777;border:1px solid rgba(255,255,255,.08); }
+
+    /* ══ Login ══ */
+    .login-overlay { position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center }
+    .login-overlay.hide { display:none }
+    .login-box {
+      width:90%;max-width:380px;background:rgba(10,10,28,.95);
+      border:1px solid rgba(0,212,255,.12);border-radius:20px;padding:40px 30px;
+      text-align:center;backdrop-filter:blur(20px);
+      box-shadow: 0 0 60px rgba(0,212,255,0.05);
+    }
+    .login-box .seal2 { width:70px;height:70px;margin:0 auto 14px;border:2px solid rgba(0,212,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;animation:sealFloat 4s ease-in-out infinite }
+    .login-box h2 { font-size:26px;background:linear-gradient(135deg,var(--gold),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px }
+    .login-box .lsub { font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:4px;margin-bottom:24px }
+    .login-input { width:100%;padding:14px 16px;background:rgba(6,6,14,.8);border:1px solid rgba(0,212,255,.1);border-radius:10px;color:var(--text);font-size:14px;margin-bottom:10px;outline:none;font-family:inherit;transition:border-color .3s }
+    .login-input:focus { border-color:rgba(0,212,255,.35) }
+    .login-input::placeholder { color:var(--dim) }
+    .login-btn { width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--cyan));color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:transform .2s,box-shadow .2s;letter-spacing:3px }
+    .login-btn:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.25) }
+    .login-err { color:var(--red);font-size:12px;margin-top:8px;min-height:16px }
+    .logout-btn { position:fixed;top:12px;right:16px;padding:6px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;color:var(--dim);font-size:11px;cursor:pointer;z-index:100;transition:.3s }
+    .logout-btn:hover { color:var(--text);border-color:rgba(0,212,255,.2) }
+
+    /* ══ Footer ══ */
+    .footer { text-align:center;margin-top:50px;padding:20px;color:var(--dim);font-size:11px;letter-spacing:2px;border-top:1px solid var(--border); }
+
+    /* ══ Responsive ══ */
+    @media(max-width:700px){
+      .hero { min-height: 280px; padding: 30px 15px 20px; }
+      .hero h1 { font-size: 24px; }
+      .subject-item .s-code { font-size: 22px; }
+      .subject-bar { margin-top: -20px; }
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
   </style>
 </head>
 <body>
@@ -153,222 +257,227 @@
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 退出</button>
 
   <div class="bg-grid"></div>
-  <div class="container" id="mainApp" style="display:none">
-    <div class="header">
-      <div class="seal">⚔️</div>
-      <h1>北大考研 · 修仙应用集</h1>
-      <div class="sub">大漠经算 · CYBER CULTIVATION EXAM SYSTEM</div>
-      <div class="realm">真传弟子 · 灵气师 · 统帅指挥台</div>
-    </div>
 
-    <!-- ═══════ 📡 情报中枢 ═══════ -->
-    <div class="section-head" style="color:var(--cyan)">
-      <span class="section-icon">📡</span>
-      <span class="section-title">情报中枢 · 大脑</span>
-      <span class="section-line"></span>
-    </div>
+  <div id="mainApp" style="display:none">
 
-    <div class="vault-hero">
-      <a class="card-row" href="./tianji/question-bank.html" style="text-decoration:none;color:inherit">
-        <span class="card-emoji" style="filter:drop-shadow(0 0 10px rgba(255,215,0,.3))">🏛️</span>
-        <div class="card-body">
-          <div class="card-title" style="font-size:20px;background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">题库搜集站 · 绝密考卷金库</div>
-          <div class="card-desc">Perplexity 死忠窃取最机密情报 · Genesis Loop 双通道压铸完整密卷 · 四科全覆盖</div>
-          <div style="margin-top:6px"><span class="tag tag-intel" style="animation:pulse 2.5s ease-in-out infinite">⚠ TOP SECRET · IRON PROTOCOL</span></div>
-        </div>
-      </a>
-      <div class="vault-boards">
-        <a class="board b101" href="./tianji/question-bank.html?subject=101"><div class="code">101</div><div class="name">政治</div></a>
-        <a class="board b201" href="./tianji/question-bank.html?subject=201"><div class="code">201</div><div class="name">英语</div></a>
-        <a class="board b301" href="./tianji/question-bank.html?subject=301"><div class="code">301</div><div class="name">数学</div></a>
-        <a class="board b408" href="./tianji/question-bank.html?subject=408"><div class="code">408</div><div class="name">计算机</div></a>
+    <!-- ═══ HERO — Palace Banner ═══ -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-seal">⚔️</div>
+        <h1>北大考研 · 修仙应用集</h1>
+        <div class="sub-en">大漠经算 · CYBER CULTIVATION EXAM SYSTEM</div>
+        <div class="sub-cn">真传弟子 · 灵气师 · 统帅指挥台</div>
       </div>
-      <a class="vault-btn" href="./tianji/question-bank.html">⚡ 进入金库 · 启动情报窃取</a>
-      <button onclick="PKUAutoFetch.showModal()" style="display:block;width:100%;text-align:center;margin-top:8px;padding:11px;border-radius:10px;background:linear-gradient(135deg,#08f7fe,#9d4edd);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;letter-spacing:2px;transition:.25s">📡 注入卡密 · Perplexity 全科自动抓题</button>
-    </div>
+    </section>
 
-    <div class="grid">
-      <a class="card" href="./tianji/index.html" style="--card-accent:linear-gradient(90deg,var(--green),var(--cyan))">
-        <div class="card-row">
-          <span class="card-emoji">🏯</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">天机阁 · 情报造办</div>
-            <div class="card-desc">Perplexity sonar-pro 深网情报窃取 · Gemini/Claude 双脑出卷 · 命题雷达 · 考点热力追踪</div>
-            <div class="card-tags">
-              <span class="tag tag-intel">SONAR-PRO · 死忠窃取</span>
-            </div>
-          </div>
-        </div>
+    <!-- ═══ Subject Bar ═══ -->
+    <div class="subject-bar">
+      <a class="subject-item s101" href="./tianji/question-bank.html?subject=101">
+        <div class="s-code">101</div>
+        <div class="s-name">政治</div>
       </a>
-
-      <a class="card" href="./terminal/" style="--card-accent:linear-gradient(90deg,var(--cyan),var(--purple),var(--red))">
-        <div class="card-row">
-          <span class="card-emoji">🧠</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">终端 · 最强大脑</div>
-            <div class="card-desc">Perplexity情报窃取 → Gemini 2.5 Pro满血出卷 → 自动装配校验 → 金库投喂全游戏 · 歼星模式一键全流程</div>
-            <div class="card-tags">
-              <span class="tag tag-intel" style="animation:pulse 2.5s ease-in-out infinite">🧠 TERMINAL · 最强大脑</span>
-            </div>
-          </div>
-        </div>
+      <a class="subject-item s201" href="./tianji/question-bank.html?subject=201">
+        <div class="s-code">201</div>
+        <div class="s-name">英语</div>
       </a>
-
-      <a class="card" href="./tuiyan/" style="--card-accent:linear-gradient(90deg,#ffd700,#d4a017)">
-        <div class="card-row">
-          <span class="card-emoji">🔮</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#ffd700,#d4a017);-webkit-background-clip:text;-webkit-text-fill-color:transparent">推演阁 · 梅花六爻</div>
-            <div class="card-desc">梅花易数起卦 · 六爻纳甲排盘 · 五行体用生克 · 考运推演预测 · 完整模板输出</div>
-            <div class="card-tags">
-              <span class="tag" style="background:rgba(255,215,0,.12);color:#ffd700;border:1px solid rgba(255,215,0,.2)">🔮 梅花 · 六爻</span>
-            </div>
-          </div>
-        </div>
+      <a class="subject-item s301" href="./tianji/question-bank.html?subject=301">
+        <div class="s-code">301</div>
+        <div class="s-name">数学</div>
       </a>
-
-      <a class="card" href="./relay-hub/" style="--card-accent:linear-gradient(90deg,var(--cyan),var(--purple))">
-        <div class="card-row">
-          <span class="card-emoji">🔮</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">中转阁 · 统帅指挥台</div>
-            <div class="card-desc">API代理中继 · 各模型转发 · CORS解除 · 私有中转通道</div>
-            <div class="card-tags">
-              <span class="tag tag-intel">RELAY · API中继</span>
-            </div>
-          </div>
-        </div>
+      <a class="subject-item s408" href="./tianji/question-bank.html?subject=408">
+        <div class="s-code">408</div>
+        <div class="s-name">计算机</div>
       </a>
     </div>
 
-    <!-- ═══════ 🎮 外门试炼 ═══════ -->
-    <div class="section-head" style="color:var(--red)">
-      <span class="section-icon">🎮</span>
-      <span class="section-title">外门试炼 · 选择题刷题群</span>
-      <span class="section-line"></span>
-    </div>
-    <div class="grid">
-      <a class="card" href="./arcana-academy/" style="--card-accent:linear-gradient(90deg,#b44aff,#00d4ff)">
-        <div class="card-row">
-          <span class="card-emoji">🃏</span>
+    <div class="container">
+
+      <!-- ═══════ 📡 情报中枢 ═══════ -->
+      <div class="section-head" style="color:var(--cyan)">
+        <span class="section-icon">📡</span>
+        <span class="section-title">情报中枢 · 大脑</span>
+        <span class="section-line"></span>
+      </div>
+
+      <div class="vault-hero">
+        <a class="card-row" href="./tianji/question-bank.html" style="text-decoration:none;color:inherit">
+          <span class="card-emoji" style="filter:drop-shadow(0 0 10px rgba(255,215,0,.3))">🏛️</span>
           <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#b44aff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">奥秘学院 · 塔罗占卜战</div>
-            <div class="card-desc">78张塔罗牌×Boss战 · 打牌即答题 · 占卜×错题复习 · 链式编译 · 四科2000+题</div>
-            <div class="card-tags">
-              <span class="tag tag-game">ARCANA · 命运对决</span>
-              <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+            <div class="card-title" style="font-size:20px;background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">题库搜集站 · 绝密考卷金库</div>
+            <div class="card-desc">Perplexity 死忠窃取最机密情报 · Genesis Loop 双通道压铸完整密卷 · 四科全覆盖</div>
+            <div style="margin-top:6px"><span class="tag tag-intel" style="animation:pulse 2.5s ease-in-out infinite">⚠ TOP SECRET · IRON PROTOCOL</span></div>
+          </div>
+        </a>
+        <div class="vault-boards">
+          <a class="board b101" href="./tianji/question-bank.html?subject=101"><div class="code">101</div><div class="name">政治</div></a>
+          <a class="board b201" href="./tianji/question-bank.html?subject=201"><div class="code">201</div><div class="name">英语</div></a>
+          <a class="board b301" href="./tianji/question-bank.html?subject=301"><div class="code">301</div><div class="name">数学</div></a>
+          <a class="board b408" href="./tianji/question-bank.html?subject=408"><div class="code">408</div><div class="name">计算机</div></a>
+        </div>
+        <a class="vault-btn" href="./tianji/question-bank.html">⚡ 进入金库 · 启动情报窃取</a>
+        <button onclick="PKUAutoFetch.showModal()" style="display:block;width:100%;text-align:center;margin-top:8px;padding:11px;border-radius:10px;background:linear-gradient(135deg,#08f7fe,#9d4edd);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;letter-spacing:2px;transition:.25s">📡 注入卡密 · Perplexity 全科自动抓题</button>
+      </div>
+
+      <div class="grid">
+        <a class="card" href="./tianji/index.html" style="--card-accent:linear-gradient(90deg,var(--green),var(--cyan))">
+          <div class="card-row">
+            <span class="card-emoji">🏯</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">天机阁 · 情报造办</div>
+              <div class="card-desc">Perplexity sonar-pro 深网情报窃取 · Gemini/Claude 双脑出卷 · 命题雷达 · 考点热力追踪</div>
+              <div class="card-tags"><span class="tag tag-intel">SONAR-PRO · 死忠窃取</span></div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./battleground/" style="--card-accent:linear-gradient(90deg,var(--red),var(--amber))">
-        <div class="card-row">
-          <span class="card-emoji">🎯</span>
-          <div class="card-body">
-            <div class="card-title" style="color:var(--red)">北大刺激战场 · 大逃杀</div>
-            <div class="card-desc">100人大逃杀 · 答对击杀答错受伤 · 空投大题 · 毒圈逼答 · 智力对决吃鸡</div>
-            <div class="card-tags">
-              <span class="tag tag-game">BATTLE ROYALE · 答题吃鸡</span>
-              <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+        </a>
+        <a class="card" href="./terminal/" style="--card-accent:linear-gradient(90deg,var(--cyan),var(--purple),var(--red))">
+          <div class="card-row">
+            <span class="card-emoji">🧠</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">终端 · 最强大脑</div>
+              <div class="card-desc">Perplexity情报窃取 → Gemini 2.5 Pro满血出卷 → 自动装配校验 → 金库投喂全游戏 · 歼星模式一键全流程</div>
+              <div class="card-tags"><span class="tag tag-intel" style="animation:pulse 2.5s ease-in-out infinite">🧠 TERMINAL · 最强大脑</span></div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./ghost-dorm/" style="--card-accent:linear-gradient(90deg,var(--purple),var(--red))">
-        <div class="card-row">
-          <span class="card-emoji">👻</span>
-          <div class="card-body">
-            <div class="card-title" style="color:var(--purple)">猛鬼考研宿舍 · 恐怖塔防</div>
-            <div class="card-desc">恐怖宿舍求生 · 答题升级装备 · 夜间沉浸 · 蜜罐商店 · 熬夜到天亮</div>
-            <div class="card-tags">
-              <span class="tag tag-game">HORROR · 恐怖求生</span>
-              <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+        </a>
+        <a class="card" href="./tuiyan/" style="--card-accent:linear-gradient(90deg,#ffd700,#d4a017)">
+          <div class="card-row">
+            <span class="card-emoji">🔮</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#ffd700,#d4a017);-webkit-background-clip:text;-webkit-text-fill-color:transparent">推演阁 · 梅花六爻</div>
+              <div class="card-desc">梅花易数起卦 · 六爻纳甲排盘 · 五行体用生克 · 考运推演预测 · 完整模板输出</div>
+              <div class="card-tags"><span class="tag" style="background:rgba(255,215,0,.12);color:#ffd700;border:1px solid rgba(255,215,0,.2)">🔮 梅花 · 六爻</span></div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./vocab-arena/" style="--card-accent:linear-gradient(90deg,#9d4edd,#08f7fe)">
-        <div class="card-row">
-          <span class="card-emoji">🎰</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#9d4edd,#08f7fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent">灵语轮盘 · 英语修仙道场</div>
-            <div class="card-desc">谐音梗背单词 · 弹幕闪避词汇雨 · 词根拆弹15秒 · AI实时生成 · 纯玩就能背完5500词</div>
-            <div class="card-tags">
-              <span class="tag tag-game">VOCAB ARENA · 玩着背词</span>
-              <span class="tag tag-intel" style="font-size:7px">🤖 gemini-3.1-pro-high</span>
+        </a>
+        <a class="card" href="./relay-hub/" style="--card-accent:linear-gradient(90deg,var(--cyan),var(--purple))">
+          <div class="card-row">
+            <span class="card-emoji">🔮</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">中转阁 · 统帅指挥台</div>
+              <div class="card-desc">API代理中继 · 各模型转发 · CORS解除 · 私有中转通道</div>
+              <div class="card-tags"><span class="tag tag-intel">RELAY · API中继</span></div>
             </div>
           </div>
-        </div>
-      </a>
-    </div>
+        </a>
+      </div>
 
-    <!-- ═══════ 📚 修炼功法 ═══════ -->
-    <div class="section-head" style="color:var(--green)">
-      <span class="section-icon">📚</span>
-      <span class="section-title">修炼功法 · 深度训练</span>
-      <span class="section-line"></span>
-    </div>
-    <div class="grid">
-      <a class="card" href="./memory-tree/standalone.html" style="--card-accent:linear-gradient(90deg,#39ff14,#22c55e)">
-        <div class="card-row">
-          <span class="card-emoji">🌳</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#39ff14,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent">识海天碑 · 炼木成器</div>
-            <div class="card-desc">SM-2遗忘曲线记忆 · 神识之树Canvas可视化 · 灵叶枯竭→注入灵气→间隔复习 · 113张全科考点卡</div>
-            <div class="card-tags">
-              <span class="tag tag-study">模块一 · SM-2 MEMORY</span>
+      <!-- ═══════ 🎮 外门试炼 ═══════ -->
+      <div class="section-head" style="color:var(--red)">
+        <span class="section-icon">🎮</span>
+        <span class="section-title">外门试炼 · 选择题刷题群</span>
+        <span class="section-line"></span>
+      </div>
+      <div class="grid">
+        <a class="card" href="./arcana-academy/" style="--card-accent:linear-gradient(90deg,#b44aff,#00d4ff)">
+          <div class="card-row">
+            <span class="card-emoji">🃏</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#b44aff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">奥秘学院 · 塔罗占卜战</div>
+              <div class="card-desc">78张塔罗牌×Boss战 · 打牌即答题 · 占卜×错题复习 · 链式编译 · 四科2000+题</div>
+              <div class="card-tags">
+                <span class="tag tag-game">ARCANA · 命运对决</span>
+                <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./debate-arena/index.html" style="--card-accent:linear-gradient(90deg,var(--gold),var(--red))">
-        <div class="card-row">
-          <span class="card-emoji">⚔️</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">论道殿 · 双轨四科推演</div>
-            <div class="card-desc">法庭模式(101政治/408计算机) × 骗子酒馆(201英语/301数学) · 金库实弹投喂 · 四科全覆盖 · 10轮强化</div>
-            <div class="card-tags">
-              <span class="tag tag-study">模块二 · DUAL-TRACK LOGIC</span>
-              <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+        </a>
+        <a class="card" href="./battleground/" style="--card-accent:linear-gradient(90deg,var(--red),var(--amber))">
+          <div class="card-row">
+            <span class="card-emoji">🎯</span>
+            <div class="card-body">
+              <div class="card-title" style="color:var(--red)">北大刺激战场 · 大逃杀</div>
+              <div class="card-desc">100人大逃杀 · 答对击杀答错受伤 · 空投大题 · 毒圈逼答 · 智力对决吃鸡</div>
+              <div class="card-tags">
+                <span class="tag tag-game">BATTLE ROYALE · 答题吃鸡</span>
+                <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./code-era/index.html" style="--card-accent:linear-gradient(90deg,#3b82f6,var(--purple))">
-        <div class="card-row">
-          <span class="card-emoji">🤖</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#3b82f6,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">九宫算阵 · 代码纪元</div>
-            <div class="card-desc">机甲核心修复(408代码补全+算法动画) · 登天长阶(301数学台阶拆解) · AI导师阶梯引导</div>
-            <div class="card-tags">
-              <span class="tag tag-study">模块三 · 深度解阵</span>
+        </a>
+        <a class="card" href="./ghost-dorm/" style="--card-accent:linear-gradient(90deg,var(--purple),var(--red))">
+          <div class="card-row">
+            <span class="card-emoji">👻</span>
+            <div class="card-body">
+              <div class="card-title" style="color:var(--purple)">猛鬼考研宿舍 · 恐怖塔防</div>
+              <div class="card-desc">恐怖宿舍求生 · 答题升级装备 · 夜间沉浸 · 蜜罐商店 · 熬夜到天亮</div>
+              <div class="card-tags">
+                <span class="tag tag-game">HORROR · 恐怖求生</span>
+                <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-
-      <a class="card" href="./shenxiao-palace/index.html" style="--card-accent:linear-gradient(90deg,#10b981,#d4af37)">
-        <div class="card-row">
-          <span class="card-emoji">🏛️</span>
-          <div class="card-body">
-            <div class="card-title" style="background:linear-gradient(135deg,#10b981,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent">神霄宫 · 万界仙盟</div>
-            <div class="card-desc">全网真气境界(炼气→渡劫) · 龙武判官每日讨伐BOSS · 极度明亮天界美学 · 全模块大合流</div>
-            <div class="card-tags">
-              <span class="tag tag-study">模块四 · 终极枢纽</span>
+        </a>
+        <a class="card" href="./vocab-arena/" style="--card-accent:linear-gradient(90deg,#9d4edd,#08f7fe)">
+          <div class="card-row">
+            <span class="card-emoji">🎰</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#9d4edd,#08f7fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent">灵语轮盘 · 英语修仙道场</div>
+              <div class="card-desc">谐音梗背单词 · 弹幕闪避词汇雨 · 词根拆弹15秒 · AI实时生成 · 纯玩就能背完5500词</div>
+              <div class="card-tags">
+                <span class="tag tag-game">VOCAB ARENA · 玩着背词</span>
+                <span class="tag tag-intel" style="font-size:7px">🤖 gemini-3.1-pro-high</span>
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-    </div>
+        </a>
+      </div>
 
-    <div class="footer">
-      大漠经算 · 赛博修仙 ┃ 北大电子信息 · 2026考研<br>
-      <span style="font-size:9px;margin-top:4px;display:inline-block;color:var(--dim)">🔒 密钥安全保护 · 私人中转阁 · 统一SDK · 边玩边学</span>
+      <!-- ═══════ 📚 修炼功法 ═══════ -->
+      <div class="section-head" style="color:var(--green)">
+        <span class="section-icon">📚</span>
+        <span class="section-title">修炼功法 · 深度训练</span>
+        <span class="section-line"></span>
+      </div>
+      <div class="grid">
+        <a class="card" href="./memory-tree/standalone.html" style="--card-accent:linear-gradient(90deg,#39ff14,#22c55e)">
+          <div class="card-row">
+            <span class="card-emoji">🌳</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#39ff14,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent">识海天碑 · 炼木成器</div>
+              <div class="card-desc">SM-2遗忘曲线记忆 · 神识之树Canvas可视化 · 灵叶枯竭→注入灵气→间隔复习 · 113张全科考点卡</div>
+              <div class="card-tags"><span class="tag tag-study">模块一 · SM-2 MEMORY</span></div>
+            </div>
+          </div>
+        </a>
+        <a class="card" href="./debate-arena/index.html" style="--card-accent:linear-gradient(90deg,var(--gold),var(--red))">
+          <div class="card-row">
+            <span class="card-emoji">⚔️</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,var(--gold),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent">论道殿 · 双轨四科推演</div>
+              <div class="card-desc">法庭模式(101政治/408计算机) × 骗子酒馆(201英语/301数学) · 金库实弹投喂 · 四科全覆盖 · 10轮强化</div>
+              <div class="card-tags">
+                <span class="tag tag-study">模块二 · DUAL-TRACK LOGIC</span>
+                <span class="tag tag-intel" style="font-size:7px">📡← 金库投喂</span>
+              </div>
+            </div>
+          </div>
+        </a>
+        <a class="card" href="./code-era/index.html" style="--card-accent:linear-gradient(90deg,#3b82f6,var(--purple))">
+          <div class="card-row">
+            <span class="card-emoji">🤖</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#3b82f6,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">九宫算阵 · 代码纪元</div>
+              <div class="card-desc">机甲核心修复(408代码补全+算法动画) · 登天长阶(301数学台阶拆解) · AI导师阶梯引导</div>
+              <div class="card-tags"><span class="tag tag-study">模块三 · 深度解阵</span></div>
+            </div>
+          </div>
+        </a>
+        <a class="card" href="./shenxiao-palace/index.html" style="--card-accent:linear-gradient(90deg,#10b981,#d4af37)">
+          <div class="card-row">
+            <span class="card-emoji">🏛️</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#10b981,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent">神霄宫 · 万界仙盟</div>
+              <div class="card-desc">全网真气境界(炼气→渡劫) · 龙武判官每日讨伐BOSS · 极度明亮天界美学 · 全模块大合流</div>
+              <div class="card-tags"><span class="tag tag-study">模块四 · 终极枢纽</span></div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="footer">
+        大漠经算 · 赛博修仙 ┃ 北大电子信息 · 2026考研<br>
+        <span style="font-size:9px;margin-top:4px;display:inline-block;color:var(--dim)">🔒 密钥安全保护 · 私人中转阁 · 统一SDK · 边玩边学</span>
+      </div>
     </div>
   </div>
 

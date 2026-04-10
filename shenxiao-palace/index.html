@@ -418,14 +418,14 @@
       display: none; /* hide emoji */
     }
     .boss-img {
-      width: 320px; height: auto;
-      filter: drop-shadow(0 0 40px rgba(255,34,68,0.3)) drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+      width: 340px; height: auto;
+      filter: drop-shadow(0 0 50px rgba(255,34,68,0.35)) drop-shadow(0 10px 40px rgba(0,0,0,0.6));
       animation: dragonFloat 5s ease-in-out infinite;
       transition: filter 0.3s;
       position: relative; z-index: 2;
-      /* Feather edges for seamless blending */
-      -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 45%, transparent 75%);
-      mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 45%, transparent 75%);
+      /* Aggressive edge dissolve — no rectangular feel */
+      -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 42%, black 25%, rgba(0,0,0,0.4) 45%, transparent 65%);
+      mask-image: radial-gradient(ellipse 75% 75% at 50% 42%, black 25%, rgba(0,0,0,0.4) 45%, transparent 65%);
     }
     .boss-img.hit {
       filter: drop-shadow(0 0 50px rgba(255,215,0,0.5)) drop-shadow(0 10px 20px rgba(0,0,0,0.4)) brightness(1.5) saturate(1.8);
