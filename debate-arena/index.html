@@ -8,6 +8,413 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260409v3">
+
+  <!-- 🏛️ 法庭全面进阶视效 CSS (Court UI Overhaul v2) -->
+  <style>
+    /* ==============================================================
+       1. 沉浸式法庭主舞台布局
+       ============================================================== */
+    .immersive-court {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      height: 100%;
+      background: radial-gradient(circle at center 30%, #1e112a 0%, #0a0510 80%);
+      overflow: hidden;
+    }
+    
+    /* 背景发光矩阵 */
+    .immersive-court::before {
+      content: ''; position: absolute; inset: 0;
+      background: 
+        linear-gradient(rgba(100,50,255,0.04) 1px, transparent 1px) 0 0 / 50px 50px,
+        linear-gradient(90deg, rgba(100,50,255,0.04) 1px, transparent 1px) 0 0 / 50px 50px;
+      opacity: 0.3; pointer-events: none; z-index: 0;
+    }
+
+    /* ==============================================================
+       2. 高台判官 (Judge Stand)
+       ============================================================== */
+    .court-judge-stand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 8px 20px;
+      z-index: 10;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .dragon-judge-avatar {
+      font-size: 64px;
+      line-height: 1;
+      filter: drop-shadow(0 0 15px rgba(255,50,50,0.6));
+      animation: judgeFloat 4s ease-in-out infinite;
+    }
+    @keyframes judgeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .judge-speech-bubble {
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 14px;
+      font-style: italic;
+      z-index: 11;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .judge-speech-bubble::before {
+      content: ''; position: absolute;
+      top: -8px; left: 50%; transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid rgba(0, 0, 0, 0.75);
+    }
+
+    /* ==============================================================
+       3. 全息档案与质证区 (Arena & Holograms)
+       ============================================================== */
+    .court-arena {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      align-items: stretch;
+      padding: 8px 15px;
+      gap: 12px;
+      position: relative;
+      z-index: 5;
+      min-height: 0; /* flex shrink 关键 */
+    }
+
+    .hologram-panel {
+      flex: 0 0 280px;
+      background: rgba(10, 20, 40, 0.6);
+      border: 1px solid rgba(0, 200, 255, 0.3);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 150, 255, 0.15), inset 0 0 20px rgba(0, 100, 255, 0.1);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      z-index: 5;
+    }
+    .hologram-panel:hover {
+      box-shadow: 0 0 25px rgba(0, 200, 255, 0.3), inset 0 0 30px rgba(0, 150, 255, 0.2);
+    }
+    .left-panel {
+      border-left: 3px solid rgba(0,200,255,0.4);
+    }
+    .right-panel {
+      border-right: 3px solid rgba(0,200,255,0.4);
+    }
+    
+    .center-battle-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      z-index: 5;
+      position: relative;
+    }
+
+    /* Hologram text effects */
+    .holo-header, .dh-badge {
+      font-size: 18px; color: #00d4ff; font-weight: bold;
+      text-shadow: 0 0 8px #00d4ff;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.4);
+      padding-bottom: 10px; margin-bottom: 15px;
+    }
+    .holo-content, .dossier-text {
+      color: #b0d4ff; font-size: 15px; line-height: 1.6;
+      text-shadow: 0 0 5px rgba(176, 212, 255, 0.5);
+      overflow-y: auto; flex: 1;
+    }
+
+    /* 原告/被告对话框气泡重构 */
+    .dossier-parties { margin-top: 15px; }
+    .plaintiff-stat, .defendant-stat {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border-left: 4px solid #ff4444 !important;
+      padding: 12px !important; margin-bottom: 10px !important;
+      border-radius: 0 8px 8px 0;
+      color: #ffbaba; font-size: 14px;
+      box-shadow: 0 2px 10px rgba(255,0,0,0.1);
+    }
+    .defendant-stat {
+      border-left: 4px solid #4466ff !important;
+      color: #bacfff;
+      box-shadow: 0 2px 10px rgba(0,0,255,0.1);
+    }
+
+    /* ==============================================================
+       4. 底层手牌区域重做 (Giant Cards)
+       ============================================================== */
+    .court-footer {
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
+      padding: 8px 20px 12px;
+      border-top: 1px solid rgba(212, 175, 55, 0.25);
+      position: relative;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 30px;
+      flex-shrink: 0;
+    }
+    
+    .hand-zone { flex: 1; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
+    .hand-label { 
+      color: #d4af37; font-size: 13px; margin-bottom: 6px; font-weight: bold;
+      text-shadow: 0 0 8px #d4af37; letter-spacing: 1px;
+    }
+    
+    .hand-cards {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    }
+    
+    /* 卡牌尺寸：适配一屏内 */
+    .card-item {
+      width: 80px !important; 
+      height: 110px !important;
+      border-radius: 6px !important;
+      background: linear-gradient(145deg, #f0ebd8, #d8d0b8) !important;
+      border: 2px solid #bda86e !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+      display: flex !important; flex-direction: column !important;
+      padding: 6px 5px !important;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+      font-family: 'Noto Serif SC', serif;
+    }
+    .card-item:hover {
+      transform: translateY(-15px) scale(1.08) !important;
+      box-shadow: 0 10px 25px rgba(212,175,55,0.4) !important;
+      z-index: 10;
+    }
+    .card-item.selected {
+      transform: translateY(-18px) scale(1.1) !important;
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 20px #00d4ff !important;
+    }
+    .card-title { font-size: 13px !important; font-weight: 900 !important; color: #8a1c1c; text-align: center; border-bottom: 1px solid #dcb; padding-bottom: 3px; margin-bottom: 3px; }
+    .card-desc { font-size: 9px !important; color: #333; line-height: 1.3; overflow: hidden; }
+    
+    /* 出牌按钮 */
+    .action-zone { display: flex; align-items: center; padding-bottom: 8px; }
+    #btnAction {
+      font-size: 24px; padding: 15px 40px; border-radius: 50px;
+      background: linear-gradient(135deg, #cc2b2b, #8a1c1c);
+      color: white; border: 2px solid #ff5555;
+      font-weight: 900; letter-spacing: 4px;
+      box-shadow: 0 0 20px rgba(255, 50, 50, 0.5);
+      cursor: pointer; transition: all 0.2s;
+    }
+    #btnAction:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 50, 50, 0.8);
+    }
+    #btnAction:disabled { background: #333; border-color: #555; color: #777; box-shadow: none; cursor:not-allowed; }
+
+    /* ==============================================================
+       5. 动态打击特效 (Strike & Exclamation)
+       ============================================================== */
+    .objection-flash {
+      position: absolute; inset: 0; z-index: 999;
+      display: flex; justify-content: center; align-items: center;
+      pointer-events: none; opacity: 0;
+    }
+    .objection-text {
+      font-family: 'Orbitron', 'Noto Serif SC', sans-serif;
+      font-size: 180px; font-weight: 900; font-style: italic;
+      color: #ff0000; text-shadow: 8px 8px 0px #ffffff, 0 0 50px #ff0000;
+      transform: scale(0.1) rotate(-15deg);
+      opacity: 0;
+    }
+    
+    @keyframes objectionPop {
+      0% { transform: scale(0.1) rotate(-15deg); opacity: 0; }
+      20% { transform: scale(1.2) rotate(-5deg); opacity: 1; filter: drop-shadow(0 0 100px red); }
+      40% { transform: scale(1.0) rotate(-10deg); opacity: 1; }
+      80% { transform: scale(1.05) rotate(-10deg); opacity: 1; }
+      100% { transform: scale(3) rotate(-20deg); opacity: 0; }
+    }
+    
+    @keyframes courtShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-15px, 15px) rotate(-1deg); }
+      20% { transform: translate(15px, -10px) rotate(1deg); }
+      30% { transform: translate(-10px, 15px) rotate(0deg); }
+      40% { transform: translate(15px, 5px) rotate(1deg); }
+      50% { transform: translate(-5px, -15px) rotate(-1deg); }
+      60% { transform: translate(15px, 15px) rotate(0deg); }
+      70% { transform: translate(-15px, 5px) rotate(-1deg); }
+      80% { transform: translate(15px, -15px) rotate(1deg); }
+      90% { transform: translate(-5px, 15px) rotate(0deg); }
+    }
+    .court-shaking {
+      animation: courtShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    /* ==============================================================
+       6. 法庭1v1牌桌与威士忌 (Table & Whisky — 装饰层)
+       ============================================================== */
+    .court-poker-table {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(55%) rotateX(55deg);
+      width: 900px;
+      height: 400px;
+      background: radial-gradient(ellipse at 50% 50%, #2f1b11 0%, #1a0a05 60%, #050201 100%);
+      border-radius: 50%;
+      border: 10px solid rgba(139, 69, 19, 0.5);
+      box-shadow: 
+        inset 0 0 40px rgba(0,0,0,0.7),
+        0 15px 40px rgba(0,0,0,0.8);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .court-poker-table::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.4) 100%);
+    }
+
+    .table-accessories {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .whisky-glass {
+      position: relative;
+      width: 40px;
+      height: 55px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 3px 3px 8px 8px;
+      box-shadow: 
+        inset -3px -3px 10px rgba(0,0,0,0.3),
+        inset 3px 3px 10px rgba(255,255,255,0.08),
+        0 8px 12px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+    .whisky-liquid {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+      background: linear-gradient(to bottom, transparent, rgba(212,130,20,0.7) 20%, rgba(139,69,19,0.85));
+      border-top: 1px solid rgba(255,180,50,0.4);
+    }
+    .whisky-ice {
+      position: absolute; width: 18px; height: 18px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 3px; bottom: 8px; left: 8px; transform: rotate(25deg);
+      box-shadow: inset 0 0 6px rgba(255,255,255,0.4);
+    }
+    .whisky-glass.left { transform: rotate(-5deg); }
+    .whisky-glass.right { transform: rotate(5deg); }
+
+    /* ==============================================================
+       7. 狐狸教授半身像结构 (Fox Judge Portrait)
+       ============================================================== */
+    .fox-portrait {
+      position: relative;
+      width: 100px;
+      height: 120px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+      animation: judgeFloat 4s ease-in-out infinite;
+    }
+    @keyframes judgeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    .npc-head {
+      width: 75px;
+      height: 75px;
+      background: linear-gradient(135deg, #ff8c00, #cc5500);
+      border-radius: 50% 50% 40% 40%;
+      position: absolute;
+      top: 0;
+      left: 12px;
+      z-index: 3;
+      border: 2px solid #521;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .npc-ear {
+      width: 25px; height: 38px;
+      background: #e65c00;
+      border-radius: 5px 60% 0 0;
+      position: absolute; top: -10px;
+    }
+    .npc-ear.left { left: 10px; transform: rotate(-25deg); }
+    .npc-ear.right { right: 10px; transform: rotate(25deg); border-radius: 60% 5px 0 0; }
+    
+    .npc-eyes {
+      position: absolute; top: 35px; display: flex; gap: 20px;
+    }
+    .npc-eye {
+      width: 16px; height: 16px; background: #fff; border-radius: 50%; position: relative;
+    }
+    .npc-eye::after {
+      content:''; position:absolute; width:6px; height:6px; background:#000; border-radius:50%; top:5px; left:5px;
+    }
+    .npc-eye.judge-stare::after {
+      width:4px; height:4px; background:#cc0000; /* 法官审视的红瞳 */
+      box-shadow: 0 0 5px red;
+    }
+    
+    .npc-glasses {
+      position: absolute; top: 30px; display: flex; gap: 12px;
+    }
+    .npc-glass-lens {
+      width: 26px; height: 10px; border: 2px solid rgba(255,255,255,0.7);
+      background: rgba(0,255,255,0.1); border-radius: 2px;
+      box-shadow: 0 0 5px rgba(0,255,255,0.5);
+    }
+    
+    .npc-snout {
+      width: 40px; height: 30px; background: #ffe6cc; border-radius: 40% 40% 50% 50%;
+      position: absolute; top: 60px;
+    }
+    .npc-nose {
+      width: 14px; height: 10px; background: #000; border-radius: 50%; margin: 5px auto 0;
+    }
+    
+    .npc-body-torso {
+      width: 100px; height: 60px;
+      background: linear-gradient(to bottom, #111, #222);
+      border-radius: 45px 45px 15px 15px;
+      position: absolute; top: 60px; z-index: 2;
+      border: 2px solid #444; border-bottom: none;
+      box-shadow: inset 0 10px 15px rgba(0,0,0,0.8);
+    }
+    
+    .judge-collar {
+      position: absolute;
+      top: 60px; left: 28px; width: 44px; height: 15px;
+      background: #fff; z-index: 4; border-radius: 0 0 15px 15px;
+      border: 2px solid #ccc;
+    }
+
+  </style>
 </head>
 <body>
   <!-- 竖屏提示 -->
@@ -160,32 +567,61 @@
         </div>
       </header>
 
-      <!-- 主庭审区 -->
-      <div class="court-body">
-        <!-- 左：卷宗 -->
-        <div class="panel-dossier" id="panelDossier">
-          <div class="dossier-header">
-            <span class="dh-badge" id="dossierBadge">📋 卷宗</span>
-            <span class="dh-diff" id="dossierDiff">★★★</span>
+      <!-- 主庭审区 (沉浸式法庭) -->
+      <div class="court-body immersive-court">
+        <!-- 顶部中央：龙武判官 -->
+        <div class="court-judge-stand">
+          <div class="dragon-judge-avatar" id="judgeAvatar">🐲</div>
+          <div class="judge-speech-bubble">
+            <div class="judge-speech" id="judgeSpeech">"本庭现在开审。"</div>
           </div>
-          <div class="dossier-title" id="dossierTitle">案件加载中...</div>
-          <div class="dossier-text" id="dossierText"></div>
-          <div class="dossier-parties" id="dossierParties"></div>
-        </div>
-
-        <!-- 中：战斗区 -->
-        <div class="panel-battle" id="panelBattle">
-          <!-- 动态渲染各阶段内容 -->
-        </div>
-
-        <!-- 右：判官 -->
-        <div class="panel-judge">
-          <div class="judge-avatar-wrap">
-            <div class="judge-avatar" id="judgeAvatar">🐲</div>
-            <div class="judge-title">龙武判官</div>
-          </div>
-          <div class="judge-speech" id="judgeSpeech">"本庭现在开审。"</div>
           <div class="judge-verdict-area" id="judgeVerdictArea"></div>
+        </div>
+
+        <!-- 场地中部：全息档案与牌桌 -->
+        <div class="court-arena">
+          
+          <!-- 法庭牌桌背景 -->
+          <div class="court-poker-table"></div>
+          
+          <!-- 桌上配件：威士忌对饮 -->
+          <div class="table-accessories">
+            <div class="whisky-glass left">
+              <div class="whisky-liquid"></div>
+              <div class="whisky-ice"></div>
+            </div>
+            <div class="whisky-glass right">
+              <div class="whisky-liquid"></div>
+              <div class="whisky-ice"></div>
+            </div>
+          </div>
+          <!-- 左翼：全息卷宗 -->
+          <div class="hologram-panel left-panel" id="panelDossier">
+            <div class="dossier-header">
+              <span class="dh-badge" id="dossierBadge">📋 卷宗</span>
+              <span class="dh-diff" id="dossierDiff">★★★</span>
+            </div>
+            <div class="dossier-title" id="dossierTitle">案件加载中...</div>
+            <div class="dossier-text" id="dossierText"></div>
+            <!-- 原告被告移出到底层或战斗区，这里只是容器保护 -->
+            <div class="dossier-parties" id="dossierParties"></div>
+          </div>
+
+          <!-- 正中央：质证战斗区 -->
+          <div class="center-battle-stage" id="panelBattle">
+            <!-- 动态渲染各阶段内容 -->
+          </div>
+          
+          <!-- 右翼：证据投影 (留空或未来扩展) -->
+          <div class="hologram-panel right-panel">
+            <div class="holo-header">💡 神识解析</div>
+            <div class="holo-content" id="holoAnalysis">等待质证...</div>
+          </div>
+        </div>
+        
+        <!-- 全屏巨大打击视效区 -->
+        <div class="objection-flash" id="objectionFlash">
+          <div class="objection-text" id="objectionText">异议！</div>
         </div>
       </div>
 

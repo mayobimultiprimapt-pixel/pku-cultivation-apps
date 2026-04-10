@@ -107,6 +107,14 @@ const TavernData = (() => {
        truth:'Empirical means based on observation, experiment, and real data, not speculation.', difficulty:2},
       {speaker:'fox', claim:'"Paradox" means a statement that everyone agrees is obvious and self-evident.', isLie:true,
        truth:'A paradox is a seemingly contradictory statement that may reveal a deeper truth.', difficulty:3},
+      {speaker:'tiger', claim:'阅读陷阱：如果选项包含"must", "always", "entirely"等绝对化词汇，该选项一定是正确答案。', isLie:true,
+       truth:'绝对化词汇往往是考研阅读中的"雷区"，此类选项大概率为错。正确答案通常表述委婉（如may, partly）。', difficulty:1},
+      {speaker:'owl', claim:'长难句陷阱：在"not...but..."结构中，作者强调的重点一定在"not"后面的部分。', isLie:true,
+       truth:'"not...but..."（不是...而是...）真正强调的重点在"but"后面的内容，切忌本末倒置。', difficulty:2},
+      {speaker:'fox', claim:'语义陷阱：遇到"He is nothing but a fool"，意思是"他并不是个傻瓜"。', isLie:true,
+       truth:'"nothing but" 等于 "only"。整句话意思是"他纯粹就是个傻瓜"，这是常见的肯定/否定翻译陷阱。', difficulty:2},
+      {speaker:'tiger', claim:'语义陷阱：文章中出现"arguably"时，说明作者持有完全否定的态度。', isLie:true,
+       truth:'"arguably" 意为"可以说是，大概率"，通常用来加强语气陈述一个肯定的观点，绝非否定。', difficulty:3},
       // ── 真话 ──
       {speaker:'owl', claim:'"Albeit" is a conjunction meaning "although" or "even though".', isLie:false, truth:'', difficulty:1},
       {speaker:'fox', claim:'"Corroborate" means to support or confirm with evidence.', isLie:false, truth:'', difficulty:1},
@@ -143,6 +151,14 @@ const TavernData = (() => {
        truth:'正好反了。线性无关等价于齐次方程组只有零解；线性相关才有非零解。', difficulty:2},
       {speaker:'fox', claim:'概率为零的事件就是不可能事件。', isLie:true,
        truth:'概率为零不等于不可能事件。例如连续分布中某一点的概率为0，但不是不可能事件。', difficulty:3},
+      {speaker:'tiger', claim:'公式陷阱：在使用洛必达法测时，只要满足0/0或∞/∞型，就一定可以一直求导下去直到出结果。', isLie:true,
+       truth:'洛必达法则的适用前提除了0/0外，还要求"导数比值的极限必须存在或为无穷"。如果不满足，法则失效。', difficulty:2},
+      {speaker:'owl', claim:'定理变伪：设函数f(x)在点x0处取得极值，则f\'(x0)必定等于0。', isLie:true,
+       truth:'费马引理的前提是"f(x)在x0处可导"。如果不可导（如f(x)=|x|在x=0处取得极小值），导数不存在，而不是等于0。', difficulty:2},
+      {speaker:'fox', claim:'真假排雷：如果两个随机变量X和Y不相关(Cov(X,Y)=0)，则它们一定相互独立。', isLie:true,
+       truth:'"不相关"只代表没有线性关系。只有当X和Y服从二维正态分布时，不相关才等价于相互独立。普通分布下推不出独立。', difficulty:3},
+      {speaker:'tiger', claim:'公式陷阱：计算定积分∫[-a,a] f(x)dx时，只要连续，结果就必定是2∫[0,a] f(x)dx。', isLie:true,
+       truth:'这只有在f(x)是偶函数时才成立！如果f(x)是奇函数，结果为0。直接用公式是定积分最大的陷阱！', difficulty:1},
       // ── 真话 ──
       {speaker:'owl', claim:'可导必定连续，但连续不一定可导。', isLie:false, truth:'', difficulty:1},
       {speaker:'fox', claim:'n阶方阵可逆的充要条件是其行列式不等于零。', isLie:false, truth:'', difficulty:1},
@@ -291,6 +307,102 @@ const TavernData = (() => {
     return rounds.filter(Boolean).slice(0, targetCount);
   }
 
-  return { getNPC, getAllNPCs, buildRounds, CLAIMS, TARGET_ROUNDS };
+  // ═══════════════════════════════════════════════
+  //  Generate 100-card Deck for Liar's Deck mode
+  // ═══════════════════════════════════════════════
+  /**
+   * Build a 100-card deck: 30A + 30K + 30Q + 10 Joker
+   * Each card has: { suit, text, knowledge, isTrue }
+   * @param {string} subject - '101','201','301','408'
+   */
+  function generateDeck(subject) {
+    const subKey = subject === 'politics' ? '101' : subject === 'english' ? '201' : subject;
+
+    // Gather all knowledge sources
+    const staticPool = [...(CLAIMS[subKey] || CLAIMS['101'])];
+    let vaultCards = [];
+    try {
+      const vaultQ = CaseDB.loadVaultQuestions(subKey);
+      if (vaultQ && vaultQ.length > 0) {
+        vaultQ.forEach(vq => {
+          const opts = vq.o || vq.opts || [];
+          const correctIdx = typeof vq.a === 'number' ? vq.a : 0;
+          const correctAnswer = opts[correctIdx] || '';
+          const wrongAnswers = opts.filter((_, i) => i !== correctIdx);
+          if (wrongAnswers.length > 0) {
+            vaultCards.push({
+              text: wrongAnswers[0],
+              knowledge: `❌ ${wrongAnswers[0]}\n✅ 正确: ${correctAnswer}`,
+              isTrue: false,
+            });
+          }
+          vaultCards.push({
+            text: correctAnswer || vq.q || '',
+            knowledge: `✅ ${correctAnswer}${vq.analysis ? '\n💡 ' + vq.analysis : ''}`,
+            isTrue: true,
+          });
+        });
+      }
+    } catch(e) {}
+
+    // Convert static claims to card sources
+    const cardSources = [];
+    staticPool.forEach(claim => {
+      cardSources.push({
+        text: claim.claim,
+        knowledge: claim.isLie
+          ? `❌ 假话:\n${claim.claim}\n\n✅ 真相:\n${claim.truth}`
+          : `✅ 真话:\n${claim.claim}`,
+        isTrue: !claim.isLie,
+      });
+    });
+
+    // Merge sources
+    const allSources = [...vaultCards, ...cardSources];
+
+    // Build 100 cards with suits
+    const deck = [];
+    const suitNames = ['A', 'K', 'Q'];
+    const suitLabels = { 'A': '♠ 概念', 'K': '♥ 定理', 'Q': '♦ 辨析' };
+    const suitColors = { 'A': '#4488cc', 'K': '#cc4444', 'Q': '#cc8844' };
+
+    // 30 of each suit
+    for (let s = 0; s < 3; s++) {
+      const suit = suitNames[s];
+      for (let i = 0; i < 30; i++) {
+        const src = allSources[i % allSources.length];
+        deck.push({
+          id: `${suit}-${i}`,
+          suit,
+          suitLabel: suitLabels[suit],
+          suitColor: suitColors[suit],
+          text: src.text,
+          knowledge: src.knowledge,
+          isTrue: src.isTrue,
+          display: `${suit}`,
+        });
+      }
+    }
+
+    // 10 Jokers
+    for (let i = 0; i < 10; i++) {
+      const src = allSources[i % allSources.length];
+      deck.push({
+        id: `Joker-${i}`,
+        suit: 'Joker',
+        suitLabel: '🃏 百搭',
+        suitColor: '#d4a017',
+        text: '百搭万能牌',
+        knowledge: `🃏 Joker: 万能真话\n${src.knowledge}`,
+        isTrue: true,
+        display: '🃏',
+      });
+    }
+
+    console.log(`[骗子酒馆] ${subKey}科: 牌池${deck.length}张 (${allSources.length}条知识源)`);
+    return deck;
+  }
+
+  return { getNPC, getAllNPCs, buildRounds, generateDeck, CLAIMS, TARGET_ROUNDS };
 })();
 

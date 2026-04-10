@@ -711,19 +711,35 @@ const CourtApp = (() => {
     const gavel = document.getElementById('gavelStrike');
     const wave = document.getElementById('gavelShockwave');
     const flash = document.getElementById('verdictFlash');
-    const court = document.getElementById('courtScreen');
+    const court = document.querySelector('.immersive-court') || document.getElementById('courtScreen');
+    const objectionFlash = document.getElementById('objectionFlash');
+    const objectionText = document.getElementById('objectionText');
 
-    // 法槌动画
+    // 清理状态
     gavel.classList.remove('active');
     wave.classList.remove('active');
     flash.classList.remove('correct','wrong','glory','doom');
-    court.classList.remove('shaking');
+    court.classList.remove('court-shaking', 'shaking');
+    if (objectionFlash) {
+      objectionText.style.animation = 'none';
+    }
     void gavel.offsetHeight; // force reflow
 
     gavel.classList.add('active');
     setTimeout(() => {
       wave.classList.add('active');
-      court.classList.add('shaking');
+      court.classList.add('court-shaking');
+      
+      // 判对时弹出异议
+      if (isCorrect && objectionFlash) {
+        objectionText.textContent = "异议！";
+        objectionText.style.color = "#ff0000";
+        objectionText.style.animation = "objectionPop 0.8s ease-out forwards";
+      } else if (!isCorrect && objectionFlash) {
+        objectionText.textContent = "驳回！";
+        objectionText.style.color = "#5555ff";
+        objectionText.style.animation = "objectionPop 0.8s ease-out forwards";
+      }
     }, 200);
 
     // 判决闪光
@@ -731,13 +747,13 @@ const CourtApp = (() => {
       flash.classList.add(isCorrect ? 'glory' : 'doom');
     }, 300);
 
-    // 清理
+    // 恢复
     setTimeout(() => {
       gavel.classList.remove('active');
       wave.classList.remove('active');
       flash.classList.remove('correct','wrong','glory','doom');
-      court.classList.remove('shaking');
-    }, 1200);
+      court.classList.remove('court-shaking', 'shaking');
+    }, 1500);
   }
 
   // ═══ 连击飞字 ═══
