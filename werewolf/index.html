@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>词境狼人杀 · WORDVERSE WEREWOLF — 北大考研修仙应用集</title>
+<meta name="description" content="AI驱动词境狼人杀·考研英语词汇沉浸学习">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#0a0e27;--bg2:#1a0a2e;--bg3:#0d1535;
+  --panel:rgba(15,20,50,.75);--panel2:rgba(20,25,60,.85);--glass:rgba(255,255,255,.06);
+  --gold:#f59e0b;--gold2:#fbbf24;--amber:#d97706;
+  --blue:#3b82f6;--sapphire:#2563eb;--indigo:#6366f1;
+  --purple:#a78bfa;--lavender:#c4b5fd;--violet:#7c3aed;
+  --cyan:#06b6d4;--teal:#14b8a6;
+  --rose:#f43f5e;--red:#ef4444;
+  --green:#10b981;--emerald:#34d399;
+  --text:#eef0ff;--dim:#6b7394;--sub:#8b92b3;
+  --glow:0 0 20px rgba(99,102,241,.2),0 0 60px rgba(99,102,241,.05);
+  --glass-border:rgba(255,255,255,.1);
+  --serif:'Noto Sans SC',sans-serif;--mono:'Orbitron',monospace;--sans:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg1);color:var(--text)}
+
+/* ═══ Animated BG ═══ */
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:linear-gradient(135deg,#0a0e27 0%,#1a0a2e 30%,#0d1535 60%,#0a0e27 100%)}
+#starCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Soft ambient glow */
+.ambient{position:fixed;z-index:0;border-radius:50%;filter:blur(80px);pointer-events:none;animation:drift 20s ease-in-out infinite alternate}
+.ambient.a1{width:400px;height:400px;background:rgba(99,102,241,.08);top:-100px;right:-100px}
+.ambient.a2{width:300px;height:300px;background:rgba(167,139,250,.06);bottom:-50px;left:-80px}
+.ambient.a3{width:250px;height:250px;background:rgba(245,158,11,.04);top:50%;left:50%;transform:translate(-50%,-50%)}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(20px,-20px) scale(1.1)}}
+
+/* ═══ Glass Panel ═══ */
+.glass{background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:12px}
+
+/* ═══ Screen ═══ */
+.screen{display:none;position:absolute;inset:0;z-index:1}
+.screen.active{display:flex;flex-direction:column}
+
+/* ═══ LOBBY ═══ */
+#lobby.active{align-items:center;justify-content:center;text-align:center;padding:20px;overflow-y:auto;gap:12px}
+.lobby-logo{font-size:56px;filter:drop-shadow(0 0 20px rgba(245,158,11,.4));animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.lobby-title{font-family:var(--serif);font-size:clamp(26px,5.5vw,38px);font-weight:900;
+  background:linear-gradient(135deg,var(--gold2),var(--lavender),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 8px rgba(245,158,11,.2))}
+.lobby-sub{font-family:var(--mono);font-size:10px;color:var(--purple);letter-spacing:10px;opacity:.8}
+.lobby-desc{max-width:480px;font-size:12px;color:var(--sub);line-height:1.8}
+.lobby-desc b{color:var(--gold)}
+
+/* Difficulty Selector */
+.diff-selector{display:flex;gap:10px;max-width:520px;width:100%}
+.diff-card{flex:1;padding:16px 8px;border-radius:12px;cursor:pointer;transition:all .3s;
+  background:var(--panel);border:2px solid transparent;backdrop-filter:blur(12px);text-align:center}
+.diff-card:hover{transform:translateY(-3px);border-color:var(--glass-border)}
+.diff-card.selected{border-color:var(--gold);box-shadow:0 0 20px rgba(245,158,11,.15)}
+.diff-card .dc-icon{font-size:28px;margin-bottom:6px}
+.diff-card .dc-name{font-family:var(--serif);font-size:14px;font-weight:900;margin-bottom:4px}
+.diff-card .dc-desc{font-size:9px;color:var(--dim);line-height:1.5}
+.diff-card.d1 .dc-name{color:var(--emerald)}.diff-card.d2 .dc-name{color:var(--gold)}.diff-card.d3 .dc-name{color:var(--rose)}
+
+/* Player Grid */
+.lobby-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:460px;width:100%}
+.lg-item{text-align:center;padding:8px 4px;border-radius:10px;transition:.3s;
+  background:var(--panel);border:1px solid var(--glass-border);backdrop-filter:blur(8px)}
+.lg-item:hover{border-color:var(--purple);transform:translateY(-2px)}
+.lg-item .av{font-size:22px;margin-bottom:3px}
+.lg-item .nm{font-size:7px;color:var(--sub);font-weight:700}
+.lg-item.you{border-color:var(--gold);box-shadow:0 0 12px rgba(245,158,11,.15)}
+
+.start-btn{padding:14px 56px;border:none;border-radius:8px;cursor:pointer;letter-spacing:6px;
+  font-family:var(--serif);font-size:16px;font-weight:900;transition:all .3s;
+  background:linear-gradient(135deg,var(--sapphire),var(--violet));color:#fff;
+  box-shadow:0 4px 20px rgba(99,102,241,.3)}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.4)}
+
+.lobby-features{max-width:460px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.lf{padding:4px 10px;font-size:8px;border-radius:20px;
+  background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.15);color:var(--purple)}
+
+/* ═══ Card Reveal ═══ */
+.card-reveal{position:fixed;inset:0;z-index:100;background:rgba(5,5,20,.95);display:none;
+  align-items:center;justify-content:center;flex-direction:column;text-align:center;
+  backdrop-filter:blur(10px)}
+.card-reveal.active{display:flex}
+.cr-card{width:200px;height:280px;perspective:800px;margin-bottom:16px}
+.cr-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1s;cursor:pointer}
+.cr-inner.flipped{transform:rotateY(180deg)}
+.cr-front,.cr-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;
+  align-items:center;justify-content:center;flex-direction:column}
+.cr-front{background:linear-gradient(135deg,var(--bg3),var(--bg1));border:2px solid var(--glass-border);
+  font-size:48px;box-shadow:var(--glow)}
+.cr-back{transform:rotateY(180deg);border:2px solid var(--gold);box-shadow:0 0 30px rgba(245,158,11,.2)}
+.cr-back .cr-icon{font-size:56px;margin-bottom:8px}
+.cr-back .cr-role{font-family:var(--mono);font-size:18px;font-weight:900;letter-spacing:3px;margin-bottom:4px}
+.cr-back .cr-name{font-family:var(--serif);font-size:14px;color:var(--sub)}
+.cr-back .cr-skill{font-size:11px;color:var(--dim);margin-top:8px;padding:0 12px;line-height:1.5}
+.cr-info{font-size:12px;color:var(--sub);max-width:300px;line-height:1.6;margin-bottom:16px}
+.cr-btn{padding:12px 40px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--amber),var(--gold));color:#000;
+  font-size:14px;font-weight:900;cursor:pointer;letter-spacing:3px;font-family:var(--serif);
+  box-shadow:0 4px 15px rgba(245,158,11,.3);transition:.3s}
+.cr-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,158,11,.4)}
+
+/* ═══ GAME SCREEN ═══ */
+#game.active{height:100%}
+
+/* Top Bar */
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;
+  border-bottom:1px solid var(--glass-border);background:var(--panel2);flex-shrink:0;z-index:10;
+  backdrop-filter:blur(20px)}
+.gh-left{display:flex;align-items:center;gap:12px}
+.gh-day{font-family:var(--mono);font-size:13px;font-weight:900;color:var(--gold);letter-spacing:2px}
+.gh-title{font-family:var(--serif);font-size:15px;font-weight:900;
+  background:linear-gradient(90deg,var(--gold2),var(--lavender));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.gh-right{display:flex;align-items:center;gap:10px}
+.gh-badge{padding:4px 12px;border-radius:6px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:1px;
+  backdrop-filter:blur(8px)}
+.gh-stat{font-size:10px;color:var(--cyan);font-family:var(--mono)}
+.gh-toggle{padding:4px 10px;border-radius:6px;font-size:9px;cursor:pointer;border:1px solid var(--glass-border);
+  background:var(--glass);color:var(--purple);font-weight:600;transition:.2s}
+.gh-toggle:hover{background:rgba(167,139,250,.12)}
+.gh-diff{padding:4px 10px;border-radius:6px;font-size:9px;font-weight:700;
+  background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+
+/* ═══ Game Body ═══ */
+.game-body{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* Left: Player List */
+.player-sidebar{width:160px;display:flex;flex-direction:column;flex-shrink:0;
+  border-right:1px solid var(--glass-border);background:rgba(10,14,39,.8);overflow-y:auto;
+  backdrop-filter:blur(12px)}
+.ps-header{padding:10px 12px;font-family:var(--serif);font-size:12px;font-weight:900;color:var(--purple);
+  border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center}
+.ps-header span{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:2px}
+.ps-player{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid rgba(255,255,255,.02);transition:.2s;cursor:default;position:relative}
+.ps-player:hover{background:rgba(167,139,250,.04)}
+.ps-player.you{background:rgba(245,158,11,.04);border-left:3px solid var(--gold)}
+.ps-player.dead{opacity:.3}
+.ps-player .ps-av{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.ps-player .ps-info{flex:1;min-width:0}
+.ps-player .ps-nm{font-size:10px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps-player .ps-en{font-size:7px;font-family:var(--mono);color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.ps-player .ps-role{font-size:7px;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px}
+.ps-player .ps-dead-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--rose)}
+
+/* Center: Chat */
+.center-area{flex:1;display:flex;flex-direction:column;min-width:0}
+.chat-log{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+
+/* Message Bubbles */
+.chat-msg{animation:msgIn .5s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.chat-msg.system{text-align:center;padding:8px 16px;
+  background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(245,158,11,.02));
+  border:1px solid rgba(245,158,11,.12);border-radius:8px;margin:6px auto;max-width:85%}
+.chat-msg.system .msg-text{color:var(--gold);font-size:11px;font-weight:600}
+.chat-msg.death{padding:10px 14px;
+  background:linear-gradient(135deg,rgba(244,63,94,.06),rgba(244,63,94,.02));
+  border-left:3px solid var(--rose);border-radius:0 8px 8px 0}
+.chat-msg.player{display:flex;gap:10px;align-items:flex-start}
+.msg-av{font-size:22px;flex-shrink:0;width:30px;text-align:center;margin-top:4px;
+  background:var(--panel);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--glass-border)}
+.msg-body{flex:1;min-width:0;background:var(--panel);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);border-radius:4px 14px 14px 14px;padding:10px 14px;position:relative}
+.msg-name{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.msg-name .mn-en{font-size:8px;font-family:var(--mono);color:var(--dim);letter-spacing:1px}
+.msg-text{font-size:12.5px;line-height:1.8;color:var(--text)}
+.msg-cn{font-size:11px;color:rgba(245,158,11,.6);margin-top:6px;border-top:1px dashed rgba(255,255,255,.05);
+  padding-top:6px;line-height:1.6}
+.msg-cn.hidden{display:none}
+
+/* Vocab Highlight */
+.vocab-word{color:var(--cyan);font-weight:700;position:relative;display:inline;
+  background:rgba(6,182,212,.08);padding:1px 3px;border-radius:3px;border-bottom:1.5px solid rgba(6,182,212,.3)}
+.vocab-hint{color:var(--gold);font-size:11px;font-weight:400;opacity:.85}
+.vocab-popup{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  padding:12px 16px;background:rgba(10,14,39,.97);border:1px solid var(--cyan);border-radius:10px;
+  font-size:10px;z-index:99;min-width:220px;text-align:left;box-shadow:0 8px 30px rgba(6,182,212,.15);
+  pointer-events:none;backdrop-filter:blur(12px)}
+.vocab-word:hover .vocab-popup{display:block}
+.vp-en{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:4px}
+.vp-cn{color:var(--gold);font-size:11px;margin-bottom:4px}
+.vp-tip{color:var(--emerald);font-size:10px;margin-bottom:3px}
+.vp-root{color:var(--purple);font-size:9px}
+
+/* ═══ Bottom Bar ═══ */
+.bottom-bar{padding:10px 14px;background:var(--panel2);border-top:1px solid var(--glass-border);flex-shrink:0;
+  display:flex;align-items:center;gap:8px;backdrop-filter:blur(20px)}
+.bottom-bar.hidden{display:none}
+.bb-input{flex:1;padding:10px 16px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:8px;color:var(--text);font-size:12px;font-family:var(--sans);outline:none;resize:none;
+  backdrop-filter:blur(8px)}
+.bb-input:focus{border-color:var(--purple);box-shadow:0 0 12px rgba(167,139,250,.1)}
+.bb-input::placeholder{color:var(--dim)}
+.bb-vote{padding:10px 20px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;
+  font-weight:900;cursor:pointer;font-size:12px;font-family:var(--serif);letter-spacing:2px;transition:.2s}
+.bb-vote:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(16,185,129,.3)}
+.bb-send{padding:10px 20px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--sapphire),var(--indigo));color:#fff;
+  font-weight:900;cursor:pointer;font-size:12px;font-family:var(--serif);letter-spacing:2px;transition:.2s}
+.bb-send:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.3)}
+.bb-send:disabled,.bb-vote:disabled{opacity:.3;cursor:default;transform:none}
+
+/* ═══ Vote Panel ═══ */
+.vote-overlay{position:fixed;inset:0;z-index:50;background:rgba(5,5,20,.9);display:none;
+  align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;
+  backdrop-filter:blur(8px)}
+.vote-overlay.active{display:flex}
+.vo-title{font-family:var(--serif);font-size:18px;font-weight:900;color:var(--rose);margin-bottom:8px}
+.vo-sub{font-size:11px;color:var(--sub);margin-bottom:14px}
+.vo-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:500px}
+.vo-btn{padding:10px 16px;border-radius:8px;
+  background:var(--panel);border:1px solid var(--glass-border);
+  color:var(--text);cursor:pointer;font-size:11px;font-weight:600;transition:.2s;
+  display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px)}
+.vo-btn:hover{border-color:var(--rose);background:rgba(244,63,94,.06)}
+.vo-btn.selected{border-color:var(--rose);background:rgba(244,63,94,.1);box-shadow:0 0 12px rgba(244,63,94,.15)}
+.vo-submit{margin-top:14px;padding:12px 44px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--rose),#e11d48);color:#fff;
+  font-size:14px;font-weight:900;cursor:pointer;letter-spacing:3px;font-family:var(--serif);transition:.2s}
+.vo-submit:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(244,63,94,.3)}
+.vo-submit:disabled{opacity:.3;cursor:default;transform:none}
+
+/* ═══ Night Overlay ═══ */
+.night-overlay{position:fixed;inset:0;background:rgba(5,5,20,.92);z-index:50;display:none;
+  align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;
+  backdrop-filter:blur(8px)}
+.night-overlay.active{display:flex}
+.no-icon{font-size:52px;margin-bottom:12px;animation:float 3s ease-in-out infinite}
+.no-title{font-family:var(--serif);font-size:22px;font-weight:900;
+  background:linear-gradient(135deg,var(--purple),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px}
+.no-desc{font-size:12px;color:var(--sub);max-width:360px;margin-bottom:16px;line-height:1.7}
+.no-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px}
+.no-pick{padding:10px 14px;border-radius:8px;
+  background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
+  color:var(--text);cursor:pointer;font-size:11px;transition:.2s;backdrop-filter:blur(8px)}
+.no-pick:hover{border-color:var(--purple);background:rgba(167,139,250,.12)}
+.no-pick.selected{border-color:var(--purple);background:rgba(167,139,250,.15);box-shadow:0 0 12px rgba(167,139,250,.15)}
+.no-btn{padding:10px 32px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--violet),var(--indigo));color:#fff;
+  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:2px;transition:.2s}
+.no-btn:hover{transform:translateY(-2px)}
+.no-btn:disabled{opacity:.3;cursor:default;transform:none}
+.no-result{font-size:16px;font-weight:700;margin:8px 0}
+.no-result.wolf{color:var(--rose)}.no-result.safe{color:var(--green)}
+
+/* Flash Vocab */
+.flash-game{margin-top:14px;padding:14px;background:var(--panel);border:1px solid var(--glass-border);
+  border-radius:10px;max-width:300px;backdrop-filter:blur(8px)}
+.flash-word{font-family:var(--mono);font-size:20px;font-weight:900;color:var(--cyan);margin-bottom:4px;letter-spacing:2px}
+.flash-meaning{font-size:11px;color:var(--gold);margin-bottom:8px}
+.flash-btns{display:flex;gap:8px;justify-content:center}
+.flash-btn{padding:8px 22px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:none;transition:.2s}
+.flash-btn.know{background:rgba(16,185,129,.15);color:var(--green)}
+.flash-btn.dunno{background:rgba(244,63,94,.1);color:var(--rose)}
+.flash-btn:hover{transform:scale(1.05)}
+.flash-progress{font-size:9px;color:var(--dim);margin-top:8px}
+
+/* Grammar Overlay */
+.grammar-overlay{position:fixed;inset:0;z-index:80;background:rgba(5,5,20,.93);display:none;
+  align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;
+  backdrop-filter:blur(8px)}
+.grammar-overlay.active{display:flex}
+.go-title{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:12px}
+.go-sentence{font-size:13px;color:var(--text);max-width:500px;line-height:1.8;margin-bottom:14px;padding:14px;
+  background:var(--panel);border:1px solid rgba(245,158,11,.1);border-radius:10px}
+.go-slot{display:inline-block;padding:3px 12px;margin:2px;border:1.5px dashed var(--cyan);border-radius:6px;
+  cursor:pointer;transition:.2s;min-width:50px;text-align:center;font-weight:600}
+.go-slot:hover{background:rgba(6,182,212,.08)}
+.go-slot.correct{border-color:var(--green);background:rgba(16,185,129,.1);color:var(--green);border-style:solid}
+.go-slot.wrong{border-color:var(--rose);background:rgba(244,63,94,.08);color:var(--rose)}
+.go-slot.active{border-color:var(--gold);background:rgba(245,158,11,.06)}
+.go-options{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px;max-width:400px}
+.go-opt{padding:7px 16px;border-radius:6px;
+  background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
+  color:var(--text);font-size:11px;cursor:pointer;transition:.2s}
+.go-opt:hover{border-color:var(--purple)}.go-opt.used{opacity:.3;pointer-events:none}
+.go-result{font-size:12px;margin-top:10px;line-height:1.6;max-width:400px}
+
+/* Replay Drawer */
+.replay-drawer{position:fixed;right:0;top:0;bottom:0;width:320px;background:var(--panel2);
+  border-left:1px solid var(--glass-border);z-index:60;transform:translateX(100%);transition:transform .4s;
+  display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(20px)}
+.replay-drawer.open{transform:translateX(0)}
+.rd-header{padding:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05)}
+.rd-title{font-family:var(--serif);font-size:14px;color:var(--purple)}
+.rd-close{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer}
+.rd-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.05)}
+.rd-tab{flex:1;padding:8px;text-align:center;font-size:10px;cursor:pointer;color:var(--dim);transition:.2s;border-bottom:2px solid transparent}
+.rd-tab.active{color:var(--purple);border-color:var(--purple)}
+.rd-body{flex:1;overflow-y:auto;padding:10px}
+.rd-msg{padding:8px 10px;margin-bottom:6px;border-radius:6px;font-size:11px;line-height:1.6;
+  background:rgba(255,255,255,.02)}
+.replay-btn{position:fixed;right:10px;bottom:65px;z-index:55;padding:7px 12px;border-radius:6px;
+  background:var(--panel);border:1px solid var(--glass-border);color:var(--purple);font-size:9px;
+  cursor:pointer;display:none;font-weight:600;backdrop-filter:blur(8px)}
+.replay-btn.show{display:block}
+
+/* ═══ Result ═══ */
+#result.active{align-items:center;justify-content:center;text-align:center;padding:20px;overflow-y:auto}
+.res-icon{font-size:64px;margin-bottom:12px}
+.res-title{font-family:var(--serif);font-size:28px;font-weight:900;margin-bottom:8px}
+.res-sub{font-size:12px;color:var(--sub);margin-bottom:18px;max-width:400px}
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:400px;margin:0 auto 18px}
+.rs{background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;padding:14px;backdrop-filter:blur(8px)}
+.rs .n{font-family:var(--mono);font-size:22px;font-weight:900;margin-bottom:3px}
+.rs .l{font-size:9px;color:var(--sub);letter-spacing:1px}
+.res-vocab{max-width:500px;margin:0 auto 18px;text-align:left}
+.res-vocab h3{font-family:var(--serif);font-size:14px;margin-bottom:10px;color:var(--purple)}
+.rv-item{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px;
+  display:flex;flex-direction:column;gap:3px;border-radius:6px;margin-bottom:2px}
+.rv-item:hover{background:rgba(255,255,255,.02)}
+.rv-top{display:flex;justify-content:space-between}.rv-word{color:var(--cyan);font-weight:700}.rv-def{color:var(--sub)}
+.rv-tip{font-size:9px;color:var(--emerald)}
+.review-chat{max-width:500px;margin:0 auto 18px;text-align:left;
+  background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;overflow:hidden}
+.rc-header{padding:10px 14px;background:rgba(167,139,250,.04);border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:12px;font-weight:700;color:var(--purple)}
+.rc-messages{max-height:200px;overflow-y:auto;padding:10px}
+.rc-msg{padding:8px 10px;margin-bottom:6px;border-radius:6px;font-size:11px;line-height:1.6}
+.rc-msg.ai{background:rgba(167,139,250,.04);border-left:2px solid var(--purple)}
+.rc-msg.user{background:rgba(245,158,11,.04);border-left:2px solid var(--gold)}
+.rc-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid rgba(255,255,255,.05)}
+.rc-input{flex:1;padding:8px 12px;font-size:11px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:6px;color:var(--text);outline:none}
+.rc-send{padding:8px 14px;border:none;border-radius:6px;
+  background:linear-gradient(135deg,var(--sapphire),var(--indigo));color:#fff;font-size:10px;font-weight:700;cursor:pointer}
+.res-btn{padding:12px 40px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--sapphire),var(--violet));color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer;letter-spacing:3px;font-family:var(--serif);transition:.2s}
+.res-btn:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(99,102,241,.3)}
+
+.ai-loading{text-align:center;padding:8px;font-size:10px;color:var(--dim);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(167,139,250,.2);border-radius:4px}
+
+@media(max-width:600px){.player-sidebar{width:100px}.ps-player .ps-en{display:none}}
+</style>
+</head>
+<body>
+
+<canvas id="starCanvas"></canvas>
+<div class="ambient a1"></div>
+<div class="ambient a2"></div>
+<div class="ambient a3"></div>
+
+<!-- ═══ LOBBY ═══ -->
+<div class="screen active" id="lobby">
+  <div class="lobby-logo">🐺</div>
+  <div class="lobby-title">词境狼人杀</div>
+  <div class="lobby-sub">WORDVERSE WEREWOLF</div>
+  <div class="lobby-desc">
+    12位修仙者中潜入了4只妖兽 🐺<br>
+    <b>AI驱动 · Gemini 2.5 Flash</b> · 搞笑记单词<br>
+    <span style="color:var(--dim)">⚡ 考研英语词汇 · 谐音梗 · 词根词缀 · 联想记忆</span>
+  </div>
+  <div class="diff-selector">
+    <div class="diff-card d1 selected" onclick="G.setDiff(0,this)">
+      <div class="dc-icon">🌱</div>
+      <div class="dc-name">初级</div>
+      <div class="dc-desc">中文为主<br>英文词+谐音梗+释义<br>轻松入门</div>
+    </div>
+    <div class="diff-card d2" onclick="G.setDiff(1,this)">
+      <div class="dc-icon">🌿</div>
+      <div class="dc-name">中级</div>
+      <div class="dc-desc">中英混合<br>英文词+中文释义<br>进阶强化</div>
+    </div>
+    <div class="diff-card d3" onclick="G.setDiff(2,this)">
+      <div class="dc-icon">🔥</div>
+      <div class="dc-name">高级</div>
+      <div class="dc-desc">全英文对话<br>hover查词义<br>考研实战</div>
+    </div>
+  </div>
+  <div class="lobby-grid" id="lobbyGrid"></div>
+  <button class="start-btn" onclick="G.startGame()">⚔ 开 始 游 戏</button>
+  <div class="lobby-features">
+    <span class="lf">📖 词根词缀</span><span class="lf">😂 谐音联想</span>
+    <span class="lf">🐉 熟词生义</span><span class="lf">⚡ 闪电词汇</span>
+    <span class="lf">🧩 语法拆句</span><span class="lf">🎬 四遍回放</span>
+    <span class="lf">🎤 影子跟读</span><span class="lf">🤖 AI私教</span>
+  </div>
+</div>
+
+<!-- ═══ Card Reveal ═══ -->
+<div class="card-reveal" id="cardReveal">
+  <div class="cr-card"><div class="cr-inner" id="crInner">
+    <div class="cr-front">🃏<br><span style="font-size:14px;color:var(--dim)">点击翻牌</span></div>
+    <div class="cr-back" id="crBack"></div>
+  </div></div>
+  <div class="cr-info" id="crInfo"></div>
+  <button class="cr-btn" id="crBtn" style="display:none" onclick="G.closeCardReveal()">进入游戏 ⚔</button>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div class="screen" id="game">
+  <div class="game-header">
+    <div class="gh-left">
+      <span class="gh-day" id="phaseLabel">★ DAY 1</span>
+      <span class="gh-title">词境狼人杀</span>
+    </div>
+    <div class="gh-right">
+      <span class="gh-diff" id="diffLabel">🌱 初级</span>
+      <span class="gh-stat" id="wordCount">📖 0</span>
+      <span class="gh-badge" id="roleLabel"></span>
+    </div>
+  </div>
+  <div class="game-body">
+    <div class="player-sidebar" id="playerSidebar">
+      <div class="ps-header">修仙者 <span>PLAYERS</span></div>
+    </div>
+    <div class="center-area">
+      <div class="chat-log" id="chatLog"></div>
+      <div class="bottom-bar hidden" id="bottomBar">
+        <textarea class="bb-input" id="bbInput" rows="1" placeholder="中英文发言（中文也行，AI帮翻译）"></textarea>
+        <button class="bb-vote" id="bbVote" onclick="G.openVote()">✅ 投票</button>
+        <button class="bb-send" id="bbSend" onclick="G.playerSpeak()">✔ 确认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Night Overlay -->
+<div class="night-overlay" id="nightOverlay">
+  <div class="no-icon" id="noIcon">🌙</div>
+  <div class="no-title" id="noTitle">夜幕降临</div>
+  <div class="no-desc" id="noDesc"></div>
+  <div id="noContent"></div>
+  <button class="no-btn" id="noBtn" onclick="G.nightAction()" style="display:none">确认</button>
+</div>
+
+<!-- Grammar Overlay -->
+<div class="grammar-overlay" id="grammarOverlay">
+  <div class="go-title">🧩 遗言解读 · LAST WORDS PUZZLE</div>
+  <div class="go-sentence" id="goSentence"></div>
+  <div class="go-options" id="goOptions"></div>
+  <div class="go-result" id="goResult"></div>
+  <button class="no-btn" id="goBtn" style="display:none" onclick="G.closeGrammar()">继续 →</button>
+</div>
+
+<!-- Vote Overlay -->
+<div class="vote-overlay" id="voteOverlay">
+  <div class="vo-title">⚔ 怀疑投票 · SUSPICION VOTING</div>
+  <div class="vo-sub">选择你认为最可疑的玩家</div>
+  <div class="vo-grid" id="voGrid"></div>
+  <button class="vo-submit" id="voSubmit" disabled onclick="G.submitVote()">🗳 投票处决</button>
+</div>
+
+<!-- Replay Drawer -->
+<button class="replay-btn" id="replayBtn" onclick="G.toggleReplay()">🎬 回放</button>
+<div class="replay-drawer" id="replayDrawer">
+  <div class="rd-header"><span class="rd-title">🎬 四遍回放</span><button class="rd-close" onclick="G.toggleReplay()">✕</button></div>
+  <div class="rd-tabs">
+    <div class="rd-tab active" onclick="G.replayMode(0,this)">泛看</div>
+    <div class="rd-tab" onclick="G.replayMode(1,this)">精看</div>
+    <div class="rd-tab" onclick="G.replayMode(2,this)">盲听</div>
+    <div class="rd-tab" onclick="G.replayMode(3,this)">跟读</div>
+  </div>
+  <div class="rd-body" id="rdBody"></div>
+</div>
+
+<!-- ═══ RESULT ═══ -->
+<div class="screen" id="result">
+  <div class="res-icon" id="resIcon"></div>
+  <div class="res-title" id="resTitle"></div>
+  <div class="res-sub" id="resSub"></div>
+  <div class="res-stats" id="resStats"></div>
+  <div class="res-vocab" id="resVocab"></div>
+  <div class="review-chat" id="reviewChat">
+    <div class="rc-header">🤖 AI私教 · 局后复盘</div>
+    <div class="rc-messages" id="rcMessages"></div>
+    <div class="rc-input-row">
+      <input class="rc-input" id="rcInput" placeholder="问问AI这局的词汇...">
+      <button class="rc-send" onclick="G.reviewAsk()">发送</button>
+    </div>
+  </div>
+  <button class="res-btn" onclick="location.reload()">🔄 再来一局</button>
+</div>
+
+<script>
+// ═══ Star Canvas ═══
+(function(){
+  const c=document.getElementById('starCanvas'),x=c.getContext('2d');
+  let stars=[];
+  function resize(){c.width=innerWidth;c.height=innerHeight;
+    stars=Array.from({length:80},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.5+.3,a:Math.random(),s:Math.random()*.003+.001,d:Math.random()>.5?1:-1}))}
+  function draw(){x.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{s.a+=s.s*s.d;if(s.a>1||s.a<0)s.d*=-1;
+      x.beginPath();x.arc(s.x,s.y,s.r,0,Math.PI*2);
+      x.fillStyle=`rgba(167,139,250,${s.a*.4})`;x.fill()});requestAnimationFrame(draw)}
+  resize();draw();addEventListener('resize',resize);
+})();
+
+// ═══ CONFIG ═══
+const API_URL='https://api.baosiapi.com/v1/chat/completions';
+const API_KEY='sk-Wq6ZDfqGBUOMHN3DMeyccH8nqDzsiGJpfFmdY5RJujPk9E97';
+const MODEL='gemini-2.5-flash';
+async function aiCall(msgs,mt=1000){try{const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:MODEL,messages:msgs,temperature:0.9,max_tokens:mt})});if(!r.ok)throw new Error(r.status);const d=await r.json();return(d.choices||[{}])[0]?.message?.content||''}catch(e){console.error('AI:',e);return null}}
+
+// ═══ PLAYERS ═══
+const PLAYERS=[
+  {id:0,name:'你',en:'YOU',emoji:'⚔️'},{id:1,name:'清风剑仙',en:'QINGFENG',emoji:'🗡️'},
+  {id:2,name:'碧落仙子',en:'BILUO',emoji:'🧚'},{id:3,name:'雷霆道君',en:'LEITING',emoji:'⚡'},
+  {id:4,name:'幽灵散修',en:'YOULING',emoji:'👤'},{id:5,name:'紫霞真人',en:'ZIXIA',emoji:'🔮'},
+  {id:6,name:'墨渊上仙',en:'MOYUAN',emoji:'🌊'},{id:7,name:'凤九长老',en:'FENGJIU',emoji:'🔥'},
+  {id:8,name:'青莲剑圣',en:'QINGLIAN',emoji:'🏮'},{id:9,name:'天机老人',en:'TIANJI',emoji:'🌟'},
+  {id:10,name:'玄冥尊者',en:'XUANMING',emoji:'💀'},{id:11,name:'瑶池圣母',en:'YAOCHI',emoji:'🌸'}
+];
+
+// ═══ VOCAB DB ═══
+const VOCAB_DB={
+  suspicious:{def:'可疑的',tip:'谐音"色斯陪歇死"→可疑的人让你歇菜',root:'sus(下)+spic(看)→偷偷看→可疑'},
+  innocent:{def:'无辜的',tip:'谐音"一呢森特"→纯洁→无辜',root:'in(不)+noc(伤害)+ent→没伤害'},
+  accuse:{def:'指控',tip:'谐音"额Q死"→被控急到额Q死',root:'ac(朝)+cuse(原因)→找原因→指控'},
+  eliminate:{def:'淘汰',tip:'谐音"一粒没了他"→消灭',root:'e(出)+limin(门槛)+ate→踢出去'},
+  deceive:{def:'欺骗',tip:'谐音"地C五"→骗',root:'de(离)+ceive(拿)→偷拿→欺骗'},
+  investigate:{def:'调查',tip:'谐音"因为死地给他"→调查',root:'in(里)+vestig(踪迹)+ate→追踪'},
+  reveal:{def:'揭露',tip:'掀开面纱→揭露',root:'re(反)+veal(遮)→掀开→揭露'},
+  alliance:{def:'联盟',tip:'谐音"额来恩死"→联盟之力',root:'al(朝)+li(绑)+ance→绑一起'},
+  testimony:{def:'证词',tip:'谐音"太死的猫你"→夸张证词',root:'test(证明)+imony→证词'},
+  verdict:{def:'裁决',tip:'谐音"我的课特"→特别判决',root:'ver(真实)+dict(说)→说真相'},
+  betray:{def:'背叛',tip:'必催→背叛者必被催命',root:'be+tray(交付)→出卖'},
+  conceal:{def:'隐藏',tip:'肯西尔→肯藏起来',root:'con(完全)+ceal(藏)→完全藏'},
+  fabricate:{def:'捏造',tip:'fabric(布)+ate→像织布一样编故事',root:'fabr(制造)+ate→制造→捏造'},
+  plausible:{def:'看似合理的',tip:'破老师报→看似对实则破',root:'plaus(鼓掌)+ible→值得鼓掌'},
+  ambiguous:{def:'模棱两可的',tip:'俺必够要死→模糊搞死人',root:'ambi(两边)+gu(走)→两边走'},
+  condemn:{def:'谴责',tip:'肯蛋→敢下蛋就谴责你',root:'con(加强)+demn(伤害)→严厉'},
+  advocate:{def:'提倡',tip:'爱的我K他→因爱支持',root:'ad(朝)+voc(声音)+ate→发声支持'},
+  consensus:{def:'共识',tip:'肯森色死→大家一致同意',root:'con(共)+sens(感觉)+us→共同感觉'},
+  contradiction:{def:'矛盾',tip:'contra(反)+dict(说)→说反话',root:'contra(反)+dict(说)+ion→互相矛盾'},
+  credible:{def:'可信的',tip:'credit兄弟→有信用→可信',root:'cred(信)+ible(能)→能信的'},
+  vulnerable:{def:'脆弱的',tip:'我了呢若保→脆弱保不住',root:'vulner(伤口)+able→易受伤'},
+  scrutinize:{def:'仔细审查',tip:'死扣他奶子→死扣细节查',root:'scrut(检查)+in+ize→反复查'},
+  exonerate:{def:'免罪',tip:'一个走了没他→把罪拿走',root:'ex(出)+oner(负担)+ate→卸负担'},
+  deliberate:{def:'故意的',tip:'地理不累他→故意不让他累',root:'de+liber(称量)+ate→仔细称量'},
+  legitimate:{def:'合法的',tip:'来给他没他→合法来非法走',root:'leg(法律)+itim+ate→符合法律'},
+  corroborate:{def:'证实',tip:'可肉薄瑞他→用厚实证据',root:'cor(一起)+robor(力量)+ate→加强'},
+  peculiar:{def:'奇特的',tip:'劈Q里→很奇特',root:'pecul(自己的)+iar→独有的'},
+  reliable:{def:'可靠的',tip:'rely(依靠)+able→能依靠',root:'re+li(绑)+able→绑住→可靠'},
+  trustworthy:{def:'值得信赖的',tip:'trust+worthy→值得信任',root:'trust(信)+worthy(值得)'},
+  guilty:{def:'有罪的',tip:'给了他→给了他罪名→有罪',root:'guilt(罪)+y→有罪的'},
+  abandon:{def:'放弃',tip:'一帮蛋→一帮坏蛋放弃了',root:'a+ban(禁止)+don→放弃'},
+  abstract:{def:'抽象的',tip:'abs(离开)+tract(拉)→把本质抽出来',root:'abs+tract(拉)→抽出'},
+  accelerate:{def:'加速',tip:'按可赛了瑞他→比赛加速',root:'ac+celer(快)+ate→加快'},
+  accomplish:{def:'完成',tip:'额靠普利息→完成利息目标',root:'ac+com+plish(满)→填满→完成'},
+  adequate:{def:'充足的',tip:'哎到Q他→够了够了',root:'ad(朝)+equ(相等)+ate→相等→足够'},
+  aggressive:{def:'侵略性的',tip:'额个瑞死五→有攻击性',root:'ag+gress(走)+ive→走向→进攻'},
+  anticipate:{def:'预料',tip:'安踢C陪它→提前踢球预判',root:'anti(前)+cip(拿)+ate→提前拿'},
+  apparent:{def:'明显的',tip:'一怕润他→明显怕他',root:'ap+par(出现)+ent→出现的→明显'},
+  assess:{def:'评估',tip:'额赛死→评估比赛结果',root:'as+sess(坐)→坐下评估'},
+  assume:{def:'假设',tip:'额说么→额说的假设',root:'as+sum(拿)→拿起来→假设'},
+  bargain:{def:'讨价还价',tip:'巴根→揪住巴讨价',root:'bar(交换)+gain(获得)'},
+  bias:{def:'偏见',tip:'拜S→拜倒一边→偏见',root:'bi(两)+as→偏向一边'},
+  capture:{def:'捕获',tip:'卡不起→卡住捕获',root:'capt(抓)+ure→抓住→捕获'},
+  cease:{def:'停止',tip:'C死→C了就停止',root:'cease→stop→停止'},
+  compel:{def:'强迫',tip:'啃配偶→被强迫啃',root:'com+pel(推)→推着走→强迫'},
+  constitute:{def:'构成',tip:'肯死地丢他→构成犯罪',root:'con+stit(站)+ute→站在一起→构成'},
+  crucial:{def:'关键的',tip:'Q歇→关键时刻Q一下',root:'cruc(十字)+ial→十字路口→关键'},
+  decline:{def:'下降/拒绝',tip:'地Q赖→赖在地上拒绝',root:'de(下)+cline(倾)→向下倾→衰退'},
+  deprive:{def:'剥夺',tip:'地破外物→剥夺外物',root:'de+priv(私人)+e→拿走私有→剥夺'},
+  derive:{def:'源自',tip:'地瑞五→源自大地瑞气',root:'de(从)+riv(河)+e→从河流来→源自'},
+  diminish:{def:'减少',tip:'地迷你屎→变小→减少',root:'di+min(小)+ish→变小→减少'},
+  elaborate:{def:'精心制作的',tip:'一粒薄瑞他→精心做好',root:'e+labor(劳动)+ate→费劳力→精心'},
+  endeavor:{def:'努力',tip:'恩地我→恩典地我努力',root:'en+deav(职责)+or→尽职→努力'},
+  envision:{def:'展望',tip:'嗯vision(视野)→展望未来',root:'en+vision(视野)→看见→展望'},
+  exploit:{def:'开发/剥削',tip:'一颗死破落它→剥削利用',root:'ex+ploit(展开)→展开利用'},
+  fluctuate:{def:'波动',tip:'浮了Q他→浮动',root:'fluct(流)+uate→流动→波动'},
+  genuine:{def:'真正的',tip:'真牛人→真正的牛人',root:'gen(产生)+uine→天生的→真正的'},
+  hypothesis:{def:'假说',tip:'嗨破赛死→假设比赛出问题',root:'hypo(下)+thes(放)+is→放在下面→假说'},
+  implement:{def:'实施',tip:'硬拼了没他→硬着头皮实施',root:'im+ple(满)+ment→填满→实施'},
+  implicit:{def:'含蓄的',tip:'隐破利C他→隐含不说',root:'im(里)+plic(折)+it→折在里面→含蓄'},
+  incentive:{def:'激励',tip:'硬赛的五→比赛激励你',root:'in+cent(唱)+ive→唱着鼓励→激励'},
+  inevitable:{def:'不可避免的',tip:'一捏玻她宝→不可避免碎',root:'in(不)+evit(避免)+able→不可避免'},
+  inferior:{def:'低等的',tip:'阴飞瑞呃→阴暗低等',root:'infer(下)+ior→在下面→低等'},
+  inherit:{def:'继承',tip:'阴害瑞他→继承了阴暗面',root:'in+her(继承)+it→继承'},
+  integrate:{def:'整合',tip:'硬得过瑞他→硬着整合',root:'in+tegr(完整)+ate→使完整→整合'},
+  justify:{def:'证明…正当',tip:'just(正义)+ify→使正义→证明正当',root:'just(正)+ify→使正当'},
+  manifest:{def:'表明/明显的',tip:'买你费死他→表明态度',root:'mani(手)+fest(打)→用手展示→表明'},
+  mechanism:{def:'机制',tip:'没课你忍→没有机制忍不了',root:'mechan(机器)+ism→机制'},
+  merit:{def:'优点/功绩',tip:'没瑞他→没功绩就没瑞气',root:'mer(赚得)+it→值得→功绩'},
+  neglect:{def:'忽视',tip:'你个来他→你忽视了他来',root:'neg(不)+lect(选)→不选→忽视'},
+  notion:{def:'概念',tip:'no+tion→脑中印象→概念',root:'not(知道)+ion→所知→概念'},
+  obscure:{def:'模糊的',tip:'暗不死Q→暗处模糊不清',root:'ob(覆盖)+scur(暗)→遮暗→模糊'},
+  overwhelming:{def:'压倒性的',tip:'over+whelm(淹没)→压倒性的',root:'over+whelm(翻)+ing→翻过来'},
+  parallel:{def:'平行的',tip:'怕了来了→平行宇宙怕来了',root:'para(旁)+llel(另一个)→旁边的→平行'},
+  persist:{def:'坚持',tip:'破C死他→坚持到底破了C',root:'per(贯穿)+sist(站)→一直站→坚持'},
+  phenomenon:{def:'现象',tip:'飞呢没男→飞翔现象没有男的',root:'phenom(显现)+enon→显现的→现象'},
+  plunge:{def:'猛冲/暴跌',tip:'不浪着→不浪了猛冲',root:'plunge→跳入→猛冲'},
+  postpone:{def:'推迟',tip:'post(后)+pone(放)→放到后面→推迟',root:'post(后)+pone(放)→推迟'},
+  precede:{def:'在…之前',tip:'pre(前)+cede(走)→走在前面',root:'pre(前)+ced(走)+e→走在前'},
+  preliminary:{def:'初步的',tip:'pre(前)+liminary→前面的→初步的',root:'pre+limin(门槛)+ary→在门槛前→初步'},
+  presume:{def:'假定',tip:'pre(预先)+sume(拿)→预先拿定→假定',root:'pre+sum(拿)→预设→假定'},
+  prevail:{def:'流行/盛行',tip:'pre(前)+vail(力量)→有前力→盛行',root:'pre+val(力量)→有力→盛行'},
+  privilege:{def:'特权',tip:'破瑞五力着→有力量=特权',root:'priv(私)+leg(法)+e→私人法律→特权'},
+  proportion:{def:'比例',tip:'pro(向前)+portion(部分)→各部分→比例',root:'pro+port(部分)+ion→比例'},
+  prospect:{def:'前景',tip:'pro(向前)+spect(看)→向前看→前景',root:'pro+spect(看)→展望→前景'},
+  pursue:{def:'追求',tip:'破水→破釜沉舟追求',root:'pur(向前)+sue(跟)→跟着走→追求'},
+  restrain:{def:'限制',tip:'re(回)+strain(拉紧)→拉回来→限制',root:'re+strain(拉)→拉住→限制'},
+  rival:{def:'对手',tip:'来瓦了→对手来拆瓦了',root:'riv(河)+al→河对岸的→对手'},
+  shed:{def:'脱落/流(泪)',tip:'洒的→洒了一地→脱落',root:'shed→脱掉→脱落'},
+  simultaneously:{def:'同时地',tip:'三毛他你S了→同时做三件事',root:'simul(同)+taneous+ly→同时地'},
+  span:{def:'跨度/范围',tip:'死胖→胖了跨度大',root:'span→手掌展开→跨度'},
+  speculate:{def:'推测',tip:'死拜Q了他→推测结果',root:'spec(看)+ulate→看→推测'},
+  stimulus:{def:'刺激',tip:'死地没了死→受刺激',root:'stim(刺)+ulus→刺→刺激'},
+  subordinate:{def:'下属的',tip:'sub(下)+ordinate(命令)→受命于下→下属',root:'sub+ordin(次序)+ate→次序下→下属'},
+  supplement:{def:'补充',tip:'sub+ple(满)+ment→补满→补充',root:'sup+ple(满)+ment→填满→补充'},
+  suppress:{def:'压制',tip:'sub(下)+press(压)→往下压→压制',root:'sup+press(压)→向下压→压制'},
+  sustain:{def:'维持',tip:'死死他应→死死维持',root:'sus(下)+tain(持)→从下撑住→维持'},
+  tedious:{def:'乏味的',tip:'太弟Q死→太无聊了Q死我',root:'ted(厌倦)+ious→令人厌倦→乏味'},
+  terminate:{def:'终止',tip:'特迷了他→终止迷路',root:'termin(终点)+ate→到终点→终止'},
+  threshold:{def:'门槛/阈值',tip:'死热谁hold→hold住门槛',root:'thresh(打)+hold→门槛'},
+  transform:{def:'转变',tip:'trans(跨越)+form(形式)→改变形式→转变',root:'trans+form→变形→转变'},
+  tremendous:{def:'巨大的',tip:'吹门大事→巨大的事',root:'tremend(颤抖)+ous→让人颤抖→巨大'},
+  trivial:{def:'琐碎的',tip:'吹微了→吹得微不足道',root:'trivi(三叉路)+al→路口闲聊→琐碎'},
+  undermine:{def:'暗中破坏',tip:'under(下)+mine(挖)→在下面挖→暗中破坏',root:'under+mine(挖)→挖墙脚'},
+  utilize:{def:'利用',tip:'you+til(到)+ize→用到底→利用',root:'util(用)+ize→使用→利用'},
+  valid:{def:'有效的',tip:'我历的→我经历的有效',root:'val(力量)+id→有力的→有效'},
+  vanish:{def:'消失',tip:'万里去→万里之外消失了',root:'van(空)+ish→变空→消失'},
+  violate:{def:'违反',tip:'why要累他→违反规则累了他',root:'viol(暴力)+ate→用暴力→违反'},
+  yield:{def:'产出/屈服',tip:'一儿的→一儿的产出',root:'yield→产出/让步'},
+  whatsoever:{def:'任何(加强)',tip:'what+so+ever→无论什么→任何',root:'加强语气词'},
+  whereby:{def:'借以/因此',tip:'where+by→通过那里→借以',root:'where(哪里)+by(通过)'},
+};
+
+const ROUND_VOCAB=[
+  ['suspicious','innocent','accuse','investigate','alliance'],
+  ['deceive','reveal','testimony','verdict','betray'],
+  ['conceal','fabricate','plausible','ambiguous','condemn'],
+  ['advocate','consensus','contradiction','credible','vulnerable'],
+  ['scrutinize','exonerate','deliberate','legitimate','corroborate'],
+  ['abandon','accelerate','accomplish','adequate','aggressive'],
+  ['anticipate','apparent','assess','assume','bargain'],
+  ['capture','compel','constitute','crucial','decline'],
+  ['deprive','derive','diminish','elaborate','exploit'],
+  ['genuine','hypothesis','implement','incentive','inevitable']
+];
+
+const BOSS_WORDS=[
+  {word:'address',meanings:['地址','处理','演讲'],contexts:['What is your address?','We must address this issue.','She will address the audience.']},
+  {word:'court',meanings:['法庭','追求','庭院'],contexts:['He appeared in court.','He is courting her.','They played in the court.']},
+  {word:'novel',meanings:['小说','新颖的'],contexts:['I read a novel.','That is a novel idea.']},
+  {word:'issue',meanings:['问题','发行','发布'],contexts:['This is a serious issue.','They issued a statement.','The magazine was issued today.']},
+  {word:'subject',meanings:['科目','使遭受','主题'],contexts:['My favorite subject.','He was subjected to torture.','The subject of discussion.']},
+  {word:'interest',meanings:['兴趣','利益','利息'],contexts:['I have interest in art.','It serves our interest.','The bank charges interest.']},
+  {word:'yield',meanings:['产出','屈服','让步'],contexts:['The field yields crops.','He yielded to pressure.','Yield the right of way.']},
+  {word:'exploit',meanings:['开发','剥削','功绩'],contexts:['Exploit natural resources.','Workers were exploited.','His military exploits.']}
+];
+
+const FLASH_WORDS=[
+  {en:'abandon',zh:'放弃'},{en:'abstract',zh:'抽象的'},{en:'accelerate',zh:'加速'},
+  {en:'accomplish',zh:'完成'},{en:'adequate',zh:'充足的'},{en:'aggressive',zh:'侵略性的'},
+  {en:'anticipate',zh:'预料'},{en:'apparent',zh:'明显的'},{en:'assess',zh:'评估'},
+  {en:'assume',zh:'假设'},{en:'bargain',zh:'讨价还价'},{en:'bias',zh:'偏见'},
+  {en:'capture',zh:'捕获'},{en:'cease',zh:'停止'},{en:'compel',zh:'强迫'},
+  {en:'constitute',zh:'构成'},{en:'crucial',zh:'关键的'},{en:'decline',zh:'下降/拒绝'},
+  {en:'deprive',zh:'剥夺'},{en:'derive',zh:'源自'},{en:'diminish',zh:'减少'},
+  {en:'elaborate',zh:'精心制作的'},{en:'endeavor',zh:'努力'},{en:'exploit',zh:'开发/剥削'},
+  {en:'fluctuate',zh:'波动'},{en:'genuine',zh:'真正的'},{en:'hypothesis',zh:'假说'},
+  {en:'implement',zh:'实施'},{en:'implicit',zh:'含蓄的'},{en:'incentive',zh:'激励'},
+  {en:'inevitable',zh:'不可避免的'},{en:'inferior',zh:'低等的'},{en:'inherit',zh:'继承'},
+  {en:'integrate',zh:'整合'},{en:'justify',zh:'证明正当'},{en:'manifest',zh:'表明'},
+  {en:'mechanism',zh:'机制'},{en:'merit',zh:'优点'},{en:'neglect',zh:'忽视'},
+  {en:'notion',zh:'概念'},{en:'obscure',zh:'模糊的'},{en:'overwhelming',zh:'压倒性的'},
+  {en:'parallel',zh:'平行的'},{en:'persist',zh:'坚持'},{en:'phenomenon',zh:'现象'},
+  {en:'postpone',zh:'推迟'},{en:'precede',zh:'在…之前'},{en:'presume',zh:'假定'},
+  {en:'prevail',zh:'盛行'},{en:'privilege',zh:'特权'},{en:'proportion',zh:'比例'},
+  {en:'pursue',zh:'追求'},{en:'restrain',zh:'限制'},{en:'rival',zh:'对手'},
+  {en:'simultaneously',zh:'同时地'},{en:'speculate',zh:'推测'},{en:'stimulus',zh:'刺激'},
+  {en:'subordinate',zh:'下属的'},{en:'supplement',zh:'补充'},{en:'suppress',zh:'压制'},
+  {en:'sustain',zh:'维持'},{en:'tedious',zh:'乏味的'},{en:'terminate',zh:'终止'},
+  {en:'threshold',zh:'门槛/阈值'},{en:'transform',zh:'转变'},{en:'tremendous',zh:'巨大的'},
+  {en:'trivial',zh:'琐碎的'},{en:'undermine',zh:'暗中破坏'},{en:'utilize',zh:'利用'},
+  {en:'valid',zh:'有效的'},{en:'vanish',zh:'消失'},{en:'violate',zh:'违反'}
+];
+
+const GRAMMAR_SENTENCES=[
+  {full:'The evidence which was fabricated by those who conspired against me clearly demonstrates their desperation.',
+   cn:'那些合谋对付我的人捏造的证据清楚地表明了他们的绝望。',
+   parts:['The evidence','which was fabricated','by those who conspired against me','clearly demonstrates','their desperation'],
+   labels:['主语','定语从句','介词短语','谓语','宾语']},
+  {full:'What I discovered during my investigation should have been sufficient to condemn the real culprits.',
+   cn:'我在调查中发现的东西本应足以谴责真正的罪魁祸首。',
+   parts:['What I discovered during my investigation','should have been','sufficient','to condemn','the real culprits'],
+   labels:['主语从句','情态+系动词','表语','不定式','宾语']},
+  {full:'Those who refuse to scrutinize the contradictions in their testimony will ultimately lead us to destruction.',
+   cn:'那些拒绝审查证词矛盾的人最终会把我们引向灭亡。',
+   parts:['Those who refuse to scrutinize','the contradictions in their testimony','will ultimately lead','us','to destruction'],
+   labels:['主语(含定从)','宾语','谓语','间接宾语','介词短语']},
+  {full:'It was precisely because I attempted to reveal the truth that they conspired to eliminate me.',
+   cn:'正是因为我试图揭露真相，他们才合谋要消灭我。',
+   parts:['It was','precisely because I attempted to reveal the truth','that they conspired','to eliminate','me'],
+   labels:['强调句It was','原因状语从句','强调句that+主谓','不定式目的','宾语']},
+  {full:'The person whom I identified as suspicious has been deliberately concealing their true allegiance from the very beginning.',
+   cn:'我认为可疑的那个人从一开始就一直在故意隐藏他们的真正立场。',
+   parts:['The person whom I identified as suspicious','has been','deliberately','concealing their true allegiance','from the very beginning'],
+   labels:['主语(含定从)','助动词','副词','现在分词(宾语)','时间状语']}
+];
+
+// ═══ DIFFICULTY-AWARE VOCAB WRAP ═══
+// diff: 0=初级(谐音+释义), 1=中级(释义), 2=高级(hover only)
+function wrapVocab(text){
+  const keys=Object.keys(VOCAB_DB);let r=text;
+  keys.forEach(w=>{
+    const rx=new RegExp(`\\b${w}\\b`,'gi');
+    if(rx.test(r)){
+      const v=VOCAB_DB[w];
+      if(!G.wordsEncountered[w])G.wordsEncountered[w]={word:w,def:v.def,tip:v.tip,root:v.root,count:0};
+      G.wordsEncountered[w].count++;
+      let hint='';
+      if(G.difficulty===0) hint=`<span class="vocab-hint">（${v.tip?v.tip.split('→')[0]:''}→${v.def}）</span>`;
+      else if(G.difficulty===1) hint=`<span class="vocab-hint">【${v.def}】</span>`;
+      r=r.replace(rx,`<span class="vocab-word">${w}${hint}<span class="vocab-popup"><div class="vp-en">📖 ${w}</div><div class="vp-cn">🀄 ${v.def}</div>${v.tip?`<div class="vp-tip">💡 ${v.tip}</div>`:''}${v.root?`<div class="vp-root">🔧 ${v.root}</div>`:''}</span></span>`);
+    }
+  });
+  return r;
+}
+
+// ═══ GAME STATE ═══
+const G={
+  players:[],round:0,phase:'lobby',wordsEncountered:{},showCN:true,selectedTarget:-1,
+  wolves:[],seer:-1,witch:-1,hunter:-1,idiot:-1,difficulty:0,
+  witchSave:true,witchPoison:true,protectedTonight:-1,seerChecked:[],gameLog:[],
+  flashIdx:0,flashKnown:0,bossIdx:0,flashWords:[],
+
+  setDiff(d,el){this.difficulty=d;document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected')},
+
+  init(){document.getElementById('lobbyGrid').innerHTML=PLAYERS.map((p,i)=>`<div class="lg-item ${i===0?'you':''}">`+
+    `<div class="av">${p.emoji}</div><div class="nm">${p.name}</div></div>`).join('')},
+
+  startGame(){
+    this.players=PLAYERS.map(p=>({...p,alive:true,role:null}));
+    const roles=['wolf','wolf','wolf','wolf','seer','witch','hunter','idiot','villager','villager','villager','villager'];
+    for(let i=roles.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[roles[i],roles[j]]=[roles[j],roles[i]]}
+    this.players.forEach((p,i)=>p.role=roles[i]);
+    this.wolves=this.players.filter(p=>p.role==='wolf').map(p=>p.id);
+    this.seer=this.players.find(p=>p.role==='seer').id;
+    this.witch=this.players.find(p=>p.role==='witch').id;
+    this.hunter=this.players.find(p=>p.role==='hunter').id;
+    this.idiot=this.players.find(p=>p.role==='idiot').id;
+    this.gameLog=[];this.wordsEncountered={};this.round=0;this.witchSave=true;this.witchPoison=true;this.bossIdx=0;
+    const dLabels=['🌱 初级','🌿 中级','🔥 高级'];
+    document.getElementById('diffLabel').textContent=dLabels[this.difficulty];
+    this.showCardReveal();
+  },
+
+  showCardReveal(){
+    const you=this.players[0],cr=document.getElementById('cardReveal');cr.classList.add('active');
+    const inner=document.getElementById('crInner');inner.classList.remove('flipped');document.getElementById('crBtn').style.display='none';
+    const rc={wolf:{icon:'🐺',label:'WEREWOLF',name:'妖兽',color:'#f43f5e',skill:'每晚与同伴选择一人杀害。白天伪装好人。'},
+      seer:{icon:'🔮',label:'SEER',name:'预言家',color:'#3b82f6',skill:'每晚查验一人的阵营(好/狼)。'},
+      witch:{icon:'🧪',label:'WITCH',name:'女巫',color:'#a78bfa',skill:'1瓶解药(救人)+1瓶毒药(毒人)。'},
+      hunter:{icon:'🔫',label:'HUNTER',name:'猎人',color:'#f59e0b',skill:'被杀时可开枪带走一人。'},
+      idiot:{icon:'🃏',label:'IDIOT',name:'白痴',color:'#10b981',skill:'被投票出局翻牌免死。'},
+      villager:{icon:'⚔️',label:'VILLAGER',name:'平民',color:'#fbbf24',skill:'用逻辑推理找出狼人。'}}[you.role];
+    const back=document.getElementById('crBack');
+    back.style.background=`linear-gradient(135deg,${rc.color}22,var(--bg1))`;back.style.borderColor=rc.color;
+    back.innerHTML=`<div class="cr-icon">${rc.icon}</div><div class="cr-role" style="color:${rc.color}">${rc.label}</div><div class="cr-name">${rc.name}</div><div class="cr-skill">${rc.skill}</div>`;
+    let info='';if(you.role==='wolf'){const p=this.wolves.filter(id=>id!==0).map(id=>this.players[id]);info=`同伴妖兽：${p.map(x=>`${x.emoji}${x.name}`).join('、')}`}
+    document.getElementById('crInfo').textContent=info;
+    inner.onclick=()=>{inner.classList.add('flipped');inner.onclick=null;setTimeout(()=>document.getElementById('crBtn').style.display='inline-block',1200)}
+  },
+
+  closeCardReveal(){
+    document.getElementById('cardReveal').classList.remove('active');
+    this.showScreen('game');this.updateRoleLabel();this.updatePlayerList();
+    this.addSystemMsg('游戏开始！12位修仙者中有4只妖兽 🐺');
+    setTimeout(()=>this.startNight(),1500);
+  },
+
+  startNight(){
+    this.round++;this.phase='night';this.updatePhaseLabel();this.protectedTonight=-1;
+    document.getElementById('bottomBar').classList.add('hidden');
+    const alive=this.players.filter(p=>p.alive&&!this.wolves.includes(p.id));
+    const wolfTarget=alive[Math.floor(Math.random()*alive.length)]?.id??-1;
+    const you=this.players[0];
+    if(!you.alive){this.resolveNight(wolfTarget,-1);return}
+    if(you.role==='wolf') this.showWolfConspiracy(alive,wolfTarget);
+    else if(you.role==='seer') this.showSeerPhase(alive,wolfTarget);
+    else if(you.role==='witch') this.showWitchPhase(wolfTarget);
+    else this.showNightWait(wolfTarget);
+  },
+
+  // Seer verification phase - clear result display
+  showSeerPhase(targets,wolfTarget){
+    const ck=this.players.filter(p=>p.alive&&p.id!==0&&!this.seerChecked.includes(p.id));
+    const ov=document.getElementById('nightOverlay');ov.classList.add('active');
+    document.getElementById('noIcon').textContent='🔮';
+    document.getElementById('noTitle').textContent='预言家之眼 · SEER VISION';
+    document.getElementById('noDesc').textContent='选择要查验身份的玩家：';
+    this.selectedTarget=-1;
+    const prevChecked=this.seerChecked.map(id=>{
+      const p=this.players[id];const isW=this.wolves.includes(id);
+      return `<span style="color:${isW?'var(--rose)':'var(--green)'};font-size:10px">${p.emoji}${p.name}=${isW?'🐺狼':'✅好'}</span>`;
+    }).join(' · ');
+    let html='';
+    if(prevChecked) html+=`<div style="margin-bottom:10px;padding:6px 10px;background:rgba(99,102,241,.06);border-radius:6px;font-size:9px;color:var(--sub)">📋 已查验: ${prevChecked}</div>`;
+    html+=`<div class="no-grid">${ck.map(p=>`<button class="no-pick" onclick="G.seerCheck(${p.id},${wolfTarget})">${p.emoji} ${p.name}</button>`).join('')}</div>`;
+    html+=this.generateFlashGame();
+    document.getElementById('noContent').innerHTML=html;
+    document.getElementById('noBtn').style.display='none';
+  },
+
+  seerCheck(targetId,wolfTarget){
+    this.seerChecked.push(targetId);
+    const p=this.players[targetId];
+    const isWolf=this.wolves.includes(targetId);
+    // Show dramatic result - keep overlay open!
+    document.getElementById('noIcon').textContent=isWolf?'🐺':'✅';
+    document.getElementById('noTitle').textContent=isWolf?'狼人！WEREWOLF!':'好人 · INNOCENT';
+    document.getElementById('noTitle').style.color=isWolf?'var(--rose)':'var(--green)';
+    document.getElementById('noDesc').textContent='';
+    document.getElementById('noContent').innerHTML=`
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:48px;margin-bottom:12px">${p.emoji}</div>
+        <div style="font-size:18px;font-weight:900;color:${isWolf?'var(--rose)':'var(--green)'};margin-bottom:6px">${p.name}</div>
+        <div style="font-size:28px;font-weight:900;color:${isWolf?'var(--rose)':'var(--green)'};letter-spacing:4px;margin-bottom:8px;font-family:var(--mono)">
+          ${isWolf?'🐺 WEREWOLF · 狼人':'✅ GOOD · 好人'}
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:16px">
+          ${isWolf?'注意！此人是狼人，白天想办法投出去！':'此人是好人，可以信任。'}
+        </div>
+      </div>`;
+    const btn=document.getElementById('noBtn');
+    btn.style.display='inline-block';
+    btn.textContent='知道了，继续 →';
+    btn.disabled=false;
+    // Reset title color
+    this._nightCallback=()=>{
+      document.getElementById('noTitle').style.color='';
+      this.handleWitchPhase(wolfTarget);
+    };
+  },
+
+  // Wolf Night Conspiracy - wolves discuss before killing
+  async showWolfConspiracy(targets,defaultTarget){
+    const ov=document.getElementById('nightOverlay');ov.classList.add('active');
+    document.getElementById('noIcon').textContent='🐺';
+    document.getElementById('noTitle').textContent='狼人密谋 · WOLF CONSPIRACY';
+    document.getElementById('noDesc').textContent='你和同伴正在暗中商议今晚的目标...';
+    const wolfNPCs=this.wolves.filter(id=>id!==0&&this.players[id].alive);
+    const rv=ROUND_VOCAB[(this.round-1)%ROUND_VOCAB.length];
+    const vocabInfo=rv.map(w=>`${w}(${VOCAB_DB[w]?.def||''})`).join(', ');
+    let html='<div style="max-height:180px;overflow-y:auto;margin-bottom:12px;padding:10px;background:rgba(244,63,94,.04);border:1px solid rgba(244,63,94,.12);border-radius:8px">';
+    html+='<div style="font-size:9px;color:var(--rose);margin-bottom:8px;letter-spacing:2px">🐺 WOLF CHANNEL</div>';
+    for(const wid of wolfNPCs){
+      const wp=this.players[wid];
+      const aliveNames=targets.map(p=>p.name||this.players[p]?.name).join(', ');
+      const raw=await aiCall([{role:'system',content:`你是"${wp.name}"，狼人杀中的狼人。夜晚密谋阶段，和狼队友讨论杀谁。
+存活好人: ${this.players.filter(p=>p.alive&&!this.wolves.includes(p.id)).map(p=>p.name).join(', ')}
+用1句中文发言，自然融入1个英文词汇(${vocabInfo})。要搞笑有梗！
+只输出1句话。`},{role:'user',content:'讨论今晚杀谁'}],200);
+      const msg=raw||'我觉得今晚随便选一个吧';
+      html+=`<div style="padding:4px 0;font-size:11px;line-height:1.6"><b style="color:var(--rose)">${wp.emoji}${wp.name}:</b> ${wrapVocab(msg)}</div>`;
+    }
+    html+='</div>';
+    this.selectedTarget=-1;
+    html+=`<div style="font-size:10px;color:var(--sub);margin-bottom:8px">选择今晚袭击目标：</div>`;
+    html+=`<div class="no-grid">${targets.map(p=>`<button class="no-pick" onclick="G.selectTarget(${p.id},this)">${p.emoji} ${p.name}</button>`).join('')}</div>`;
+    html+=this.generateFlashGame();
+    document.getElementById('noContent').innerHTML=html;
+    const btn=document.getElementById('noBtn');btn.style.display='inline-block';btn.textContent='🔪 确认袭击';btn.disabled=true;
+    this._nightCallback=(t)=>this.handleWitchPhase(t);
+  },
+
+  handleWitchPhase(wolfTarget){
+    document.getElementById('nightOverlay').classList.remove('active');
+    if(this.players[this.witch].alive&&this.witch!==0&&this.witchSave&&Math.random()<0.5){this.witchSave=false;this.protectedTonight=wolfTarget}
+    this.resolveNight(wolfTarget,-1);
+  },
+
+  showNightAction(icon,title,desc,targets,cb){
+    const ov=document.getElementById('nightOverlay');ov.classList.add('active');
+    document.getElementById('noIcon').textContent=icon;document.getElementById('noTitle').textContent=title;
+    document.getElementById('noDesc').textContent=desc;this.selectedTarget=-1;
+    const flash=this.generateFlashGame();
+    document.getElementById('noContent').innerHTML=`<div class="no-grid">${targets.map(p=>`<button class="no-pick" data-id="${p.id}" onclick="G.selectTarget(${p.id},this)">${p.emoji} ${p.name}</button>`).join('')}</div>${flash}`;
+    const btn=document.getElementById('noBtn');btn.style.display='inline-block';btn.textContent='确认';btn.disabled=true;
+    this._nightCallback=cb;
+  },
+
+  showWitchPhase(wt){
+    const ov=document.getElementById('nightOverlay');ov.classList.add('active');
+    document.getElementById('noIcon').textContent='🧪';document.getElementById('noTitle').textContent='女巫药房 · WITCH';
+    const v=wt>=0?this.players[wt]:null;
+    // Witch cannot save herself (standard rule)
+    const canSave=v&&this.witchSave&&wt!==this.witch;
+    const desc=v?(canSave?`${v.name} 今晚被袭击了！你要救他吗？`:`${v.name} 今晚被袭击了！${wt===this.witch?'（无法自救）':'（解药已用）'}`):'今晚无人被袭击。';
+    document.getElementById('noDesc').textContent=desc;
+    const flash=this.generateFlashGame();
+    let h='<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px">';
+    if(canSave) h+=`<button class="no-pick" style="border-color:var(--green)" onclick="G.witchUse('save',${wt})">💚 解药救人<div style='font-size:8px;color:var(--dim)'>本局仅1次</div></button>`;
+    // Cannot use both potions same night
+    if(this.witchPoison) h+=`<button class="no-pick" style="border-color:var(--rose)" onclick="G.showPoisonPick()">☠️ 毒药杀人<div style='font-size:8px;color:var(--dim)'>本局仅1次</div></button>`;
+    h+=`<button class="no-pick" onclick="G.witchUse('skip',-1)">⏭ 不用药</button></div>`;
+    h+=`<div style='font-size:9px;color:var(--dim);margin-bottom:8px;text-align:center'>⚠ 每晚只能用一瓶药</div>`;
+    h+=`<div id="poisonPick" style="display:none"></div>${flash}`;
+    document.getElementById('noContent').innerHTML=h;document.getElementById('noBtn').style.display='none';this._wolfTarget=wt;
+  },
+
+  showPoisonPick(){
+    const a=this.players.filter(p=>p.alive&&p.id!==0);
+    document.getElementById('poisonPick').style.display='block';
+    document.getElementById('poisonPick').innerHTML=`<div style='font-size:10px;color:var(--rose);margin-bottom:6px'>选择要毒杀的玩家：</div><div class="no-grid">${a.map(p=>`<button class="no-pick" onclick="G.witchUse('poison',${p.id})">${p.emoji} ${p.name}</button>`).join('')}</div>`;
+  },
+
+  witchUse(a,t){
+    if(a==='save'){
+      this.witchSave=false;
+      this.protectedTonight=t;
+      this.resolveNight(-1,-1);// Save used, no poison this night (one potion per night)
+    }else if(a==='poison'){
+      this.witchPoison=false;
+      this.resolveNight(this._wolfTarget,t);// Poison used, no save this night
+    }else{
+      this.resolveNight(this._wolfTarget,-1);
+    }
+  },
+
+  showNightWait(wt){
+    const ov=document.getElementById('nightOverlay');ov.classList.add('active');
+    const you=this.players[0];
+    const roleScreens={
+      hunter:{icon:'🔫',title:'猎人待命 · HUNTER STANDBY',
+        desc:'你紧握猎枪，闭眼等待天亮...\n💡 如果你被狼人杀死，可以立刻开枪带走一人！\n⚠ 但如果被女巫毒死，则无法开枪。'},
+      idiot:{icon:'🃏',title:'白痴装睡 · IDIOT RESTING',
+        desc:'你假装睡着，心里毫不担心...\n💡 你有免死金牌！被投票出局时可以翻牌免死。\n⚠ 但免死后会失去投票权。'},
+      villager:{icon:'⚔️',title:'平民闭眼 · VILLAGER SLEEPING',
+        desc:'你闭上眼睛，默默祈祷平安...\n💡 白天仔细听每个人的发言，找出狼人。\n⚠ 你的逻辑推理就是最强武器！'}
+    };
+    const rs=roleScreens[you.role]||{icon:'🌙',title:'夜幕降临 · NIGHT',desc:'闭上眼睛等待天亮...'};
+    document.getElementById('noIcon').textContent=rs.icon;
+    document.getElementById('noTitle').textContent=rs.title;
+    document.getElementById('noDesc').innerHTML=rs.desc.replace(/\n/g,'<br>');
+    let html=`<div style="margin-bottom:12px;padding:10px;background:rgba(99,102,241,.04);border:1px solid rgba(99,102,241,.1);border-radius:8px;font-size:10px;color:var(--sub);text-align:left;line-height:1.6">
+      <div style="font-size:9px;color:var(--purple);margin-bottom:4px;letter-spacing:2px">📋 本局情报</div>
+      存活: ${this.players.filter(p=>p.alive).length} 人<br>
+      已死: ${this.players.filter(p=>!p.alive).map(p=>p.emoji+p.name+'('+p.role+')').join(', ')||'暂无'}<br>
+      当前轮次: 第${this.round}晚
+    </div>`;
+    html+=this.generateFlashGame();
+    document.getElementById('noContent').innerHTML=html;
+    const btn=document.getElementById('noBtn');btn.style.display='inline-block';btn.textContent='⏭ 等待天亮...';btn.disabled=false;
+    // NPC witch AI decision
+    if(this.players[this.witch].alive&&this.witch!==0&&this.witchSave&&Math.random()<0.5){
+      this.witchSave=false;this.protectedTonight=wt;
+    }
+    this._nightCallback=()=>this.resolveNight(wt,-1);
+  },
+
+  generateFlashGame(){const s=[...FLASH_WORDS].sort(()=>Math.random()-.5).slice(0,8);this.flashWords=s;this.flashIdx=0;this.flashKnown=0;return`<div class="flash-game" id="flashGame"><div style="font-size:9px;color:var(--gold);margin-bottom:6px">⚡ 闪电词汇</div><div class="flash-word" id="flashWord">${s[0].en}</div><div class="flash-meaning" id="flashMeaning">${s[0].zh}</div><div class="flash-btns"><button class="flash-btn know" onclick="G.flashAnswer(true)">✅ 认识</button><button class="flash-btn dunno" onclick="G.flashAnswer(false)">❌ 不认识</button></div><div class="flash-progress" id="flashProg">1/${s.length}</div></div>`},
+
+  flashAnswer(k){if(k)this.flashKnown++;this.flashIdx++;if(this.flashIdx>=this.flashWords.length){document.getElementById('flashGame').innerHTML=`<div style="text-align:center;color:var(--green)">⚡ 完成！${this.flashKnown}/${this.flashWords.length}</div>`;return}const w=this.flashWords[this.flashIdx];document.getElementById('flashWord').textContent=w.en;document.getElementById('flashMeaning').textContent=w.zh;document.getElementById('flashProg').textContent=`${this.flashIdx+1}/${this.flashWords.length}`},
+
+  selectTarget(id,el){this.selectedTarget=id;document.querySelectorAll('.no-pick').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('noBtn').disabled=false},
+
+  nightAction(){document.getElementById('nightOverlay').classList.remove('active');if(this._nightCallback)this._nightCallback(this.selectedTarget)},
+
+  resolveNight(wt,pt){
+    document.getElementById('nightOverlay').classList.remove('active');
+    const killed=(wt===this.protectedTonight)?-1:wt;
+    this.addSystemMsg(`☀ 第 ${this.round} 天 — 天亮了`);
+    // Wolf kill
+    if(killed>=0){
+      this.players[killed].alive=false;
+      const p=this.players[killed];
+      this.addDeathMsg(`💀 ${p.emoji} ${p.name} 昨晚被袭击身亡。身份: ${p.role.toUpperCase()}`);
+      this.gameLog.push({type:'death',player:p.name,role:p.role,round:this.round,cause:'wolf'});
+      // Hunter CAN shoot when killed by wolves
+      if(p.id===this.hunter) this.hunterShoot(p.id,'wolf');
+    } else {
+      this.addSystemMsg('平安夜 — 昨夜无人死亡 🛡️');
+    }
+    // Witch poison kill
+    if(pt>=0&&pt!==killed){
+      this.players[pt].alive=false;
+      const p2=this.players[pt];
+      this.addDeathMsg(`☠️ ${p2.emoji} ${p2.name} 被毒药毒死。身份: ${p2.role.toUpperCase()}`);
+      this.gameLog.push({type:'death',player:p2.name,role:p2.role,round:this.round,cause:'poison'});
+      // Hunter CANNOT shoot when poisoned! (standard rule)
+      if(p2.id===this.hunter){
+        this.addSystemMsg('🔫 猎人被毒死，无法开枪！');
+      }
+    }
+    this.updatePlayerList();if(this.checkWin())return;
+    if(killed>=0&&this.round>1&&Math.random()<0.6){this._afterGrammar=()=>this.startDay();this.showGrammarPuzzle()}
+    else setTimeout(()=>this.startDay(),1200);
+  },
+
+  // Hunter shoot - only on wolf kill or vote death, NOT poison
+  hunterShoot(hid,cause){
+    if(cause==='poison') return; // Cannot shoot when poisoned
+    const a=this.players.filter(p=>p.alive&&p.id!==hid);
+    if(!a.length) return;
+    if(hid===0){
+      // Player is hunter - let them choose target
+      this.addSystemMsg('🔫 你是猎人！选择开枪带走一人：');
+      // For simplicity, auto-shoot a wolf if possible
+    }
+    const wA=a.filter(p=>this.wolves.includes(p.id));
+    const t=wA.length?wA[Math.floor(Math.random()*wA.length)]:a[Math.floor(Math.random()*a.length)];
+    t.alive=false;
+    this.addDeathMsg(`🔫 猎人开枪！${t.emoji} ${t.name} 被带走！身份: ${t.role.toUpperCase()}`);
+    this.updatePlayerList();
+  },
+
+  async startDay(){
+    this.phase='day';this.updatePhaseLabel();
+    const alive=this.players.filter(p=>p.alive&&p.id!==0);
+    const rv=ROUND_VOCAB[(this.round-1)%ROUND_VOCAB.length];
+    this._dayQueue=alive.slice();
+    this._dayVocab=rv;
+    this._dayState=this.buildGameState();
+    this.addSystemMsg(`📢 第${this.round}天 · 发言阶段 — 共 ${alive.length+1} 位存活`);
+    this.nextSpeaker();
+  },
+
+  async nextSpeaker(){
+    if(!this._dayQueue||this._dayQueue.length===0){
+      if(this.players[0].alive) this.showPlayerInput(this._dayVocab);
+      else if(this.round%2===0) this.showBossChallenge();
+      else setTimeout(()=>this.openVote(),1000);
+      return;
+    }
+    const p=this._dayQueue.shift();
+    this.addLoadingMsg(p);
+    const s=await this.generateNPCSpeech(p,this._dayState,this._dayVocab);
+    this.removeLoadingMsg();
+    if(s){
+      this.addPlayerMsg(p,wrapVocab(s.en),s.cn);
+      this.gameLog.push({type:'speech',player:p.name,role:p.role,en:s.en,cn:s.cn,round:this.round});
+    }
+    // Show next button for user-controlled pacing
+    if(this._dayQueue.length>0){
+      const nxt=this._dayQueue[0];
+      this.showNextBtn(`${nxt.emoji} 下一位: ${nxt.name} →`);
+    } else if(this.players[0].alive){
+      this.showNextBtn('✋ 轮到你发言 →');
+    } else {
+      this.showNextBtn('📊 进入投票 →');
+    }
+  },
+
+  showNextBtn(label){
+    const bb=document.getElementById('bottomBar');bb.classList.remove('hidden');
+    bb.innerHTML=`<button class="bb-send" style="flex:1;letter-spacing:3px;font-size:13px" onclick="G.hideNextAndContinue()">${label}</button>`;
+  },
+
+  hideNextAndContinue(){
+    document.getElementById('bottomBar').classList.add('hidden');
+    if(this._dayQueue&&this._dayQueue.length>0) this.nextSpeaker();
+    else {
+      if(this.players[0].alive) this.showPlayerInput(this._dayVocab);
+      else if(this.round%2===0) this.showBossChallenge();
+      else setTimeout(()=>this.openVote(),1000);
+    }
+  },
+
+  async generateNPCSpeech(p,gs,vl){
+    const wolfPartners=this.wolves.filter(id=>id!==p.id).map(id=>this.players[id].name).join(', ');
+    // NPC seer auto-checks each night
+    if(!this._npcSeerChecks) this._npcSeerChecks={};
+    if(p.role==='seer'&&!this._npcSeerChecks[this.round]){
+      const unchk=this.players.filter(x=>x.alive&&x.id!==p.id&&!Object.values(this._npcSeerChecks).includes(x.id));
+      if(unchk.length){this._npcSeerChecks[this.round]=unchk[Math.floor(Math.random()*unchk.length)].id}
+    }
+    const seerHist=this._npcSeerChecks?Object.entries(this._npcSeerChecks).map(([r,tid])=>{
+      const tp=this.players[tid];return tp?('R'+r+':'+tp.name+'='+(this.wolves.includes(Number(tid))?'WOLF':'GOOD')):''}).filter(Boolean).join(', '):'';
+    const lastKill=this.gameLog.filter(l=>l.type==='death'&&l.round===this.round&&l.cause==='wolf');
+    const wasSaved=this.protectedTonight>=0;
+    const ri={
+      wolf:`[身份:狼人🐺] 队友:${wolfPartners}。昨晚你们杀了${lastKill.length?lastKill[0].player:"目标(被女巫救了)"}。策略:假装好人!甩锅给别人制造内讧。可以假跳预言家骗信任。暗中保护队友。说话像在帮好人找狼。`,
+      seer:`[身份:预言家🔮] ${seerHist?"查验记录:"+seerHist:"暂无查验"}。策略:${seerHist.includes("WOLF")?"查到狼了!点出来说服大家投他!":"分析发言找可疑的人,留警徽流。"}`,
+      witch:`[身份:女巫🧪] 解药:${this.witchSave?"有":"已用"} 毒药:${this.witchPoison?"有":"已用"}。昨晚${wasSaved?"你救了人(平安夜)可暗示":"没用药"}。策略:不暴露身份,模棱两可暗示,表现神秘。`,
+      hunter:`[身份:猎人🔫] 技能:被狼杀或投票出局→开枪带走1人(被毒死不行)。策略:隐藏身份,发言强势自信像老手,积极推理质疑。`,
+      idiot:`[身份:白痴🃏] 技能:被投票出局→翻牌免死(失去投票权)。策略:反正死不了!大胆发言敢怼人,搞笑但有逻辑。`,
+      villager:`[身份:平民⚔️] 无技能靠逻辑推理。策略:分析发言找矛盾破绽。谁互保?谁甩锅?大胆质疑!`
+    };
+
+    const vocabInfo=vl.map(w=>`${w}(${VOCAB_DB[w]?.def||''})`).join(', ');
+    let styleGuide='';
+    if(this.difficulty===0){
+      styleGuide=`发言用中文为主，融入1-2个英文考研词汇。搞笑幽默像脱口秀！
+例: "我觉得他特别 suspicious，一看 guilty 得不行！"`;
+    } else if(this.difficulty===1){
+      styleGuide=`中英混合发言，核心论点用英文词汇。自然流畅。
+例: "他的 testimony 有 contradiction，我 advocate 投他。"`;
+    } else {
+      styleGuide=`全英文，2-3句，用考研词汇。语气要符合角色策略。`;
+    }
+
+    const raw=await aiCall([{role:'system',content:`你是"${p.name}"，12人狼人杀游戏角色。
+${ri[p.role]}
+
+本轮词汇(必须用1-2个): ${vocabInfo}
+${styleGuide}
+
+关键：完全站在自己身份立场思考！狼人要伪装、好人要推理！
+格式:
+EN: (发言原文)
+CN: (中文翻译)`},{role:'user',content:gs}],600);
+
+    if(!raw)return{en:this.difficulty===2?'I think we should be more careful. Has anyone noticed anything suspicious?':'我觉得大家要小心点，有谁注意到什么 suspicious（可疑的）的事情吗？',cn:'我觉得大家要小心点，有谁注意到什么可疑的事情吗？'};
+    const em=raw.match(/EN:\s*([\s\S]*?)(?=CN:|$)/i),cm=raw.match(/CN:\s*([\s\S]*?)$/i);
+    return{en:em?em[1].trim():raw,cn:cm?cm[1].trim():''}
+  },
+
+  buildGameState(){
+    const alive=this.players.filter(p=>p.alive).map(p=>`${p.name}(${p.en})`).join(', ');
+    const dead=this.players.filter(p=>!p.alive);
+    const deadStr=dead.length?dead.map(p=>{
+      const log=this.gameLog.find(l=>l.type==='death'&&l.player===p.name);
+      const cause=log?({wolf:'被狼人杀',poison:'被毒药毒死',vote:'被投票处决'}[log.cause]||'死亡'):'死亡';
+      return `${p.name}(第${log?.round||'?'}天${cause},身份:${p.role})`;
+    }).join(', '):'无';
+    // Night events this round
+    const nightEvents=this.gameLog.filter(l=>l.round===this.round&&l.type==='death');
+    let nightSummary='';
+    if(nightEvents.length){
+      nightSummary='今晚事件: '+nightEvents.map(e=>`${e.player}${e.cause==='wolf'?'被狼人杀死':'被毒药毒死'}`).join(', ');
+    } else if(this.round>0){
+      nightSummary='今晚: 平安夜，无人死亡';
+    }
+    // Previous round speeches
+    const prevSpeeches=this.gameLog.filter(l=>l.type==='speech'&&l.round===this.round).map(l=>`[${l.player}]: ${l.en}`).join('\n');
+    return `第${this.round}天白天。\n存活: ${alive}\n已死亡: ${deadStr}\n${nightSummary}\n${prevSpeeches?'本轮已有发言:\n'+prevSpeeches:'你是本轮第一个发言的。'}\n请根据以上信息，站在你的身份立场发言。`;
+  },
+
+  showPlayerInput(vl){
+    document.getElementById('replayBtn').classList.add('show');
+    const sp=this.gameLog.filter(l=>l.type==='speech'&&l.round===this.round&&l.player!=='你');
+    if(sp.length>0&&Math.random()<0.35){this._repeatTarget=sp[Math.floor(Math.random()*sp.length)];this._repeatVocab=vl;this.showRepeatChallenge(this._repeatTarget,vl);return}
+    this._showInput(vl);
+  },
+
+  _showInput(vl){
+    const bb=document.getElementById('bottomBar');bb.classList.remove('hidden');
+    bb.innerHTML=`<textarea class="bb-input" id="bbInput" rows="1" placeholder="💡 ${vl.slice(0,3).map(w=>`${w}=${VOCAB_DB[w]?.def||''}`).join(' · ')}"></textarea><button class="bb-vote" id="bbVote" onclick="G.openVote()">✅ 投票</button><button class="bb-send" id="bbSend" onclick="G.playerSpeak()">✔ 确认</button>`;
+    document.getElementById('bbInput').focus();
+  },
+
+  async playerSpeak(){
+    const inp=document.getElementById('bbInput').value.trim();if(!inp)return;
+    document.getElementById('bbSend').disabled=true;document.getElementById('bottomBar').classList.add('hidden');
+    const isCN=/[\u4e00-\u9fa5]/.test(inp);let en=inp,cn='';
+    if(isCN){cn=inp;const tr=await aiCall([{role:'user',content:`翻译成英文(狼人杀风格，用高级词汇)：${inp}\n只输出英文。`}],300);en=tr||inp}
+    this.addPlayerMsg(this.players[0],wrapVocab(en),cn||null);this.gameLog.push({type:'speech',player:'你',role:this.players[0].role,en,round:this.round});
+    document.getElementById('bbSend').disabled=false;
+    if(this.round%2===0)setTimeout(()=>this.showBossChallenge(),800);
+    else setTimeout(()=>this.openVote(),1000);
+  },
+
+  showBossChallenge(){
+    const b=BOSS_WORDS[this.bossIdx%BOSS_WORDS.length];this.bossIdx++;
+    this.addSystemMsg(`🐉 熟词Boss！<b>${b.word.toUpperCase()}</b> — 这个词有哪些意思？`);
+    const dist=['运输','假设','评估','建造'].filter(d=>!b.meanings.includes(d));
+    const ov=document.getElementById('voteOverlay');ov.classList.add('active');
+    document.getElementById('voGrid').innerHTML=`<div style="width:100%;text-align:center;margin-bottom:10px"><span style="font-size:15px;color:var(--cyan);font-weight:900">${b.word.toUpperCase()}</span><br><span style="font-size:10px;color:var(--sub)">${b.contexts.filter(c=>c!=='—').map(c=>`"${c}"`).join(' · ')}</span></div>${b.meanings.map(m=>`<button class="vo-btn" onclick="G.bossAns('${m}',true,this)">${m}</button>`).join('')}${dist.slice(0,2).map(m=>`<button class="vo-btn" onclick="G.bossAns('${m}',false,this)">${m}</button>`).join('')}`;
+    document.getElementById('voSubmit').style.display='none';this._bossCount=0;this._bossTotal=b.meanings.length;
+  },
+
+  bossAns(m,ok,el){if(el.classList.contains('selected'))return;el.classList.add('selected');el.style.borderColor=ok?'var(--green)':'var(--rose)';this._bossCount++;
+    if(ok&&this._bossCount>=this._bossTotal||!ok){setTimeout(()=>{document.getElementById('voteOverlay').classList.remove('active');this.openVote()},1500)}},
+
+  openVote(){
+    if(!this.players[0].alive){this.autoVote();return}
+    this.phase='vote';this.selectedTarget=-1;
+    const a=this.players.filter(p=>p.alive&&p.id!==0);
+    const ov=document.getElementById('voteOverlay');ov.classList.add('active');
+    document.getElementById('voGrid').innerHTML=a.map(p=>`<button class="vo-btn" onclick="G.selectVote(${p.id},this)">${p.emoji} ${p.name}</button>`).join('');
+    const sub=document.getElementById('voSubmit');sub.style.display='block';sub.disabled=true;
+  },
+
+  selectVote(id,el){this.selectedTarget=id;document.querySelectorAll('#voGrid .vo-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('voSubmit').disabled=false},
+
+  submitVote(){
+    if(this.selectedTarget<0)return;document.getElementById('voteOverlay').classList.remove('active');
+    const alive=this.players.filter(p=>p.alive);let votes={};alive.forEach(p=>votes[p.id]=0);votes[this.selectedTarget]++;
+    alive.filter(p=>p.id!==0).forEach(p=>{let t;if(p.role==='wolf'){const nw=alive.filter(x=>x.id!==p.id&&!this.wolves.includes(x.id));t=nw[Math.floor(Math.random()*nw.length)]}else{const o=alive.filter(x=>x.id!==p.id);if(Math.random()<0.4){const wA=o.filter(x=>this.wolves.includes(x.id));t=wA.length?wA[Math.floor(Math.random()*wA.length)]:o[Math.floor(Math.random()*o.length)]}else t=o[Math.floor(Math.random()*o.length)]}if(t)votes[t.id]++});
+    let mx=0,elim=-1;Object.entries(votes).forEach(([id,c])=>{if(c>mx){mx=c;elim=parseInt(id)}});
+    const ep=this.players[elim];this.addSystemMsg(`🗳 投票结果：${ep.emoji} ${ep.name} 获得 ${mx} 票`);
+    setTimeout(()=>{
+      if(elim===this.idiot&&this.players[this.idiot].alive){
+        this.addSystemMsg(`🃏 ${ep.name}翻牌亮身份——白痴！免死，但失去投票权。`);
+        // Idiot stays alive but loses voting rights (tracked here for future votes)
+        ep.idiotRevealed=true;
+      } else {
+        ep.alive=false;
+        this.addDeathMsg(`${ep.emoji} ${ep.name} 被投票处决！身份: <b>${ep.role.toUpperCase()}</b>`);
+        this.gameLog.push({type:'death',player:ep.name,role:ep.role,round:this.round,cause:'vote'});
+        // Hunter CAN shoot when voted out
+        if(ep.role==='hunter') this.hunterShoot(elim,'vote');
+      }
+      this.updatePlayerList();if(this.checkWin())return;setTimeout(()=>this.startNight(),1500);
+    },1200);
+  },
+
+  autoVote(){const a=this.players.filter(p=>p.alive);const t=a[Math.floor(Math.random()*a.length)];t.alive=false;this.addSystemMsg(`🗳 ${t.emoji} ${t.name} 被投票处决。身份: ${t.role.toUpperCase()}`);this.updatePlayerList();if(this.checkWin())return;setTimeout(()=>this.startNight(),1500)},
+
+  checkWin(){const a=this.players.filter(p=>p.alive);const wA=a.filter(p=>p.role==='wolf').length;const vA=a.filter(p=>p.role!=='wolf').length;if(wA===0){this.endGame(true);return true}if(wA>=vA){this.endGame(false);return true}const gA=a.filter(p=>['seer','witch','hunter','idiot'].includes(p.role)).length;const cA=a.filter(p=>p.role==='villager').length;if(gA===0||cA===0){this.endGame(false);return true}return false},
+
+  endGame(vW){
+    const you=this.players[0];const yW=(vW&&you.role!=='wolf')||(!vW&&you.role==='wolf');
+    this.showScreen('result');
+    document.getElementById('resIcon').textContent=yW?'🏆':'💀';
+    const t=document.getElementById('resTitle');t.textContent=yW?'胜利 · VICTORY':'失败 · DEFEAT';t.style.color=yW?'var(--gold)':'var(--rose)';
+    document.getElementById('resSub').textContent=vW?'所有狼人已被消灭！':'狼人占领了村庄...';
+    const words=Object.values(this.wordsEncountered);
+    document.getElementById('resStats').innerHTML=`<div class="rs"><div class="n" style="color:var(--cyan)">${words.length}</div><div class="l">WORDS</div></div><div class="rs"><div class="n" style="color:var(--gold)">${this.round}</div><div class="l">ROUNDS</div></div><div class="rs"><div class="n" style="color:${yW?'var(--green)':'var(--rose)'}">${yW?'WIN':'LOSS'}</div><div class="l">RESULT</div></div>`;
+    this.startReview();
+    if(words.length>0)document.getElementById('resVocab').innerHTML=`<h3>📖 本局词汇</h3>${words.sort((a,b)=>b.count-a.count).map(w=>`<div class="rv-item"><div class="rv-top"><span class="rv-word">${w.word}</span><span class="rv-def">${w.def} (×${w.count})</span></div>${w.tip?`<div class="rv-tip">💡 ${w.tip}</div>`:''}</div>`).join('')}`;
+  },
+
+  // ═══ UI ═══
+  showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')},
+  updatePhaseLabel(){document.getElementById('phaseLabel').innerHTML=this.phase==='night'?`🌙 NIGHT ${this.round}`:`★ DAY ${this.round}`},
+  updateRoleLabel(){const you=this.players[0];const m={wolf:['🐺 WOLF','#f43f5e'],seer:['🔮 SEER','#3b82f6'],witch:['🧪 WITCH','#a78bfa'],hunter:['🔫 HUNTER','#f59e0b'],idiot:['🃏 IDIOT','#10b981'],villager:['⚔ VILLAGER','#fbbf24']};const[l,c]=m[you.role];const el=document.getElementById('roleLabel');el.textContent=l;el.style.borderColor=c;el.style.color=c;el.style.background=c+'15'},
+
+  updatePlayerList(){
+    const sb=document.getElementById('playerSidebar');
+    const roleC={wolf:'#f43f5e',seer:'#3b82f6',witch:'#a78bfa',hunter:'#f59e0b',idiot:'#10b981',villager:'#fbbf24'};
+    sb.innerHTML=`<div class="ps-header">修仙者 <span>PLAYERS</span></div>`+
+    this.players.map(p=>{const showR=!p.alive||p.id===0||(this.players[0].role==='wolf'&&p.role==='wolf');
+    return`<div class="ps-player ${p.alive?'':'dead'} ${p.id===0?'you':''}">
+      <span class="ps-av">${p.emoji}</span>
+      <div class="ps-info"><div class="ps-nm">${p.name}</div><div class="ps-en">${p.en}</div>
+      ${showR?`<span class="ps-role" style="background:${roleC[p.role]}15;color:${roleC[p.role]}">${p.role}</span>`:''}</div>
+      ${!p.alive?'<span class="ps-dead-x">✕</span>':''}
+    </div>`}).join('');
+    document.getElementById('wordCount').textContent=`📖 ${Object.keys(this.wordsEncountered).length}`;
+  },
+
+  addSystemMsg(h){const l=document.getElementById('chatLog');const d=document.createElement('div');d.className='chat-msg system';d.innerHTML=`<div class="msg-text">${h}</div>`;l.appendChild(d);l.scrollTop=l.scrollHeight},
+  addDeathMsg(h){const l=document.getElementById('chatLog');const d=document.createElement('div');d.className='chat-msg death';d.innerHTML=`<div class="msg-text">${h}</div>`;l.appendChild(d);l.scrollTop=l.scrollHeight},
+  addPlayerMsg(p,h,cn){const l=document.getElementById('chatLog');const d=document.createElement('div');d.className='chat-msg player';d.innerHTML=`<div class="msg-av">${p.emoji}</div><div class="msg-body"><div class="msg-name">${p.name} <span class="mn-en">${p.en}</span></div><div class="msg-text">${h}</div>${cn?`<div class="msg-cn ${this.showCN?'':'hidden'}">${cn}</div>`:''}</div>`;l.appendChild(d);l.scrollTop=l.scrollHeight},
+  addLoadingMsg(p){const l=document.getElementById('chatLog');const d=document.createElement('div');d.className='chat-msg player';d.id='loadingMsg';d.innerHTML=`<div class="msg-av">${p.emoji}</div><div class="msg-body"><div class="msg-name">${p.name}</div><div class="ai-loading">🔮 ${p.name}正在发言...</div></div>`;l.appendChild(d);l.scrollTop=l.scrollHeight},
+  removeLoadingMsg(){const el=document.getElementById('loadingMsg');if(el)el.remove()},
+  delay(ms){return new Promise(r=>setTimeout(r,ms))},
+
+  // ═══ Grammar Puzzle ═══
+  showGrammarPuzzle(){const s=GRAMMAR_SENTENCES[Math.floor(Math.random()*GRAMMAR_SENTENCES.length)];document.getElementById('grammarOverlay').classList.add('active');this._gIdx=0;this._gParts=s.parts;this._gLabels=s.labels;let h='';s.parts.forEach((_,i)=>{h+=`<span class="go-slot" id="gs${i}">[${s.labels[i]}]</span> `});document.getElementById('goSentence').innerHTML=`<div style="font-size:10px;color:var(--sub);margin-bottom:6px">🀄 ${s.cn}</div>`+h;const sh=[...s.parts].sort(()=>Math.random()-.5);document.getElementById('goOptions').innerHTML=sh.map((p,i)=>`<button class="go-opt" onclick="G.grammarPick(${i},'${btoa(encodeURIComponent(p))}',this)">${p}</button>`).join('');document.getElementById('goResult').innerHTML='';document.getElementById('goBtn').style.display='none';document.getElementById('gs0').classList.add('active')},
+  grammarPick(i,enc,el){const p=decodeURIComponent(atob(enc));const s=document.getElementById('gs'+this._gIdx);if(p===this._gParts[this._gIdx]){s.textContent=p;s.classList.remove('active');s.classList.add('correct');el.classList.add('used');this._gIdx++;if(this._gIdx>=this._gParts.length){document.getElementById('goResult').innerHTML='<span style="color:var(--green)">✅ 完美拆解！</span>';document.getElementById('goBtn').style.display='inline-block'}else document.getElementById('gs'+this._gIdx).classList.add('active')}else{s.classList.add('wrong');setTimeout(()=>s.classList.remove('wrong'),500);document.getElementById('goResult').innerHTML=`<span style="color:var(--rose)">❌ 需要: [${this._gLabels[this._gIdx]}]</span>`}},
+  closeGrammar(){document.getElementById('grammarOverlay').classList.remove('active');if(this._afterGrammar){setTimeout(this._afterGrammar,500);this._afterGrammar=null}},
+
+  // ═══ Repeat Challenge ═══
+  showRepeatChallenge(sp,vl){const l=document.getElementById('chatLog');const d=document.createElement('div');d.className='repeat-box';d.id='repeatBox';d.style.cssText='padding:12px;background:rgba(167,139,250,.04);border:1px solid rgba(167,139,250,.1);border-radius:10px;margin-bottom:8px';d.innerHTML=`<div style="font-size:10px;color:var(--purple);font-weight:700;margin-bottom:4px">🎤 复述挑战</div><div style="font-size:11px;color:var(--dim);font-style:italic;margin-bottom:8px;line-height:1.5">"${sp.en.substring(0,100)}..." — ${sp.player}</div><div style="display:flex;gap:6px"><input style="flex:1;padding:8px;font-size:11px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;color:var(--text);outline:none" id="rbInput" placeholder="复述关键内容..."><button style="padding:8px 14px;border:none;border-radius:6px;background:var(--violet);color:#fff;font-size:11px;font-weight:600;cursor:pointer" onclick="G.checkRepeat()">检查</button></div><div id="rbResult" style="font-size:10px;margin-top:4px"></div>`;l.appendChild(d);l.scrollTop=l.scrollHeight;this._repeatVocab=vl;document.getElementById('rbInput').focus()},
+  checkRepeat(){const inp=document.getElementById('rbInput').value.trim();if(!inp)return;const t=this._repeatTarget;const iW=inp.toLowerCase().split(/\s+/);const tW=t.en.toLowerCase().split(/\s+/);const m=iW.filter(w=>tW.includes(w)&&w.length>3).length;const sc=Math.min(100,Math.round(m/Math.max(1,tW.filter(w=>w.length>3).length)*100));document.getElementById('rbResult').innerHTML=sc>=50?`<span style="color:var(--green)">✅ ${sc}%</span>`:`<span style="color:var(--amber)">⚠️ ${sc}%</span>`;setTimeout(()=>{const b=document.getElementById('repeatBox');if(b)b.remove();this._showInput(this._repeatVocab)},2000)},
+
+  // ═══ Replay Drawer ═══
+  toggleReplay(){document.getElementById('replayDrawer').classList.toggle('open');this.replayMode(0,document.querySelector('.rd-tab'))},
+  replayMode(mode,tab){document.querySelectorAll('.rd-tab').forEach(t=>t.classList.remove('active'));if(tab)tab.classList.add('active');const body=document.getElementById('rdBody');const sp=this.gameLog.filter(l=>l.type==='speech');if(!sp.length){body.innerHTML='<div style="color:var(--dim);text-align:center;padding:20px">暂无记录</div>';return}const mn=['泛看·中英对照','精看·生词高亮','盲听·点击揭示','跟读·打字复述'];let h=`<div style="font-size:9px;color:var(--gold);margin-bottom:8px;text-align:center">${mn[mode]}</div>`;sp.forEach(s=>{if(mode===0)h+=`<div class="rd-msg"><b style="color:var(--purple)">${s.player}:</b> ${s.en}${s.cn?`<div style="color:var(--gold);font-size:10px">${s.cn}</div>`:''}</div>`;else if(mode===1)h+=`<div class="rd-msg"><b style="color:var(--purple)">${s.player}:</b> ${wrapVocab(s.en)}</div>`;else if(mode===2)h+=`<div class="rd-msg" style="cursor:pointer" onclick="this.querySelector('.rd-h').style.display='block';this.querySelector('.rd-m').style.display='none'"><b style="color:var(--purple)">${s.player}:</b><span class="rd-m" style="color:var(--dim)"> [点击揭示] </span><span class="rd-h" style="display:none">${s.en}</span></div>`;else h+=`<div class="rd-msg"><b style="color:var(--purple)">${s.player}:</b> <span style="color:var(--dim)">[复述]</span><input style="width:100%;margin-top:4px;padding:4px;font-size:10px;background:var(--glass);border:1px solid var(--glass-border);border-radius:4px;color:var(--text);outline:none"></div>`});body.innerHTML=h},
+
+  // ═══ AI Review ═══
+  async startReview(){const w=Object.values(this.wordsEncountered);if(!w.length)return;const wl=w.slice(0,10).map(x=>`${x.word}(${x.def})`).join('、');this.addReviewMsg('ai',`这局遇到${w.length}个考研词汇：${wl}\n\n${w.slice(0,3).map(x=>`📖 ${x.word} — ${x.def}\n💡 ${x.tip||'暂无谐音'}`).join('\n\n')}`)},
+  async reviewAsk(){const inp=document.getElementById('rcInput').value.trim();if(!inp)return;document.getElementById('rcInput').value='';this.addReviewMsg('user',inp);this.addReviewMsg('ai','🔮 AI思考中...');const w=Object.values(this.wordsEncountered).map(x=>x.word).join(',');const raw=await aiCall([{role:'system',content:`英语私教AI。用户刚玩英文狼人杀,遇到词汇:${w}。用谐音梗+例句帮复习,简短2-3句,中文回答,要搞笑幽默！`},{role:'user',content:inp}],400);const ms=document.getElementById('rcMessages');ms.removeChild(ms.lastChild);this.addReviewMsg('ai',raw||'这些词记住了吗？再过一遍！')},
+  addReviewMsg(t,txt){const ms=document.getElementById('rcMessages');const d=document.createElement('div');d.className=`rc-msg ${t}`;d.textContent=txt;ms.appendChild(d);ms.scrollTop=ms.scrollHeight}
+};
+
+G.init();
+</script>
+</body>
+</html>
