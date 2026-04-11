@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>抖音·顾枢版 · 每日知识流</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;font-family:'Noto Sans SC',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);background-size:40px 40px;z-index:0}
+
+/* 主容器 */
+.wrap{position:relative;z-index:10;max-width:480px;width:100%;text-align:center}
+
+/* logo */
+.logo-row{margin-bottom:40px}
+.logo-main{font-family:'Orbitron';font-size:28px;color:#fff;letter-spacing:4px;margin-bottom:4px}
+.logo-sub{font-size:12px;color:#4a4a6a;letter-spacing:3px}
+.logo-badge{display:inline-block;margin-top:8px;padding:4px 14px;border:1px solid rgba(99,102,241,.3);border-radius:20px;font-size:10px;color:#6366f1;letter-spacing:2px;font-family:'Orbitron'}
+
+/* 频道卡片 */
+.channels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px}
+.ch-card{
+  display:flex;flex-direction:column;align-items:center;
+  padding:24px 16px;border-radius:16px;text-decoration:none;
+  border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);
+  transition:.3s;position:relative;overflow:hidden;cursor:pointer
+}
+.ch-card:hover{transform:translateY(-4px)}
+.ch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+
+.ch-card.politics{border-color:rgba(232,64,64,.2)}
+.ch-card.politics:hover{box-shadow:0 12px 30px rgba(232,64,64,.1)}
+.ch-card.politics::before{background:linear-gradient(90deg,transparent,#e84040,transparent)}
+
+.ch-card.english{border-color:rgba(8,247,254,.15)}
+.ch-card.english:hover{box-shadow:0 12px 30px rgba(8,247,254,.08)}
+.ch-card.english::before{background:linear-gradient(90deg,transparent,#08f7fe,transparent)}
+
+.ch-card.math{border-color:rgba(168,85,247,.2)}
+.ch-card.math:hover{box-shadow:0 12px 30px rgba(168,85,247,.08)}
+.ch-card.math::before{background:linear-gradient(90deg,transparent,#a855f7,transparent)}
+
+.ch-card.cs{border-color:rgba(57,255,20,.15)}
+.ch-card.cs:hover{box-shadow:0 12px 30px rgba(57,255,20,.06)}
+.ch-card.cs::before{background:linear-gradient(90deg,transparent,#39ff14,transparent)}
+
+.ch-icon{font-size:36px;margin-bottom:10px}
+.ch-name{font-family:'Orbitron';font-size:10px;letter-spacing:2px;margin-bottom:4px}
+.ch-name.politics{color:#e84040}
+.ch-name.english{color:#08f7fe}
+.ch-name.math{color:#a855f7}
+.ch-name.cs{color:#39ff14}
+.ch-desc{font-size:11px;color:#4a4a6a;line-height:1.5}
+.ch-status{margin-top:8px;font-size:9px;padding:2px 8px;border-radius:20px;font-family:'Orbitron';letter-spacing:1px}
+.ch-status.live{background:rgba(57,255,20,.08);color:#39ff14;border:1px solid rgba(57,255,20,.2)}
+.ch-status.soon{background:rgba(255,255,255,.03);color:#333;border:1px solid rgba(255,255,255,.06)}
+
+/* 底部按钮 */
+.bottom-links{display:flex;gap:12px;justify-content:center}
+.link-btn{
+  padding:10px 20px;border-radius:8px;text-decoration:none;
+  font-size:12px;font-family:'Orbitron';letter-spacing:1px;transition:.2s;cursor:pointer
+}
+.link-btn.primary{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);color:#6366f1}
+.link-btn.primary:hover{background:rgba(99,102,241,.15)}
+.link-btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.06);color:#444}
+.link-btn.secondary:hover{border-color:rgba(255,255,255,.12);color:#666}
+
+/* 每日进度提示 */
+.daily-banner{
+  margin-bottom:24px;padding:12px 20px;
+  background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.1);
+  border-radius:10px;font-size:12px;color:#aa8800;line-height:1.6
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+  <!-- Logo -->
+  <div class="logo-row">
+    <div class="logo-main">顾枢 · 日课</div>
+    <div class="logo-sub">DAILY KNOWLEDGE PULSE</div>
+    <div class="logo-badge">BEGINNER · FEED MODE</div>
+  </div>
+
+  <!-- 每日提示 -->
+  <div class="daily-banner" id="dailyBanner">
+    📡 加载今日状态...
+  </div>
+
+  <!-- 频道选择 -->
+  <div class="channels">
+    <a class="ch-card politics" href="politics.html">
+      <div class="ch-icon">🔴</div>
+      <div class="ch-name politics">政治 · 101</div>
+      <div class="ch-desc">时政八卦+98考点<br>每日10张记忆卡</div>
+      <div class="ch-status live">● LIVE</div>
+    </a>
+
+    <a class="ch-card english" href="english.html">
+      <div class="ch-icon">🔵</div>
+      <div class="ch-name english">英语 · 201</div>
+      <div class="ch-desc">每日50词注入<br>语法·长难句·句型</div>
+      <div class="ch-status soon">即将上线</div>
+    </a>
+
+    <a class="ch-card math" href="math.html">
+      <div class="ch-icon">🟣</div>
+      <div class="ch-name math">数学 · 301</div>
+      <div class="ch-desc">每日1概念<br>直觉理解·可视化</div>
+      <div class="ch-status soon">即将上线</div>
+    </a>
+
+    <a class="ch-card cs" href="cs.html">
+      <div class="ch-icon">🟢</div>
+      <div class="ch-name cs">计算机 · 408</div>
+      <div class="ch-desc">每日1原理故事<br>生活类比理解</div>
+      <div class="ch-status soon">即将上线</div>
+    </a>
+  </div>
+
+  <!-- 底部链接 -->
+  <div class="bottom-links">
+    <a class="link-btn primary" href="../index.html">← 应用集</a>
+    <a class="link-btn secondary" href="../neural-dive/index.html">Neural Dive</a>
+  </div>
+</div>
+
+<script>
+function updateBanner(){
+  const srsKey = 'DP_Politics_SRS';
+  try{
+    const srs = JSON.parse(localStorage.getItem(srsKey)||'{}');
+    const total = 27; // 马原26+形策等
+    const mastered = Object.keys(srs).filter(k=>srs[k].seen>=3).length;
+    const seen = Object.keys(srs).length;
+    const pct = (mastered/total*100).toFixed(0);
+    document.getElementById('dailyBanner').innerHTML =
+      `📊 政治掌握进度：${mastered}/${total} 考点（${pct}%）<br>已接触：${seen}条 · 今日新增：打开政治频道继续学习 →`;
+  }catch(e){
+    document.getElementById('dailyBanner').textContent = '🎯 每天20分钟，被动吸收，不用做题。打开政治频道开始喂饭 →';
+  }
+}
+updateBanner();
+</script>
+</body>
+</html>
