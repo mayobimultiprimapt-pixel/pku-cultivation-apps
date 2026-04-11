@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>深潜网络 · Neural Dive — 201英语脑机接口</title>
+<meta name="description" content="赛博朋克英语阅读专项训练，Gemini AI伴读，让讨厌英语的你沉迷其中">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cyan:#08f7fe;--magenta:#ff2e63;--gold:#ffd700;--green:#39ff14;
+  --purple:#a855f7;--bg:#06060c;--card:rgba(12,12,28,.92);
+  --glass:rgba(255,255,255,.03);--glow-cyan:0 0 20px rgba(8,247,254,.3);
+  --glow-mag:0 0 20px rgba(255,46,99,.3);--glow-green:0 0 20px rgba(57,255,20,.3);
+}
+html,body{height:100%;background:var(--bg);color:#e0e0f0;font-family:'Rajdhani','Noto Sans SC',sans-serif;overflow:hidden}
+
+/* ═══ 动态背景 — 赛博朋克网格+粒子 ═══ */
+.cyber-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.cyber-bg::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(180deg,transparent 0%,rgba(8,247,254,.015) 50%,transparent 100%),
+  repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(8,247,254,.04) 50px),
+  repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(8,247,254,.04) 50px);
+  animation:gridScroll 20s linear infinite}
+@keyframes gridScroll{to{background-position:0 50px}}
+.cyber-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(168,85,247,.08) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(8,247,254,.06) 0%,transparent 50%)}
+
+/* 扫描线 */
+.scanline{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0px,rgba(0,0,0,.03) 1px,transparent 2px,transparent 4px);
+  animation:scanFlicker 8s ease-in-out infinite}
+@keyframes scanFlicker{0%,100%{opacity:.3}50%{opacity:.5}}
+
+/* 粒子 */
+.particles{position:fixed;inset:0;z-index:0}
+.particle{position:absolute;width:2px;height:2px;background:var(--cyan);border-radius:50%;opacity:0;
+  animation:particleFloat 6s ease-in-out infinite}
+@keyframes particleFloat{0%{opacity:0;transform:translateY(100vh)}50%{opacity:.6}100%{opacity:0;transform:translateY(-10vh)}}
+
+/* ═══ 主容器 ═══ */
+.app{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ═══ 顶部状态栏 ═══ */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
+  background:rgba(6,6,12,.8);border-bottom:1px solid rgba(8,247,254,.1);backdrop-filter:blur(10px);flex-shrink:0}
+.top-bar .logo{font-family:'Orbitron';font-size:14px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;
+  text-shadow:var(--glow-cyan)}
+.top-bar .stats{display:flex;gap:16px;font-size:12px;font-family:'Rajdhani';letter-spacing:1px}
+.stat{display:flex;align-items:center;gap:4px}
+.stat .label{color:#556;font-size:10px;text-transform:uppercase}
+.stat .val{color:var(--green);font-weight:700}
+.stat .val.energy{color:var(--gold)}
+.stat .val.streak{color:var(--magenta)}
+.btn-home{background:none;border:1px solid rgba(8,247,254,.2);color:var(--cyan);padding:4px 12px;border-radius:4px;
+  cursor:pointer;font-size:11px;font-family:'Orbitron';letter-spacing:2px;transition:.3s}
+.btn-home:hover{background:rgba(8,247,254,.1);box-shadow:var(--glow-cyan)}
+
+/* ═══ 主内容区 ═══ */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px 100px;scroll-behavior:smooth}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:rgba(8,247,254,.2);border-radius:2px}
+
+/* ═══ 场景面板 ═══ */
+.scene{display:none;animation:sceneIn .6s ease}
+.scene.active{display:block}
+@keyframes sceneIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ 启动面板 ══ */
+.boot-screen{text-align:center;padding:60px 20px}
+.boot-logo{font-family:'Orbitron';font-size:42px;font-weight:900;letter-spacing:6px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple),var(--magenta));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;filter:drop-shadow(0 0 30px rgba(8,247,254,.3));
+  animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 30px rgba(8,247,254,.3))}50%{filter:drop-shadow(0 0 50px rgba(168,85,247,.5))}}
+.boot-sub{font-family:'Orbitron';font-size:11px;color:#556;letter-spacing:8px;margin-top:8px;text-transform:uppercase}
+.boot-desc{color:#889;font-size:14px;line-height:2;margin:30px auto;max-width:500px;text-align:left}
+.boot-desc strong{color:var(--cyan)}
+.boot-desc em{color:var(--magenta);font-style:normal}
+
+.dive-btn{margin-top:30px;padding:18px 50px;border:2px solid var(--cyan);background:transparent;
+  color:var(--cyan);font-family:'Orbitron';font-size:16px;font-weight:700;letter-spacing:4px;
+  cursor:pointer;border-radius:4px;position:relative;overflow:hidden;transition:.4s;text-transform:uppercase}
+.dive-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(8,247,254,.15),transparent);transition:.6s}
+.dive-btn:hover::before{left:100%}
+.dive-btn:hover{background:rgba(8,247,254,.08);box-shadow:0 0 40px rgba(8,247,254,.3),inset 0 0 20px rgba(8,247,254,.05);
+  text-shadow:0 0 10px var(--cyan)}
+.dive-btn:active{transform:scale(.97)}
+
+.loading-bar{margin:20px auto 0;width:300px;height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;display:none}
+.loading-bar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--magenta));
+  border-radius:2px;transition:width .8s ease}
+.loading-text{font-family:monospace;font-size:11px;color:var(--cyan);margin-top:10px;letter-spacing:2px;min-height:16px}
+
+/* ══ 任务简报面板 ══ */
+.briefing{max-width:700px;margin:0 auto}
+.brief-header{font-family:'Orbitron';font-size:12px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;
+  border-bottom:1px solid rgba(255,215,0,.15);padding-bottom:8px;margin-bottom:16px}
+.brief-source{font-size:11px;color:#556;margin-bottom:12px;font-family:monospace;letter-spacing:1px}
+.brief-intel{background:var(--card);border:1px solid rgba(8,247,254,.1);border-radius:12px;padding:20px 24px;
+  position:relative;overflow:hidden}
+.brief-intel::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:linear-gradient(180deg,var(--cyan),var(--purple))}
+.brief-intel .avatar{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--cyan);
+  font-family:'Orbitron';letter-spacing:2px;margin-bottom:12px}
+.brief-intel .avatar::before{content:'◈';font-size:16px;color:var(--purple)}
+.brief-intel .intel-text{font-size:14px;line-height:2;color:#bbc}
+.brief-intel .intel-text em{color:var(--magenta);font-style:normal;font-weight:700}
+.brief-intel .intel-text strong{color:var(--cyan)}
+
+.brief-meta{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap}
+.meta-chip{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;
+  padding:8px 14px;font-size:11px;color:#889;display:flex;align-items:center;gap:6px}
+.meta-chip .mc-val{color:var(--cyan);font-weight:700}
+
+.btn-enter-dive{margin-top:24px;width:100%;padding:16px;border:1px solid var(--green);background:rgba(57,255,20,.05);
+  color:var(--green);font-family:'Orbitron';font-size:14px;letter-spacing:3px;cursor:pointer;border-radius:8px;
+  transition:.3s;text-transform:uppercase}
+.btn-enter-dive:hover{background:rgba(57,255,20,.12);box-shadow:var(--glow-green);text-shadow:0 0 8px var(--green)}
+
+/* ══ 阅读解码面板 ══ */
+.dive-area{max-width:740px;margin:0 auto}
+.progress-ring{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ring-dots{display:flex;gap:6px}
+.ring-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  transition:.4s}
+.ring-dot.active{background:var(--cyan);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+.ring-dot.done{background:var(--green);border-color:var(--green);box-shadow:var(--glow-green)}
+.ring-dot.wrong{background:var(--magenta);border-color:var(--magenta);box-shadow:var(--glow-mag)}
+.ring-label{font-family:'Orbitron';font-size:10px;color:#556;letter-spacing:2px}
+
+/* 段落卡 */
+.para-card{background:var(--card);border:1px solid rgba(8,247,254,.08);border-radius:14px;padding:24px;
+  margin-bottom:16px;position:relative;overflow:hidden;transition:.4s}
+.para-card.locked{filter:blur(4px) brightness(.4);pointer-events:none}
+.para-card.locked::after{content:'🔒 ENCRYPTED';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-family:'Orbitron';font-size:14px;color:var(--magenta);letter-spacing:4px;
+  background:rgba(6,6,12,.7);backdrop-filter:blur(2px)}
+.para-card .para-tag{font-family:'Orbitron';font-size:9px;color:var(--purple);letter-spacing:3px;
+  margin-bottom:10px;text-transform:uppercase}
+.para-card .en-text{font-size:15px;line-height:2.2;color:#d0d0e8;word-spacing:2px;font-family:'Rajdhani',sans-serif}
+.para-card .en-text .highlight{background:rgba(8,247,254,.12);border-bottom:1px solid var(--cyan);padding:0 2px;
+  cursor:pointer;transition:.2s}
+.para-card .en-text .highlight:hover{background:rgba(8,247,254,.25)}
+.para-card .en-text .word-unknown{color:var(--gold);cursor:pointer;border-bottom:1px dashed var(--gold);
+  transition:.2s;position:relative}
+.para-card .en-text .word-unknown:hover{color:#fff;text-shadow:0 0 6px var(--gold)}
+
+/* 工具栏 */
+.tool-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tool-btn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;
+  padding:6px 14px;font-size:11px;color:#889;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:6px}
+.tool-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(8,247,254,.05)}
+.tool-btn.used{opacity:.4;pointer-events:none}
+.tool-btn .cost{color:var(--gold);font-size:10px}
+
+/* 题目弹出 */
+.question-card{background:rgba(12,6,20,.95);border:1px solid var(--magenta);border-radius:14px;padding:24px;
+  margin:16px 0;animation:questionPop .5s cubic-bezier(.17,.67,.3,1.33);position:relative;overflow:hidden}
+@keyframes questionPop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--magenta),var(--purple),var(--cyan))}
+.question-card .q-tag{font-family:'Orbitron';font-size:10px;color:var(--magenta);letter-spacing:3px;margin-bottom:10px}
+.question-card .q-stem{font-size:14px;line-height:1.9;color:#d0d0e8;margin-bottom:16px}
+.q-options{display:flex;flex-direction:column;gap:8px}
+.q-opt{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;
+  padding:12px 16px;cursor:pointer;transition:.3s;font-size:13px;color:#bbc;display:flex;align-items:flex-start;gap:10px}
+.q-opt:hover{border-color:var(--cyan);background:rgba(8,247,254,.05);color:#fff}
+.q-opt .letter{font-family:'Orbitron';font-size:12px;color:var(--purple);min-width:20px;font-weight:700}
+.q-opt.correct{border-color:var(--green)!important;background:rgba(57,255,20,.08)!important;color:var(--green)!important}
+.q-opt.wrong{border-color:var(--magenta)!important;background:rgba(255,46,99,.08)!important;color:var(--magenta)!important}
+.q-opt.disabled{pointer-events:none;opacity:.5}
+
+/* AI反馈 */
+.ai-feedback{background:var(--card);border-radius:12px;padding:18px 20px;margin-top:12px;
+  border-left:3px solid var(--purple);animation:feedbackSlide .4s ease}
+@keyframes feedbackSlide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.ai-feedback .fb-header{display:flex;align-items:center;gap:8px;font-family:'Orbitron';font-size:10px;
+  color:var(--purple);letter-spacing:2px;margin-bottom:8px}
+.ai-feedback .fb-text{font-size:13px;line-height:1.9;color:#bbc}
+.ai-feedback .fb-text strong{color:var(--cyan)}
+.ai-feedback .fb-text em{color:var(--magenta);font-style:normal}
+.ai-feedback.roast{border-left-color:var(--magenta)}
+.ai-feedback.praise{border-left-color:var(--green)}
+
+/* 翻译浮窗 */
+.word-popup{position:fixed;z-index:999;background:rgba(12,12,28,.96);border:1px solid var(--cyan);
+  border-radius:10px;padding:12px 16px;max-width:280px;font-size:12px;color:#bbc;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);backdrop-filter:blur(12px);animation:popIn .3s ease;display:none}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.word-popup .wp-word{font-size:16px;font-weight:700;color:var(--cyan);letter-spacing:1px}
+.word-popup .wp-phonetic{font-size:11px;color:#667;margin:2px 0 6px}
+.word-popup .wp-meaning{color:var(--gold);font-weight:600}
+.word-popup .wp-close{position:absolute;top:6px;right:10px;color:#445;cursor:pointer;font-size:14px}
+
+/* ══ 结果面板 ══ */
+.result-panel{text-align:center;padding:40px 20px;max-width:500px;margin:0 auto}
+.result-icon{font-size:60px;margin-bottom:12px}
+.result-title{font-family:'Orbitron';font-size:28px;font-weight:900;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.result-score{font-size:48px;font-weight:900;color:var(--gold);font-family:'Orbitron';margin:16px 0}
+.result-detail{font-size:13px;color:#889;line-height:2}
+.result-words{background:var(--card);border:1px solid rgba(255,215,0,.1);border-radius:12px;padding:16px;
+  margin:20px 0;text-align:left}
+.result-words h4{color:var(--gold);font-size:12px;font-family:'Orbitron';letter-spacing:2px;margin-bottom:8px}
+.result-words .rw-list{display:flex;flex-wrap:wrap;gap:6px}
+.result-words .rw-item{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.1);border-radius:4px;
+  padding:3px 8px;font-size:11px;color:var(--gold)}
+
+.btn-again{margin-top:20px;padding:14px 40px;border:1px solid var(--cyan);background:rgba(8,247,254,.05);
+  color:var(--cyan);font-family:'Orbitron';font-size:13px;letter-spacing:3px;cursor:pointer;border-radius:8px;transition:.3s}
+.btn-again:hover{background:rgba(8,247,254,.12);box-shadow:var(--glow-cyan)}
+
+/* 暴走模式 */
+.berserker .para-card{border-color:var(--magenta)!important;box-shadow:0 0 30px rgba(255,46,99,.15)}
+.berserker .top-bar{border-bottom-color:var(--magenta)!important;box-shadow:0 2px 20px rgba(255,46,99,.2)}
+
+/* ═══ 🔥 长难句防火墙系统 ═══ */
+.sentence-wall{display:inline;position:relative;cursor:pointer;transition:.3s;
+  background:linear-gradient(90deg,rgba(255,46,99,.06),rgba(168,85,247,.06));border-radius:4px;padding:2px 4px;
+  border-bottom:2px solid rgba(255,46,99,.4)}
+.sentence-wall::before{content:'🔒';font-size:10px;vertical-align:super;margin-right:3px;opacity:.7}
+.sentence-wall:hover{background:linear-gradient(90deg,rgba(255,46,99,.15),rgba(168,85,247,.15));
+  border-bottom-color:var(--magenta);text-shadow:0 0 8px rgba(255,46,99,.3)}
+.sentence-wall.slashed{background:rgba(57,255,20,.06)!important;border-bottom-color:var(--green)!important;
+  cursor:default}
+.sentence-wall.slashed::before{content:'✅';opacity:1}
+
+/* 砍西瓜动画 */
+@keyframes slashFlash{0%{opacity:1;transform:scaleX(1)}50%{opacity:1;transform:scaleX(1.05)}100%{opacity:0;transform:scaleX(0)}}
+.slash-fx{position:fixed;z-index:9999;pointer-events:none}
+.slash-line{position:absolute;width:120%;height:3px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--magenta),transparent);
+  animation:slashCut .4s ease-out forwards;transform-origin:left center}
+@keyframes slashCut{0%{transform:scaleX(0) rotate(-5deg);opacity:0}30%{opacity:1}100%{transform:scaleX(1) rotate(-5deg);opacity:0}}
+.slash-sparks{position:absolute;width:6px;height:6px;border-radius:50%;
+  animation:sparkFly .6s ease-out forwards}
+@keyframes sparkFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+
+/* 句子拆解面板 */
+.sentence-breakdown{background:rgba(6,6,16,.95);border:1px solid rgba(168,85,247,.3);border-radius:12px;
+  padding:16px 20px;margin:12px 0;animation:breakdownReveal .5s cubic-bezier(.17,.67,.3,1.15);overflow:hidden}
+@keyframes breakdownReveal{from{opacity:0;max-height:0;transform:translateY(-10px)}to{opacity:1;max-height:500px;transform:translateY(0)}}
+.sentence-breakdown .bd-tag{font-family:'Orbitron';font-size:9px;color:var(--green);letter-spacing:3px;margin-bottom:8px}
+.sentence-breakdown .bd-original{font-size:13px;color:#889;line-height:1.8;font-style:italic;padding:8px 12px;
+  background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:10px;border-left:3px solid var(--magenta)}
+.sentence-breakdown .bd-trunk{font-size:14px;color:var(--cyan);font-weight:700;padding:8px 12px;
+  background:rgba(8,247,254,.04);border-radius:6px;margin-bottom:10px;border-left:3px solid var(--cyan)}
+.sentence-breakdown .bd-trunk::before{content:'🦴 主干：';font-size:11px;color:var(--green)}
+.sentence-breakdown .bd-roast{font-size:13px;color:#bbc;line-height:1.9;padding:8px 12px;
+  background:rgba(168,85,247,.04);border-radius:6px;border-left:3px solid var(--purple)}
+.sentence-breakdown .bd-roast::before{content:'💀 Cipher毒评：';font-size:11px;color:var(--magenta);display:block;margin-bottom:4px}
+.sentence-breakdown .bd-roast strong{color:var(--cyan)}
+.sentence-breakdown .bd-roast em{color:var(--magenta);font-style:normal}
+
+/* 连斩计数器 */
+.slash-combo{position:fixed;top:60px;right:20px;z-index:100;font-family:'Orbitron';pointer-events:none;
+  text-align:right;transition:.3s}
+.combo-count{font-size:36px;font-weight:900;color:var(--magenta);text-shadow:0 0 20px rgba(255,46,99,.5);
+  animation:comboPop .4s ease}
+.combo-label{font-size:10px;color:var(--gold);letter-spacing:3px}
+@keyframes comboPop{0%{transform:scale(1.8);opacity:0}50%{transform:scale(1.2);opacity:1}100%{transform:scale(1)}}
+
+/* 模式选择卡 */
+.mode-cards{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+.mode-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;
+  width:200px;cursor:pointer;transition:.4s;text-align:center;position:relative;overflow:hidden}
+.mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--mode-accent,var(--cyan))}
+.mode-card:hover{border-color:var(--mode-accent,var(--cyan));transform:translateY(-4px);
+  box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.mode-card .mc-icon{font-size:32px;margin-bottom:8px;pointer-events:none}
+.mode-card .mc-title{font-family:'Orbitron';font-size:12px;letter-spacing:2px;
+  color:var(--mode-accent,var(--cyan));margin-bottom:6px;pointer-events:none}
+.mode-card .mc-desc{font-size:11px;color:#778;line-height:1.6;pointer-events:none}
+.mode-card .mc-pts{font-family:'Orbitron';font-size:10px;color:var(--gold);margin-top:8px;letter-spacing:1px;pointer-events:none}
+
+/* ═══ 写作炼化炉 · Fragment Forge ═══ */
+.write-area{max-width:740px;margin:0 auto}
+
+/* 拼图板 */
+.puzzle-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;padding:16px;
+  background:var(--card);border:1px solid rgba(168,85,247,.15);border-radius:14px;position:relative;overflow:hidden}
+.puzzle-board::before{content:'🛡️ FIREWALL REPAIR BOARD';position:absolute;top:8px;left:14px;
+  font-family:'Orbitron';font-size:8px;color:var(--purple);letter-spacing:2px;opacity:.6}
+.frag-slot{aspect-ratio:1.4;border-radius:10px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;transition:.4s;position:relative;overflow:hidden;cursor:default}
+.frag-slot.locked{background:rgba(255,255,255,.015);border:1px dashed rgba(255,255,255,.06)}
+.frag-slot.locked .frag-icon{font-size:20px;opacity:.15;filter:grayscale(1)}
+.frag-slot.locked .frag-name{font-size:9px;color:#334;letter-spacing:1px;margin-top:4px}
+.frag-slot.unlocked{background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(8,247,254,.06));
+  border:1px solid rgba(168,85,247,.3);box-shadow:0 0 15px rgba(168,85,247,.1)}
+.frag-slot.unlocked .frag-icon{font-size:22px;filter:drop-shadow(0 0 6px rgba(168,85,247,.5))}
+.frag-slot.unlocked .frag-name{font-size:9px;color:var(--purple);letter-spacing:1px;margin-top:4px;
+  font-family:'Orbitron'}
+.frag-slot.target{animation:fragPulse 1.5s ease-in-out infinite;
+  border:1px solid var(--gold)!important;background:rgba(255,215,0,.04)!important}
+@keyframes fragPulse{0%,100%{box-shadow:0 0 10px rgba(255,215,0,.1)}50%{box-shadow:0 0 25px rgba(255,215,0,.25)}}
+
+/* 碎片获得动画 */
+.frag-slot.just-got{animation:fragUnlock .8s cubic-bezier(.17,.67,.3,1.33)}
+@keyframes fragUnlock{0%{transform:scale(0) rotate(-180deg);opacity:0}
+  60%{transform:scale(1.2) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+
+/* 合成进度 */
+.forge-progress{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.forge-bar{flex:1;height:8px;background:rgba(255,255,255,.03);border-radius:4px;overflow:hidden;
+  border:1px solid rgba(168,85,247,.1)}
+.forge-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:4px;
+  transition:width .6s ease;box-shadow:0 0 10px rgba(168,85,247,.3)}
+.forge-label{font-family:'Orbitron';font-size:10px;color:var(--gold);letter-spacing:2px;min-width:70px;text-align:right}
+
+/* 任务提示 */
+.write-prompt{background:var(--card);border:1px solid rgba(168,85,247,.2);border-radius:12px;padding:20px;
+  margin-bottom:16px;position:relative}
+.write-prompt .wp-tag{font-family:'Orbitron';font-size:10px;color:var(--purple);letter-spacing:3px;margin-bottom:8px}
+.write-prompt .wp-type{font-size:13px;color:var(--gold);margin-bottom:8px}
+.write-prompt .wp-desc{font-size:13px;color:#bbc;line-height:1.8}
+.write-prompt .wp-target{margin-top:10px;padding:8px 12px;background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.12);
+  border-radius:6px;font-size:11px;color:var(--gold);display:flex;align-items:center;gap:8px}
+
+/* 写作区 */
+.write-textarea{width:100%;min-height:200px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:16px;color:#d0d0e8;font-size:14px;line-height:2;resize:vertical;
+  font-family:'Rajdhani',sans-serif;transition:.3s}
+.write-textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 20px rgba(8,247,254,.1)}
+.write-textarea::placeholder{color:#445}
+.write-counter{font-size:11px;color:#556;text-align:right;margin-top:4px;font-family:monospace}
+.write-submit{margin-top:12px;width:100%;padding:14px;border:1px solid var(--purple);background:rgba(168,85,247,.05);
+  color:var(--purple);font-family:'Orbitron';font-size:13px;letter-spacing:3px;cursor:pointer;border-radius:8px;transition:.3s}
+.write-submit:hover{background:rgba(168,85,247,.12);box-shadow:0 0 20px rgba(168,85,247,.3)}
+
+/* 打分 */
+.write-score{background:var(--card);border:1px solid rgba(255,215,0,.15);border-radius:12px;padding:20px;margin-top:16px}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.score-item{text-align:center;padding:10px;background:rgba(255,255,255,.02);border-radius:8px}
+.score-item .si-val{font-size:24px;font-weight:900;color:var(--gold);font-family:'Orbitron'}
+.score-item .si-label{font-size:10px;color:#667;margin-top:4px}
+
+/* 碎片获得弹窗 */
+.frag-reward{background:rgba(6,6,16,.96);border:2px solid var(--purple);border-radius:14px;padding:24px;
+  margin-top:16px;text-align:center;animation:fragRewardPop .6s cubic-bezier(.17,.67,.3,1.15)}
+@keyframes fragRewardPop{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.frag-reward .fr-icon{font-size:48px;margin-bottom:8px;filter:drop-shadow(0 0 15px rgba(168,85,247,.5))}
+.frag-reward .fr-title{font-family:'Orbitron';font-size:12px;color:var(--gold);letter-spacing:3px;margin-bottom:6px}
+.frag-reward .fr-name{font-size:16px;color:var(--purple);font-weight:700;margin-bottom:4px}
+.frag-reward .fr-desc{font-size:11px;color:#778;line-height:1.6}
+
+/* 合成完成 */
+.forge-complete{text-align:center;padding:30px;margin-top:16px}
+.forge-complete .fc-icon{font-size:60px;animation:shieldGlow 2s ease-in-out infinite}
+@keyframes shieldGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(168,85,247,.3))}50%{filter:drop-shadow(0 0 40px rgba(255,215,0,.6))}}
+
+/* 翻译实战 */
+.trans-area{max-width:700px;margin:0 auto}
+.trans-sentence{background:var(--card);border:1px solid rgba(8,247,254,.1);border-radius:12px;padding:20px;
+  margin-bottom:12px;position:relative}
+.trans-sentence .ts-en{font-size:15px;line-height:2;color:#d0d0e8;margin-bottom:12px}
+.trans-sentence .ts-input{width:100%;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);
+  border-radius:8px;padding:12px;color:#d0d0e8;font-size:14px;line-height:1.8;resize:none;min-height:50px;
+  font-family:'Noto Sans SC',sans-serif;transition:.3s}
+.trans-sentence .ts-input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 15px rgba(8,247,254,.08)}
+.trans-sentence .ts-input::placeholder{color:#445}
+.trans-ref{background:rgba(57,255,20,.03);border:1px solid rgba(57,255,20,.1);border-radius:8px;
+  padding:10px 14px;margin-top:8px;font-size:12px;color:var(--green);display:none}
+
+/* ═══ 打字机效果 ═══ */
+.typewriter{overflow:hidden;border-right:2px solid var(--cyan);white-space:nowrap;
+  animation:typewrite 2s steps(40) forwards, blink .7s step-end infinite alternate}
+@keyframes typewrite{from{width:0}to{width:100%}}
+@keyframes blink{50%{border-color:transparent}}
+
+/* ═══ 移动端 ═══ */
+@media(max-width:600px){
+  .boot-logo{font-size:28px;letter-spacing:3px}
+  .dive-btn{padding:14px 30px;font-size:13px}
+  .para-card{padding:16px}
+  .en-text{font-size:14px!important;line-height:2!important}
+  .question-card{padding:16px}
+  .top-bar .logo{font-size:11px;letter-spacing:1px}
+  .brief-intel{padding:14px 16px}
+  .mode-cards{flex-direction:column;align-items:center}
+  .score-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* 隐藏 */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="cyber-bg"></div>
+<div class="scanline"></div>
+<div class="particles" id="particles"></div>
+
+<div class="app" id="app">
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <div class="logo">Neural Dive</div>
+    <div class="stats">
+      <div class="stat"><span class="label">能量</span><span class="val energy" id="sEnergy">5</span></div>
+      <div class="stat"><span class="label">连击</span><span class="val streak" id="sStreak">0</span></div>
+      <div class="stat"><span class="label">正确</span><span class="val" id="sCorrect">0/0</span></div>
+    </div>
+    <button class="btn-home" id="btnBGM" onclick="NeuralDive.toggleBGM()" style="font-size:14px;padding:4px 8px" title="BGM开关">🔇</button>
+    <button class="btn-home" onclick="location.href='../index.html'">⬅ 返回</button>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="main" id="mainScroll">
+
+    <!-- 场景1: 启动 -->
+    <div class="scene active" id="sceneBoot">
+      <div class="boot-screen">
+        <div class="boot-logo">NEURAL DIVE</div>
+        <div class="boot-sub">201 英语脑机接口 · 全科覆盖</div>
+        <div class="boot-desc">
+          🎯 你不是来学英语的——你是来<em>听AI吐槽</em>和<em>砍防火墙</em>的<br>
+          🔪 长难句 = 防火墙，<em>点击即砍</em>，Cipher帮你把装杯的句子拆成人话<br>
+          💀 选错了？Cipher当场<em>公开处刑</em>你的逻辑谬误<br>
+          🔥 连砍3句触发<em>暴走模式</em>，体验极致爽感<br><br>
+          🔒 <strong>学习只是副产品</strong>——核心体验是看戏、砍西瓜、听毒舌
+        </div>
+        <div class="mode-cards">
+          <div class="mode-card" style="--mode-accent:var(--cyan)" onclick="NeuralDive.startDive()">
+            <div class="mc-icon">🧠</div>
+            <div class="mc-title">阅读解码</div>
+            <div class="mc-desc">砍长难句防火墙<br>听Cipher吐槽<br>切片闯关5道题</div>
+            <div class="mc-pts">40分 · 阅读理解</div>
+          </div>
+          <div class="mode-card" style="--mode-accent:var(--purple)" onclick="NeuralDive.startWrite()">
+            <div class="mc-icon">🔨</div>
+            <div class="mc-title">写作炼化炉</div>
+            <div class="mc-desc">拼碎片修防火墙<br>毒舌锻造打分<br>集齐碎片合成满分</div>
+            <div class="mc-pts">30分 · 碎片炼化</div>
+          </div>
+          <div class="mode-card" style="--mode-accent:var(--green)" onclick="NeuralDive.startTranslate()">
+            <div class="mc-icon">🔄</div>
+            <div class="mc-title">翻译实战</div>
+            <div class="mc-desc">5句长难句英译汉<br>对比参考译文<br>AI逐句点评</div>
+            <div class="mc-pts">10分 · 英译汉</div>
+          </div>
+        </div>
+        <div class="loading-bar" id="loadingBar"><div class="fill" id="loadingFill"></div></div>
+        <div class="loading-text" id="loadingText"></div>
+      </div>
+    </div>
+
+    <!-- 场景2: 任务简报 -->
+    <div class="scene" id="sceneBrief"></div>
+
+    <!-- 场景3: 阅读解码 -->
+    <div class="scene" id="sceneDive"></div>
+
+    <!-- 场景4: 结果 -->
+    <div class="scene" id="sceneResult"></div>
+
+    <!-- 场景5: 写作工坊 -->
+    <div class="scene" id="sceneWrite"></div>
+
+    <!-- 场景6: 翻译实战 -->
+    <div class="scene" id="sceneTranslate"></div>
+
+  </div>
+
+  <!-- 连斩计数器 -->
+  <div class="slash-combo" id="slashCombo" style="display:none">
+    <div class="combo-count" id="comboCount">0</div>
+    <div class="combo-label">SLASH COMBO</div>
+  </div>
+</div>
+
+<div class="word-popup" id="wordPopup">
+  <span class="wp-close" onclick="document.getElementById('wordPopup').style.display='none'">✕</span>
+  <div class="wp-word" id="wpWord"></div>
+  <div class="wp-phonetic" id="wpPhonetic"></div>
+  <div class="wp-meaning" id="wpMeaning"></div>
+</div>
+
+<!-- SDK & 共享 -->
+<script src="../shared/pku-core-sdk.js"></script>
+
+<script>
+const NeuralDive = (() => {
+  'use strict';
+
+  // ═══ API 配置 ═══
+  const PPLX_URL = 'https://corsproxy.io/?https://api.perplexity.ai/chat/completions';
+  const BAOSI_URL = 'https://api.baosiapi.com/v1/chat/completions';
+  const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent';
+
+  function _keys() {
+    if (window.PKU_KEYS && window.PKU_KEYS.tier === 'premium') {
+      return {
+        pplx: window.PKU_KEYS.PERPLEXITY_API_KEY || '',
+        gd: window.PKU_KEYS.GEMINI_DIRECT_KEY || '',
+        bs: window.PKU_KEYS.BAOSI_API_KEY || ''
+      };
+    }
+    return { pplx: '', gd: '', bs: '' };
+  }
+
+  // ═══ 状态 ═══
+  let state = {
+    energy: 5,
+    streak: 0,
+    correct: 0,
+    total: 0,
+    article: null,     // { passage, paragraphs[], questions[], source, topic }
+    currentPara: 0,
+    berserker: false,
+    wordsLearned: [],
+    briefing: '',
+  };
+
+  // ═══ 粒子效果 ═══
+  function initParticles() {
+    const con = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 6 + 's';
+      p.style.animationDuration = (4 + Math.random() * 4) + 's';
+      if (Math.random() > .6) p.style.background = 'var(--purple)';
+      if (Math.random() > .8) p.style.background = 'var(--magenta)';
+      con.appendChild(p);
+    }
+  }
+
+  // ═══ 工具 ═══
+  function $(id) { return document.getElementById(id); }
+  function show(id) { document.querySelectorAll('.scene').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); $('mainScroll').scrollTop = 0; }
+  function updateStats() {
+    $('sEnergy').textContent = state.energy;
+    $('sStreak').textContent = state.streak;
+    $('sCorrect').textContent = state.correct + '/' + state.total;
+  }
+
+  // ═══ Perplexity: 拉取最新英语阅读 ═══
+  async function fetchArticle() {
+    const keys = _keys();
+    const pplxKey = keys.pplx || sessionStorage.getItem('PKU_PPLX_KEY') || '';
+
+    const prompt = `请搜索一篇适合考研英语一阅读理解的英文文章，要求：
+1. 来源：The Economist, The Guardian, The Atlantic, Nature, New York Times 等权威英文媒体
+2. 长度：350-500词的英文原文
+3. 话题：从以下随机选一个——AI技术、气候变化、经济政策、教育改革、社会不平等、科技伦理、公共健康
+4. 必须是真实的、近6个月内发表的内容
+
+输出格式（严格JSON）：
+{
+  "source": "The Economist, Jan 2026",
+  "topic": "AI Ethics",
+  "passage": "完整英文文章原文",
+  "questions": [
+    {
+      "paragraph_index": 0,
+      "stem": "英文题干",
+      "options": ["A. xxx", "B. xxx", "C. xxx", "D. xxx"],
+      "answer": "B",
+      "trap_type": "偷换概念|过度推断|无中生有|绝对化|张冠李戴",
+      "trap_explain": "出题人在C选项中用了absolute语气，原文是may"
+    },
+    ...共5题
+  ]
+}
+只输出JSON，不要其他文字。`;
+
+    // 优先 Perplexity
+    if (pplxKey) {
+      for (const model of ['sonar-deep-research', 'sonar-reasoning-pro', 'sonar-pro', 'sonar']) {
+        try {
+          const resp = await fetch(PPLX_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
+            body: JSON.stringify({
+              model, messages: [
+                { role: 'system', content: '你是考研英语命题专家。输出严格JSON。' },
+                { role: 'user', content: prompt }
+              ], temperature: 0.5, max_tokens: 8000, search_recency_filter: 'month'
+            })
+          });
+          if (!resp.ok) continue;
+          const data = await resp.json();
+          const raw = (data.choices || [{}])[0]?.message?.content || '';
+          const parsed = parseJSON(raw);
+          if (parsed && parsed.passage && parsed.questions) return parsed;
+        } catch(e) { console.warn('[ND] Perplexity', model, e.message); }
+      }
+    }
+
+    // 降级: BaosiAPI / Gemini 直接生成
+    return await fetchArticleGemini();
+  }
+
+  async function fetchArticleGemini() {
+    const keys = _keys();
+    const prompt = `你是一位考研英语一命题组专家。请生成一篇模拟阅读理解题。
+
+要求：
+1. 英文文章350-500词，模拟The Economist/Guardian的语言风格
+2. 话题从AI/气候/经济/教育/社会中随机选
+3. 包含至少3个长难句（含定语从句/非谓语/倒装等）
+4. 生成5道四选一题目，每题标注"陷阱类型"
+
+JSON格式：
+{
+  "source": "模拟·The Economist风格",
+  "topic": "话题",
+  "passage": "英文全文",
+  "questions": [{"paragraph_index":0,"stem":"题干","options":["A.xx","B.xx","C.xx","D.xx"],"answer":"B","trap_type":"过度推断","trap_explain":"解释"},...5题]
+}
+只输出JSON。`;
+
+    // Gemini 直连
+    if (keys.gd) {
+      try {
+        const resp = await fetch(GEMINI_URL + '?key=' + keys.gd, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ contents: [{ role:'user', parts:[{text:prompt}] }], generationConfig:{temperature:0.7,maxOutputTokens:8000} })
+        });
+        const data = await resp.json();
+        const raw = (data.candidates||[{}])[0]?.content?.parts?.[0]?.text || '';
+        const r = parseJSON(raw); if (r?.passage) return r;
+      } catch(e) {}
+    }
+
+    // BaosiAPI
+    if (keys.bs) {
+      try {
+        const resp = await fetch(BAOSI_URL, {
+          method: 'POST', headers: {'Content-Type':'application/json','Authorization':'Bearer ' + keys.bs},
+          body: JSON.stringify({ model:'gemini-3.1-pro-high', messages:[{role:'system',content:'考研英语命题专家。只输出JSON。'},{role:'user',content:prompt}], temperature:0.7, max_tokens:8000 })
+        });
+        const data = await resp.json();
+        const raw = (data.choices||[{}])[0]?.message?.content || '';
+        const r = parseJSON(raw); if (r?.passage) return r;
+      } catch(e) {}
+    }
+
+    // 兜底：硬编码
+    return getFallbackArticle();
+  }
+
+  // ═══ Gemini: AI伴读角色扮演 ═══
+  async function aiComment(type, context) {
+    const keys = _keys();
+    const prompts = {
+      briefing: `你是玩家的赛博朋克专属AI脑机助手"Cipher"。玩家极度讨厌学考研英语。
+我即将传入一篇考研英语阅读的来源和主题。请用极客/毒舌/网感/吃瓜的风格，像跟哥们聊天一样，用中文给玩家讲讲这篇文章大概在废话些什么，激发他的好奇心。
+字数100-150字。要有对话感，千万不要像教科书。多用网络用语和emoji。
+
+来源: ${context.source}
+话题: ${context.topic}
+文章前100字: ${context.preview}`,
+
+      roast: `你是赛博朋克AI助手"Cipher"。玩家刚在考研英语阅读中选错了答案。
+请用毒舌/嘲讽/一针见血的风格，无情拆穿出题人的陷阱，指出玩家中了什么圈套。
+字数80-120字。要有对话感，用网络用语。最后给一句鼓励。
+
+题目: ${context.stem}
+玩家选了: ${context.chose}（错误）
+正确答案: ${context.correct}
+陷阱类型: ${context.trap_type}
+陷阱解释: ${context.trap_explain}`,
+
+      praise: `你是赛博朋克AI助手"Cipher"。玩家在考研英语阅读中选对了！
+请用极客/赞叹的风格夸奖玩家的英语直觉。字数50-80字。要有对话感。
+题目: ${context.stem}
+正确答案: ${context.correct}`,
+
+      translate: `你是赛博朋克AI助手"Cipher"。请用15个字以内的中文概括这段英文在废话什么。要毒舌、精辟。
+段落: ${context.para}`,
+
+      sentence: `你是赛博朋克AI助手"Cipher"。玩家看不懂这个长难句。
+请用最通俗的中文拆解结构：1.找出主干 2.标出从句 3.用人话翻译。字数80字以内。
+句子: ${context.sentence}`,
+
+      slash: `你是赛博朋克AI"Cipher"。玩家刚刚砍开了一个长难句防火墙！
+请用以下格式回复（严格JSON）：
+{
+  "trunk": "只保留主语+谓语+宾语的极简主干(中文,15字内)",
+  "roast": "用毒舌/网络梗吐槽这个句子为什么写得这么装杯(中文,60字内,要有emoji)",
+  "human": "用最通俗的大白话翻译全句(中文,30字内)"
+}
+只输出JSON。
+句子: ${context.sentence}`,
+
+      gradeWriting: `你是考研英语写作阅卷组组长+赛博朋克AI"Cipher"。
+请对玩家的作文进行批改，要求：
+1. 打分(满分20): 语言(5分)+结构(5分)+内容(5分)+词汇(5分)
+2. 毒舌点评(100字以内，指出最大的问题，用网络梗)
+3. 给出一个升级版的高分句子替换建议
+
+输出格式(严格JSON)：
+{"language":分,"structure":分,"content":分,"vocabulary":分,"roast":"毒评","upgrade":"一个高分替换句"}
+
+题目: ${context.prompt}
+玩家作文: ${context.essay}`,
+
+      gradeTranslation: `你是赛博朋克AI"Cipher"+考研英语翻译阅卷专家。
+对比玩家的翻译和参考译文，给出评分和毒评。
+输出格式(严格JSON)：
+{"score":0-10的分数,"roast":"毒舌点评(80字内,指出翻译的硬伤或亮点)","tips":"一句改进建议"}
+
+原句: ${context.original}
+参考译文: ${context.reference}
+玩家翻译: ${context.userTranslation}`
+    };
+
+    const sysPrompt = '你是"Cipher"，一个毒舌但可靠的赛博朋克AI助手。说中文，用网络梗，绝不像教科书。';
+    const userPrompt = prompts[type];
+    if (!userPrompt) return '...系统错误...';
+
+    // Gemini 直连
+    if (keys.gd) {
+      try {
+        const resp = await fetch(GEMINI_URL + '?key=' + keys.gd, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ contents:[{role:'user',parts:[{text: sysPrompt+'\n\n'+userPrompt}]}], generationConfig:{temperature:0.9,maxOutputTokens:500} })
+        });
+        const data = await resp.json();
+        const t = (data.candidates||[{}])[0]?.content?.parts?.[0]?.text;
+        if (t) return t;
+      } catch(e) {}
+    }
+
+    // BaosiAPI
+    if (keys.bs) {
+      try {
+        const resp = await fetch(BAOSI_URL, {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+keys.bs},
+          body: JSON.stringify({ model:'gemini-3.1-pro-high', messages:[{role:'system',content:sysPrompt},{role:'user',content:userPrompt}], temperature:0.9, max_tokens:500 })
+        });
+        const data = await resp.json();
+        return (data.choices||[{}])[0]?.message?.content || '...神经链路不稳定...';
+      } catch(e) {}
+    }
+
+    return type === 'praise' ? '🎯 精准命中！出题人的小心思被你看穿了。' :
+           type === 'roast' ? '💀 你被出题人钓鱼了！这个选项是经典的"过度推断"陷阱。原文根本没把话说死，你在脑补什么？' :
+           '...正在建立神经连接...';
+  }
+
+  // ═══ 启动深潜 ═══
+  async function startDive() {
+    // 禁用所有模式卡防止重复点击
+    document.querySelectorAll('.mode-card').forEach(c => c.style.pointerEvents = 'none');
+    // 启动BGM
+    if (!bgmPlaying) startBGM();
+    updateBGMBtn();
+    const bar = $('loadingBar');
+    const fill = $('loadingFill');
+    const txt = $('loadingText');
+
+    bar.style.display = 'block';
+
+    const steps = [
+      ['正在连接 Perplexity 情报网络...', 20],
+      ['搜索全网最新英文语料...', 45],
+      ['解密文章结构...', 65],
+      ['初始化 Gemini 脑机接口...', 80],
+      ['生成任务简报...', 95],
+    ];
+
+    for (const [msg, pct] of steps) {
+      txt.textContent = msg;
+      fill.style.width = pct + '%';
+      await sleep(600);
+    }
+
+    // 拉取文章
+    txt.textContent = '📡 Perplexity sonar-deep-research 实时搜索中...';
+    const article = await fetchArticle();
+
+    if (!article || !article.passage) {
+      txt.textContent = '❌ 神经链路中断，使用离线语料库';
+      state.article = getFallbackArticle();
+    } else {
+      state.article = article;
+    }
+
+    // 切片段落
+    state.article.paragraphs = state.article.passage.split(/\n\n|\n/).filter(p => p.trim().length > 30);
+    if (state.article.paragraphs.length < 2) {
+      // 按句号切
+      const sentences = state.article.passage.split(/(?<=[.!?])\s+/);
+      state.article.paragraphs = [];
+      let chunk = '';
+      sentences.forEach(s => {
+        chunk += s + ' ';
+        if (chunk.split(/\s+/).length > 50) { state.article.paragraphs.push(chunk.trim()); chunk = ''; }
+      });
+      if (chunk.trim()) state.article.paragraphs.push(chunk.trim());
+    }
+
+    state.currentPara = 0;
+    state.correct = 0;
+    state.total = 0;
+    state.streak = 0;
+    state.berserker = false;
+    state.wordsLearned = [];
+    state.energy = 5;
+    updateStats();
+
+    fill.style.width = '100%';
+    txt.textContent = '✅ 深潜就绪';
+
+    // 生成任务简报
+    txt.textContent = '🧠 Gemini 正在生成情报简报...';
+    state.briefing = await aiComment('briefing', {
+      source: state.article.source || 'Unknown',
+      topic: state.article.topic || 'General',
+      preview: state.article.passage.substring(0, 150)
+    });
+
+    await sleep(400);
+    renderBriefing();
+    show('sceneBrief');
+  }
+
+  // ═══ 渲染简报 ═══
+  function renderBriefing() {
+    const a = state.article;
+    const qCount = (a.questions || []).length;
+    const wordCount = a.passage.split(/\s+/).length;
+
+    $('sceneBrief').innerHTML = `
+      <div class="briefing">
+        <div class="brief-header">◈ Mission Briefing · 任务简报</div>
+        <div class="brief-source">SOURCE: ${a.source || 'Intercepted Signal'} | TOPIC: ${a.topic || 'CLASSIFIED'}</div>
+        <div class="brief-intel">
+          <div class="avatar">CIPHER · AI情报官</div>
+          <div class="intel-text">${state.briefing.replace(/\n/g,'<br>')}</div>
+        </div>
+        <div class="brief-meta">
+          <div class="meta-chip">📄 段落 <span class="mc-val">${a.paragraphs.length}层防火墙</span></div>
+          <div class="meta-chip">❓ 秘钥 <span class="mc-val">${qCount}个待提取</span></div>
+          <div class="meta-chip">📝 词汇 <span class="mc-val">~${wordCount}词</span></div>
+          <div class="meta-chip">⚡ 能量 <span class="mc-val">${state.energy}格</span></div>
+        </div>
+        <button class="btn-enter-dive" onclick="NeuralDive.enterDive()">⟐ 开始深潜解码 ⟐</button>
+      </div>
+    `;
+  }
+
+  // ═══ 进入解码 ═══
+  function enterDive() {
+    renderDive();
+    show('sceneDive');
+  }
+
+  function renderDive() {
+    const a = state.article;
+    const paras = a.paragraphs;
+
+    let html = '<div class="dive-area">';
+    // 进度环
+    html += '<div class="progress-ring"><div class="ring-dots">';
+    paras.forEach((_, i) => {
+      const cls = i < state.currentPara ? 'done' : i === state.currentPara ? 'active' : '';
+      html += `<div class="ring-dot ${cls}"></div>`;
+    });
+    html += `</div><div class="ring-label">LAYER ${state.currentPara + 1} / ${paras.length}</div></div>`;
+
+    // 段落卡
+    paras.forEach((p, i) => {
+      const isLocked = i > state.currentPara && !state.berserker;
+      const isCurrent = i === state.currentPara;
+      html += `<div class="para-card ${isLocked ? 'locked' : ''}" id="para${i}">`;
+      html += `<div class="para-tag">Layer ${i + 1} · ${isLocked ? 'Encrypted' : 'Decrypted'}</div>`;
+      html += `<div class="en-text">${makeClickableWords(p)}</div>`;
+
+      if (!isLocked && isCurrent) {
+        html += `<div class="tool-row">
+          <button class="tool-btn" onclick="NeuralDive.useTool('translate',${i})">🔍 降维打击 <span class="cost">-1⚡</span></button>
+          <button class="tool-btn" onclick="NeuralDive.useTool('highlight',${i})">👁️ 透视眼 <span class="cost">-1⚡</span></button>
+        </div>`;
+        html += `<div id="toolResult${i}" style="margin-top:8px"></div>`;
+      }
+      html += '</div>';
+
+      // 这个段落是否有题目
+      if (!isLocked) {
+        const questionsHere = (a.questions || []).filter(q => q.paragraph_index === i);
+        questionsHere.forEach((q, qi) => {
+          const qid = `q_${i}_${qi}`;
+          if (!document.querySelector(`[data-answered="${qid}"]`)) {
+            html += renderQuestion(q, qid);
+          }
+        });
+      }
+    });
+
+    // 全部解完→继续按钮
+    if (state.currentPara >= paras.length) {
+      html += `<div style="text-align:center;margin-top:24px">
+        <button class="btn-enter-dive" onclick="NeuralDive.showResult()">⟐ 提取完成 · 查看报告 ⟐</button>
+      </div>`;
+    } else if (state.currentPara > 0) {
+      html += `<div style="text-align:center;margin-top:16px">
+        <button class="btn-enter-dive" onclick="NeuralDive.nextPara()" id="btnNextPara" style="display:none">
+          ⟐ 突破下一层防火墙 ⟐
+        </button>
+      </div>`;
+    }
+
+    html += '</div>';
+    $('sceneDive').innerHTML = html;
+  }
+
+  // ═══ 长难句防火墙检测 + 可点击单词 ═══
+  function makeClickableWords(text) {
+    // 先按句子切分
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    return sentences.map((sent, si) => {
+      const words = sent.trim().split(/\s+/).length;
+      const hasComplex = /which|that|who|whom|whose|where|when|although|despite|whereas|nevertheless|furthermore|consequently|notwithstanding/i.test(sent);
+      const isLong = words >= 20 || (words >= 15 && hasComplex);
+      // 单词可点击
+      let processed = sent.replace(/\b([a-zA-Z]{4,})\b/g, '<span class="word-unknown" onclick="NeuralDive.lookupWord(\'$1\',event)">$1</span>');
+      if (isLong) {
+        // 包裹为防火墙
+        const cleanSent = sent.replace(/'/g, "\\'");
+        return `<span class="sentence-wall" id="sw_${state.currentPara}_${si}" onclick="NeuralDive.slashSentence(${state.currentPara},${si},this,event)" data-raw="${encodeURIComponent(sent.trim())}">${processed}</span> `;
+      }
+      return processed + ' ';
+    }).join('');
+  }
+
+  // ═══ 🔪 砍防火墙！核心成瘾机制 ═══
+  let slashCombo = 0;
+  let slashTimer = null;
+
+  async function slashSentence(paraIdx, sentIdx, el, event) {
+    if (el.classList.contains('slashed')) return;
+    el.classList.add('slashed');
+
+    // 砍西瓜音效
+    playSound('slash');
+
+    // 砍击特效
+    const rect = el.getBoundingClientRect();
+    showSlashEffect(rect);
+
+    // 连斩！
+    slashCombo++;
+    clearTimeout(slashTimer);
+    slashTimer = setTimeout(() => { slashCombo = 0; $('slashCombo').style.display = 'none'; }, 5000);
+    $('slashCombo').style.display = 'block';
+    $('comboCount').textContent = slashCombo + 'x';
+    $('comboCount').style.animation = 'none';
+    setTimeout(() => $('comboCount').style.animation = 'comboPop .4s ease', 10);
+
+    // 连斩3 → 暴走
+    if (slashCombo >= 3 && !state.berserker) {
+      state.berserker = true;
+      document.querySelector('.app').classList.add('berserker');
+      playSound('correct');
+    }
+
+    // 插入拆解面板（先显示loading）
+    const bdId = `bd_${paraIdx}_${sentIdx}`;
+    el.insertAdjacentHTML('afterend',
+      `<div class="sentence-breakdown" id="${bdId}">
+        <div class="bd-tag">⟐ FIREWALL BREACHED · 防火墙已攻破</div>
+        <div style="color:var(--cyan);font-size:11px;font-family:monospace">⟐ Cipher正在吐槽这个句子...</div>
+      </div>`);
+
+    // 调用Gemini拆解
+    const rawSent = decodeURIComponent(el.dataset.raw);
+    const result = await aiComment('slash', { sentence: rawSent });
+    const bdEl = $(bdId);
+    if (!bdEl) return;
+
+    // 解析JSON结果
+    const parsed = parseJSON(result);
+    if (parsed && parsed.trunk) {
+      bdEl.innerHTML = `
+        <div class="bd-tag">⟐ FIREWALL BREACHED · 防火墙已攻破</div>
+        <div class="bd-original">${rawSent}</div>
+        <div class="bd-trunk">${parsed.trunk}</div>
+        <div class="bd-roast">${parsed.roast || ''}<br><br>👉 <strong>人话翻译：</strong>${parsed.human || ''}</div>
+      `;
+    } else {
+      // 兜底文案（无API时）
+      bdEl.innerHTML = `
+        <div class="bd-tag">⟐ FIREWALL BREACHED · 防火墙已攻破</div>
+        <div class="bd-original">${rawSent}</div>
+        <div class="bd-trunk">（主干提取中...需要API密钥）</div>
+        <div class="bd-roast">${typeof result === 'string' ? result : '这句话就是在疯狂装杯，剔掉所有从句，其实就三个字——讲废话。'}</div>
+      `;
+    }
+  }
+
+  function showSlashEffect(rect) {
+    const fx = document.createElement('div');
+    fx.className = 'slash-fx';
+    fx.style.left = rect.left + 'px';
+    fx.style.top = (rect.top + rect.height/2) + 'px';
+    fx.style.width = rect.width + 'px';
+    fx.style.height = '40px';
+    // 砍击线
+    const line = document.createElement('div');
+    line.className = 'slash-line';
+    fx.appendChild(line);
+    // 火花
+    for (let i = 0; i < 8; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'slash-sparks';
+      spark.style.left = (Math.random() * 100) + '%';
+      spark.style.top = '50%';
+      spark.style.background = Math.random() > .5 ? 'var(--cyan)' : 'var(--magenta)';
+      spark.style.setProperty('--sx', (Math.random()*80-40)+'px');
+      spark.style.setProperty('--sy', (Math.random()*60-30)+'px');
+      spark.style.animationDelay = (Math.random()*0.2)+'s';
+      fx.appendChild(spark);
+    }
+    document.body.appendChild(fx);
+    setTimeout(() => fx.remove(), 800);
+  }
+
+  function renderQuestion(q, qid) {
+    return `<div class="question-card" data-qid="${qid}">
+      <div class="q-tag">⚠ SECURITY KEY REQUIRED · 提取秘钥</div>
+      <div class="q-stem">${q.stem}</div>
+      <div class="q-options">
+        ${q.options.map((opt, oi) => `<div class="q-opt" data-qid="${qid}" data-idx="${oi}" onclick="NeuralDive.answer('${qid}',${oi})">
+          <span class="letter">${'ABCD'[oi]}</span><span>${opt.replace(/^[A-D]\.\s*/, '')}</span>
+        </div>`).join('')}
+      </div>
+      <div id="fb_${qid}"></div>
+    </div>`;
+  }
+
+  // ═══ 答题 ═══
+  async function answer(qid, idx) {
+    const parts = qid.split('_');
+    const pi = parseInt(parts[1]), qi = parseInt(parts[2]);
+    const q = state.article.questions.filter(q => q.paragraph_index === pi)[qi];
+    if (!q) return;
+
+    const correctIdx = 'ABCD'.indexOf(q.answer.charAt(0));
+    const isCorrect = idx === correctIdx;
+
+    // 禁用所有选项
+    document.querySelectorAll(`[data-qid="${qid}"]`).forEach(el => {
+      el.classList.add('disabled');
+      if (parseInt(el.dataset.idx) === correctIdx) el.classList.add('correct');
+      if (parseInt(el.dataset.idx) === idx && !isCorrect) el.classList.add('wrong');
+    });
+
+    state.total++;
+    const fbEl = $('fb_' + qid);
+
+    if (isCorrect) {
+      state.correct++;
+      state.streak++;
+      playSound('correct');
+
+      // 连击3 → 暴走
+      if (state.streak >= 3 && !state.berserker) {
+        state.berserker = true;
+        document.querySelector('.app').classList.add('berserker');
+      }
+
+      const praise = await aiComment('praise', { stem: q.stem, correct: q.options[correctIdx] });
+      fbEl.innerHTML = `<div class="ai-feedback praise">
+        <div class="fb-header">◈ CIPHER · ACCESS GRANTED</div>
+        <div class="fb-text">${praise}</div>
+      </div>`;
+    } else {
+      state.streak = 0;
+      state.berserker = false;
+      document.querySelector('.app').classList.remove('berserker');
+      playSound('wrong');
+
+      const roast = await aiComment('roast', {
+        stem: q.stem, chose: q.options[idx], correct: q.options[correctIdx],
+        trap_type: q.trap_type || '未知', trap_explain: q.trap_explain || ''
+      });
+      fbEl.innerHTML = `<div class="ai-feedback roast">
+        <div class="fb-header">◈ CIPHER · BREACH FAILED</div>
+        <div class="fb-text">${roast}</div>
+      </div>`;
+    }
+
+    updateStats();
+
+    // 显示"下一层"按钮
+    await sleep(800);
+    const btn = $('btnNextPara');
+    if (btn) btn.style.display = 'block';
+
+    // 检查是否所有题都答完了
+    const remaining = state.article.questions.filter(q2 => q2.paragraph_index === state.currentPara);
+    // 自动推进
+    if (state.currentPara < state.article.paragraphs.length - 1) {
+      // wait for user click
+    } else {
+      await sleep(1000);
+      const endBtn = document.querySelector('.btn-enter-dive[onclick*="showResult"]');
+      if (!endBtn) {
+        const area = document.querySelector('.dive-area');
+        if (area) area.insertAdjacentHTML('beforeend',
+          `<div style="text-align:center;margin-top:24px"><button class="btn-enter-dive" onclick="NeuralDive.showResult()">⟐ 深潜完成 · 查看报告 ⟐</button></div>`);
+      }
+    }
+  }
+
+  function nextPara() {
+    state.currentPara++;
+    if (state.currentPara >= state.article.paragraphs.length) {
+      showResult();
+    } else {
+      renderDive();
+    }
+  }
+
+  // ═══ 工具 ═══
+  async function useTool(type, paraIdx) {
+    if (state.energy <= 0) { alert('⚡ 能量耗尽！继续阅读不消耗能量。'); return; }
+    state.energy--;
+    updateStats();
+
+    const para = state.article.paragraphs[paraIdx];
+    const resultEl = $('toolResult' + paraIdx);
+    if (!resultEl) return;
+
+    resultEl.innerHTML = '<div style="color:var(--cyan);font-size:11px;font-family:monospace">⟐ Cipher正在分析...</div>';
+
+    if (type === 'translate') {
+      const result = await aiComment('translate', { para });
+      resultEl.innerHTML = `<div class="ai-feedback"><div class="fb-header">◈ 降维打击</div><div class="fb-text">${result}</div></div>`;
+    } else if (type === 'highlight') {
+      // 高亮核心论点句（取第一句和最后一句）
+      const sentences = para.match(/[^.!?]+[.!?]+/g) || [para];
+      const core = sentences[0] || para;
+      resultEl.innerHTML = `<div class="ai-feedback"><div class="fb-header">◈ 透视眼 · 核心论点</div><div class="fb-text" style="color:var(--cyan);font-style:italic">"${core.trim()}"</div></div>`;
+    }
+  }
+
+  // ═══ 单词查询 ═══
+  async function lookupWord(word, event) {
+    event.stopPropagation();
+    const popup = $('wordPopup');
+    const rect = event.target.getBoundingClientRect();
+    popup.style.left = Math.min(rect.left, window.innerWidth - 300) + 'px';
+    popup.style.top = (rect.bottom + 8) + 'px';
+    popup.style.display = 'block';
+
+    $('wpWord').textContent = word;
+    $('wpPhonetic').textContent = '查询中...';
+    $('wpMeaning').textContent = '';
+
+    // 简单的本地翻译（通过AI）
+    const keys = _keys();
+    if (keys.bs || keys.gd) {
+      try {
+        const prompt = `翻译这个英文单词(只给音标+中文释义+一个例句,控制30字内): ${word}`;
+        let meaning = '';
+        if (keys.gd) {
+          const r = await fetch(GEMINI_URL+'?key='+keys.gd, {method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:100}})});
+          const d = await r.json(); meaning = (d.candidates||[{}])[0]?.content?.parts?.[0]?.text || '';
+        } else {
+          const r = await fetch(BAOSI_URL, {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+keys.bs},
+            body:JSON.stringify({model:'gemini-2.5-flash',messages:[{role:'user',content:prompt}],max_tokens:100})});
+          const d = await r.json(); meaning = (d.choices||[{}])[0]?.message?.content || '';
+        }
+        $('wpPhonetic').textContent = '';
+        $('wpMeaning').textContent = meaning;
+      } catch(e) {
+        $('wpPhonetic').textContent = '';
+        $('wpMeaning').textContent = '(查询失败)';
+      }
+    } else {
+      $('wpPhonetic').textContent = '';
+      $('wpMeaning').textContent = '(需要API密钥)';
+    }
+
+    if (!state.wordsLearned.includes(word.toLowerCase())) {
+      state.wordsLearned.push(word.toLowerCase());
+    }
+  }
+
+  // ═══ 结果面板 ═══
+  function showResult() {
+    const pct = state.total > 0 ? Math.round(state.correct / state.total * 100) : 0;
+    const icon = pct >= 80 ? '🏆' : pct >= 60 ? '⚡' : '💀';
+    const title = pct >= 80 ? 'ELITE HACKER' : pct >= 60 ? 'NEURAL LINKED' : 'BREACH FAILED';
+
+    $('sceneResult').innerHTML = `
+      <div class="result-panel">
+        <div class="result-icon">${icon}</div>
+        <div class="result-title">${title}</div>
+        <div class="result-score">${pct}%</div>
+        <div class="result-detail">
+          正确 ${state.correct} / ${state.total} 题<br>
+          最高连击 ${state.streak >= 3 ? '🔥 暴走触发' : state.streak + ' 连击'}<br>
+          来源：${state.article.source || 'Classified'}
+        </div>
+        ${state.wordsLearned.length > 0 ? `
+        <div class="result-words">
+          <h4>📖 本次捕获词汇 (${state.wordsLearned.length})</h4>
+          <div class="rw-list">${state.wordsLearned.map(w => `<span class="rw-item">${w}</span>`).join('')}</div>
+        </div>` : ''}
+        <button class="btn-again" onclick="NeuralDive.startDive()">⟐ 再次深潜 ⟐</button>
+        <button class="btn-again" onclick="location.href='../index.html'" style="border-color:var(--purple);color:var(--purple);margin-top:8px">⬅ 返回门户</button>
+      </div>
+    `;
+    show('sceneResult');
+  }
+
+  // ═══ 音效 ═══
+  function playSound(type) {
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      if (type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.1; osc.type = 'sine'; }
+      else if (type === 'slash') {
+        osc.frequency.value = 1200; gain.gain.value = 0.12; osc.type = 'sawtooth';
+        osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.15);
+      }
+      else { osc.frequency.value = 220; gain.gain.value = 0.15; osc.type = 'sawtooth'; }
+      osc.start(); gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3); osc.stop(ac.currentTime + 0.3);
+    } catch(e) {}
+  }
+
+  // ═══ 🎵 Synthwave 氛围BGM ═══
+  let bgmCtx = null, bgmGain = null, bgmPlaying = false;
+
+  function startBGM() {
+    if (bgmPlaying) return;
+    try {
+      bgmCtx = new (window.AudioContext || window.webkitAudioContext)();
+      bgmGain = bgmCtx.createGain();
+      bgmGain.gain.value = 0.04; // 极低音量，氛围感
+      bgmGain.connect(bgmCtx.destination);
+
+      // Pad层：温暖的合成器和弦 (Cm: C3+Eb3+G3)
+      const padNotes = [130.81, 155.56, 196.00]; // C3 Eb3 G3
+      padNotes.forEach(freq => {
+        const osc = bgmCtx.createOscillator();
+        const filter = bgmCtx.createBiquadFilter();
+        const g = bgmCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq;
+        // 轻微de-tune增加厚度
+        osc.detune.value = (Math.random() - 0.5) * 12;
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        filter.Q.value = 2;
+        // 缓慢呼吸LFO
+        const lfo = bgmCtx.createOscillator();
+        const lfoGain = bgmCtx.createGain();
+        lfo.frequency.value = 0.15; // 极慢呼吸
+        lfoGain.gain.value = 200;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+
+        osc.connect(filter);
+        filter.connect(g);
+        g.gain.value = 0.3;
+        g.connect(bgmGain);
+        osc.start();
+      });
+
+      // Bass层：脉冲低音
+      const bassOsc = bgmCtx.createOscillator();
+      const bassFilter = bgmCtx.createBiquadFilter();
+      const bassGain = bgmCtx.createGain();
+      bassOsc.type = 'square';
+      bassOsc.frequency.value = 65.41; // C2
+      bassFilter.type = 'lowpass';
+      bassFilter.frequency.value = 200;
+      bassOsc.connect(bassFilter);
+      bassFilter.connect(bassGain);
+      bassGain.gain.value = 0.4;
+      // 脉冲节奏
+      const bassLFO = bgmCtx.createOscillator();
+      const bassLFOGain = bgmCtx.createGain();
+      bassLFO.frequency.value = 0.5; // 半秒脉冲
+      bassLFOGain.gain.value = 0.3;
+      bassLFO.connect(bassLFOGain);
+      bassLFOGain.connect(bassGain.gain);
+      bassLFO.start();
+      bassGain.connect(bgmGain);
+      bassOsc.start();
+
+      // Hi-hat节奏层
+      function scheduleHat() {
+        if (!bgmPlaying) return;
+        const bufSize = bgmCtx.sampleRate * 0.02;
+        const buf = bgmCtx.createBuffer(1, bufSize, bgmCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.3));
+        const src = bgmCtx.createBufferSource();
+        const hg = bgmCtx.createGain();
+        src.buffer = buf;
+        hg.gain.value = 0.08;
+        const hf = bgmCtx.createBiquadFilter();
+        hf.type = 'highpass';
+        hf.frequency.value = 8000;
+        src.connect(hf);
+        hf.connect(hg);
+        hg.connect(bgmGain);
+        src.start();
+        setTimeout(scheduleHat, 500); // 120BPM
+      }
+      scheduleHat();
+
+      bgmPlaying = true;
+    } catch(e) { console.warn('[BGM]', e); }
+  }
+
+  function toggleBGM() {
+    if (bgmPlaying && bgmCtx) {
+      bgmCtx.close();
+      bgmCtx = null;
+      bgmPlaying = false;
+    } else {
+      startBGM();
+    }
+    updateBGMBtn();
+  }
+
+  function updateBGMBtn() {
+    const btn = $('btnBGM');
+    if (btn) btn.textContent = bgmPlaying ? '🔊' : '🔇';
+  }
+
+  // ═══ 🔨 写作炼化炉 · Fragment Forge ═══
+
+  // 六大荣耀碎片定义
+  const FRAGMENTS = [
+    { id: 'vocab',     icon: '📖', name: '高频词汇碎片',     desc: '掌握核心高频词与高级替换词', focus: '请重点使用高级词汇替换简单词（如用 facilitate 代替 help）' },
+    { id: 'syntax',    icon: '🧬', name: '复杂句法碎片',     desc: '驾驭定语从句、非谓语、倒装等', focus: '请至少使用2个复杂句式（如定语从句、倒装句、非谓语动词）' },
+    { id: 'structure', icon: '🏗️', name: '万能结构碎片',     desc: '开头-论证-结尾的黄金框架', focus: '请严格使用三段式结构：引入→论证(2-3论点)→总结' },
+    { id: 'argument',  icon: '⚔️', name: '论点论据碎片',     desc: '有力的论点与数据/事例支撑', focus: '请提出至少2个论点，每个论点配一个具体例子或数据' },
+    { id: 'transition',icon: '🔗', name: '过渡衔接碎片',     desc: '段间/句间的逻辑连接词', focus: '请大量使用过渡词（however/furthermore/consequently/in addition/on the contrary）' },
+    { id: 'polish',    icon: '✨', name: '润色巅峰碎片',     desc: '修辞、排比、隐喻的点睛之笔', focus: '请使用至少1个修辞手法（排比/隐喻/反问），让文章有文采' },
+  ];
+
+  // 加载/保存碎片进度
+  function loadFragments() {
+    try {
+      const raw = localStorage.getItem('ND_WritingFragments');
+      return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+  }
+  function saveFragments(frags) {
+    localStorage.setItem('ND_WritingFragments', JSON.stringify(frags));
+  }
+
+  async function startWrite() {
+    document.querySelectorAll('.mode-card').forEach(c => c.style.pointerEvents = 'none');
+    const bar = $('loadingBar');
+    const fill = $('loadingFill');
+    const txt = $('loadingText');
+    bar.style.display = 'block';
+    txt.textContent = '🔨 炼化炉启动中...';
+    fill.style.width = '50%';
+
+    let prompt = null;
+    try {
+      const raw = localStorage.getItem('Global_Vault_201_writing');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data) && data.length > 0) {
+          prompt = data[Math.floor(Math.random() * data.length)];
+        }
+      }
+    } catch(e) {}
+    if (!prompt) prompt = getRandomWritingPrompt();
+
+    // 随机选择目标碎片
+    const frags = loadFragments();
+    const locked = FRAGMENTS.filter(f => !frags[f.id]);
+    const targetFrag = locked.length > 0 ? locked[Math.floor(Math.random() * locked.length)] : FRAGMENTS[Math.floor(Math.random() * FRAGMENTS.length)];
+
+    fill.style.width = '100%';
+    txt.textContent = '✅ 炼化炉就绪';
+    await sleep(400);
+
+    state.writePrompt = prompt;
+    state.targetFrag = targetFrag;
+    renderWriteScene(prompt, targetFrag, frags);
+    show('sceneWrite');
+  }
+
+  function getRandomWritingPrompt() {
+    const prompts = [
+      { type: '小作文(应用文)', desc: 'Suppose you are organizing a volunteer activity for your university. Write a notice to recruit volunteers. Include the activity details, requirements, and how to sign up.', points: 10 },
+      { type: '大作文(图画作文)', desc: 'The picture shows a young man sitting in front of a computer, surrounded by piles of books, with the caption "Standing on the shoulders of giants, but never leaving the chair." Write an essay analyzing this phenomenon. Include: 1) Description of the picture 2) Your interpretation 3) Your comments.', points: 20 },
+      { type: '小作文(书信)', desc: 'Write a letter to the editor of a newspaper, expressing your concern about the increasing screen time among university students and suggesting possible solutions.', points: 10 },
+      { type: '大作文(图表作文)', desc: 'The chart shows the percentage of graduates choosing different career paths from 2020 to 2025. Write an essay describing the trends, analyzing the reasons, and giving your predictions.', points: 20 },
+    ];
+    return prompts[Math.floor(Math.random() * prompts.length)];
+  }
+
+  function renderWriteScene(prompt, targetFrag, frags) {
+    const unlocked = FRAGMENTS.filter(f => frags[f.id]).length;
+    const pct = Math.round(unlocked / FRAGMENTS.length * 100);
+
+    let boardHtml = '<div class="puzzle-board" style="margin-top:20px">';
+    FRAGMENTS.forEach(f => {
+      const isUnlocked = !!frags[f.id];
+      const isTarget = f.id === targetFrag.id && !isUnlocked;
+      boardHtml += `<div class="frag-slot ${isUnlocked ? 'unlocked' : 'locked'} ${isTarget ? 'target' : ''}" id="frag_${f.id}">
+        <div class="frag-icon">${f.icon}</div>
+        <div class="frag-name">${f.name}</div>
+      </div>`;
+    });
+    boardHtml += '</div>';
+
+    $('sceneWrite').innerHTML = `
+      <div class="write-area">
+        <div class="brief-header">◈ FRAGMENT FORGE · 写作炼化炉</div>
+
+        <!-- 合成进度 -->
+        <div class="forge-progress">
+          <div class="forge-bar"><div class="forge-fill" style="width:${pct}%"></div></div>
+          <div class="forge-label">${unlocked}/${FRAGMENTS.length} 碎片</div>
+        </div>
+
+        <!-- 拼图板 -->
+        ${boardHtml}
+
+        <!-- 本次任务 -->
+        <div class="write-prompt">
+          <div class="wp-tag">🔨 FORGING MISSION · 炼化任务</div>
+          <div class="wp-type">📝 ${prompt.type} (${prompt.points || 20}分)</div>
+          <div class="wp-desc">${prompt.desc || prompt.stem || prompt.topic || '请根据要求写一篇英文短文'}</div>
+          <div class="wp-target">
+            🎯 <strong>本次目标碎片:</strong> ${targetFrag.icon} ${targetFrag.name} — ${targetFrag.focus}
+          </div>
+        </div>
+
+        <!-- 写作区 -->
+        <textarea class="write-textarea" id="writeInput" placeholder="Start writing your essay here...\n(${targetFrag.focus})\n用英文写，Cipher会锻造你的文章" oninput="NeuralDive.updateWordCount()"></textarea>
+        <div class="write-counter">词数: <span id="writeWc">0</span> / 建议: ${prompt.points >= 15 ? '160-200' : '100-120'} 词</div>
+        <button class="write-submit" onclick="NeuralDive.submitEssay()">🔨 投入炼化炉 · CIPHER锻造 🔨</button>
+        <div id="writeResult"></div>
+        <button class="btn-again" onclick="NeuralDive.backToBoot()" style="margin-top:16px;width:100%">⬅ 返回模式选择</button>
+      </div>
+    `;
+  }
+
+  function updateWordCount() {
+    const text = $('writeInput')?.value || '';
+    const wc = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const el = $('writeWc');
+    if (el) el.textContent = wc;
+  }
+
+  async function submitEssay() {
+    const text = ($('writeInput')?.value || '').trim();
+    if (text.split(/\s+/).length < 15) { alert('至少写15个词再投入炼化炉！'); return; }
+
+    const resultEl = $('writeResult');
+    resultEl.innerHTML = '<div style="color:var(--purple);font-size:12px;font-family:monospace;margin-top:12px">🔨 Cipher正在锻造你的文章...</div>';
+
+    const targetFrag = state.targetFrag;
+
+    const result = await aiComment('gradeWriting', {
+      prompt: (state.writePrompt?.desc || '') + '\n\n[特别关注维度] ' + targetFrag.focus,
+      essay: text
+    });
+
+    const parsed = parseJSON(result);
+    if (parsed && parsed.language !== undefined) {
+      const total = (parsed.language||0) + (parsed.structure||0) + (parsed.content||0) + (parsed.vocabulary||0);
+      const fragEarned = total >= 12; // ≥12/20 获得碎片
+
+      // 渲染打分
+      let html = `
+        <div class="write-score">
+          <div class="brief-header">◈ FORGE REPORT · 锻造报告</div>
+          <div class="score-grid">
+            <div class="score-item"><div class="si-val">${parsed.language||0}</div><div class="si-label">语言 /5</div></div>
+            <div class="score-item"><div class="si-val">${parsed.structure||0}</div><div class="si-label">结构 /5</div></div>
+            <div class="score-item"><div class="si-val">${parsed.content||0}</div><div class="si-label">内容 /5</div></div>
+            <div class="score-item"><div class="si-val">${parsed.vocabulary||0}</div><div class="si-label">词汇 /5</div></div>
+          </div>
+          <div style="text-align:center;margin:8px 0"><span style="font-family:Orbitron;font-size:28px;color:var(--gold)">${total}</span><span style="color:#556"> / 20</span></div>
+          <div class="ai-feedback roast"><div class="fb-header">◈ CIPHER 毒评</div><div class="fb-text">${parsed.roast||''}</div></div>
+          ${parsed.upgrade ? `<div class="ai-feedback praise" style="margin-top:8px"><div class="fb-header">◈ 升级建议</div><div class="fb-text">${parsed.upgrade}</div></div>` : ''}
+        </div>
+      `;
+
+      // 碎片奖励
+      if (fragEarned) {
+        const frags = loadFragments();
+        if (!frags[targetFrag.id]) {
+          frags[targetFrag.id] = { earned: Date.now(), score: total };
+          saveFragments(frags);
+          // 更新拼图板
+          const slot = $('frag_' + targetFrag.id);
+          if (slot) {
+            slot.className = 'frag-slot unlocked just-got';
+            slot.classList.remove('target');
+          }
+        }
+
+        html += `
+          <div class="frag-reward">
+            <div class="fr-icon">${targetFrag.icon}</div>
+            <div class="fr-title">🎉 FRAGMENT ACQUIRED · 碎片获得</div>
+            <div class="fr-name">${targetFrag.name}</div>
+            <div class="fr-desc">${targetFrag.desc}</div>
+          </div>
+        `;
+        playSound('correct');
+
+        // 检查是否合成完成
+        const allFrags = loadFragments();
+        const completed = FRAGMENTS.every(f => allFrags[f.id]);
+        if (completed) {
+          html += `
+            <div class="forge-complete">
+              <div class="fc-icon">🛡️</div>
+              <div style="font-family:Orbitron;font-size:18px;color:var(--gold);letter-spacing:4px;margin:12px 0">SHIELD ASSEMBLED</div>
+              <div style="font-size:14px;color:var(--purple)">六大荣耀碎片已全部收集！满分防火墙已修复完成！</div>
+              <button class="btn-again" onclick="NeuralDive.resetFragments()" style="margin-top:12px;border-color:var(--magenta);color:var(--magenta)">🔄 重置碎片 · 再次挑战</button>
+            </div>
+          `;
+        }
+
+        // 更新进度条
+        const newPct = Math.round(Object.keys(allFrags).length / FRAGMENTS.length * 100);
+        const forgeBar = document.querySelector('.forge-fill');
+        if (forgeBar) forgeBar.style.width = newPct + '%';
+        const forgeLabel = document.querySelector('.forge-label');
+        if (forgeLabel) forgeLabel.textContent = Object.keys(allFrags).length + '/' + FRAGMENTS.length + ' 碎片';
+
+      } else {
+        html += `
+          <div class="ai-feedback" style="border-left-color:var(--magenta);margin-top:12px">
+            <div class="fb-header">◈ 碎片锻造失败</div>
+            <div class="fb-text">战损分 ${total}/20 < 12分，碎片 <strong>${targetFrag.icon} ${targetFrag.name}</strong> 未获得。<br>
+              💡 提示：${targetFrag.focus}</div>
+          </div>
+        `;
+        playSound('wrong');
+      }
+
+      resultEl.innerHTML = html;
+    } else {
+      resultEl.innerHTML = `<div class="ai-feedback"><div class="fb-header">◈ CIPHER</div><div class="fb-text">${typeof result === 'string' ? result : '需要API密钥才能锻造。先输入超级用户密码激活Gemini！'}</div></div>`;
+    }
+  }
+
+  function resetFragments() {
+    localStorage.removeItem('ND_WritingFragments');
+    startWrite();
+  }
+
+  // ═══ 翻译实战 ═══
+  async function startTranslate() {
+    const bar = $('loadingBar');
+    const fill = $('loadingFill');
+    const txt = $('loadingText');
+    bar.style.display = 'block';
+    txt.textContent = '🔄 加载翻译题...';
+    fill.style.width = '60%';
+
+    let sentences = [];
+    // 从金库读
+    try {
+      const raw = localStorage.getItem('Global_Vault_201_translation');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data) && data.length >= 3) sentences = data.slice(0, 5);
+      }
+    } catch(e) {}
+
+    if (sentences.length < 3) sentences = getFallbackTranslations();
+
+    fill.style.width = '100%';
+    txt.textContent = '✅ 翻译题就绪';
+    await sleep(400);
+
+    state.translations = sentences;
+    renderTranslateScene(sentences);
+    show('sceneTranslate');
+  }
+
+  function getFallbackTranslations() {
+    return [
+      { en: 'The digital revolution, which has fundamentally altered the way in which information is disseminated and consumed, has also raised profound questions about privacy that previous generations could scarcely have imagined.', ref: '数字革命从根本上改变了信息传播和消费的方式，也提出了前几代人难以想象的关于隐私的深刻问题。' },
+      { en: 'Although renewable energy sources have gained considerable traction in recent years, the transition away from fossil fuels remains fraught with economic and political challenges that cannot be easily overcome.', ref: '尽管可再生能源近年来获得了相当大的发展势头，但摆脱化石燃料的转型仍然充满了难以轻易克服的经济和政治挑战。' },
+      { en: 'The extent to which artificial intelligence will reshape the labor market depends not only on technological advancement but also on the willingness of governments and corporations to invest in workforce retraining programs.', ref: '人工智能将在多大程度上重塑劳动力市场，不仅取决于技术进步，还取决于政府和企业投资劳动力再培训项目的意愿。' },
+      { en: 'Critics of globalization argue that while it has undeniably contributed to economic growth, the benefits have been disproportionately concentrated among wealthy nations, leaving developing countries increasingly marginalized.', ref: '全球化的批评者认为，虽然它不可否认地促进了经济增长，但利益不成比例地集中在富裕国家，使发展中国家日益被边缘化。' },
+      { en: 'The paradox of modern education lies in the fact that while access to information has never been greater, the ability of students to think critically and synthesize complex ideas appears to be declining.', ref: '现代教育的悖论在于，虽然获取信息的途径前所未有地广泛，但学生批判性思考和综合复杂观点的能力似乎在下降。' },
+    ];
+  }
+
+  function renderTranslateScene(sentences) {
+    let html = `<div class="trans-area">
+      <div class="brief-header">◈ TRANSLATION COMBAT · 翻译实战</div>
+      <div style="color:#778;font-size:12px;margin-bottom:16px">将下方5句考研英语翻译题译为中文，提交后Cipher会逐句对比+毒评</div>`;
+    sentences.forEach((s, i) => {
+      html += `<div class="trans-sentence" id="ts${i}">
+        <div style="font-family:Orbitron;font-size:9px;color:var(--purple);letter-spacing:2px;margin-bottom:6px">SENTENCE ${i+1} / 5</div>
+        <div class="ts-en">${s.en || s.stem || ''}</div>
+        <textarea class="ts-input" id="transInput${i}" placeholder="输入你的中文翻译..."></textarea>
+        <div class="trans-ref" id="transRef${i}"></div>
+      </div>`;
+    });
+    html += `<button class="write-submit" style="border-color:var(--green);color:var(--green)" onclick="NeuralDive.submitTranslations()">⟐ 提交翻译 · CIPHER点评 ⟐</button>
+      <div id="transResult" style="margin-top:16px"></div>
+      <button class="btn-again" onclick="NeuralDive.backToBoot()" style="margin-top:16px;width:100%">⬅ 返回模式选择</button>
+    </div>`;
+    $('sceneTranslate').innerHTML = html;
+  }
+
+  async function submitTranslations() {
+    const sentences = state.translations;
+    let totalScore = 0;
+    const resultEl = $('transResult');
+    resultEl.innerHTML = '<div style="color:var(--green);font-size:12px;font-family:monospace">⟐ Cipher正在逐句对比你的翻译...</div>';
+
+    for (let i = 0; i < sentences.length; i++) {
+      const userTrans = ($('transInput'+i)?.value || '').trim();
+      const refEl = $('transRef'+i);
+      if (!userTrans) {
+        if (refEl) { refEl.style.display = 'block'; refEl.innerHTML = `<strong>参考译文：</strong>${sentences[i].ref || '(无)'}<br><em style="color:var(--magenta)">你跳过了这题！</em>`; }
+        continue;
+      }
+
+      const result = await aiComment('gradeTranslation', {
+        original: sentences[i].en || sentences[i].stem || '',
+        reference: sentences[i].ref || sentences[i].referenceAnswer || '',
+        userTranslation: userTrans
+      });
+
+      const parsed = parseJSON(result);
+      if (refEl) {
+        refEl.style.display = 'block';
+        if (parsed && parsed.score !== undefined) {
+          totalScore += parsed.score;
+          const color = parsed.score >= 7 ? 'var(--green)' : parsed.score >= 4 ? 'var(--gold)' : 'var(--magenta)';
+          refEl.innerHTML = `<span style="font-family:Orbitron;color:${color};font-size:16px;font-weight:900">${parsed.score}/10</span><br>
+            <strong>参考：</strong>${sentences[i].ref || ''}<br>
+            <em style="color:var(--magenta)">${parsed.roast || ''}</em><br>
+            💡 ${parsed.tips || ''}`;
+        } else {
+          refEl.innerHTML = `<strong>参考：</strong>${sentences[i].ref || ''}<br>${typeof result === 'string' ? result : '(需要API密钥)'}`;
+        }
+      }
+      playSound(parsed?.score >= 7 ? 'correct' : 'wrong');
+      await sleep(300);
+    }
+
+    resultEl.innerHTML = `<div class="write-score">
+      <div style="text-align:center"><span style="font-family:Orbitron;font-size:36px;color:var(--gold)">${totalScore}</span><span style="color:#556"> / 50</span></div>
+      <div style="text-align:center;color:#778;font-size:12px;margin-top:4px">翻译总分</div>
+    </div>`;
+  }
+
+  function backToBoot() {
+    show('sceneBoot');
+    $('loadingBar').style.display = 'none';
+    $('loadingText').textContent = '';
+  }
+
+  // ═══ 兜底文章 ═══
+  function getFallbackArticle() {
+    return {
+      source: "The Economist, Mar 2026 (模拟)",
+      topic: "AI & Employment",
+      passage: `The rapid advancement of artificial intelligence has sparked a heated debate about the future of employment. While some economists argue that AI will create more jobs than it destroys, others warn of a looming crisis in which millions of workers could find themselves redundant.\n\nA recent study by Oxford University estimates that approximately 47 percent of current jobs in the United States are at high risk of automation within the next two decades. The researchers identified routine cognitive tasks, such as data entry and basic analysis, as the most vulnerable. However, they also noted that jobs requiring creativity, social intelligence, and complex problem-solving are likely to remain resilient.\n\nCritics of this pessimistic outlook point to historical precedents. The Industrial Revolution, they argue, similarly displaced vast numbers of workers, yet ultimately led to unprecedented economic growth and the creation of entirely new industries. Moreover, the emergence of AI-related fields such as machine learning engineering, data science, and AI ethics has already generated substantial demand for skilled professionals.\n\nNevertheless, the transition may not be smooth for everyone. Workers in developing countries, who often rely on manufacturing and routine service jobs, could be disproportionately affected. Without adequate investment in education and retraining programs, the gap between those who benefit from AI and those who are left behind could widen dramatically.\n\nThe challenge, therefore, lies not in preventing technological progress but in ensuring that its benefits are distributed equitably. Policymakers must act swiftly to design social safety nets and educational initiatives that prepare workers for an AI-driven economy.`,
+      questions: [
+        { paragraph_index: 0, stem: "What is the main purpose of the first paragraph?", options: ["A. To present a balanced view of AI's impact on jobs", "B. To argue that AI will definitely destroy all jobs", "C. To suggest that economists unanimously support AI development", "D. To prove that AI has already caused massive unemployment"], answer: "A", trap_type: "过度推断", trap_explain: "B用了'definitely'和'all'，原文只说'some warn'，没有说一定会" },
+        { paragraph_index: 1, stem: "According to the Oxford study, which type of jobs is MOST vulnerable to automation?", options: ["A. Jobs requiring creativity and innovation", "B. Routine cognitive tasks like data entry", "C. All jobs in the United States equally", "D. Only manufacturing jobs in factories"], answer: "B", trap_type: "偷换概念", trap_explain: "C的'all jobs equally'和D的'only manufacturing'都曲解了原文的specific finding" },
+        { paragraph_index: 2, stem: "The critics mentioned in paragraph 3 use the Industrial Revolution to suggest that:", options: ["A. Technology always causes permanent job losses", "B. Historical patterns guarantee identical outcomes", "C. Technological disruption can eventually lead to economic growth", "D. The Industrial Revolution was worse than AI will be"], answer: "C", trap_type: "绝对化", trap_explain: "B用了'guarantee identical outcomes'，critics只是'point to precedents'作为参考，不是guarantee" },
+        { paragraph_index: 3, stem: "The word 'disproportionately' in paragraph 4 most likely means:", options: ["A. equally across all regions", "B. to an unfairly large degree", "C. in a completely predictable manner", "D. temporarily and reversibly"], answer: "B", trap_type: "词义替换", trap_explain: "disproportionately=不成比例地=受到更大/不公平程度的影响" },
+        { paragraph_index: 4, stem: "What does the author suggest in the final paragraph?", options: ["A. Technological progress should be stopped immediately", "B. Only wealthy countries should invest in AI", "C. Governments should proactively create policies for fair AI transition", "D. Education is unnecessary in an AI-driven economy"], answer: "C", trap_type: "无中生有", trap_explain: "A的'stopped immediately'完全违背原文'not in preventing progress'；D直接和原文的'educational initiatives'矛盾" }
+      ]
+    };
+  }
+
+  // ═══ 工具函数 ═══
+  function parseJSON(raw) {
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch(e) {}
+    let c = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
+    try { return JSON.parse(c); } catch(e) {}
+    const s = c.indexOf('{'), e2 = c.lastIndexOf('}');
+    if (s>=0 && e2>s) try { return JSON.parse(c.substring(s,e2+1)); } catch(ex) {}
+    return null;
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ═══ 初始化 ═══
+  function init() {
+    initParticles();
+    // 点击空白关闭弹窗
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.word-popup') && !e.target.classList.contains('word-unknown')) {
+        $('wordPopup').style.display = 'none';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  return { startDive, enterDive, nextPara, answer, useTool, lookupWord, showResult,
+           slashSentence, startWrite, startTranslate, submitEssay, submitTranslations,
+           updateWordCount, backToBoot, resetFragments, toggleBGM };
+})();
+</script>
+</body>
+</html>

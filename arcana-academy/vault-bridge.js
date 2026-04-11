@@ -67,54 +67,114 @@
     }
 
     /**
-     * 从金库 (Global_Vault) 加载题目
+     * 从金库 (Global_Vault) 加载题目 — 分桶+混合池
      */
     function loadFromVault() {
-        const vaultKeys = {
-            101: 'Global_Vault_101',
-            201: 'Global_Vault_201',
-            301: 'Global_Vault_301',
-            408: 'Global_Vault_408'
+        const vaultConfig = {
+            101: { types: ['single_choice','multi_choice'], legacy: 'Global_Vault_101' },
+            201: { types: ['single_choice','cloze','reading'], legacy: 'Global_Vault_201' },
+            301: { types: ['single_choice','fill_blank'], legacy: 'Global_Vault_301' },
+            408: { types: ['single_choice','comprehensive'], legacy: 'Global_Vault_408' }
         };
 
-        for (const [subjectCode, key] of Object.entries(vaultKeys)) {
-            try {
-                const raw = localStorage.getItem(key);
-                if (!raw) continue;
-                const data = JSON.parse(raw);
-                if (!Array.isArray(data)) continue;
+        for (const [subjectCode, config] of Object.entries(vaultConfig)) {
+            const code = parseInt(subjectCode);
+            let count = 0;
 
-                const code = parseInt(subjectCode);
-                let count = 0;
+            // 1. 分桶金库优先
+            for (const type of config.types) {
+                try {
+                    const raw = localStorage.getItem('Global_Vault_' + subjectCode + '_' + type);
+                    if (!raw) continue;
+                    const data = JSON.parse(raw);
+                    if (!Array.isArray(data)) continue;
 
-                for (const q of data) {
-                    // 尝试两种格式
-                    if (q.text && q.options && q.answer) {
-                        // 已经是选择题格式
-                        if (!q.id) q.id = `vault_${code}_${idCounter++}`;
-                        if (!q.difficulty) q.difficulty = 3;
-                        if (!q.explain) q.explain = '';
-                        if (!q.topic) q.topic = '金库题';
-                        QUESTION_BANK[code].push(q);
-                        count++;
-                    } else if (q.sentence && q.answer) {
-                        // 消消乐填空格式
-                        const converted = convertCrushQuestion(q, code);
-                        if (converted) {
+                    for (const q of data) {
+                        const converted = convertVaultQuestion(q, code);
+                        if (converted && !QUESTION_BANK[code].find(eq => eq.text === converted.text)) {
                             QUESTION_BANK[code].push(converted);
                             count++;
                         }
                     }
-                }
+                } catch(e) { /* skip */ }
+            }
 
-                if (count > 0) {
-                    console.log(`[VaultBridge] 🏦 金库 ${key}: +${count} 题`);
-                    convertedCount[code] += count;
+            // 2. 混合池兜底
+            try {
+                const raw = localStorage.getItem(config.legacy);
+                if (!raw) continue;
+                const data = JSON.parse(raw);
+                if (!Array.isArray(data)) continue;
+
+                for (const q of data) {
+                    const converted = convertVaultQuestion(q, code);
+                    if (converted && !QUESTION_BANK[code].find(eq => eq.text === converted.text)) {
+                        QUESTION_BANK[code].push(converted);
+                        count++;
+                    }
                 }
-            } catch (e) {
-                console.warn(`[VaultBridge] 金库 ${key} 加载失败:`, e);
+            } catch(e) { /* skip */ }
+
+            if (count > 0) {
+                console.log(`[VaultBridge] 🏦 金库 ${subjectCode}: +${count} 题`);
+                convertedCount[code] += count;
             }
         }
+    }
+
+    /**
+     * 统一转换金库题目为奥秘学院格式
+     * 支持新格式(stem/options/answer)和旧格式(text/options/answer)和消消乐格式(sentence/answer)
+     */
+    function convertVaultQuestion(q, subjectCode) {
+        if (!q) return null;
+
+        // 新格式: stem + options数组 + answer字母
+        if ((q.stem || q.q) && (q.options || q.o)) {
+            const stem = q.stem || q.q;
+            const opts = q.options || q.o || [];
+            if (opts.length < 2) return null;
+
+            const letters = ['A','B','C','D'];
+            const options = {};
+            opts.forEach((o, i) => {
+                if (i < 4) {
+                    // 去掉"A."前缀
+                    const clean = String(o).replace(/^[A-D]\.\s*/, '');
+                    options[letters[i]] = clean;
+                }
+            });
+
+            let ansLetter = 'A';
+            if (typeof q.a === 'number') ansLetter = letters[q.a] || 'A';
+            else if (q.answer) ansLetter = String(q.answer).charAt(0).toUpperCase();
+
+            return {
+                id: `vault_${subjectCode}_${idCounter++}`,
+                topic: q.chapter || '金库题',
+                difficulty: q.difficulty || 3,
+                text: stem,
+                options,
+                answer: ansLetter,
+                explain: q.analysis || q.hint || '详见解析'
+            };
+        }
+
+        // 旧格式: text + options对象 + answer
+        if (q.text && q.options && q.answer) {
+            if (!q.id) q.id = `vault_${subjectCode}_${idCounter++}`;
+            if (!q.difficulty) q.difficulty = 3;
+            if (!q.explain) q.explain = q.analysis || '';
+            if (!q.topic) q.topic = q.chapter || '金库题';
+            return q;
+        }
+
+        // 消消乐格式: sentence + answer + distractors
+        if (q.sentence && q.answer && q.distractors) {
+            return convertCrushQuestion(q, subjectCode);
+        }
+
+        return null;
     }
 
     /**

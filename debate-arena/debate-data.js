@@ -431,14 +431,31 @@ const CaseDB = (() => {
     '201': 8,   // 英语fallback法庭
   };
 
-  // ═══ 金库穿透读取 ═══
-  function loadVaultQuestions(subjectCode) {
+  // ═══ 金库穿透读取（分桶+混合池） ═══
+  function loadVaultQuestions(subjectCode, type) {
     try {
+      // 分桶优先
+      if (type) {
+        const typedRaw = localStorage.getItem('Global_Vault_' + subjectCode + '_' + type);
+        if (typedRaw) {
+          const arr = JSON.parse(typedRaw);
+          if (Array.isArray(arr) && arr.length > 0) {
+            console.log(`[论道殿] 分桶金库: ${subjectCode}_${type} → ${arr.length}题`);
+            return arr;
+          }
+        }
+      }
+      // 混合池兜底
       const raw = localStorage.getItem('Global_Vault_' + subjectCode);
       if (!raw) return [];
       const arr = JSON.parse(raw);
       if (!Array.isArray(arr) || arr.length === 0) return [];
-      console.log(`[论道殿] 金库穿透: ${subjectCode} → ${arr.length}道题`);
+      // 按type过滤
+      if (type) {
+        const filtered = arr.filter(q => q.type === type);
+        if (filtered.length > 0) return filtered;
+      }
+      console.log(`[论道殿] 混合金库: ${subjectCode} → ${arr.length}道题`);
       return arr;
     } catch(e) {
       console.warn('[论道殿] 金库读取失败:', subjectCode, e);
@@ -448,111 +465,136 @@ const CaseDB = (() => {
 
   function getVaultCount(subjectCode) {
     try {
+      let total = 0;
+      // 分桶
+      for (const t of ['single_choice','multi_choice','essay_material','new_type']) {
+        const raw = localStorage.getItem('Global_Vault_' + subjectCode + '_' + t);
+        if (raw) total += JSON.parse(raw).length || 0;
+      }
+      // 混合池
       const raw = localStorage.getItem('Global_Vault_' + subjectCode);
-      if (!raw) return 0;
-      return JSON.parse(raw).length || 0;
+      if (raw) total += JSON.parse(raw).length || 0;
+      return total;
     } catch { return 0; }
   }
 
-  // ═══ 金库题 → 法庭案件自动转换器 ═══
-  // 将vault的选择题自动包装成完整法庭案件（破→立→链→填）
-  function vaultToCases(vaultQuestions) {
+  // ═══ 多选题 → 法庭案件自动转换器 ═══
+  // 多选题天然适合辩论：多个正确观点=多方对峙
+  function multiChoiceToCases(multiQs) {
     const cases = [];
-    // 每4道vault题打包成1个法庭案件
-    for (let i = 0; i < vaultQuestions.length; i += 4) {
-      const batch = vaultQuestions.slice(i, i + 4).filter(Boolean);
-      if (batch.length < 2) continue;
+    multiQs.forEach((q, i) => {
+      const opts = q.options || q.o || [];
+      const answer = q.answer || '';
+      const correctIdxs = answer.split('').map(c => 'ABCD'.indexOf(c)).filter(x => x >= 0);
+      const wrongIdxs = [0,1,2,3].filter(x => !correctIdxs.includes(x));
+      const correctTexts = correctIdxs.map(x => opts[x] || '');
+      const wrongTexts = wrongIdxs.map(x => opts[x] || '');
 
-      const main = batch[0];
-      const q2 = batch[1] || main;
-      const q3 = batch[2] || main;
-      const q4 = batch[3] || main;
-
-      // 从选项中提取关键词
-      const opts = main.o || main.opts || ['选项A','选项B','选项C','选项D'];
-      const correctIdx = typeof main.a === 'number' ? main.a : 0;
-      const correctOpt = opts[correctIdx] || opts[0] || '正确答案';
-      const wrongOpts = opts.filter((_, idx) => idx !== correctIdx);
-
-      const caseObj = {
-        id: `vault_${i}`,
-        diff: main.difficulty || 2,
-        title: `《金库绝密·${main.chapter || '综合'}》`,
-        text: main.q || '金库生成案件',
-        plaintiff: {
-          label: '原告（错误观点）',
-          text: wrongOpts[0] || '错误选项A'
-        },
-        defendant: {
-          label: '被告（争议观点）',
-          text: wrongOpts[1] || '错误选项B'
-        },
+      cases.push({
+        id: `multi_${i}`,
+        diff: q.difficulty || 2,
+        title: `《多选辩论·${q.chapter || '综合'}》`,
+        text: q.stem || q.q || '多选题辩论',
+        plaintiff: { label: '原告（错误观点）', text: wrongTexts[0] || '错误选项' },
+        defendant: { label: '被告（争议观点）', text: wrongTexts[1] || correctTexts[0] || '争议选项' },
         breakPhase: {
-          fallacies: [
-            { text: wrongOpts[0] || '错误表述', type: BREAK_CARDS[Math.floor(Math.random()*4)].id,
-              hint: main.analysis || main.tip || '此选项存在逻辑错误' },
-            { text: wrongOpts[1] || '错误表述2', type: BREAK_CARDS[4+Math.floor(Math.random()*4)].id,
-              hint: '注意区分相近概念' },
-          ],
+          fallacies: wrongTexts.slice(0, 2).map((w, j) => ({
+            text: w, type: BREAK_CARDS[j % BREAK_CARDS.length].id,
+            hint: q.analysis || '此选项存在逻辑错误'
+          })),
           distractors: [BREAK_CARDS[Math.floor(Math.random()*8)].id, BREAK_CARDS[Math.floor(Math.random()*8)].id],
         },
         buildPhase: {
-          slots: [
-            { label: '核心知识点', correct: correctOpt.substring(0, 8), desc: correctOpt },
-            { label: '解题关键', correct: (q2.o?.[q2.a||0] || '关键点').substring(0, 8), desc: q2.q || '' },
-            { label: '拓展应用', correct: (q3.o?.[q3.a||0] || '应用点').substring(0, 8), desc: q3.q || '' },
-          ],
-          pool: shuffle([
-            correctOpt.substring(0, 8),
-            (q2.o?.[q2.a||0] || '关键点').substring(0, 8),
-            (q3.o?.[q3.a||0] || '应用点').substring(0, 8),
-            ...wrongOpts.slice(0, 3).map(w => w.substring(0, 8)),
-            '干扰项A', '干扰项B',
-          ]),
+          slots: correctTexts.slice(0, 3).map((c, j) => ({
+            label: ['核心要点','关键论据','补充论证'][j] || '要点',
+            correct: c.substring(0, 8), desc: c
+          })),
+          pool: shuffle([...correctTexts.map(c => c.substring(0, 8)), ...wrongTexts.map(w => w.substring(0, 8)), '干扰项A', '干扰项B']),
         },
         chainPhase: {
-          prompt: '构建解题逻辑链',
-          correct: [
-            '审题定位考点',
-            '运用核心原理',
-            '排除干扰选答案',
-          ],
-          options: ['审题定位考点','运用核心原理','排除干扰选答案','跳过分析','随机猜测','死记硬背'],
+          prompt: '构建多角度论证链',
+          correct: correctTexts.slice(0, 3).map(c => c.substring(0, 12)),
+          options: shuffle([...correctTexts.slice(0, 3).map(c => c.substring(0, 12)), ...wrongTexts.slice(0, 3).map(w => w.substring(0, 12))]),
         },
         clozePhase: {
-          passage: `本题考查___①___相关知识。关键在于理解___②___的内涵，并能正确区分___③___和___④___的区别。`,
-          blanks: [
-            main.chapter || '核心考点',
-            correctOpt.substring(0, 6),
-            (wrongOpts[0] || '错误A').substring(0, 6),
-            (wrongOpts[1] || '错误B').substring(0, 6),
-          ],
-          distractors: ['无关概念', '混淆项', '过时理论', '绝对化表述'],
+          passage: `本题涉及${q.chapter||'综合'}知识：___①___和___②___都是正确的，但___③___和___④___是常见的混淆项。`,
+          blanks: [...correctTexts.slice(0, 2).map(c => c.substring(0, 6)), ...wrongTexts.slice(0, 2).map(w => w.substring(0, 6))],
+          distractors: ['无关A','无关B','绝对化','过时论'],
         },
-      };
-      cases.push(caseObj);
-    }
+      });
+    });
     return cases;
   }
 
-  // ═══ 获取法庭案件（静态+金库合并）═══
+  // ═══ 材料分析题 → 法庭案件转换器 ═══
+  function essayMaterialToCases(essayQs) {
+    const cases = [];
+    essayQs.forEach((q, i) => {
+      const material = q.material || q.stem || '';
+      const subQs = q.subQuestions || [];
+      const refAns = q.referenceAnswer || q.analysis || '';
+
+      cases.push({
+        id: `essay_${i}`,
+        diff: q.difficulty || 3,
+        title: `《材料分析·${q.chapter || '综合'}》`,
+        text: material.substring(0, 200) + (material.length > 200 ? '...' : ''),
+        plaintiff: { label: '争议焦点A', text: subQs[0] || '材料分析问题1' },
+        defendant: { label: '争议焦点B', text: subQs[1] || '材料分析问题2' },
+        breakPhase: {
+          fallacies: [
+            { text: '曲解材料核心观点', type: 'swap', hint: '注意材料的关键表述' },
+            { text: '过度推断材料结论', type: 'overinfer', hint: '不能超出材料支持范围' },
+          ],
+          distractors: ['absolute', 'partial'],
+        },
+        buildPhase: {
+          slots: [
+            { label: '材料核心观点', correct: '核心论点', desc: refAns.substring(0, 40) },
+            { label: '理论依据', correct: q.chapter || '马原', desc: '运用所学原理分析' },
+            { label: '联系实际', correct: '实际分析', desc: '结合材料分析现实意义' },
+          ],
+          pool: shuffle(['核心论点', q.chapter || '马原', '实际分析', '无关理论', '脱离材料', '主观臆断', '偷换概念', '以偏概全']),
+        },
+        chainPhase: {
+          prompt: '构建材料分析论证链',
+          correct: ['审题提取关键信息', '运用理论原理分析', '结合材料得出结论'],
+          options: ['审题提取关键信息', '运用理论原理分析', '结合材料得出结论', '脱离材料发挥', '照搬书本知识', '简单复述材料'],
+        },
+        clozePhase: {
+          passage: material.length > 40 ? material.substring(0, 40) + '...(材料节选)' : material,
+          blanks: ['核心观点', '理论原理', '实际意义', '正确结论'],
+          distractors: ['无关概念', '过时理论', '主观判断', '错误推论'],
+        },
+      });
+    });
+    return cases;
+  }
+
+  // ═══ 获取法庭案件（静态+金库 多选/材料分析 合并）═══
   function getCases(subject) {
     let staticCases;
     if (subject === '408') staticCases = [...CS_CASES];
     else if (subject === '201') staticCases = [...ENGLISH_CASES];
     else staticCases = [...POLITICS_CASES];
 
-    // 从金库读取并转换
-    const vaultQs = loadVaultQuestions(subject);
-    const vaultCases = vaultToCases(vaultQs);
+    // 从分桶金库读取各题型
+    const singleQs = loadVaultQuestions(subject, 'single_choice');
+    const multiQs = loadVaultQuestions(subject, 'multi_choice');
+    const essayQs = loadVaultQuestions(subject, 'essay_material');
+    const newTypeQs = loadVaultQuestions(subject, 'new_type');
 
-    // 合并：金库题优先排在前面
-    const merged = [...vaultCases, ...staticCases];
+    // 转换为案件
+    const singleCases = vaultToCases(singleQs);
+    const multiCases = multiChoiceToCases(multiQs);
+    const essayCases = essayMaterialToCases(essayQs);
+
+    // 合并：材料分析→多选→金库单选→静态
+    const merged = [...essayCases, ...multiCases, ...singleCases, ...staticCases];
     const target = TARGET_CASES[subject] || 8;
 
-    console.log(`[论道殿] ${subject}科: 静态${staticCases.length}案 + 金库${vaultCases.length}案 = ${merged.length}案 (目标≥${target})`);
+    console.log(`[论道殿] ${subject}科: 静态${staticCases.length} + 单选${singleCases.length} + 多选${multiCases.length} + 材料${essayCases.length} = ${merged.length}案`);
     
-    // 如果不够目标数，循环复用（打乱顺序）
     while (merged.length < target) {
       const extra = shuffle([...staticCases]);
       merged.push(...extra.slice(0, target - merged.length));
@@ -577,6 +619,7 @@ const CaseDB = (() => {
   }
 
   return { getCases, getBreakCards, shuffle, getSubjectInfo, getVaultCount, loadVaultQuestions,
-           vaultToCases, BREAK_CARDS, POLITICS_CASES, ENGLISH_CASES, CS_CASES, SUBJECTS, TARGET_CASES };
+           vaultToCases, multiChoiceToCases, essayMaterialToCases,
+           BREAK_CARDS, POLITICS_CASES, ENGLISH_CASES, CS_CASES, SUBJECTS, TARGET_CASES };
 })();
 

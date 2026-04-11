@@ -252,6 +252,7 @@
       <input class="login-input" id="loginPass" type="password" placeholder="密码">
       <button class="login-btn" onclick="doPortalLogin()">入 道</button>
       <div class="login-err" id="loginErr"></div>
+      <div style="margin-top:12px;text-align:center"><a href="auth-gate/index.html" style="color:var(--dim);font-size:11px;text-decoration:none;letter-spacing:1px">📜 新修士？点此注册道号</a></div>
     </div>
   </div>
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 退出</button>
@@ -475,6 +476,19 @@
             </div>
           </div>
         </a>
+        <a class="card" href="./neural-dive/index.html" style="--card-accent:linear-gradient(90deg,#08f7fe,#a855f7)">
+          <div class="card-row">
+            <span class="card-emoji">🧠</span>
+            <div class="card-body">
+              <div class="card-title" style="background:linear-gradient(135deg,#08f7fe,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">深潜网络 · Neural Dive</div>
+              <div class="card-desc">201英语脑机接口 · 砍长难句防火墙 · 写作碎片炼化炉 · 翻译实战 · Gemini毒舌全程伴读</div>
+              <div class="card-tags">
+                <span class="tag tag-study">模块八 · 阅读专项</span>
+                <span class="tag tag-intel" style="font-size:7px">🧠← Gemini 3.1 Pro</span>
+              </div>
+            </div>
+          </div>
+        </a>
         <a class="card" href="./shenxiao-palace/index.html" style="--card-accent:linear-gradient(90deg,#10b981,#d4af37)">
           <div class="card-row">
             <span class="card-emoji">🏛️</span>
@@ -499,11 +513,15 @@
     var u=document.getElementById('loginUser').value.trim();
     var p=document.getElementById('loginPass').value.trim();
     if(!u||!p){document.getElementById('loginErr').textContent='请输入账号密码';return}
+    // Try superuser
     if(typeof PKUSDK!=='undefined'&&PKUSDK.Auth.login(u,p)){
-      document.getElementById('loginOvl').classList.add('hide');
-      document.getElementById('mainApp').style.display='';
-      document.getElementById('logoutBtn').style.display='';
-    }else{document.getElementById('loginErr').textContent='账号或密码错误'}
+      _showApp();return;
+    }
+    // Try normal user
+    if(typeof PKUSDK!=='undefined'&&PKUSDK.Auth.loginNormal(u,p)){
+      _showApp();return;
+    }
+    document.getElementById('loginErr').textContent='账号或密码错误，新用户请先注册';
   }
   function doLogout(){
     if(typeof PKUSDK!=='undefined')PKUSDK.Auth.logout();
@@ -512,11 +530,20 @@
     document.getElementById('logoutBtn').style.display='none';
     document.getElementById('loginPass').value='';
   }
-  // Auto-login
-  if(typeof PKUSDK!=='undefined'&&PKUSDK.Auth.isLoggedIn()){
+  function _showApp(){
     document.getElementById('loginOvl').classList.add('hide');
     document.getElementById('mainApp').style.display='';
     document.getElementById('logoutBtn').style.display='';
+    // 显示用户身份
+    var tier = window.PKU_KEYS ? (window.PKU_KEYS.tier==='premium'?'🔱正版':'🔑二手') : '📦本地';
+    document.getElementById('logoutBtn').textContent = '🚪 退出 ('+tier+')';
+  }
+  function goRegister(){
+    window.location.href='auth-gate/index.html?redirect='+encodeURIComponent(window.location.href);
+  }
+  // Auto-login
+  if(typeof PKUSDK!=='undefined'&&PKUSDK.Auth.isLoggedIn()){
+    _showApp();
   }
   // file:// bypass
   if(window.location.protocol==='file:'){

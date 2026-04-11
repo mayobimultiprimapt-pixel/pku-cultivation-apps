@@ -10,28 +10,27 @@
  *   408计算机: 40题 (DS12+计组12+OS9+计网7)
  */
 const BGData = (() => {
-  // ═══ 每局抽题配置 · 真实卷面结构 ═══
+  // ═══ 每局抽题配置 · 真实卷面选择题结构 ═══
+  // 每局题量 = 该科考卷的选择题总数
   const EXAM_STRUCTURE = {
     politics: {
-      total: 33,
-      // 真实卷面: 马原约24% 毛概约30% 史纲约14% 思修约16% 时政约16%
-      // cat标签: marx, mao, xi, hist, history, moral, ethics, news, current
-      distribution: { marx:8, mao:5, xi:4, hist:3, history:3, moral:3, ethics:2, news:3, current:2 }
+      total: 16,  // 考卷单选16题(多选归论道殿)
+      vaultType: 'single_choice',
+      distribution: { marx:4, mao:4, hist:3, moral:3, news:2 }
     },
     math: {
-      total: 10,
-      // 真实卷面: 高数60% 线代20% 概率20%
+      total: 10,  // 考卷选择10题
+      vaultType: 'single_choice',
       distribution: { calculus:6, linalg:2, prob:2 }
     },
     english: {
-      total: 45,
-      // 真实卷面: 完形20题 阅读20题 新题型5题
-      // cat标签: cloze, reading, new, newtype
-      distribution: { cloze:20, reading:20, new:3, newtype:2 }
+      total: 20,  // 考卷阅读理解选择20题(完形归九宫算阵)
+      vaultType: 'single_choice',
+      distribution: { reading:20 }
     },
     cs: {
-      total: 40,
-      // 真实卷面: DS约30% CO约30% OS约23% NET约17%
+      total: 40,  // 考卷单选40题
+      vaultType: 'single_choice',
       distribution: { ds:12, co:12, os:9, net:7 }
     }
   };
@@ -167,38 +166,53 @@ const BGData = (() => {
   }
 
 
-  // ═══ Global Vault 注入 — 从天机阁金库读取真题合并 ═══
+  // ═══ Global Vault 注入 — 从分桶金库和混合池读取 ═══
   const VAULT_MAP = { politics:'101', english:'201', math:'301', cs:'408' };
   function convertVaultQ(vq) {
-    const opts = (vq.options || []).map(o => typeof o === 'string' ? o : String(o));
+    const opts = (vq.options || vq.o || []).map(o => typeof o === 'string' ? o : String(o));
     let ansIdx = 0;
-    if (vq.answer && opts.length > 0) {
-      const ansLetter = String(vq.answer).trim().charAt(0).toUpperCase();
-      ansIdx = 'ABCDE'.indexOf(ansLetter);
-      if (ansIdx < 0) ansIdx = 0;
+    if (typeof vq.a === 'number') { ansIdx = vq.a; }
+    else if (vq.answer && opts.length > 0) {
+      ansIdx = Math.max(0, 'ABCDE'.indexOf(String(vq.answer).trim().charAt(0).toUpperCase()));
     }
     return {
       stem: vq.stem || vq.q || '题目加载失败',
       opts: opts.length >= 2 ? opts : ['A.暂无','B.暂无','C.暂无','D.暂无'],
       ans: ansIdx,
-      hint: vq.analysis ? vq.analysis.substring(0, 50) : '来源: 天机阁金库',
+      hint: vq.analysis ? vq.analysis.substring(0, 80) : '来源: 金库',
+      cat: (vq.chapter || '').toLowerCase().replace(/[\/\s]/g,'') || 'unknown',
       fromVault: true
     };
   }
   function loadVaultQuestions() {
     try {
       for (const [mapId, subCode] of Object.entries(VAULT_MAP)) {
-        const raw = localStorage.getItem('Global_Vault_' + subCode);
-        if (!raw) continue;
-        const vaultQ = JSON.parse(raw);
+        if (!MAPS[mapId]) continue;
+        const vaultType = EXAM_STRUCTURE[mapId]?.vaultType || 'single_choice';
+
+        // 优先从分桶金库读取
+        let vaultQ = [];
+        try {
+          const typedRaw = localStorage.getItem('Global_Vault_' + subCode + '_' + vaultType);
+          if (typedRaw) vaultQ = JSON.parse(typedRaw);
+        } catch(e) {}
+
+        // 分桶为空则从混合池读取
+        if (!Array.isArray(vaultQ) || vaultQ.length === 0) {
+          try {
+            const raw = localStorage.getItem('Global_Vault_' + subCode);
+            if (raw) vaultQ = JSON.parse(raw);
+          } catch(e) {}
+        }
+
         if (!Array.isArray(vaultQ) || vaultQ.length === 0) continue;
         const single = vaultQ.filter(q => !q.type || q.type === 'single_choice' || q.type === 'multi_choice');
         const converted = single.map(convertVaultQ).filter(q => q.stem.length > 5);
-        if (converted.length > 0 && MAPS[mapId]) {
+        if (converted.length > 0) {
           const existStems = new Set(MAPS[mapId].questions.map(q => q.stem));
           const newQ = converted.filter(q => !existStems.has(q.stem));
           MAPS[mapId].questions = [...MAPS[mapId].questions, ...newQ];
-          console.log('[刺激战场] ' + mapId + ': 加载金库 +' + newQ.length + ' 题 (总' + MAPS[mapId].questions.length + ')');
+          console.log('[刺激战场] ' + mapId + ': 金库 +' + newQ.length + ' 题 (总' + MAPS[mapId].questions.length + ')');
         }
       }
     } catch(e) { console.warn('[刺激战场] 金库读取失败:', e.message); }

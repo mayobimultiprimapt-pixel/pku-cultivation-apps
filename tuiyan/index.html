@@ -291,6 +291,7 @@ body{font-family:'Noto Sans SC','Noto Serif SC',serif;background:var(--bg);color
   </div>
 </div>
 
+<script src="../shared/pku-core-sdk.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 //  推演阁 · 梅花六爻排盘引擎 v1.0
@@ -715,6 +716,11 @@ const DEEPSEEK_MODEL_LABEL = 'DeepSeek V3.2';
 
 // ── API Key 管理 ──
 function getOrKey() {
+  // 优先: PKUSDK超级用户自动解密的正版钥匙
+  if (typeof PKUSDK !== 'undefined' && window.PKU_KEYS && window.PKU_KEYS.tier === 'premium' && window.PKU_KEYS.OPENROUTER_API_KEY) {
+    return window.PKU_KEYS.OPENROUTER_API_KEY;
+  }
+  // 兜底: localStorage手动输入的key
   const saved = JSON.parse(localStorage.getItem('tianji_saved_keys') || '{}');
   return saved.or_key || '';
 }
@@ -722,9 +728,10 @@ function getOrKey() {
 function updateKeyStatus() {
   const el = document.getElementById('keyStatus');
   const key = getOrKey();
+  const isPKU = (typeof PKUSDK !== 'undefined' && window.PKU_KEYS && window.PKU_KEYS.tier === 'premium');
   if (key) {
     el.className = 'key-status active';
-    el.innerHTML = '🔑 已激活 <span class="model-badge">' + DEEPSEEK_MODEL_LABEL + '</span>';
+    el.innerHTML = isPKU ? '🔱 正版钥匙 <span class="model-badge">' + DEEPSEEK_MODEL_LABEL + '</span>' : '🔑 已激活 <span class="model-badge">' + DEEPSEEK_MODEL_LABEL + '</span>';
   } else {
     el.className = 'key-status inactive';
     el.innerHTML = '🔑 未配置';

@@ -502,14 +502,20 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
   </div>
 </div>
 
+<script src="../shared/pku-core-sdk.js"></script>
 <script>
 // ============================================================
-//  天机阁 · 密钥门控系统 v4.0
-//  用户进入时输入 Perplexity API Key，存于 sessionStorage
-//  关闭浏览器自动清除，不暴露在源码中
+//  天机阁 · 密钥门控系统 v5.0 (PKUSDK v8 集成)
+//  超级用户(zmqags1314)→自动注入Perplexity key
+//  普通用户→可手动输入自己的pplx key / 或无法使用
 // ============================================================
 
 function getPplxKey() {
+  // 优先: PKUSDK超级用户自动解密的正版钥匙
+  if (typeof PKUSDK !== 'undefined' && window.PKU_KEYS && window.PKU_KEYS.tier === 'premium' && window.PKU_KEYS.PERPLEXITY_API_KEY) {
+    return window.PKU_KEYS.PERPLEXITY_API_KEY;
+  }
+  // 兜底: sessionStorage手动输入的key
   return sessionStorage.getItem('tianji_pplx_key') || '';
 }
 
@@ -531,6 +537,7 @@ function submitApiKey() {
 (function checkKey() {
   if (getPplxKey()) {
     document.getElementById('keyModal').style.display = 'none';
+    console.log('[天机阁] 🔱 已通过PKUSDK自动注入Perplexity Key');
   }
   // Enter 键提交
   document.getElementById('keyInput').addEventListener('keydown', e => {
