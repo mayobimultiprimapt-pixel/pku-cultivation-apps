@@ -717,7 +717,7 @@ ${JSON.stringify(pred?.comprehensive || [])}
       injectUI();
       const stats = getVaultStats();
       const totalQ = Object.values(stats).reduce((s, v) => s + (v.typed || 0) + (v.legacy || 0), 0);
-      if (totalQ === 0 && !hasKey() && !_getSDKKeys().pplx) showModal();
+      // if (totalQ === 0 && !hasKey() && !_getSDKKeys().pplx) showModal();
     });
   }
 
