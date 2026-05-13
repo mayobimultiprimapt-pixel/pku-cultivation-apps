@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>天工坊 · 自镜阵</title>
+<style>
+  :root {
+    --gold: #c9a352;
+    --gold-bright: #f5d77a;
+    --gold-dim: #8a6b2c;
+    --ink: #0f0c1c;
+    --ink-2: #1a1733;
+    --ink-3: #1f1830;
+    --text: #e8d8b0;
+    --text-mute: #8a7a5a;
+    --text-dim: #4a3e28;
+    --alert: #ff9090;
+    --ok: #88ffc0;
+    --info: #88c0ff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: radial-gradient(ellipse at top, #1a1733 0%, #0a0816 80%);
+    color: var(--text); font-family: "Noto Serif SC", "PingFang SC", serif;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,215,128,0.4), transparent),
+      radial-gradient(1px 1px at 80% 60%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 60% 80%, rgba(201,163,82,0.3), transparent),
+      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.2), transparent);
+    background-size: 400px 400px;
+    opacity: 0.6;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 32px 24px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .back { color: var(--text-mute); text-decoration: none; font-size: 11px; letter-spacing: 0.32em; }
+  .back:hover { color: var(--gold-bright); }
+
+  .head { text-align: center; margin-bottom: 40px; }
+  .head .tagline { font-size: 10px; letter-spacing: 0.5em; color: var(--gold); margin-bottom: 14px; }
+  .head h1 {
+    margin: 0; font-size: 44px; font-weight: 300; letter-spacing: 0.32em;
+    background: linear-gradient(135deg, #fff 0%, #fff 30%, var(--gold-bright) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 24px rgba(245,215,122,0.15);
+  }
+  .head .subtitle { font-size: 11px; letter-spacing: 0.4em; color: var(--text-mute); margin-top: 12px; }
+  .head .desc { font-size: 12px; color: var(--text-dim); margin-top: 18px; line-height: 1.8; letter-spacing: 0.08em; }
+
+  .card {
+    position: relative;
+    background: linear-gradient(160deg, rgba(31,24,48,0.85) 0%, rgba(15,12,28,0.95) 100%);
+    border: 1px solid rgba(201,163,82,0.3);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(201,163,82,0.04);
+  }
+  .card::before, .card::after {
+    content: ''; position: absolute; width: 22px; height: 22px;
+    border: 1px solid rgba(201,163,82,0.5); pointer-events: none;
+  }
+  .card::before { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+  .card::after { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+  .card-head {
+    font-size: 11px; letter-spacing: 0.4em; color: var(--gold);
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(201,163,82,0.18);
+  }
+
+  .pat-warn {
+    background: rgba(255,80,80,0.06);
+    border: 1px solid rgba(255,120,120,0.25);
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #ffb8a0; line-height: 1.8;
+  }
+  .pat-warn a { color: var(--gold-bright); text-decoration: underline; }
+  .pat-warn code {
+    background: rgba(201,163,82,0.12); padding: 1px 6px; border-radius: 4px;
+    font-family: ui-monospace, monospace; color: var(--gold); font-size: 11px;
+  }
+
+  .pat-ok { font-size: 12px; color: var(--text-mute); letter-spacing: 0.12em; }
+  .pat-ok a { color: var(--gold); }
+  .pat-ok a:hover { color: var(--gold-bright); }
+
+  .pat-row { display: flex; gap: 10px; margin-top: 14px; }
+  .pat-row input {
+    flex: 1; padding: 12px 14px; border-radius: 8px;
+    background: rgba(10,8,20,0.6); border: 1px solid rgba(201,163,82,0.3);
+    color: var(--text); font-family: ui-monospace, monospace; font-size: 12px;
+    outline: none;
+  }
+  .pat-row input:focus { border-color: rgba(201,163,82,0.7); box-shadow: 0 0 0 2px rgba(201,163,82,0.15); }
+  .pat-row button {
+    padding: 12px 20px; border-radius: 8px;
+    background: rgba(201,163,82,0.18); border: 1px solid rgba(201,163,82,0.5);
+    color: var(--gold-bright); cursor: pointer; letter-spacing: 0.24em; font-size: 12px;
+    font-family: inherit;
+  }
+  .pat-row button:hover { background: rgba(201,163,82,0.3); }
+
+  textarea.input {
+    width: 100%; min-height: 140px; resize: vertical;
+    padding: 16px 18px; border-radius: 8px;
+    background: rgba(10,8,20,0.5); border: 1px solid rgba(201,163,82,0.25);
+    color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.8;
+    outline: none;
+  }
+  textarea.input:focus {
+    border-color: rgba(201,163,82,0.6);
+    box-shadow: 0 0 0 2px rgba(201,163,82,0.15);
+  }
+  textarea.input::placeholder { color: #5a4d36; letter-spacing: 0.08em; }
+
+  .hint {
+    margin-top: 12px; font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.1em; line-height: 1.8;
+  }
+  .hint code {
+    background: rgba(201,163,82,0.08); padding: 1px 6px; border-radius: 4px;
+    color: var(--gold); font-family: ui-monospace, monospace; font-size: 11px;
+  }
+
+  .submit {
+    margin-top: 18px; width: 100%; padding: 14px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+    border: 1px solid rgba(255,215,128,0.4);
+    color: var(--ink); font-family: inherit; font-size: 14px;
+    font-weight: 600; letter-spacing: 0.5em;
+    cursor: pointer; transition: all .2s;
+  }
+  .submit:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+    transform: translateY(-1px);
+  }
+  .submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .empty { text-align: center; padding: 24px 0; color: var(--text-dim); font-size: 12px; letter-spacing: 0.18em; }
+
+  .item {
+    padding: 14px 16px; margin-bottom: 10px;
+    background: rgba(201,163,82,0.04);
+    border: 1px solid rgba(201,163,82,0.15);
+    border-radius: 8px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .item-no {
+    font-family: ui-monospace, monospace; color: var(--gold);
+    font-size: 12px; white-space: nowrap; min-width: 48px;
+  }
+  .item-body { flex: 1; min-width: 0; }
+  .item-title {
+    color: var(--text); font-size: 13px; line-height: 1.6;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .item-meta {
+    font-size: 10px; color: var(--text-mute); margin-top: 6px; letter-spacing: 0.12em;
+  }
+  .item-link {
+    color: var(--gold); text-decoration: none; font-size: 11px;
+  }
+  .item-link:hover { color: var(--gold-bright); text-decoration: underline; }
+  .status {
+    display: inline-block; padding: 1px 9px; border-radius: 10px;
+    font-size: 10px; letter-spacing: 0.18em;
+  }
+  .status-pending { background: rgba(255,200,80,0.12); color: #ffc850; }
+  .status-pr { background: rgba(120,180,255,0.12); color: var(--info); }
+  .status-merged { background: rgba(120,255,180,0.12); color: var(--ok); }
+  .status-closed { background: rgba(150,150,150,0.12); color: #aaa; }
+  .status-failed { background: rgba(255,120,120,0.12); color: var(--alert); }
+
+  .foot {
+    text-align: center; font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.36em; margin-top: 40px; padding: 24px 0;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 16px);
+    z-index: 9999; padding: 12px 20px; border-radius: 999px;
+    background: rgba(10,8,20,0.94); border: 1px solid rgba(201,163,82,0.5);
+    color: var(--gold-bright); font-size: 12px; letter-spacing: 0.24em;
+    max-width: 380px; text-align: center;
+    opacity: 0; transition: all .3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err { border-color: rgba(255,120,120,0.6); color: var(--alert); }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 24px 16px; }
+    .head h1 { font-size: 32px; }
+    .card { padding: 20px 18px; }
+    .pat-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="../index.html">← 返 回 山 门</a>
+    <div style="font-size:10px;letter-spacing:0.32em;color:var(--text-dim);">v0.1 · 山门子弟自留</div>
+  </div>
+
+  <header class="head">
+    <div class="tagline">PKU CULTIVATION · 自 镜 阵</div>
+    <h1>天 工 坊</h1>
+    <div class="subtitle">山 门 子 弟 · 呈 奏 修 缮 文 牒</div>
+    <div class="desc">
+      在山门内任何卡顿、缺漏、新念，呈一道文牒于此<br>
+      天工自 @claude 接手 · 自动开 PR · 道友 review merge 即上线
+    </div>
+  </header>
+
+  <!-- 师门凭信 -->
+  <section class="card">
+    <div class="card-head">🔑 师 门 凭 信</div>
+    <div id="pat-section"></div>
+  </section>
+
+  <!-- 呈奏文牒 -->
+  <section class="card">
+    <div class="card-head">📜 呈 奏 文 牒</div>
+    <textarea id="input" class="input"
+      placeholder="请详述需修缮之处···&#10;&#10;例：奥秘学院·塔罗答题三响无回 · 求修&#10;例：识海天碑·首页加载慢，优化下&#10;例：加一个'排列组合记忆塔'子应用，参考奥秘学院的风格"></textarea>
+    <div class="hint">
+      📜 提交后自动建 issue 触发 <code>@claude</code>，约 1-2 分钟后开 PR
+      · 你 review merge 即上线 · <code>Ctrl/⌘ + Enter</code> 也可呈奏
+    </div>
+    <button id="submit" class="submit">布 阵</button>
+  </section>
+
+  <!-- 案卷阁 -->
+  <section class="card">
+    <div class="card-head">📒 案 卷 阁 · 历 史 文 牒</div>
+    <div id="history-list"></div>
+  </section>
+
+  <div class="foot">天 工 坊 · 山 门 子 弟 自 留 之 地</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  const REPO = 'mayobimultiprimapt-pixel/pku-cultivation-apps';
+  const PAT_KEY = 'tiangong_gh_pat';
+  const HISTORY_KEY = 'tiangong_history';
+  const POLL_INTERVAL = 30000;
+  const MAX_HISTORY = 50;
+  const PAT_GUIDE_URL =
+    'https://github.com/settings/tokens/new?description=Tiangong-Workshop&scopes=public_repo';
+
+  let pat = localStorage.getItem(PAT_KEY) || '';
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch (e) { history = []; }
+
+  const $ = (id) => document.getElementById(id);
+  const $patSection = $('pat-section');
+  const $input = $('input');
+  const $submit = $('submit');
+  const $historyList = $('history-list');
+  const $toast = $('toast');
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function saveHistory() {
+    history = history.slice(0, MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  }
+
+  let toastTimer = null;
+  function toast(msg, isErr) {
+    $toast.textContent = msg;
+    $toast.className = 'toast' + (isErr ? ' err' : '') + ' show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $toast.className = 'toast' + (isErr ? ' err' : ''); }, 2800);
+  }
+
+  function renderPATSection() {
+    if (pat) {
+      const masked = pat.length > 12 ? pat.slice(0, 7) + '…' + pat.slice(-4) : '***';
+      $patSection.innerHTML = `
+        <div class="pat-ok">
+          ✓ 凭信已封印 (<code style="font-family:ui-monospace,monospace;color:var(--gold);">${escapeHtml(masked)}</code>)
+          <a href="#" id="pat-clear" style="margin-left:12px;">重置</a>
+        </div>`;
+      $patSection.querySelector('#pat-clear').onclick = (e) => {
+        e.preventDefault();
+        if (confirm('清除已存的 GitHub PAT？')) {
+          localStorage.removeItem(PAT_KEY);
+          pat = '';
+          renderPATSection();
+        }
+      };
+    } else {
+      $patSection.innerHTML = `
+        <div class="pat-warn">
+          ⚠ 首次呈奏，需师门凭信 (GitHub Personal Access Token) 方能建 issue。<br>
+          <a href="${PAT_GUIDE_URL}" target="_blank" rel="noopener">点此前往生成 →</a>
+          （仅勾选 <code>public_repo</code>，过期时间随你选）
+        </div>
+        <div class="pat-row">
+          <input id="pat-input" type="password"
+            placeholder="粘贴你的 GitHub PAT (ghp_xxx 或 github_pat_xxx)" />
+          <button id="pat-save">封 印</button>
+        </div>`;
+      $patSection.querySelector('#pat-save').onclick = () => {
+        const v = $patSection.querySelector('#pat-input').value.trim();
+        if (!v) { toast('凭信为空', true); return; }
+        if (!/^gh[ps]_|^github_pat_/.test(v)) {
+          if (!confirm('格式不像标准 GitHub PAT，继续保存？')) return;
+        }
+        pat = v;
+        localStorage.setItem(PAT_KEY, v);
+        renderPATSection();
+        toast('凭信已封印 ✓');
+      };
+    }
+  }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      $historyList.innerHTML = '<div class="empty">尚无文牒 · 上方呈奏一道试试</div>';
+      return;
+    }
+    $historyList.innerHTML = history.slice(0, 30).map((item) => {
+      const status = item.status || 'pending';
+      const statusLabel = {
+        pending: '🔥 锻造中',
+        pr: '🔵 已开 PR',
+        merged: '🟢 已合并',
+        closed: '⚪ 已关闭',
+        failed: '❌ 失败',
+      }[status] || status;
+      const created = new Date(item.created || Date.now()).toLocaleString('zh-CN', {
+        month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+      });
+      return `
+        <div class="item">
+          <span class="item-no">#${item.id}</span>
+          <div class="item-body">
+            <div class="item-title">${escapeHtml(item.title)}</div>
+            <div class="item-meta">
+              <span class="status status-${status}">${statusLabel}</span>
+              · ${escapeHtml(created)}
+              · <a class="item-link" href="${item.url}" target="_blank" rel="noopener">issue ↗</a>
+              ${item.pr_url ? ` · <a class="item-link" href="${item.pr_url}" target="_blank" rel="noopener">PR ↗</a>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function submitDocket() {
+    const text = $input.value.trim();
+    if (!text) { toast('文牒为空', true); return; }
+    if (!pat) { toast('需先封印师门凭信', true); return; }
+
+    const title = `[天工坊] ${text.slice(0, 60).replace(/\n/g, ' ')}`;
+    const body = `@claude\n\n${text}\n\n---\n_via 天工坊 · ${new Date().toLocaleString('zh-CN')}_`;
+
+    $submit.disabled = true;
+    $submit.textContent = '锻 造 中···';
+
+    try {
+      const r = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${pat}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+        body: JSON.stringify({ title, body }),
+      });
+      if (!r.ok) {
+        const errBody = await r.text();
+        throw new Error(`GitHub ${r.status}: ${errBody.slice(0, 120)}`);
+      }
+      const issue = await r.json();
+      history.unshift({
+        id: issue.number,
+        url: issue.html_url,
+        title: text.slice(0, 100),
+        created: Date.now(),
+        status: 'pending',
+        pr_url: null,
+      });
+      saveHistory();
+      renderHistory();
+      $input.value = '';
+      toast(`文牒 #${issue.number} 已呈奏 · 锻造中`);
+    } catch (e) {
+      toast('呈奏失败：' + e.message, true);
+    } finally {
+      $submit.disabled = false;
+      $submit.textContent = '布 阵';
+    }
+  }
+
+  async function pollOne(item) {
+    if (item.status === 'merged' || item.status === 'closed' || item.status === 'failed') return false;
+    try {
+      const headers = pat ? { 'Authorization': `Bearer ${pat}` } : {};
+      const ir = await fetch(`https://api.github.com/repos/${REPO}/issues/${item.id}`, { headers });
+      if (!ir.ok) return false;
+      const issue = await ir.json();
+      let newStatus = item.status;
+      let newPRUrl = item.pr_url;
+
+      if (!newPRUrl) {
+        const cr = await fetch(`https://api.github.com/repos/${REPO}/issues/${item.id}/comments`, { headers });
+        if (cr.ok) {
+          const comments = await cr.json();
+          for (const c of comments) {
+            const m = c.body && c.body.match(/\/pull\/(\d+)/);
+            if (m) {
+              newPRUrl = `https://github.com/${REPO}/pull/${m[1]}`;
+              newStatus = 'pr';
+              break;
+            }
+          }
+        }
+      }
+
+      if (newPRUrl) {
+        const prMatch = newPRUrl.match(/\/pull\/(\d+)/);
+        if (prMatch) {
+          const pr = await fetch(`https://api.github.com/repos/${REPO}/pulls/${prMatch[1]}`, { headers })
+            .then(r => r.ok ? r.json() : null);
+          if (pr) {
+            if (pr.merged) newStatus = 'merged';
+            else if (pr.state === 'closed') newStatus = 'closed';
+            else newStatus = 'pr';
+          }
+        }
+      } else if (issue.state === 'closed') {
+        newStatus = 'closed';
+      }
+
+      if (newStatus !== item.status || newPRUrl !== item.pr_url) {
+        item.status = newStatus;
+        item.pr_url = newPRUrl;
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  async function pollAll() {
+    if (!pat) return;
+    let any = false;
+    for (const item of history.slice(0, 10)) {
+      if (await pollOne(item)) any = true;
+    }
+    if (any) {
+      saveHistory();
+      renderHistory();
+    }
+  }
+
+  // 事件
+  $submit.onclick = submitDocket;
+  $input.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      submitDocket();
+    }
+  });
+
+  // 启动
+  renderPATSection();
+  renderHistory();
+  setTimeout(pollAll, 1000);
+  setInterval(pollAll, POLL_INTERVAL);
+})();
+</script>
+</body>
+</html>
