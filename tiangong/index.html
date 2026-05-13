@@ -260,7 +260,10 @@
   const HISTORY_KEY = 'tiangong_history';
   const POLL_INTERVAL = 30000;
   const MAX_HISTORY = 50;
+  // audit_pku.md SEC-3：推荐 fine-grained token（最小权限），缩短过期
   const PAT_GUIDE_URL =
+    'https://github.com/settings/personal-access-tokens/new';
+  const PAT_GUIDE_FALLBACK =
     'https://github.com/settings/tokens/new?description=Tiangong-Workshop&scopes=public_repo';
 
   let pat = localStorage.getItem(PAT_KEY) || '';
@@ -314,12 +317,14 @@
       $patSection.innerHTML = `
         <div class="pat-warn">
           ⚠ 首次呈奏，需师门凭信 (GitHub Personal Access Token) 方能建 issue。<br>
-          <a href="${PAT_GUIDE_URL}" target="_blank" rel="noopener">点此前往生成 →</a>
-          （仅勾选 <code>public_repo</code>，过期时间随你选）
+          <strong>推荐</strong>：<a href="${PAT_GUIDE_URL}" target="_blank" rel="noopener noreferrer">Fine-grained token →</a>
+          仓库选 <code>pku-cultivation-apps</code>，权限只勾 <code>Issues: Read &amp; write</code> + <code>Pull requests: Read &amp; write</code>，过期 ≤ <strong>7 天</strong>。<br>
+          <span style="font-size:11px;color:var(--text-mute);">备选：<a href="${PAT_GUIDE_FALLBACK}" target="_blank" rel="noopener noreferrer">Classic PAT (public_repo)</a>，但权限更宽不推荐。</span><br>
+          <span style="font-size:11px;color:var(--alert);">⚠ 凭信存浏览器 localStorage · 同源 XSS 可被取走 · 务必短过期/最小权限</span>
         </div>
         <div class="pat-row">
-          <input id="pat-input" type="password"
-            placeholder="粘贴你的 GitHub PAT (ghp_xxx 或 github_pat_xxx)" />
+          <input id="pat-input" type="password" autocomplete="off"
+            placeholder="粘贴 fine-grained (github_pat_xxx) 或 classic (ghp_xxx)" />
           <button id="pat-save">封 印</button>
         </div>`;
       $patSection.querySelector('#pat-save').onclick = () => {
