@@ -18,8 +18,36 @@ function resolveKey(headerKey, envKey) {
 const cors = require('cors');
 const app = express();
 
-app.use(cors({ origin: '*' }));
+// ── CORS Origin 白名单（防陌生人薅）──
+// audit_pku.md SEC-4 修复：从 origin: '*' 收紧到白名单 + 软 token
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/mayobimultiprimapt-pixel\.github\.io$/,
+  /^https:\/\/.*\.vercel\.app$/,        // daima-shanhai vercel preview
+  /^http:\/\/localhost(:\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+  /^file:\/\//                            // 本地开发直接打开 HTML
+];
+app.use(cors({
+  origin: function(origin, callback) {
+    // 无 Origin 头（同源 / curl / server-to-server）— 默认允许，由 token 中间件兜底
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGIN_PATTERNS.some(re => re.test(origin))) return callback(null, true);
+    callback(new Error('CORS: Origin not allowed: ' + origin));
+  }
+}));
 app.use(express.json({ limit: '5mb' }));
+
+// ── 软 token 校验：env 设了才检查（渐进式启用）──
+// 在 Render env vars 里加 PKU_RELAY_TOKEN=xxx，前端走中转时 x-pku-token: xxx
+// 没设就跳过（向后兼容现有调用）
+function checkToken(req, res, next) {
+  const required = process.env.PKU_RELAY_TOKEN;
+  if (!required) return next();
+  if (req.headers['x-pku-token'] !== required) {
+    return res.status(401).json({ error: 'Invalid or missing X-PKU-Token' });
+  }
+  next();
+}
 
 const KEYS = {
   OPENROUTER: process.env.OPENROUTER_API_KEY || '',
@@ -193,16 +221,19 @@ app.post('/gemini/generate', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Perplexity 中转 (支持前端透传 key)
-app.post('/perplexity/search', async (req, res) => {
+// Perplexity 中转 (支持前端透传 key) — 透传所有 sonar 参数
+app.post('/perplexity/search', checkToken, async (req, res) => {
   try {
-    const { model, messages, max_tokens } = req.body;
     const pplxKey = req.headers['x-perplexity-key'] || KEYS.PERPLEXITY;
     if (!pplxKey) return res.status(500).json({ error: 'Perplexity key missing' });
+    // 透传全部 body 字段（含 temperature, search_recency_filter, return_related_questions 等）
+    const body = { ...req.body };
+    if (!body.model) body.model = 'sonar-reasoning-pro';
+    if (!body.max_tokens) body.max_tokens = 4096;
     const r = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pplxKey}` },
-      body: JSON.stringify({ model: model || 'sonar-reasoning-pro', messages, max_tokens: max_tokens || 4096 })
+      body: JSON.stringify(body)
     });
     const data = await r.json();
     if (!r.ok) return res.status(r.status).json(data);

@@ -16,7 +16,8 @@ const PKUAutoFetch = (() => {
   const SUBJ_NAMES = {'101':'政治','201':'英语','301':'数学','408':'计算机'};
 
   // ══════ API 配置 ══════
-  const PPLX_URL = 'https://corsproxy.io/?https://api.perplexity.ai/chat/completions';
+  // audit_pku.md SEC-5 修复：从 corsproxy.io 第三方转发改走自家 relay
+  const PPLX_URL = 'https://pku-api-relay.onrender.com/perplexity/search';
   const PPLX_MODELS = ['sonar-deep-research','sonar-reasoning-pro','sonar-pro','sonar'];
   const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent';
 
@@ -88,7 +89,8 @@ const PKUAutoFetch = (() => {
       try {
         const resp = await fetch(PPLX_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
+          // 自家 relay 用 x-perplexity-key 头，不再 Authorization Bearer
+          headers: { 'Content-Type': 'application/json', 'x-perplexity-key': pplxKey },
           body: JSON.stringify({
             model,
             messages: [
