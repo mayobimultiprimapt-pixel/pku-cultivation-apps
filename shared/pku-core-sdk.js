@@ -319,7 +319,9 @@
       try {
         var params = new URLSearchParams({ count: count });
         if (type) params.set('type', type);
-        var resp = await fetch(RELAY_BASE + '/feed/paper/' + subject + '?' + params, { signal: AbortSignal.timeout(8000) });
+        // audit_pku.md COMPAT-1 修复：AbortSignal.timeout 在 iOS Safari 15.4-/Android Chrome 100- 不支持，feature detect
+        var _ts = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? { signal: AbortSignal.timeout(8000) } : {};
+        var resp = await fetch(RELAY_BASE + '/feed/paper/' + subject + '?' + params, _ts);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         var data = await resp.json();
         if (data.success && data.questions && data.questions.length > 0) {
