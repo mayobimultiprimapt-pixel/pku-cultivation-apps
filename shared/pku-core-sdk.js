@@ -18,20 +18,10 @@
   const RELAY_BASE = 'https://pku-api-relay.onrender.com';
   const VER = '8.2';
 
-  // ─── 加密钥匙库 (XOR + Base64, 密钥=超级用户密码) ───
-  const EK = {
-    OR: 'CQZcDhVeRwIcVx4LQVJVQABXBlFIDhdUBBJQUFNSTFkSUAMVBwAFBRlVFwJeFlNVBAxKCBdZVkcBBlQDTl1IUl9FUwIAA0wMQw==',
-    GE: 'OyQLADQKcEoCeR83JxMFLGJbUH8oDikkFzpVXghfPVUTV1EmRH1W',
-    GD: 'OyQLADQKcgFufBAUMjsxH3x4fAE/ATguAywHQHN9ABk0DSw+XER8',  // Gemini直连 ($300额度)
-    PP: 'Ch0dGUojVEoDDD0YSCUeAWJ8VX8pKCQOVR9he0llMFUbEyJFZUV3YUsKQxU+FGl6eHARLgE=',
-    BS: 'CQZcVV4rCVYAVh8PQllfS1MCVANCDEQDARUJAgIGGQtJBAJLUAVUB0tfEARTRXRFe2dK'  // BaosiAPI备份
-  };
-
-  function dec(e, k) {
-    var b = atob(e), r = '';
-    for (var i = 0; i < b.length; i++) r += String.fromCharCode(b.charCodeAt(i) ^ k.charCodeAt(i % k.length));
-    return r;
-  }
+  // ─── audit_pku.md SEC-1/2 收尾 · 已拆 ───
+  // 历史上这里有 5 把 API key 用 XOR 加密内嵌前端，XOR 密钥就是 super-user 密码本身，
+  // 30 秒可解，已实质泄漏。已 revoke 老 key + 全部走 Render 后端 env vars 中转。
+  // 前端不再持有原始 key，由 relay 后端用 server-side KEYS 自行决定调用上游。
 
   // ─── 最优模型路由表 ───
   const BAOSI_URL = 'https://api.baosiapi.com/v1/chat/completions';
@@ -74,31 +64,31 @@
     hasKeys: function() { return !!window.PKU_KEYS; },
 
     /**
-     * 超级用户登录 — 自动解密正版钥匙
+     * 超级用户登录 — 走纯 relay 中转，前端不再持有原始 API key
+     * audit_pku.md SEC-1/2 修复：删 EK 解密 + 删 pku_pwd 明文落盘
      */
     login: function(user, pass) {
-      if (user === SUPER_USER && pass === SUPER_USER) {
-        try {
-          var or = dec(EK.OR, pass);
-          if (!or.startsWith('sk-or-')) return false;
-          localStorage.setItem('pku_user', SUPER_USER);
-          localStorage.setItem('pku_pwd', pass);
-          window.PKU_KEYS = {
-            tier: 'premium',
-            OPENROUTER_API_KEY: or,
-            OPENROUTER_URL: RELAY_BASE + '/v1/chat/completions',
-            GEMINI_API_KEY: dec(EK.GE, pass),
-            GEMINI_DIRECT_KEY: dec(EK.GD, pass),  // Gemini直连 ($300额度)
-            GEMINI_DIRECT_URL: GEMINI_DIRECT_URL,
-            PERPLEXITY_API_KEY: dec(EK.PP, pass),
-            PERPLEXITY_URL: RELAY_BASE + '/perplexity/search',
-            BAOSI_API_KEY: dec(EK.BS, pass),
-            BAOSI_URL: BAOSI_URL
-          };
-          return true;
-        } catch (e) { return false; }
-      }
-      return false;
+      if (user !== SUPER_USER || pass !== SUPER_USER) return false;
+      localStorage.setItem('pku_user', SUPER_USER);
+      // 不再 setItem('pku_pwd')，密码只用作前端门闸校验
+      // 所有 LLM 调用走 relay 后端，由 Render env vars 持有真正的 key
+      window.PKU_KEYS = {
+        tier: 'premium',
+        // URL 全部走 relay 中转
+        OPENROUTER_URL:    RELAY_BASE + '/v1/chat/completions',
+        PERPLEXITY_URL:    RELAY_BASE + '/perplexity/search',
+        GEMINI_URL:        RELAY_BASE + '/gemini/generate',
+        BAOSI_URL:         RELAY_BASE + '/baosi/chat',
+        ANTHROPIC_URL:     RELAY_BASE + '/anthropic/messages',
+        GEMINI_DIRECT_URL: GEMINI_DIRECT_URL,
+        // 兼容字段：旧代码可能读 *_API_KEY，全空让 fetch 走 relay 的 KEYS env fallback
+        OPENROUTER_API_KEY: '',
+        GEMINI_API_KEY:     '',
+        GEMINI_DIRECT_KEY:  '',
+        PERPLEXITY_API_KEY: '',
+        BAOSI_API_KEY:      ''
+      };
+      return true;
     },
 
     /**
@@ -149,13 +139,13 @@
       window.PKU_KEYS = null;
     },
 
-    /** 自动登录（页面加载时调用） */
+    /** 自动登录（页面加载时调用） · SEC-1/2 修复：不再读 pku_pwd */
     _autoLogin: function() {
       var user = localStorage.getItem('pku_user');
       if (!user) return;
       if (user === SUPER_USER) {
-        var pwd = localStorage.getItem('pku_pwd');
-        if (pwd) this.login(SUPER_USER, pwd);
+        // 走纯中转，直接重建 window.PKU_KEYS（不需要密码）
+        this.login(SUPER_USER, SUPER_USER);
       } else {
         // 普通用户恢复二手钥匙
         var sk = localStorage.getItem('pku_secondhand_' + user);
@@ -163,6 +153,8 @@
           window.PKU_KEYS = { tier: 'secondhand', SECONDHAND_KEY: sk };
         }
       }
+      // 历史遗留：旧版本可能存了明文 pku_pwd，本次清除一次
+      if (localStorage.getItem('pku_pwd')) localStorage.removeItem('pku_pwd');
     },
 
     /** 是否需要弹出认证网关 */
