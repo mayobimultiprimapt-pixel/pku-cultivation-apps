@@ -193,13 +193,28 @@
       <h2>🎯 今天就做这 <span>4 件事</span></h2>
       <div class="today-sub">正确顺序：先听课搞懂 → 再背词打基础 → 最后做题巩固。别跳步骤。</div>
 
-      <div class="mission" onclick="toggleDone(this); window.open('https://daima-shanhai.vercel.app/','_blank')">
-        <div class="m-check">1</div>
-        <div class="m-body">
-          <div class="m-title">📺 听 1 节课（代码山海 / B站网课）</div>
-          <div class="m-detail">先搞懂一个知识点！推荐：政治跟腿姐、英语跟田静、数学跟张宇、408跟王道</div>
+      <div style="margin-bottom:10px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:8px">📺 第1步 · 选一科听课（代码山海 AI 授课）</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:12px">先搞懂一个知识点！点击你今天要学的科目 →</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <a href="https://daima-shanhai.vercel.app/library/101" target="_blank" style="display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(255,46,99,0.06);border:1px solid rgba(255,46,99,0.15);color:var(--text);text-decoration:none;transition:all .25s">
+            <span style="font-size:22px">🗡️</span>
+            <div><div style="font-weight:700;font-size:14px">101 政治</div><div style="font-size:11px;color:var(--sub)">马原·毛中特·史纲·时政</div></div>
+          </a>
+          <a href="https://daima-shanhai.vercel.app/library/201" target="_blank" style="display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(8,247,254,0.04);border:1px solid rgba(8,247,254,0.15);color:var(--text);text-decoration:none;transition:all .25s">
+            <span style="font-size:22px">🏆</span>
+            <div><div style="font-weight:700;font-size:14px">201 英语</div><div style="font-size:11px;color:var(--sub)">语法·阅读·翻译·写作</div></div>
+          </a>
+          <a href="https://daima-shanhai.vercel.app/library/301" target="_blank" style="display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(255,149,0,0.06);border:1px solid rgba(255,149,0,0.15);color:var(--text);text-decoration:none;transition:all .25s">
+            <span style="font-size:22px">⭐</span>
+            <div><div style="font-weight:700;font-size:14px">301 数学</div><div style="font-size:11px;color:var(--sub)">高数·线代·概率</div></div>
+          </a>
+          <a href="https://daima-shanhai.vercel.app/library/408" target="_blank" style="display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(94,92,230,0.06);border:1px solid rgba(94,92,230,0.15);color:var(--text);text-decoration:none;transition:all .25s">
+            <span style="font-size:22px">⚔️</span>
+            <div><div style="font-weight:700;font-size:14px">408 计算机</div><div style="font-size:11px;color:var(--sub)">数据结构·OS·网络·组成</div></div>
+          </a>
         </div>
-        <div class="m-time">⏱ 30分钟</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:8px;text-align:center">⏱ 每天听 1-2 节 · 约 30 分钟 · 听完点「AI 吸收」让 AI 帮你消化</div>
       </div>
 
       <div class="mission" onclick="toggleDone(this); window.open('../kaoyan-duo/','_blank')">
@@ -229,7 +244,7 @@
         <div class="m-time">⏱ 5分钟</div>
       </div>
 
-      <a class="m-go" href="https://daima-shanhai.vercel.app/">📺 开始第一步 → 打开代码山海听课</a>
+      <a class="m-go" href="https://daima-shanhai.vercel.app/library/408">📺 开始第一步 → 打开代码山海听 408 第一课</a>
     </div>
 
     <!-- ═══ FULL ROADMAP ═══ -->
@@ -249,14 +264,40 @@
         正确节奏：听 1 节课 → 背 10 个词 → 做 10 道题巩固
       </div>
       <div class="ph-apps">
-        <a class="app-link" href="https://daima-shanhai.vercel.app/" style="border-color:rgba(255,149,0,0.2);background:rgba(255,149,0,0.04)">
-          <span class="app-emoji">📺</span>
+        <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:6px">📺 AI 课堂 · 代码山海（四科全覆盖）</div>
+        <a class="app-link" href="https://daima-shanhai.vercel.app/library/101" style="border-color:rgba(255,46,99,0.15)">
+          <span class="app-emoji">🗡️</span>
           <div>
-            <div class="app-name">代码山海 · AI课堂 ⭐ 先听这个</div>
-            <div class="app-why">408/301 · AI逐课讲解 · 268节 · 每天听1-2节</div>
+            <div class="app-name">101 政治 · AI 授课</div>
+            <div class="app-why">马原·毛中特·史纲·时政 · 配套腿姐/徐涛B站视频</div>
           </div>
           <span class="app-arrow">→</span>
         </a>
+        <a class="app-link" href="https://daima-shanhai.vercel.app/library/201" style="border-color:rgba(8,247,254,0.12)">
+          <span class="app-emoji">🏆</span>
+          <div>
+            <div class="app-name">201 英语 · AI 授课</div>
+            <div class="app-why">语法·阅读·新题型·翻译·写作 · 配套田静/刘晓艳视频</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="https://daima-shanhai.vercel.app/library/301" style="border-color:rgba(255,149,0,0.15)">
+          <span class="app-emoji">⭐</span>
+          <div>
+            <div class="app-name">301 数学 · AI 授课</div>
+            <div class="app-why">高数·线代·概率 · 配套张宇/汤家凤B站视频</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="https://daima-shanhai.vercel.app/library/408" style="border-color:rgba(94,92,230,0.15)">
+          <span class="app-emoji">⚔️</span>
+          <div>
+            <div class="app-name">408 计算机 · AI 授课</div>
+            <div class="app-why">数据结构·OS·组成·网络 · 配套王道四件套视频</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <div style="font-size:12px;color:var(--gold);font-weight:700;margin-top:12px;margin-bottom:6px">📝 听完课 → 背词 + 做题</div>
         <a class="app-link" href="../kaoyan-duo/">
           <span class="app-emoji">🦉</span>
           <div>
@@ -273,13 +314,6 @@
           </div>
           <span class="app-arrow">→</span>
         </a>
-      </div>
-      <div style="margin-top:16px;padding:14px 16px 14px 48px;font-size:12px;color:var(--sub);background:rgba(255,255,255,0.02);border-radius:10px;line-height:1.8">
-        <strong style="color:var(--gold)">📋 推荐网课（B站免费）：</strong><br>
-        · 政治：腿姐全程班 / 肖秀荣精讲精练<br>
-        · 英语：田静长难句 + 刘晓艳语法<br>
-        · 数学：张宇基础30讲 / 汤家凤高数<br>
-        · 408：王道四件套（数据结构/OS/网络/组成）
       </div>
     </div>
 
