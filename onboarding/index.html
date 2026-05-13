@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新手入道 · 第一天从这里开始 — 北大考研修仙应用集</title>
+  <meta name="description" content="考研小白第一天指南 — 不知道从哪开始？跟着这个走就行">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04040c; --bg2: #08081a; --card: rgba(10,12,28,0.85);
+      --gold: #ffd700; --cyan: #08f7fe; --green: #34C759; --red: #ff2e63;
+      --purple: #5E5CE6; --orange: #FF9500;
+      --text: #e8e8f0; --dim: #555578; --sub: #999;
+      --border: rgba(255,255,255,0.06);
+      --serif: 'Noto Serif SC', serif;
+      --sans: 'Inter', sans-serif;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: var(--serif), var(--sans);
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ═══ Hero ═══ */
+    .hero {
+      text-align: center; padding: 60px 20px 40px;
+      background: linear-gradient(180deg, rgba(94,92,230,0.08), transparent);
+    }
+    .hero-emoji { font-size: 72px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px); font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .hero .sub { color: var(--sub); font-size: 15px; max-width: 500px; margin: 0 auto; }
+    .hero .back { display: inline-block; margin-top: 20px; color: var(--dim); font-size: 13px; }
+    .hero .back:hover { color: var(--cyan); }
+
+    /* ═══ Container ═══ */
+    .container { max-width: 800px; margin: 0 auto; padding: 0 20px 80px; }
+
+    /* ═══ Today's Mission ═══ */
+    .today {
+      background: linear-gradient(135deg, rgba(94,92,230,0.12), rgba(52,199,89,0.08));
+      border: 1px solid rgba(94,92,230,0.2); border-radius: 20px;
+      padding: 28px; margin-bottom: 40px; position: relative; overflow: hidden;
+    }
+    .today::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--green));
+    }
+    .today h2 { font-size: 22px; margin-bottom: 6px; }
+    .today h2 span { color: var(--green); }
+    .today .today-sub { color: var(--sub); font-size: 13px; margin-bottom: 20px; }
+
+    .mission {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(0,0,0,0.3); border-radius: 14px;
+      padding: 16px; margin-bottom: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .mission:hover { border-color: rgba(94,92,230,0.3); transform: translateX(4px); }
+    .mission.done { opacity: 0.5; }
+    .mission.done .m-check { background: var(--green); color: #000; }
+    .m-check {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid var(--dim); display: flex; align-items: center;
+      justify-content: center; font-size: 14px; flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .m-body { flex: 1; }
+    .m-title { font-weight: 700; font-size: 15px; }
+    .m-detail { font-size: 12px; color: var(--sub); margin-top: 2px; }
+    .m-time {
+      font-size: 11px; color: var(--dim); background: rgba(255,255,255,0.04);
+      padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+    }
+    .m-go {
+      display: inline-block; margin-top: 16px; padding: 14px 32px;
+      background: linear-gradient(135deg, var(--purple), var(--green));
+      border-radius: 14px; font-weight: 700; font-size: 16px;
+      color: #fff; border: none; cursor: pointer; width: 100%;
+      text-align: center; transition: all 0.3s; letter-spacing: 2px;
+    }
+    .m-go:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(94,92,230,0.3); }
+
+    /* ═══ Phase Cards ═══ */
+    .phase-title {
+      display: flex; align-items: center; gap: 10px;
+      margin: 40px 0 16px; font-size: 13px; color: var(--dim);
+      letter-spacing: 3px; font-weight: 700;
+    }
+    .phase-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .phase {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 16px;
+      position: relative; overflow: hidden; transition: all 0.3s;
+    }
+    .phase:hover { border-color: rgba(255,255,255,0.1); }
+    .phase::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+      border-radius: 0 4px 4px 0;
+    }
+    .phase.p1::before { background: var(--green); }
+    .phase.p2::before { background: var(--cyan); }
+    .phase.p3::before { background: var(--orange); }
+    .phase.p4::before { background: var(--red); }
+
+    .phase .ph-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .phase .ph-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 16px; flex-shrink: 0;
+    }
+    .p1 .ph-num { background: rgba(52,199,89,0.15); color: var(--green); }
+    .p2 .ph-num { background: rgba(8,247,254,0.1); color: var(--cyan); }
+    .p3 .ph-num { background: rgba(255,149,0,0.12); color: var(--orange); }
+    .p4 .ph-num { background: rgba(255,46,99,0.12); color: var(--red); }
+
+    .ph-title { font-size: 18px; font-weight: 800; }
+    .ph-when { font-size: 11px; color: var(--dim); margin-top: 2px; }
+    .ph-desc { font-size: 13px; color: var(--sub); margin-bottom: 16px; padding-left: 48px; }
+
+    .ph-apps { display: flex; flex-direction: column; gap: 8px; padding-left: 48px; }
+    .app-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: 12px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      transition: all 0.25s; cursor: pointer;
+    }
+    .app-link:hover { background: rgba(94,92,230,0.08); border-color: rgba(94,92,230,0.2); transform: translateX(4px); }
+    .app-emoji { font-size: 24px; }
+    .app-name { font-weight: 600; font-size: 14px; }
+    .app-why { font-size: 11px; color: var(--sub); }
+    .app-arrow { margin-left: auto; color: var(--dim); font-size: 18px; }
+
+    /* ═══ FAQ ═══ */
+    .faq { margin-top: 40px; }
+    .faq-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; margin-bottom: 10px;
+    }
+    .faq-q { font-weight: 700; font-size: 15px; margin-bottom: 8px; color: var(--gold); }
+    .faq-a { font-size: 13px; color: var(--sub); line-height: 1.8; }
+    .faq-a strong { color: var(--text); }
+
+    /* ═══ Bottom CTA ═══ */
+    .bottom-cta {
+      text-align: center; margin-top: 48px; padding: 32px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.04), rgba(94,92,230,0.06));
+      border-radius: 20px; border: 1px solid var(--border);
+    }
+    .bottom-cta h3 { font-size: 20px; margin-bottom: 8px; }
+    .bottom-cta p { color: var(--sub); font-size: 13px; margin-bottom: 20px; }
+    .bottom-cta a {
+      display: inline-block; padding: 14px 40px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border-radius: 14px; color: #000; font-weight: 700;
+      letter-spacing: 2px; transition: all 0.3s;
+    }
+    .bottom-cta a:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(255,215,0,0.25); }
+
+    @media(max-width:600px) {
+      .hero { padding: 40px 16px 24px; }
+      .today { padding: 20px; }
+      .phase { padding: 18px; }
+      .ph-desc, .ph-apps { padding-left: 0; }
+      .mission { flex-wrap: wrap; }
+      .m-time { margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-emoji">🧭</div>
+    <h1>新手入道 · 第一天从这里开始</h1>
+    <div class="sub">不知道从哪里下手？别慌。跟着下面的步骤走就行，每天30分钟，一步一步来。</div>
+    <a href="../" class="back">← 返回应用集</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ═══ TODAY'S MISSION ═══ -->
+    <div class="today">
+      <h2>🎯 今天就做这 <span>3 件事</span></h2>
+      <div class="today-sub">第一天不需要听课、不需要做真题、不需要焦虑。先热个身。</div>
+
+      <div class="mission" onclick="toggleDone(this); window.open('../kaoyan-duo/','_blank')">
+        <div class="m-check">1</div>
+        <div class="m-body">
+          <div class="m-title">🦉 背 10 个单词（考研多邻国）</div>
+          <div class="m-detail">先教后测，有发音有例句，像玩游戏一样背</div>
+        </div>
+        <div class="m-time">⏱ 5分钟</div>
+      </div>
+
+      <div class="mission" onclick="toggleDone(this); window.open('../arcana-academy/','_blank')">
+        <div class="m-check">2</div>
+        <div class="m-body">
+          <div class="m-title">🃏 抽 5 张塔罗牌（奥秘学院）</div>
+          <div class="m-detail">占卜出题，四科随机，先看看考什么</div>
+        </div>
+        <div class="m-time">⏱ 10分钟</div>
+      </div>
+
+      <div class="mission" onclick="toggleDone(this); window.open('../memory-tree/standalone.html','_blank')">
+        <div class="m-check">3</div>
+        <div class="m-body">
+          <div class="m-title">🌳 翻 10 张记忆卡（识海天碑）</div>
+          <div class="m-detail">间隔复习法，翻卡片了解四科考什么</div>
+        </div>
+        <div class="m-time">⏱ 10分钟</div>
+      </div>
+
+      <a class="m-go" href="../kaoyan-duo/">🚀 开始第一课 → 考研多邻国</a>
+    </div>
+
+    <!-- ═══ FULL ROADMAP ═══ -->
+    <div class="phase-title">📍 完整路线图 · 四阶段</div>
+
+    <!-- Phase 1 -->
+    <div class="phase p1">
+      <div class="ph-header">
+        <div class="ph-num">1</div>
+        <div>
+          <div class="ph-title">🌱 热身期 · 每天30分钟</div>
+          <div class="ph-when">第 1-14 天 · 不需要教材</div>
+        </div>
+      </div>
+      <div class="ph-desc">
+        目标：<strong>摸清四科考什么</strong>，建立基础词汇量，零压力入门。<br>
+        不听课、不看书，纯用应用集的游戏学。
+      </div>
+      <div class="ph-apps">
+        <a class="app-link" href="../kaoyan-duo/">
+          <span class="app-emoji">🦉</span>
+          <div>
+            <div class="app-name">考研多邻国</div>
+            <div class="app-why">每天1课 · 背10个词 · 渐进式教学</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../arcana-academy/">
+          <span class="app-emoji">🃏</span>
+          <div>
+            <div class="app-name">奥秘学院 · 塔罗</div>
+            <div class="app-why">抽牌做题 · 了解四科考点</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../memory-tree/standalone.html">
+          <span class="app-emoji">🌳</span>
+          <div>
+            <div class="app-name">识海天碑</div>
+            <div class="app-why">翻卡片 · 间隔复习核心知识</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase p2">
+      <div class="ph-header">
+        <div class="ph-num">2</div>
+        <div>
+          <div class="ph-title">⚡ 刷题期 · 每天1小时</div>
+          <div class="ph-when">第 15-60 天 · 配合网课</div>
+        </div>
+      </div>
+      <div class="ph-desc">
+        目标：<strong>大量刷选择题</strong>，看网课补知识盲区。<br>
+        听完一节课 → 立刻来应用集做对应的题。
+      </div>
+      <div class="ph-apps">
+        <a class="app-link" href="../battleground/">
+          <span class="app-emoji">🎯</span>
+          <div>
+            <div class="app-name">刺激战场 · 大逃杀</div>
+            <div class="app-why">100人吃鸡模式 · 选择题速刷</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../ghost-dorm/">
+          <span class="app-emoji">👻</span>
+          <div>
+            <div class="app-name">猛鬼宿舍 · 恐怖塔防</div>
+            <div class="app-why">答题防守 · 夜间沉浸刷题</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="https://daima-shanhai.vercel.app/">
+          <span class="app-emoji">⛰️</span>
+          <div>
+            <div class="app-name">代码山海 · AI课堂</div>
+            <div class="app-why">408/301 · AI逐课讲解 · 268节</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase p3">
+      <div class="ph-header">
+        <div class="ph-num">3</div>
+        <div>
+          <div class="ph-title">🔥 强化期 · 每天2小时</div>
+          <div class="ph-when">第 61-150 天 · 做真题</div>
+        </div>
+      </div>
+      <div class="ph-desc">
+        目标：<strong>真题实战 + 长难句突破 + 分科专项</strong>。<br>
+        这阶段你已经不再是小白了，开始高强度训练。
+      </div>
+      <div class="ph-apps">
+        <a class="app-link" href="../neural-dive/index.html">
+          <span class="app-emoji">🧠</span>
+          <div>
+            <div class="app-name">深潜网络 · Neural Dive</div>
+            <div class="app-why">201英语 · 长难句+写作+翻译</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../debate-arena/index.html">
+          <span class="app-emoji">⚔️</span>
+          <div>
+            <div class="app-name">论道殿 · 双轨推演</div>
+            <div class="app-why">法庭+骗子酒馆 · 四科深度训练</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../code-era/index.html">
+          <span class="app-emoji">🤖</span>
+          <div>
+            <div class="app-name">九宫算阵 · 代码纪元</div>
+            <div class="app-why">408代码补全 + 301数学台阶拆解</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase p4">
+      <div class="ph-header">
+        <div class="ph-num">4</div>
+        <div>
+          <div class="ph-title">💎 冲刺期 · 全力以赴</div>
+          <div class="ph-when">考前 30 天 · 模拟+复盘</div>
+        </div>
+      </div>
+      <div class="ph-desc">
+        目标：<strong>模拟考试 + 错题攻坚 + 心态调整</strong>。<br>
+        进入"闭关"状态，所有模块大合流。
+      </div>
+      <div class="ph-apps">
+        <a class="app-link" href="../shenxiao-palace/index.html">
+          <span class="app-emoji">🏛️</span>
+          <div>
+            <div class="app-name">神霄宫 · 万界仙盟</div>
+            <div class="app-why">全模块合流 · 最终决战</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+        <a class="app-link" href="../tianji/question-bank.html">
+          <span class="app-emoji">🏛️</span>
+          <div>
+            <div class="app-name">绝密金库 · 模拟密卷</div>
+            <div class="app-why">AI出卷 · 还原真实考场</div>
+          </div>
+          <span class="app-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══ FAQ ═══ -->
+    <div class="phase-title">❓ 常见问题</div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">Q: 我基础很差，四六级都没过，能考研吗？</div>
+        <div class="faq-a">能。考研英语和四六级完全是两个体系。你只需要掌握 <strong>5500 个核心词汇</strong> + <strong>长难句分析能力</strong>。考研多邻国从最简单的词开始教，每天 10 个词，6 个月就能覆盖完。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q: 不想听课怎么办？</div>
+        <div class="faq-a">完全可以！这套应用集的设计理念就是 <strong>"玩着学"</strong>。塔罗占卜、大逃杀、狼人杀、恐怖塔防——都是在做题，只是用游戏包装了而已。你以为在打游戏，其实已经刷了 50 道真题。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q: 每天只有 30 分钟怎么安排？</div>
+        <div class="faq-a"><strong>10分钟</strong>考研多邻国背词 → <strong>10分钟</strong>塔罗/战场刷题 → <strong>10分钟</strong>记忆卡复习。坚持 30 天你会发现自己已经认识 300 个核心词了。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q: 需要买什么教材吗？</div>
+        <div class="faq-a">前两周 <strong>什么都不用买</strong>。等你通过游戏了解了四科考什么之后，再有针对性地选教材（推荐：政治跟腿姐/肖秀荣，英语用红宝书，数学看张宇/汤家凤）。</div>
+      </div>
+    </div>
+
+    <!-- ═══ Bottom CTA ═══ -->
+    <div class="bottom-cta">
+      <h3>别想太多，现在就开始</h3>
+      <p>万事开头难，但你只需要点一下按钮。</p>
+      <a href="../kaoyan-duo/">🦉 开始背第一个单词</a>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleDone(el) {
+      el.classList.toggle('done');
+      var check = el.querySelector('.m-check');
+      check.textContent = el.classList.contains('done') ? '✓' : check.textContent;
+    }
+  </script>
+</body>
+</html>
