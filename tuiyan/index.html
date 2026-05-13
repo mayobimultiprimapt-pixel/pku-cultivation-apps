@@ -2,6 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<!-- audit_pku.md SEC-7：CSP 兜底（AI 调用页，高优先级）-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pku-api-relay.onrender.com https://generativelanguage.googleapis.com https://openrouter.ai https://api.perplexity.ai; img-src 'self' data:; frame-ancestors 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>推演阁 · 梅花六爻排盘 — 北大考研修仙应用集</title>
 <meta name="description" content="梅花易数·六爻纳甲 完整排盘工具 — 考运推演">

@@ -2,6 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<!-- audit_pku.md SEC-7：CSP 兜底（鉴权页，高优先级）-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://pku-api-relay.onrender.com; img-src 'self' data:; frame-ancestors 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>修仙应用集 · 灵脉认证</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
