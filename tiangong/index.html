@@ -322,7 +322,7 @@
           <span style="font-size:11px;color:var(--text-mute);">备选：<a href="${PAT_GUIDE_FALLBACK}" target="_blank" rel="noopener noreferrer">Classic PAT (public_repo)</a>，但权限更宽不推荐。</span><br>
           <span style="font-size:11px;color:var(--alert);">⚠ 凭信存浏览器 localStorage · 同源 XSS 可被取走 · 务必短过期/最小权限</span>
         </div>
-        <div class="pat-row">
+        <div class="pat-row" style="display:none !important">
           <input id="pat-input" type="password" autocomplete="off"
             placeholder="粘贴 fine-grained (github_pat_xxx) 或 classic (ghp_xxx)" />
           <button id="pat-save">封 印</button>
