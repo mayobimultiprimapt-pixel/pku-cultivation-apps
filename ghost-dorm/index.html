@@ -173,6 +173,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .qz-result{margin-top:10px;padding:10px;border-radius:8px;font-size:.8em;font-weight:700;text-align:center}
 .qz-result.ok{background:rgba(74,222,128,.1);color:var(--ghost)}
 .qz-result.fail{background:rgba(255,68,68,.1);color:var(--fury)}
+/* ── 单词记忆内核 装饰类 · 复用 .qz-opt/.judge-btn/.essay-sub 主样式 ── */
+.vc-pos{font-size:.65em;opacity:.7;font-weight:400;margin-left:6px}
+.vc-hint{display:inline-block;margin-top:8px;padding:6px 10px;background:rgba(56,189,248,.1);border-radius:6px;color:var(--elec);font-family:ui-monospace,Consolas,monospace;letter-spacing:.15em;font-size:.85em}
+.vc-spell{display:flex;flex-direction:column;gap:8px}
+.vc-input{width:100%;padding:14px;font-size:1.1em;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text);font-family:ui-monospace,Consolas,monospace;letter-spacing:.1em;text-align:center;outline:none}
+.vc-input:focus{border-color:var(--ghost)}
+.vc-input.correct{border-color:var(--ghost)!important;background:rgba(74,222,128,.1)!important;color:var(--ghost)}
+.vc-input.wrong{border-color:var(--fury)!important;background:rgba(255,68,68,.1)!important;color:var(--fury)}
+.vc-streak-banner{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(90deg,rgba(251,191,36,.18),rgba(245,158,11,.12));color:var(--gold);text-align:center;font-weight:700;font-size:.85em;animation:vcStreak .6s ease-out}
+@keyframes vcStreak{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 .qz-knowledge{margin-top:8px;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;font-size:.7em;color:var(--text2);line-height:1.5}
 
 /* ═══════ ESSAY MODE PANEL ═══════ */
@@ -434,6 +444,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <script src="../shared/seed-questions.js"></script>
 <script src="../shared/pku-auto-fetch.js"></script>
 <script src="ghost-data.js"></script>
+<!-- 单词记忆内核 · 201 英语进入塔防时由 getRandomQuestion 自动调用 -->
+<script src="ghost-vocab-data.js"></script>
+<script src="ghost-vocab-core.js"></script>
 <script>
 /* ══════════════════════════════════════════════
    猛鬼考研宿舍 · 终极版 · 全代码
@@ -601,6 +614,11 @@ const ESSAY_PAPERS=[
 
 /* ── 题库工具函数 ── */
 function getRandomQuestion(subjectId,starRange){
+  // 201 英语 → 切到单词记忆内核（外壳/战斗/伤害逻辑完全不变）
+  if(subjectId===201 && typeof VocabCore!=='undefined'){
+    try{const q=VocabCore.getChallenge(starRange); if(q)return q;}
+    catch(e){console.warn('[VocabCore] getChallenge fail, fallback to QBANK',e);}
+  }
   const bank=QBANK[subjectId];if(!bank)return null;
   const types=['single','multi','judge','essay'];
   const weights=[50,20,20,10]; // percentage weights
@@ -1639,6 +1657,16 @@ function triggerHunterQuiz(){
 
 function renderQuiz(q){
   const box=document.getElementById('quizBox');const ov=document.getElementById('quizOverlay');
+  // 单词记忆题型 · 走 VocabCore 自渲染 · 判定后由 VocabCore 调 resolveQuiz
+  if(q.type && q.type.indexOf('vocab-')===0 && typeof VocabCore!=='undefined'){
+    const vcn={'vocab-en-zh':'看英选中','vocab-zh-en':'看中选英','vocab-spell':'拼写','vocab-review':'熟词速答'};
+    let vh=`<div class="qz-header"><h3>📚 单词${G.mode==='hunter'?'攻击':'驱鬼'}</h3><p>${G.currentQuiz.actionType==='combat'?'答对=伤害鬼 · 答错=鬼加速':'答对=执行操作 · 答错=失败'}</p></div>`;
+    vh+=`<div class="qz-meta"><span class="qz-tag t-single">${vcn[q.type]||'单词'}</span><span class="qz-tag t-kp">${q.kp}</span></div>`;
+    vh+=`<div class="qz-q">${q.q}</div>`;
+    box.innerHTML=vh; ov.classList.add('open');
+    VocabCore.renderUI(q, box, (correct,score)=>resolveQuiz(correct,score,q));
+    return;
+  }
   const tn={single:'单选题',multi:'多选题',judge:'判断题',essay:'分析题'};
   const tc={single:'t-single',multi:'t-multi',judge:'t-judge',essay:'t-essay'};
   let h=`<div class="qz-header"><h3>⚔️ 答题${G.mode==='hunter'?'升级':'驱鬼'}</h3><p>${G.currentQuiz.actionType==='combat'?'答对=伤害鬼 · 答错=鬼加速':'答对=执行操作 · 答错=失败'}</p></div>`;
