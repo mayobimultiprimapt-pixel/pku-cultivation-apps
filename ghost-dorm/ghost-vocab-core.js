@@ -36,8 +36,95 @@
   const KEY_WRONG = 'GD_Vocab_WrongQueue_v1';
   const KEY_DAILY = 'GD_Vocab_DailyProgress_v1';
   const KEY_TUTORIAL = 'GD_Vocab_TutorialDone_v1';
+  const KEY_UNIT_PROG = 'GD_Vocab_UnitProgress_v1';
   const DAY_MS = 86_400_000;
   const TARGET_PER_DAY = 30;
+
+  // ── 章节模式：5500 词全集 + 当前 Unit 词池 ────────
+  let EXTENDED_WORDS = null;   // null = 未加载 · array = enriched word lib (5500 词 + 200 词 enriched 覆盖)
+  let CURRENT_CHAPTER = null;  // null = 无章节 · { category, unit, displayName, words[] }
+  let _extLoading = null;      // Promise · 防止并发 fetch
+
+  async function tryFetch(paths) {
+    for (const p of paths) {
+      try {
+        const r = await fetch(p, { cache: 'force-cache' });
+        if (r.ok) return await r.json();
+      } catch (e) { /* try next */ }
+    }
+    return null;
+  }
+
+  // 加载 5500 词全集 · 兼容 GitHub Pages 同目录 / daima-shanhai 上一级 / 绝对根
+  async function loadExtended() {
+    if (EXTENDED_WORDS) return EXTENDED_WORDS;
+    if (_extLoading) return _extLoading;
+    _extLoading = (async () => {
+      const data = await tryFetch([
+        'kaoyan-5500.json',
+        '../vocab/kaoyan-5500.json',
+        '/vocab/kaoyan-5500.json',
+      ]);
+      if (!data || !Array.isArray(data)) {
+        console.warn('[VocabCore] 5500 词 JSON 加载失败 · 章节模式将仅用 200 词内置');
+        return null;
+      }
+      // 转 shape：5500 schema {w, pos[], m[], ph?[]} → 内部 {w, zh, pos, ex, ex_zh, phonetic, emoji, tier}
+      // 同 w 在 200 词包里有 enriched 数据则覆盖
+      const map200 = new Map(WORDS.map((x) => [x.w, x]));
+      EXTENDED_WORDS = data.map((item) => {
+        const enriched = map200.get(item.w);
+        if (enriched) return enriched;
+        return {
+          w: item.w,
+          pos: (item.pos && item.pos.length ? item.pos.join('/') : '') + '.',
+          zh: (item.m && item.m[0]) || item.w,
+          ex: (item.ph && item.ph[0]) || '',
+          ex_zh: '',
+          phonetic: '',
+          emoji: '🔤',
+          tier: 3, // 5500 - 200 部分归 tier 3（章节模式专用，避免污染 tier-1 起手关）
+        };
+      });
+      console.log('[VocabCore] 5500 词加载完毕 · ' + EXTENDED_WORDS.length + ' 词 · 200 词 enriched merged');
+      return EXTENDED_WORDS;
+    })();
+    return _extLoading;
+  }
+
+  function setChapter(chapterId) {
+    if (!chapterId) { CURRENT_CHAPTER = null; return; }
+    if (typeof global.GhostVocabUnits === 'undefined') {
+      console.warn('[VocabCore] GhostVocabUnits 未加载，setChapter 无效');
+      return;
+    }
+    const u = global.GhostVocabUnits.UNITS.find((x) => `${x.category}-u${x.unit}` === chapterId);
+    if (!u) {
+      console.warn('[VocabCore] 章节未找到：' + chapterId);
+      return;
+    }
+    CURRENT_CHAPTER = u;
+    void loadExtended(); // 异步预加载 · 第一题可能用 fallback，第二题起就有 5500 词
+    console.log('[VocabCore] 章节切换：' + u.displayName + ' · ' + u.words.length + ' 词');
+  }
+
+  function getCurrentChapter() { return CURRENT_CHAPTER; }
+
+  function getChapterProgress(chapterId) {
+    if (!chapterId && CURRENT_CHAPTER) chapterId = `${CURRENT_CHAPTER.category}-u${CURRENT_CHAPTER.unit}`;
+    if (!chapterId) return { learned: 0, mastered: 0, total: 0 };
+    const u = global.GhostVocabUnits?.UNITS.find((x) => `${x.category}-u${x.unit}` === chapterId);
+    if (!u) return { learned: 0, mastered: 0, total: 0 };
+    const stateMap = load(KEY_STATE, {});
+    let learned = 0, mastered = 0;
+    for (const w of u.words) {
+      const st = stateMap[w];
+      if (!st) continue;
+      if (st.status >= 1) learned++;
+      if (st.status >= 3) mastered++;
+    }
+    return { learned, mastered, total: u.words.length };
+  }
 
   // ── 持久化 helpers ───────────────────────────
   function load(k, fb) {
@@ -121,8 +208,21 @@
     },
   ];
 
-  // ── 选词策略 · 首关 tier-1 强制 ────────────
+  // ── 选词策略 · 章节模式 / 首关 tier-1 ──────
   function pickWord(starRange) {
+    // 当前活跃词库（章节模式用 EXTENDED + chapter 过滤；否则用 200 内置）
+    let activeLib = WORDS;
+    let chapterFilter = null;
+    if (CURRENT_CHAPTER) {
+      if (EXTENDED_WORDS) {
+        activeLib = EXTENDED_WORDS;
+        chapterFilter = new Set(CURRENT_CHAPTER.words);
+      } else {
+        // 5500 词还没加载完 · fallback：在 200 词包里取章节词（可能空）
+        chapterFilter = new Set(CURRENT_CHAPTER.words);
+      }
+    }
+
     const tierLo = starRange ? starRange[0] : 1;
     const tierHi = starRange ? starRange[1] : 5;
     const allowTier1 = tierLo <= 2;
@@ -130,13 +230,19 @@
 
     const stateMap = load(KEY_STATE, {});
     const seenCount = Object.keys(stateMap).length;
-    const forceTier1 = seenCount < 15; // 首关 15 词内强制 tier-1
+    const forceTier1 = seenCount < 15 && !CURRENT_CHAPTER; // 章节模式不强制 tier-1（章节是用户主动选的）
 
-    let candidates = WORDS.filter((x) => {
+    let candidates = activeLib.filter((x) => {
+      if (chapterFilter && !chapterFilter.has(x.w)) return false;
       if (forceTier1) return x.tier === 1;
+      if (CURRENT_CHAPTER) return true; // 章节模式不按 tier 卡
       return (x.tier === 1 && allowTier1) || (x.tier === 2 && allowTier2);
     });
-    if (candidates.length === 0) candidates = WORDS;
+    // 章节模式 candidates 为空 → 章节词全在 5500 范围外（理论上不会，但兜底回 200 包章节交集）
+    if (candidates.length === 0 && chapterFilter) {
+      candidates = WORDS.filter((x) => chapterFilter.has(x.w));
+    }
+    if (candidates.length === 0) candidates = activeLib;
 
     // 1) 错词队列优先
     if (peekWrongCount() > 0 && Math.random() < 0.6) {
@@ -161,9 +267,20 @@
     return { card: candidates[Math.floor(Math.random() * candidates.length)], source: 'random' };
   }
 
-  // ── 干扰选项 ─────────────────────────────────
+  // ── 干扰选项 · 章节模式优先从同章节内抽 ───
   function pickDistractors(correctCard, field, n) {
-    const pool = WORDS.filter((x) => x[field] !== correctCard[field]);
+    // 1) 章节模式 + 同章节词池足够 → 从同章节抽（语义近，更难辨）
+    let pool;
+    if (CURRENT_CHAPTER && EXTENDED_WORDS) {
+      const wordSet = new Set(CURRENT_CHAPTER.words);
+      pool = EXTENDED_WORDS.filter((x) => wordSet.has(x.w) && x[field] !== correctCard[field]);
+      if (pool.length < n) {
+        // 2) 章节内不够 → 扩到全集
+        pool = EXTENDED_WORDS.filter((x) => x[field] !== correctCard[field]);
+      }
+    } else {
+      pool = WORDS.filter((x) => x[field] !== correctCard[field]);
+    }
     const out = [];
     while (out.length < n && pool.length > 0) {
       const idx = Math.floor(Math.random() * pool.length);
@@ -468,9 +585,13 @@
     getChallenge,
     renderUI,
     getDailyProgress,
+    setChapter,
+    getCurrentChapter,
+    getChapterProgress,
+    loadExtended,
     _speak: speak,
     _resetTutorial,
     _resetAll,
   };
-  console.log('[VocabCore] 挂载完毕 · 词库 ' + WORDS.length + ' 词 · 引导关 ' + (load(KEY_TUTORIAL, 0) === 1 ? '已过' : '待过'));
+  console.log('[VocabCore] 挂载完毕 · 内置 ' + WORDS.length + ' 词 · 引导关 ' + (load(KEY_TUTORIAL, 0) === 1 ? '已过' : '待过') + ' · 章节模式 ready (待 setChapter)');
 })(typeof window !== 'undefined' ? window : globalThis);

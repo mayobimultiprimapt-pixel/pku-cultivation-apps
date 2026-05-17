@@ -201,6 +201,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .vc-wc-continue{display:block;width:100%;margin-top:10px;padding:10px;font-size:.9em;font-weight:700;background:linear-gradient(135deg,var(--elec),#0284c7);border:none;border-radius:8px;color:#fff;cursor:pointer;letter-spacing:.2em;transition:all .15s}
 .vc-wc-continue:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(56,189,248,.3)}
 .vc-wc-continue:disabled{opacity:.4;pointer-events:none}
+/* ── 章节屏（仅 201）──────────────────────────── */
+.chapter-wrap{width:100%;max-width:560px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.chapter-sub{font-size:.75em;color:var(--text2);text-align:center;margin-bottom:8px}
+.chapter-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;width:100%}
+.chapter-card{padding:12px;border-radius:10px;background:var(--card);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .15s;text-align:left}
+.chapter-card:hover{border-color:var(--ghost);background:rgba(74,222,128,.06);transform:translateY(-2px)}
+.chapter-card .cc-num{font-size:.7em;color:var(--text2);letter-spacing:.1em;margin-bottom:4px}
+.chapter-card .cc-name{font-size:.95em;font-weight:700;color:var(--text);margin-bottom:6px}
+.chapter-card .cc-diff{display:inline-block;padding:1px 8px;border-radius:8px;font-size:.6em;font-weight:700;margin-bottom:6px}
+.chapter-card .cc-diff.easy{background:rgba(74,222,128,.15);color:var(--ghost)}
+.chapter-card .cc-diff.normal{background:rgba(251,191,36,.15);color:var(--gold)}
+.chapter-card .cc-diff.hard{background:rgba(255,68,68,.15);color:var(--fury)}
+.chapter-card .cc-prog{height:4px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:4px}
+.chapter-card .cc-fill{height:100%;background:linear-gradient(90deg,var(--ghost),var(--elec));transition:width .3s}
+.chapter-card .cc-stats{font-size:.65em;color:var(--text2)}
 @keyframes vcStreak{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 .qz-knowledge{margin-top:8px;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;font-size:.7em;color:var(--text2);line-height:1.5}
 
@@ -350,7 +365,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <h2 class="mode-title" id="subjTitle">选择科目</h2>
     <div class="subj-grid">
       <div class="subj-card" onclick="showDiffSelect(101)"><div class="si">📕</div><div class="sn">101 政治</div><div class="sd">马原·毛概·史纲·思修</div></div>
-      <div class="subj-card" onclick="showDiffSelect(201)"><div class="si">📗</div><div class="sn">201 英语</div><div class="sd">阅读·完型·翻译·写作</div></div>
+      <div class="subj-card" onclick="show201Chapter()"><div class="si">📗</div><div class="sn">201 英语</div><div class="sd">单词记忆 · 红宝书 Unit 章节</div></div>
       <div class="subj-card" onclick="showDiffSelect(301)"><div class="si">📘</div><div class="sn">301 数学</div><div class="sd">高数·线代·概率论</div></div>
       <div class="subj-card" onclick="showDiffSelect(408)"><div class="si">📙</div><div class="sn">408 计算机</div><div class="sd">数据结构·OS·网络·组成</div></div>
     </div>
@@ -367,6 +382,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <button class="diff-btn" onclick="startMatch('normal')"><span>🟡</span> 普通<small>鬼Lv.3-6 · 2-4★题 · 15波</small></button>
       <button class="diff-btn" onclick="startMatch('hard')"><span>🔴</span> 困难<small>鬼Lv.5-10 · 3-5★题 · 20波</small></button>
       <button class="diff-btn" onclick="startMatch('nightmare')"><span>💀</span> 噩梦<small>鬼Lv.8-15 · 4-5★题 · 30波</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- 201 章节选择屏（红宝书 Unit 1-15）· 选 Unit 后按号自动映射难度 1-5 easy / 6-10 normal / 11-15 hard -->
+<div id="chapterScr" class="scr">
+  <div class="chapter-wrap">
+    <button class="back-btn" onclick="switchScreen('subjScr')">← 返回</button>
+    <h2 class="mode-title">📗 201 英语 · 红宝书 Unit</h2>
+    <p class="chapter-sub">选 Unit 进游戏 · 难度按 Unit 号自动映射 · 待 OCR 的 Unit 后续补</p>
+    <div class="chapter-list" id="chapterList">
+      <!-- 由 JS 动态渲染 -->
     </div>
   </div>
 </div>
@@ -465,6 +492,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <script src="ghost-data.js"></script>
 <!-- 单词记忆内核 · 201 英语进入塔防时由 getRandomQuestion 自动调用 -->
 <script src="ghost-vocab-data.js"></script>
+<script src="ghost-vocab-units.js"></script>
 <script src="ghost-vocab-core.js"></script>
 <script>
 /* ══════════════════════════════════════════════
@@ -746,6 +774,39 @@ function updateMenuHUD(){document.getElementById('menuHoney').textContent=SAVE.h
 function showModeSelect(){switchScreen('modeScr')}
 function showSubjSelect(mode){selectedGameMode=mode;document.getElementById('subjTitle').textContent=mode==='hunter'?'猎梦者 · 选择科目':'睡梦者 · 选择科目';switchScreen('subjScr')}
 function showDiffSelect(subj){selectedSubject=subj;const s=SUBJECTS.find(x=>x.id===subj);document.getElementById('diffTitle').textContent=s.name+' · 选择难度';switchScreen('diffScr')}
+
+// ── 201 章节屏：选 Unit → 自动映射难度 → startMatch ──
+function show201Chapter(){
+  selectedSubject=201;
+  if(typeof GhostVocabUnits==='undefined'||typeof VocabCore==='undefined'){
+    alert('单词记忆内核未加载，请刷新');return;
+  }
+  const list=document.getElementById('chapterList');
+  list.innerHTML='';
+  GhostVocabUnits.UNITS.forEach((u,i)=>{
+    const idx=i+1;
+    const diff=idx<=5?'easy':idx<=10?'normal':'hard';
+    const diffLabel=diff==='easy'?'🟢 简单':diff==='normal'?'🟡 普通':'🔴 困难';
+    const prog=VocabCore.getChapterProgress(`${u.category}-u${u.unit}`);
+    const pct=prog.total?Math.round(prog.learned/prog.total*100):0;
+    const card=document.createElement('div');
+    card.className='chapter-card';
+    card.innerHTML=`
+      <div class="cc-num">${u.category} · ${u.words.length} 词</div>
+      <div class="cc-name">${u.displayName}</div>
+      <div class="cc-diff ${diff}">${diffLabel}</div>
+      <div class="cc-prog"><div class="cc-fill" style="width:${pct}%"></div></div>
+      <div class="cc-stats">已认识 ${prog.learned}/${prog.total} · 已收押 ${prog.mastered}</div>`;
+    card.addEventListener('click',()=>startChapterMatch(`${u.category}-u${u.unit}`,diff));
+    list.appendChild(card);
+  });
+  switchScreen('chapterScr');
+}
+
+function startChapterMatch(chapterId,diff){
+  VocabCore.setChapter(chapterId);
+  startMatch(diff);
+}
 
 /* ── 匹配 ── */
 let matchInterval;
